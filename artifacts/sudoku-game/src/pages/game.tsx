@@ -5,6 +5,8 @@ import {
   useSaveGame,
   useCompleteGame,
   useGetProfile,
+  useGeneratePuzzle,
+  useCreateGame,
   customFetch,
 } from "@workspace/api-client-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -25,6 +27,8 @@ import {
   Type,
   Image,
   Flame,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
 import {
   Select,
@@ -206,6 +210,33 @@ export default function Game({ id }: { id: string }) {
   const [mistakes, setMistakes] = useState(0);
   const [hints, setHints] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
+
+  // New-game switcher state
+  const [newSize, setNewSize] = useState<3 | 4 | 9 | 16>(9);
+  const [newDiff, setNewDiff] = useState<"easy" | "medium" | "hard" | "expert">("easy");
+
+  const generateNew = useGeneratePuzzle(
+    { difficulty: newDiff, gridSize: newSize as any },
+    { query: { enabled: false } },
+  );
+  const createNewGame = useCreateGame();
+  const newGameLoading = generateNew.isFetching || createNewGame.isPending;
+
+  const handleNewGame = async () => {
+    if (!profileId || newGameLoading) return;
+    try {
+      const res = await generateNew.refetch();
+      const puzzle = res.data;
+      if (!puzzle) return;
+      const game = await createNewGame.mutateAsync({
+        data: { profileId, puzzleId: puzzle.id, difficulty: newDiff },
+      });
+      const modeQuery = mode !== "number" ? `?mode=${mode}` : "";
+      setLocation(`/game/${game.id}${modeQuery}`);
+    } catch (err) {
+      console.error("Error starting new game:", err);
+    }
+  };
 
   const { seconds, formattedTime } = useGameTimer(
     game?.elapsedSeconds || 0,
@@ -532,6 +563,49 @@ export default function Game({ id }: { id: string }) {
           </div>
         </div>
       )}
+
+      {/* New game switcher */}
+      <div className="w-full rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 flex items-center gap-2 flex-wrap">
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground shrink-0">New Game</span>
+        <div className="flex gap-1 flex-1 min-w-0">
+          {([3, 4, 9, 16] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setNewSize(s)}
+              className={[
+                "flex-1 rounded-md px-1 py-1 text-[10px] font-bold transition-all leading-none",
+                newSize === s
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "bg-background text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
+              ].join(" ")}
+            >
+              {s}×{s}
+            </button>
+          ))}
+        </div>
+        <Select value={newDiff} onValueChange={(v) => setNewDiff(v as typeof newDiff)}>
+          <SelectTrigger className="h-7 text-xs w-24 shrink-0">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="easy">Easy</SelectItem>
+            <SelectItem value="medium">Medium</SelectItem>
+            <SelectItem value="hard">Hard</SelectItem>
+            <SelectItem value="expert">Expert</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button
+          size="sm"
+          className="h-7 px-3 text-xs shrink-0 gap-1.5"
+          onClick={handleNewGame}
+          disabled={newGameLoading || !profileId}
+        >
+          {newGameLoading
+            ? <Loader2 className="w-3 h-3 animate-spin" />
+            : <RefreshCw className="w-3 h-3" />}
+          Start
+        </Button>
+      </div>
 
       {/* Board */}
       <Card className="shadow-lg border-2 border-foreground/15 overflow-hidden">
