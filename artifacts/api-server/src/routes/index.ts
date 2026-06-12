@@ -7,6 +7,7 @@ import leaderboardRouter from "./leaderboard";
 import statsRouter from "./stats";
 import tournamentsRouter from "./tournaments";
 import badgesRouter from "./badges";
+import dailyChallengeRouter from "./daily-challenge";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(leaderboardRouter);
 router.use(statsRouter);
 router.use(tournamentsRouter);
 router.use(badgesRouter);
+router.use(dailyChallengeRouter);
 
 export default router;

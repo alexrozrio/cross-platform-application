@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { Play, BarChart2, Trophy, ArrowLeft, Hash, Type, Palette } from 'lucide-react';
+import { Play, BarChart2, Trophy, ArrowLeft, Hash, Type, Palette, Flame } from 'lucide-react';
 import { IMAGE_THEMES } from '@/lib/themes';
 
 type Difficulty = 'easy' | 'medium' | 'hard' | 'expert';
@@ -210,6 +210,21 @@ export default function SudokuHome() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Daily Challenge banner */}
+      <button
+        onClick={() => setLocation('/daily-challenge')}
+        className="w-full flex items-center gap-4 rounded-xl border-2 border-orange-200/70 bg-gradient-to-r from-orange-50 to-amber-50 p-4 hover:border-orange-300 hover:from-orange-100 hover:to-amber-100 transition-all text-left"
+      >
+        <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center shrink-0 ring-1 ring-orange-200">
+          <Flame className="w-5 h-5 text-orange-500" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-sm">Daily Challenge</p>
+          <p className="text-xs text-muted-foreground">Same puzzle for everyone · Resets at midnight</p>
+        </div>
+        <div className="text-orange-400 text-lg shrink-0">→</div>
+      </button>
 
       {/* Quick links */}
       <div className="grid grid-cols-2 gap-3">

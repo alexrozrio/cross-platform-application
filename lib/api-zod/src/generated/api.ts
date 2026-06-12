@@ -368,3 +368,30 @@ export const GetProfileBadgesResponseItem = zod.object({
 export const GetProfileBadgesResponse = zod.array(GetProfileBadgesResponseItem)
 
 
+
+
+/**
+ * @summary Get today's daily challenge puzzle
+ */
+export const GetDailyChallengeResponse = zod.object({
+  "puzzleId": zod.number(),
+  "date": zod.string(),
+  "difficulty": zod.string(),
+  "gridSize": zod.number(),
+  "grid": zod.string(),
+  "solution": zod.string(),
+})
+
+/**
+ * @summary Get today's daily challenge leaderboard
+ */
+export const GetDailyChallengeLeaderboardResponseItem = zod.object({
+  "rank": zod.number(),
+  "profileId": zod.number(),
+  "username": zod.string(),
+  "avatar": zod.string().nullish(),
+  "elapsedSeconds": zod.number(),
+  "mistakeCount": zod.number(),
+  "completedAt": zod.string(),
+})
+export const GetDailyChallengeLeaderboardResponse = zod.array(GetDailyChallengeLeaderboardResponseItem)

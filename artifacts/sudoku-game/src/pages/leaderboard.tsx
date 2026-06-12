@@ -148,7 +148,7 @@ function TournamentBoard({ type }: { type: 'weekly' | 'monthly' }) {
         <CardContent className="p-0">
           {isLoading ? (
             <div className="p-6 space-y-4">{[1,2,3,4,5].map(i => <Skeleton key={i} className="h-14 w-full" />)}</div>
-          ) : !data || data.entries.length === 0 ? (
+          ) : !data || !data.entries || data.entries.length === 0 ? (
             <div className="p-12 text-center text-muted-foreground">
               <Star className="w-10 h-10 mx-auto mb-3 opacity-20" />
               <p className="font-medium">No games yet this {type === 'weekly' ? 'week' : 'month'}.</p>

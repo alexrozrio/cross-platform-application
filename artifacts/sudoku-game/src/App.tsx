@@ -19,6 +19,7 @@ import Leaderboard from "@/pages/leaderboard";
 import Stats from "@/pages/stats";
 import Themes from "@/pages/themes";
 import BadgeSharePage from "@/pages/badge-share";
+import DailyChallenge from "@/pages/daily-challenge";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
@@ -157,6 +158,7 @@ function Router() {
               </Show>
             )}
           </Route>
+          <Route path="/daily-challenge" component={DailyChallenge} />
           <Route path="/leaderboard" component={Leaderboard} />
           <Route path="/stats" component={Stats} />
           <Route path="/badges/:token" component={BadgeSharePage} />

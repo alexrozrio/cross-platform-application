@@ -1,0 +1,101 @@
+import { Router, type IRouter } from "express";
+import { eq, and, asc } from "drizzle-orm";
+import { db, puzzlesTable, gamesTable, profilesTable, dailyChallengesTable } from "@workspace/db";
+import { generatePuzzle } from "../lib/sudoku";
+
+const router: IRouter = Router();
+
+function todayDateString(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+async function getOrCreateTodaysChallenge() {
+  const today = todayDateString();
+
+  const [existing] = await db
+    .select()
+    .from(dailyChallengesTable)
+    .where(eq(dailyChallengesTable.date, today));
+
+  if (existing) {
+    const [puzzle] = await db.select().from(puzzlesTable).where(eq(puzzlesTable.id, existing.puzzleId));
+    return { challenge: existing, puzzle };
+  }
+
+  const { grid, solution } = generatePuzzle("medium", 9);
+  const [puzzle] = await db
+    .insert(puzzlesTable)
+    .values({ difficulty: "medium", gridSize: 9, grid, solution })
+    .returning();
+
+  const [challenge] = await db
+    .insert(dailyChallengesTable)
+    .values({ date: today, puzzleId: puzzle.id })
+    .returning();
+
+  return { challenge, puzzle };
+}
+
+router.get("/daily-challenge", async (req, res): Promise<void> => {
+  try {
+    const { challenge, puzzle } = await getOrCreateTodaysChallenge();
+    res.json({
+      puzzleId: puzzle.id,
+      date: challenge.date,
+      difficulty: puzzle.difficulty,
+      gridSize: puzzle.gridSize,
+      grid: puzzle.grid,
+      solution: puzzle.solution,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to get daily challenge" });
+  }
+});
+
+router.get("/daily-challenge/leaderboard", async (req, res): Promise<void> => {
+  try {
+    const { puzzle } = await getOrCreateTodaysChallenge();
+    const today = todayDateString();
+
+    const entries = await db
+      .select({
+        profileId: gamesTable.profileId,
+        elapsedSeconds: gamesTable.elapsedSeconds,
+        mistakeCount: gamesTable.mistakeCount,
+        completedAt: gamesTable.completedAt,
+        username: profilesTable.username,
+        avatar: profilesTable.avatar,
+      })
+      .from(gamesTable)
+      .innerJoin(profilesTable, eq(gamesTable.profileId, profilesTable.id))
+      .where(
+        and(
+          eq(gamesTable.puzzleId, puzzle.id),
+          eq(gamesTable.status, "completed"),
+        ),
+      )
+      .orderBy(asc(gamesTable.elapsedSeconds))
+      .limit(20);
+
+    const filtered = entries.filter((e) => {
+      if (!e.completedAt) return false;
+      return e.completedAt.toISOString().slice(0, 10) === today;
+    });
+
+    res.json(
+      filtered.map((e, i) => ({
+        rank: i + 1,
+        profileId: e.profileId!,
+        username: e.username,
+        avatar: e.avatar ?? null,
+        elapsedSeconds: e.elapsedSeconds,
+        mistakeCount: e.mistakeCount,
+        completedAt: e.completedAt!.toISOString(),
+      })),
+    );
+  } catch (err) {
+    res.status(500).json({ error: "Failed to get leaderboard" });
+  }
+});
+
+export default router;
