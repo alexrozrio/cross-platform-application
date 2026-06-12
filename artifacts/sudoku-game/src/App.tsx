@@ -3,7 +3,7 @@ import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wo
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ClerkProvider, SignIn, SignUp, useClerk, Show } from "@clerk/react";
+import { ClerkProvider, SignIn, SignUp, useClerk } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
 import { AuthProvider } from "@/hooks/use-auth";
@@ -152,11 +152,7 @@ function Router() {
           <Route path="/themes" component={Themes} />
           <Route path="/profile" component={Profile} />
           <Route path="/game/:id">
-            {(params) => (
-              <Show when="signed-in" fallback={<Redirect to="/sign-in" />}>
-                <Game id={params.id} />
-              </Show>
-            )}
+            {(params) => <Game id={params.id} />}
           </Route>
           <Route path="/daily-challenge" component={DailyChallenge} />
           <Route path="/leaderboard" component={Leaderboard} />
