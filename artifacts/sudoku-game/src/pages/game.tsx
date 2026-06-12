@@ -5,7 +5,9 @@ import {
   useSaveGame,
   useCompleteGame,
   useGetProfile,
+  customFetch,
 } from "@workspace/api-client-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useGameTimer } from "@/hooks/use-game-logic";
 import { useImageTheme } from "@/hooks/use-image-theme";
@@ -22,6 +24,7 @@ import {
   Hash,
   Type,
   Image,
+  Flame,
 } from "lucide-react";
 import {
   Select,
@@ -31,6 +34,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+
+interface DailyChallengeInfo { puzzleId: number; date: string; }
+interface StreakData { currentStreak: number; longestStreak: number; completedToday: boolean; }
+
+function milestoneMessage(streak: number): string | null {
+  if (streak === 3)   return "3-day streak! You're on a roll 🔥";
+  if (streak === 7)   return "One week streak! Incredible consistency 🏆";
+  if (streak === 14)  return "Two weeks straight! You're unstoppable 💪";
+  if (streak === 30)  return "30-day streak! A whole month — legendary! 👑";
+  if (streak === 50)  return "50 days! You're a Sudoku machine 🤖";
+  if (streak === 100) return "100-day streak! Hall of fame material 🌟";
+  if (streak > 100 && streak % 50 === 0) return `${streak} days! Absolute legend 🌟`;
+  return null;
+}
 
 // ─── Alphabet mode helpers ────────────────────────────────────────────────────
 
@@ -167,6 +184,13 @@ export default function Game({ id }: { id: string }) {
 
   const saveGame = useSaveGame();
   const completeGame = useCompleteGame();
+  const queryClient = useQueryClient();
+
+  const { data: dailyChallenge } = useQuery<DailyChallengeInfo>({
+    queryKey: ["daily-challenge"],
+    queryFn: () => customFetch<DailyChallengeInfo>("/api/daily-challenge"),
+    staleTime: 5 * 60 * 1000,
+  });
 
   const gridSize = game?.puzzle?.gridSize ?? 9;
   const totalCells = gridSize * gridSize;
@@ -237,7 +261,7 @@ export default function Game({ id }: { id: string }) {
             },
           },
           {
-            onSuccess: (data) => {
+            onSuccess: async (data) => {
               const pts = data.points ?? null;
               setPointsEarned(pts);
               toast.success("Puzzle Solved!", {
@@ -245,12 +269,48 @@ export default function Game({ id }: { id: string }) {
                   ? `+${pts.toLocaleString()} pts • ${formattedTime}`
                   : `Time: ${formattedTime} • Mistakes: ${mistakes}`,
               });
+
+              const isDailyChallenge =
+                profileId &&
+                dailyChallenge &&
+                game?.puzzle?.id === dailyChallenge.puzzleId;
+
+              if (isDailyChallenge) {
+                try {
+                  const streak = await customFetch<StreakData>(
+                    `/api/daily-challenge/streak/${profileId}`,
+                  );
+                  queryClient.setQueryData(
+                    ["daily-challenge-streak", profileId],
+                    streak,
+                  );
+                  const milestone = milestoneMessage(streak.currentStreak);
+                  setTimeout(() => {
+                    if (milestone) {
+                      toast(`🔥 ${streak.currentStreak}-day streak!`, {
+                        description: milestone,
+                        duration: 6000,
+                        icon: <Flame className="w-4 h-4 text-orange-500" />,
+                      });
+                    } else {
+                      toast(`🔥 ${streak.currentStreak}-day streak!`, {
+                        description:
+                          streak.currentStreak === 1
+                            ? "Daily challenge complete! Come back tomorrow to keep it going."
+                            : `Keep it up — come back tomorrow for day ${streak.currentStreak + 1}!`,
+                        duration: 5000,
+                      });
+                    }
+                  }, 1200);
+                } catch {
+                }
+              }
             },
           },
         );
       }
     },
-    [gameId, seconds, mistakes, hints, formattedTime, completeGame],
+    [gameId, seconds, mistakes, hints, formattedTime, completeGame, profileId, dailyChallenge, game, queryClient],
   );
 
   const handleNumberInput = useCallback(
