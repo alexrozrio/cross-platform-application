@@ -96,11 +96,12 @@ export default function DailyChallenge() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: leaderboard = [], isLoading: lbLoading } = useQuery<LeaderboardEntry[]>({
+  const { data: rawLeaderboard, isLoading: lbLoading } = useQuery<LeaderboardEntry[]>({
     queryKey: ['daily-challenge-leaderboard'],
     queryFn: () => customFetch<LeaderboardEntry[]>('/api/daily-challenge/leaderboard'),
     refetchInterval: 30_000,
   });
+  const leaderboard: LeaderboardEntry[] = Array.isArray(rawLeaderboard) ? rawLeaderboard : [];
 
   const { data: streak, isLoading: streakLoading } = useQuery<StreakData>({
     queryKey: ['daily-challenge-streak', profileId],
@@ -112,8 +113,7 @@ export default function DailyChallenge() {
   const completedToday = streak?.completedToday ?? leaderboard.some((e) => e.profileId === profileId);
 
   const handlePlay = async () => {
-    if (!profileId) { setLocation('/sign-in'); return; }
-    if (!challenge) return;
+    if (!profileId || !challenge) return;
     const game = await createGame.mutateAsync({
       data: { profileId, puzzleId: challenge.puzzleId, difficulty: challenge.difficulty as any },
     });
