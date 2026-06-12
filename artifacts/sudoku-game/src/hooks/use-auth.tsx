@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useUser } from '@clerk/react';
 
-// Generates (or re-uses) a persistent anonymous device ID
 function getOrCreateDeviceId(): string {
   const KEY = 'sudoku-device-id';
   let id = localStorage.getItem(KEY);
@@ -15,11 +14,13 @@ function getOrCreateDeviceId(): string {
 
 interface AuthContextType {
   profileId: number | null;
+  isReady: boolean;
   setProfileId: (id: number | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
   profileId: null,
+  isReady: false,
   setProfileId: () => {},
 });
 
@@ -31,7 +32,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return stored ? parseInt(stored, 10) : null;
   });
 
-  // Track previous clerkUserId to avoid redundant syncs
+  // isReady = true once the first sync attempt has completed (success or failure)
+  const [isReady, setIsReady] = useState<boolean>(() => {
+    // If we already have a cached profileId, consider ready immediately
+    return !!localStorage.getItem('sudoku-profile-id');
+  });
+
   const prevClerkUserIdRef = useRef<string | null | undefined>(undefined);
 
   const setProfileId = (id: number | null) => {
@@ -48,8 +54,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const currentClerkUserId = user?.id ?? null;
 
-    // Skip sync if nothing changed
-    if (prevClerkUserIdRef.current === currentClerkUserId) return;
+    if (prevClerkUserIdRef.current === currentClerkUserId) {
+      // Nothing changed — mark ready if not already
+      setIsReady(true);
+      return;
+    }
     prevClerkUserIdRef.current = currentClerkUserId;
 
     const syncProfile = async () => {
@@ -57,7 +66,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         let body: Record<string, string>;
 
         if (user) {
-          // Signed in — sync by Clerk user ID
           const email = user.primaryEmailAddress?.emailAddress ?? '';
           const nameFromEmail = email.split('@')[0];
           const displayName = user.fullName || user.firstName || nameFromEmail || 'Player';
@@ -67,7 +75,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             ...(user.imageUrl ? { avatar: user.imageUrl } : {}),
           };
         } else {
-          // Anonymous — sync by stable device ID
           body = { deviceId: getOrCreateDeviceId() };
         }
 
@@ -85,6 +92,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch {
         // Network error — keep whatever profileId is already cached
+      } finally {
+        setIsReady(true);
       }
     };
 
@@ -92,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [isLoaded, user]);
 
   return (
-    <AuthContext.Provider value={{ profileId, setProfileId }}>
+    <AuthContext.Provider value={{ profileId, isReady, setProfileId }}>
       {children}
     </AuthContext.Provider>
   );

@@ -42,7 +42,7 @@ const GRID_OPTIONS: { size: GridSize; label: string; sublabel: string; difficult
 ];
 
 export default function SudokuHome() {
-  const { profileId } = useAuth();
+  const { profileId, isReady } = useAuth();
   const [, setLocation] = useLocation();
   const search = useSearch();
   const sizeParam = new URLSearchParams(search).get('size');
@@ -60,10 +60,10 @@ export default function SudokuHome() {
     { query: { enabled: false } }
   );
   const createGame = useCreateGame();
-  const isLoading = generatePuzzle.isFetching || createGame.isPending;
+  const isLoading = !isReady || generatePuzzle.isFetching || createGame.isPending;
 
   const handleStart = async (mode: 'number' | 'alpha' | 'image') => {
-    if (!profileId) { setLocation('/profile'); return; }
+    if (!profileId) return; // still syncing — button is disabled anyway
     try {
       const res = await generatePuzzle.refetch();
       const puzzle = res.data;
