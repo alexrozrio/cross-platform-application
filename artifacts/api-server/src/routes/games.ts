@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, desc, and } from "drizzle-orm";
-import { db, gamesTable, puzzlesTable, profilesTable } from "@workspace/db";
+import { db, gamesTable, puzzlesTable, profilesTable, dailyChallengesTable } from "@workspace/db";
 import {
   CreateGameBody,
   GetGameParams,
@@ -14,8 +14,44 @@ import {
 } from "@workspace/api-zod";
 import { calcPoints, calcGems } from "../utils/points";
 import { awardPreviousPeriodBadges } from "../utils/awards";
-import { profilesTable } from "@workspace/db";
 import { sql } from "drizzle-orm";
+
+function todayDateString(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function yesterdayDateString(): string {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return d.toISOString().slice(0, 10);
+}
+
+async function updateStreakIfDailyChallenge(profileId: number, puzzleId: number): Promise<void> {
+  const today = todayDateString();
+
+  const [challenge] = await db
+    .select()
+    .from(dailyChallengesTable)
+    .where(and(eq(dailyChallengesTable.date, today), eq(dailyChallengesTable.puzzleId, puzzleId)));
+
+  if (!challenge) return;
+
+  const [profile] = await db.select().from(profilesTable).where(eq(profilesTable.id, profileId));
+  if (!profile) return;
+
+  const last = profile.lastChallengeDate;
+
+  if (last === today) return;
+
+  const yesterday = yesterdayDateString();
+  const newStreak = last === yesterday ? profile.currentStreak + 1 : 1;
+  const newLongest = Math.max(profile.longestStreak, newStreak);
+
+  await db
+    .update(profilesTable)
+    .set({ currentStreak: newStreak, longestStreak: newLongest, lastChallengeDate: today })
+    .where(eq(profilesTable.id, profileId));
+}
 
 const router: IRouter = Router();
 
@@ -153,6 +189,8 @@ router.post("/games/:id/complete", async (req, res): Promise<void> => {
       .update(profilesTable)
       .set({ gems: sql`gems + ${gemsEarned}` })
       .where(eq(profilesTable.id, existing.profileId));
+
+    updateStreakIfDailyChallenge(existing.profileId, existing.puzzleId).catch(() => {});
   }
 
   res.json(CompleteGameResponse.parse(formatGame(game, puzzle)));

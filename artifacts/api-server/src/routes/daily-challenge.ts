@@ -98,4 +98,22 @@ router.get("/daily-challenge/leaderboard", async (req, res): Promise<void> => {
   }
 });
 
+router.get("/daily-challenge/streak/:profileId", async (req, res): Promise<void> => {
+  const profileId = Number(req.params.profileId);
+  if (isNaN(profileId)) { res.status(400).json({ error: "Invalid profileId" }); return; }
+
+  const [profile] = await db.select().from(profilesTable).where(eq(profilesTable.id, profileId));
+  if (!profile) { res.status(404).json({ error: "Profile not found" }); return; }
+
+  const today = todayDateString();
+  const completedToday = profile.lastChallengeDate === today;
+
+  res.json({
+    currentStreak: profile.currentStreak,
+    longestStreak: profile.longestStreak,
+    lastChallengeDate: profile.lastChallengeDate ?? null,
+    completedToday,
+  });
+});
+
 export default router;

@@ -46,8 +46,19 @@ import {
   Share2,
   Trophy,
   Gem,
+  Flame,
+  Star,
 } from "lucide-react";
 import { BADGE_META, formatPeriodLabel } from "@/lib/badge-utils";
+import { useQuery } from "@tanstack/react-query";
+import { customFetch } from "@workspace/api-client-react";
+
+interface StreakData {
+  currentStreak: number;
+  longestStreak: number;
+  lastChallengeDate: string | null;
+  completedToday: boolean;
+}
 
 const profileSchema = z.object({
   username: z.string().min(2, "At least 2 characters").max(30),
@@ -98,6 +109,12 @@ export default function Profile() {
 
   const { data: badges } = useGetProfileBadges(profileId as number, {
     query: { enabled: !!profileId },
+  });
+
+  const { data: streak } = useQuery<StreakData>({
+    queryKey: ["daily-challenge-streak", profileId],
+    queryFn: () => customFetch<StreakData>(`/api/daily-challenge/streak/${profileId}`),
+    enabled: !!profileId,
   });
 
   const handleShareBadge = async (shareToken: string) => {
@@ -235,6 +252,40 @@ export default function Profile() {
               <p className="text-xs text-cyan-500 dark:text-cyan-500 mt-0.5">
                 💎 gems
               </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Daily Challenge Streak */}
+      {profileId && streak !== undefined && (
+        <Card
+          className="cursor-pointer hover:border-orange-300 transition-colors border-orange-200/70 bg-gradient-to-br from-orange-50 to-amber-50"
+          onClick={() => setLocation("/daily-challenge")}
+        >
+          <CardContent className="pt-5 pb-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Flame className="w-4 h-4 text-orange-500" />
+                <p className="text-sm font-semibold text-orange-800">Daily Streak</p>
+              </div>
+              <span className="text-xs text-orange-500 underline underline-offset-2">Play today →</span>
+            </div>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div>
+                <p className="text-2xl font-black text-orange-600">{streak.currentStreak}</p>
+                <p className="text-xs text-muted-foreground">current</p>
+              </div>
+              <div>
+                <p className="text-2xl font-black text-foreground">{streak.longestStreak}</p>
+                <p className="text-xs text-muted-foreground">best</p>
+              </div>
+              <div>
+                <div className={`inline-block text-xs font-bold px-2 py-0.5 rounded-full ${streak.completedToday ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                  {streak.completedToday ? "✓ Done" : "Pending"}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">today</p>
+              </div>
             </div>
           </CardContent>
         </Card>

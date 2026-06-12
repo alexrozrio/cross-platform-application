@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useLocation } from 'wouter';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
-import { useCreateGame } from '@workspace/api-client-react';
-import { customFetch } from '@workspace/api-client-react';
+import { useCreateGame, customFetch } from '@workspace/api-client-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trophy, Medal, Award, CalendarDays, Play, Clock, Flame } from 'lucide-react';
+import { Trophy, Medal, Award, CalendarDays, Play, Clock, Flame, Zap, Star } from 'lucide-react';
 
 interface DailyChallenge {
   puzzleId: number;
@@ -28,6 +27,13 @@ interface LeaderboardEntry {
   completedAt: string;
 }
 
+interface StreakData {
+  currentStreak: number;
+  longestStreak: number;
+  lastChallengeDate: string | null;
+  completedToday: boolean;
+}
+
 function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
@@ -44,6 +50,39 @@ function RankBadge({ rank }: { rank: number }) {
   if (rank === 2) return <div className="w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 text-slate-600 ring-1 ring-slate-300 shrink-0"><Medal className="w-4 h-4" /></div>;
   if (rank === 3) return <div className="w-9 h-9 rounded-full flex items-center justify-center bg-orange-100 text-orange-700 ring-1 ring-orange-300 shrink-0"><Award className="w-4 h-4" /></div>;
   return <div className="w-9 h-9 rounded-full flex items-center justify-center bg-secondary text-secondary-foreground font-bold text-sm shrink-0">{rank}</div>;
+}
+
+function StreakDisplay({ streak }: { streak: StreakData }) {
+  const flames = Math.min(streak.currentStreak, 7);
+  return (
+    <div className="flex items-stretch gap-3">
+      <div className="flex-1 rounded-xl border bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200/70 p-4 text-center">
+        <div className="flex items-center justify-center gap-1 mb-1">
+          {Array.from({ length: Math.max(flames, 1) }, (_, i) => (
+            <Flame
+              key={i}
+              className={`w-4 h-4 ${i < streak.currentStreak ? 'text-orange-500' : 'text-muted-foreground/20'}`}
+            />
+          ))}
+        </div>
+        <div className="text-2xl font-black text-orange-600">{streak.currentStreak}</div>
+        <div className="text-xs text-muted-foreground font-medium">day streak</div>
+      </div>
+      <div className="flex-1 rounded-xl border bg-card p-4 text-center">
+        <div className="flex items-center justify-center mb-1">
+          <Star className="w-4 h-4 text-yellow-500 fill-yellow-400" />
+        </div>
+        <div className="text-2xl font-black text-foreground">{streak.longestStreak}</div>
+        <div className="text-xs text-muted-foreground font-medium">best streak</div>
+      </div>
+      <div className="flex-1 rounded-xl border bg-card p-4 text-center">
+        <div className={`text-xs font-bold px-2 py-0.5 rounded-full inline-block mb-1 ${streak.completedToday ? 'bg-green-100 text-green-700' : 'bg-muted text-muted-foreground'}`}>
+          {streak.completedToday ? '✓ Done' : 'Pending'}
+        </div>
+        <div className="text-xs text-muted-foreground font-medium mt-1">today</div>
+      </div>
+    </div>
+  );
 }
 
 export default function DailyChallenge() {
@@ -63,9 +102,14 @@ export default function DailyChallenge() {
     refetchInterval: 30_000,
   });
 
-  const hasCompleted = profileId
-    ? leaderboard.some((e) => e.profileId === profileId)
-    : false;
+  const { data: streak, isLoading: streakLoading } = useQuery<StreakData>({
+    queryKey: ['daily-challenge-streak', profileId],
+    queryFn: () => customFetch<StreakData>(`/api/daily-challenge/streak/${profileId}`),
+    enabled: !!profileId,
+    refetchInterval: 30_000,
+  });
+
+  const completedToday = streak?.completedToday ?? leaderboard.some((e) => e.profileId === profileId);
 
   const handlePlay = async () => {
     if (!profileId) { setLocation('/sign-in'); return; }
@@ -92,6 +136,22 @@ export default function DailyChallenge() {
         </p>
       </div>
 
+      {/* Streak stats */}
+      {profileId && (
+        <div>
+          {streakLoading ? (
+            <div className="flex gap-3">
+              <Skeleton className="flex-1 h-24 rounded-xl" />
+              <Skeleton className="flex-1 h-24 rounded-xl" />
+              <Skeleton className="flex-1 h-24 rounded-xl" />
+            </div>
+          ) : streak ? (
+            <StreakDisplay streak={streak} />
+          ) : null}
+        </div>
+      )}
+
+      {/* Play card */}
       <Card className="shadow-md border-orange-200/60 bg-gradient-to-br from-orange-50 to-amber-50">
         <CardContent className="pt-6 pb-5 space-y-4">
           {challengeLoading ? (
@@ -109,7 +169,7 @@ export default function DailyChallenge() {
                   </span>
                   <span className="text-sm text-muted-foreground">9×9 Classic</span>
                 </div>
-                {hasCompleted && (
+                {completedToday && (
                   <div className="text-xs text-green-600 font-medium flex items-center gap-1 mt-1">
                     <Trophy className="w-3 h-3" /> You've completed today's challenge!
                   </div>
@@ -121,18 +181,19 @@ export default function DailyChallenge() {
                 className="gap-2 bg-orange-500 hover:bg-orange-600 text-white"
               >
                 <Play className="w-4 h-4" />
-                {hasCompleted ? 'Play Again' : 'Play'}
+                {completedToday ? 'Play Again' : 'Play'}
               </Button>
             </div>
           )}
 
           <div className="text-xs text-muted-foreground border-t border-orange-100 pt-3 flex items-center gap-1.5">
             <Clock className="w-3 h-3" />
-            Resets at midnight · Complete without hints for best score
+            Resets at midnight · Complete daily to build your streak
           </div>
         </CardContent>
       </Card>
 
+      {/* Leaderboard */}
       <div className="space-y-3">
         <h2 className="font-semibold text-base flex items-center gap-2">
           <Trophy className="w-4 h-4 text-yellow-500" />
