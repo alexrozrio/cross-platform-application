@@ -1,0 +1,239 @@
+import React, { useState } from 'react';
+import { useLocation, useSearch } from 'wouter';
+import { useAuth } from '@/hooks/use-auth';
+import { useImageTheme } from '@/hooks/use-image-theme';
+import { useGeneratePuzzle, useCreateGame, useGetProfile } from '@workspace/api-client-react';
+import { ThemeIcon } from '@/components/theme-icons';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
+import { Play, BarChart2, Trophy, ArrowLeft, Hash, Type, Palette } from 'lucide-react';
+import { IMAGE_THEMES } from '@/lib/themes';
+
+type Difficulty = 'easy' | 'medium' | 'hard' | 'expert';
+type GridSize = 3 | 4 | 9 | 16;
+
+const ALPHA_COLORS = ['#E53935','#1E88E5','#43A047','#FB8C00','#8E24AA','#00897B','#D81B60','#F4511E','#3949AB'];
+
+function AlphaPreview({ count }: { count: number }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {Array.from({ length: Math.min(count, 4) }, (_, i) => (
+        <span
+          key={i}
+          className="font-black text-base leading-none"
+          style={{ color: ALPHA_COLORS[i % ALPHA_COLORS.length] }}
+        >
+          {String.fromCharCode(65 + i)}
+        </span>
+      ))}
+      {count > 4 && <span className="text-muted-foreground text-xs">…</span>}
+    </div>
+  );
+}
+
+const GRID_OPTIONS: { size: GridSize; label: string; sublabel: string; difficulties: Difficulty[] }[] = [
+  { size: 3, label: '3×3', sublabel: 'Baby', difficulties: ['easy', 'medium', 'hard', 'expert'] },
+  { size: 4, label: '4×4', sublabel: 'Mini', difficulties: ['easy', 'medium', 'hard', 'expert'] },
+  { size: 9, label: '9×9', sublabel: 'Classic', difficulties: ['easy', 'medium', 'hard', 'expert'] },
+  { size: 16, label: '16×16', sublabel: 'Pro', difficulties: ['easy', 'medium', 'hard', 'expert'] },
+];
+
+export default function SudokuHome() {
+  const { profileId } = useAuth();
+  const [, setLocation] = useLocation();
+  const search = useSearch();
+  const sizeParam = new URLSearchParams(search).get('size');
+  const initialSize = ([3, 4, 9, 16].includes(Number(sizeParam)) ? Number(sizeParam) : 9) as GridSize;
+  const [difficulty, setDifficulty] = useState<Difficulty>('easy');
+  const [gridSize, setGridSize] = useState<GridSize>(initialSize);
+  const { themeId } = useImageTheme();
+
+  const { data: profile } = useGetProfile(profileId as number, {
+    query: { enabled: !!profileId },
+  });
+
+  const generatePuzzle = useGeneratePuzzle(
+    { difficulty, gridSize: gridSize as any },
+    { query: { enabled: false } }
+  );
+  const createGame = useCreateGame();
+  const isLoading = generatePuzzle.isFetching || createGame.isPending;
+
+  const handleStart = async (mode: 'number' | 'alpha' | 'image') => {
+    if (!profileId) { setLocation('/profile'); return; }
+    try {
+      const res = await generatePuzzle.refetch();
+      const puzzle = res.data;
+      if (!puzzle) throw new Error('Failed to generate puzzle');
+      const game = await createGame.mutateAsync({
+        data: { profileId, puzzleId: puzzle.id, difficulty },
+      });
+      const modeQuery = mode !== 'number' ? `?mode=${mode}` : '';
+      setLocation(`/game/${game.id}${modeQuery}`);
+    } catch (err) {
+      console.error('Error starting game:', err);
+    }
+  };
+
+  const activeTheme = IMAGE_THEMES.find(t => t.id === themeId) ?? IMAGE_THEMES[0];
+
+  return (
+    <div className="max-w-lg mx-auto w-full space-y-8 animate-in fade-in duration-500">
+      <button
+        onClick={() => setLocation('/')}
+        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" /> Game Hub
+      </button>
+
+      <div>
+        <h1 className="text-3xl font-serif font-bold tracking-tight">Sudoku</h1>
+        {profile && (
+          <p className="text-muted-foreground mt-0.5">Welcome back, {profile.username}</p>
+        )}
+      </div>
+
+      <Card className="shadow-md border-primary/15">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2">
+            <Play className="w-5 h-5 text-primary" /> New Game
+          </CardTitle>
+          <CardDescription>Configure your puzzle, then pick a play style</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+
+          {/* Grid size */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Grid Size
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {GRID_OPTIONS.map(opt => (
+                <Button
+                  key={opt.size}
+                  variant={gridSize === opt.size ? 'default' : 'outline'}
+                  className="h-14 flex-col gap-0.5"
+                  onClick={() => setGridSize(opt.size)}
+                >
+                  <span className="font-bold text-base leading-none">{opt.label}</span>
+                  <span className="text-[11px] opacity-70 leading-none">{opt.sublabel}</span>
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* Difficulty dropdown */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Difficulty
+            </label>
+            <Select value={difficulty} onValueChange={v => setDifficulty(v as Difficulty)}>
+              <SelectTrigger className="h-11">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="easy">Easy</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="hard">Hard</SelectItem>
+                <SelectItem value="expert">Expert</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Play mode buttons */}
+          <div className="space-y-2 pt-1">
+            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Play Style
+            </label>
+
+            {/* Numbers */}
+            <Button
+              size="lg"
+              className="w-full h-13 text-base font-medium flex items-center justify-start gap-3"
+              onClick={() => handleStart('number')}
+              disabled={isLoading}
+            >
+              <Hash className="w-5 h-5 shrink-0" />
+              <div className="text-left flex-1 min-w-0">
+                <div className="font-semibold">Play with Numbers</div>
+                <div className="text-xs opacity-80">Classic 1, 2, 3 … style</div>
+              </div>
+            </Button>
+
+            {/* Alphabets */}
+            <Button
+              size="lg"
+              variant="secondary"
+              className="w-full h-13 text-base font-medium flex items-center gap-3"
+              onClick={() => handleStart('alpha')}
+              disabled={isLoading}
+            >
+              <Type className="w-5 h-5 shrink-0 text-primary" />
+              <div className="text-left flex-1 min-w-0">
+                <div className="font-semibold">Play with Letters</div>
+                <div className="text-xs text-muted-foreground flex items-center gap-1">
+                  Colored A, B, C … &nbsp;<AlphaPreview count={gridSize} />
+                </div>
+              </div>
+            </Button>
+
+            {/* Image theme */}
+            <Button
+              size="lg"
+              variant="outline"
+              className="w-full h-13 text-base font-medium flex items-center gap-3"
+              onClick={() => handleStart('image')}
+              disabled={isLoading}
+            >
+              <ThemeIcon themeId={themeId} value={1} size={24} />
+              <div className="text-left flex-1 min-w-0">
+                <div className="font-semibold">Play — {activeTheme.name}</div>
+                <div className="text-xs text-muted-foreground flex items-center gap-0.5">
+                  {Array.from({ length: Math.min(gridSize, 5) }, (_, i) => (
+                    <ThemeIcon key={i} themeId={themeId} value={i + 1} size={14} />
+                  ))}
+                  {gridSize > 5 && <span className="opacity-50">…</span>}
+                </div>
+              </div>
+            </Button>
+
+            <button
+              onClick={() => setLocation('/themes')}
+              className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors pt-0.5 underline underline-offset-2"
+            >
+              <Palette className="w-3 h-3 inline mr-1" />
+              Change image theme
+            </button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Quick links */}
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          onClick={() => setLocation('/stats')}
+          className="flex items-center gap-3 rounded-xl border bg-card p-4 hover:bg-muted/50 hover:border-primary/30 transition-all text-left"
+        >
+          <BarChart2 className="w-5 h-5 text-primary shrink-0" />
+          <div>
+            <p className="font-semibold text-sm">My Stats</p>
+            <p className="text-xs text-muted-foreground">Wins & best times</p>
+          </div>
+        </button>
+        <button
+          onClick={() => setLocation('/leaderboard')}
+          className="flex items-center gap-3 rounded-xl border bg-card p-4 hover:bg-muted/50 hover:border-primary/30 transition-all text-left"
+        >
+          <Trophy className="w-5 h-5 text-primary shrink-0" />
+          <div>
+            <p className="font-semibold text-sm">Leaderboard</p>
+            <p className="text-xs text-muted-foreground">Top players</p>
+          </div>
+        </button>
+      </div>
+    </div>
+  );
+}

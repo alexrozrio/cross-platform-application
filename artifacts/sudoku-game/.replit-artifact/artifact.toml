@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Sudoku Game"
+version = "1.0.0"
+id = "artifacts/sudoku-game"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19093
+
+[services.development]
+run = "pnpm --filter @workspace/sudoku-game run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/sudoku-game", "run", "build" ]
+publicDir = "artifacts/sudoku-game/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19093"
+BASE_PATH = "/"

@@ -1,0 +1,44 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "1x9VDY5e1XiAO2HnF59rF"
+uri = "file://artifacts/sudoku-game/public/themes/adventure/1.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "bH3eN_S5EFuzLxIMluiGR"
+uri = "file://artifacts/sudoku-game/public/themes/superhero/2.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "krbA4g4pFNU42eRbOG8Xm"
+uri = "file://artifacts/sudoku-game/public/themes/superhero/3.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "5JPrpnrtucPPl84ABGCXQ"
+uri = "file://artifacts/sudoku-game/public/themes/superhero/4.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "D1fXeix3YCfh3ch52ssrT"
+uri = "file://artifacts/sudoku-game/public/themes/superhero/6.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "-68Bq6kH3RgCVZbIKE585"
+uri = "file://artifacts/sudoku-game/public/themes/superhero/7.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "J1yZx25jgjy-FhW0CQwz8"
+uri = "file://artifacts/sudoku-game/public/themes/superhero/9.png"
+type = "image"
+title = "generated_image"

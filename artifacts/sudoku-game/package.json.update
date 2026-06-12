@@ -1,0 +1,7 @@
+{
+  "name": "zustand",
+  "version": "4.5.2",
+  "dependencies": {
+    "zustand": "^4.5.2"
+  }
+}

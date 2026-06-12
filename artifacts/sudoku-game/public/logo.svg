@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <rect width="80" height="80" rx="16" fill="#1e293b"/>
+  <!-- 3x3 sudoku grid icon -->
+  <rect x="14" y="14" width="16" height="16" rx="3" fill="#e2e8f0" opacity="0.9"/>
+  <rect x="32" y="14" width="16" height="16" rx="3" fill="#6366f1"/>
+  <rect x="50" y="14" width="16" height="16" rx="3" fill="#e2e8f0" opacity="0.9"/>
+  <rect x="14" y="32" width="16" height="16" rx="3" fill="#6366f1"/>
+  <rect x="32" y="32" width="16" height="16" rx="3" fill="#e2e8f0" opacity="0.9"/>
+  <rect x="50" y="32" width="16" height="16" rx="3" fill="#6366f1"/>
+  <rect x="14" y="50" width="16" height="16" rx="3" fill="#e2e8f0" opacity="0.9"/>
+  <rect x="32" y="50" width="16" height="16" rx="3" fill="#6366f1"/>
+  <rect x="50" y="50" width="16" height="16" rx="3" fill="#e2e8f0" opacity="0.9"/>
+</svg>

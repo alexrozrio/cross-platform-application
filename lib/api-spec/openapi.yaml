@@ -1,0 +1,673 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Sudoku Game API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: profiles
+    description: User profile operations
+  - name: puzzles
+    description: Puzzle generation and retrieval
+  - name: games
+    description: Game session management
+  - name: leaderboard
+    description: Leaderboard and scores
+  - name: stats
+    description: Player statistics
+  - name: tournaments
+    description: Weekly and monthly tournaments
+  - name: badges
+    description: Achievement badges
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /profiles:
+    post:
+      operationId: createProfile
+      tags: [profiles]
+      summary: Create a user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+
+  /profiles/sync:
+    post:
+      operationId: syncProfile
+      tags: [profiles]
+      summary: Find or create a profile by Clerk user ID or device ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileSync"
+      responses:
+        "200":
+          description: Profile found or created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+
+  /profiles/{id}:
+    get:
+      operationId: getProfile
+      tags: [profiles]
+      summary: Get a user profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateProfile
+      tags: [profiles]
+      summary: Update a user profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+
+  /puzzles/new:
+    get:
+      operationId: generatePuzzle
+      tags: [puzzles]
+      summary: Generate a new Sudoku puzzle
+      parameters:
+        - name: difficulty
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [easy, medium, hard, expert]
+            default: medium
+        - name: gridSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            enum: [3, 4, 9, 16]
+            default: 9
+      responses:
+        "200":
+          description: A new puzzle
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Puzzle"
+
+  /puzzles/{id}:
+    get:
+      operationId: getPuzzle
+      tags: [puzzles]
+      summary: Get a specific puzzle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Puzzle"
+        "404":
+          description: Not found
+
+  /games:
+    post:
+      operationId: createGame
+      tags: [games]
+      summary: Start a new game session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GameInput"
+      responses:
+        "201":
+          description: Game started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Game"
+
+  /games/{id}:
+    get:
+      operationId: getGame
+      tags: [games]
+      summary: Get a game session
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Game"
+        "404":
+          description: Not found
+    patch:
+      operationId: saveGame
+      tags: [games]
+      summary: Save game progress
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GameProgress"
+      responses:
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Game"
+
+  /games/{id}/complete:
+    post:
+      operationId: completeGame
+      tags: [games]
+      summary: Mark a game as completed
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GameCompletion"
+      responses:
+        "200":
+          description: Completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Game"
+
+  /leaderboard:
+    get:
+      operationId: getLeaderboard
+      tags: [leaderboard]
+      summary: Get top scores leaderboard
+      parameters:
+        - name: gridSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            enum: [3, 4, 9, 16]
+            default: 9
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Leaderboard entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LeaderboardEntry"
+
+  /stats/{profileId}:
+    get:
+      operationId: getPlayerStats
+      tags: [stats]
+      summary: Get player statistics
+      parameters:
+        - name: profileId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Player stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerStats"
+
+  /tournaments/leaderboard:
+    get:
+      operationId: getTournamentLeaderboard
+      tags: [tournaments]
+      summary: Get weekly or monthly tournament leaderboard
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [weekly, monthly]
+            default: weekly
+        - name: gridSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            enum: [3, 4, 9, 16]
+        - name: period
+          in: query
+          required: false
+          schema:
+            type: string
+            description: "Period string e.g. 2026-W23 or 2026-06 (defaults to current)"
+      responses:
+        "200":
+          description: Tournament leaderboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TournamentLeaderboard"
+
+  /badges/share/{token}:
+    get:
+      operationId: getBadgeShare
+      tags: [badges]
+      summary: Get public badge info by share token
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Badge share info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadgeShare"
+        "404":
+          description: Not found
+
+  /badges/{profileId}:
+    get:
+      operationId: getProfileBadges
+      tags: [badges]
+      summary: Get badges earned by a profile
+      parameters:
+        - name: profileId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of badges
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Badge"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    Profile:
+      type: object
+      required: [id, username, theme, createdAt]
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        avatar:
+          type: ["string", "null"]
+        theme:
+          type: string
+          enum: [light, dark]
+        highlightErrors:
+          type: boolean
+        showTimer:
+          type: boolean
+        gems:
+          type: integer
+          description: "Accumulated gem balance usable for future in-game features"
+        createdAt:
+          type: string
+
+    ProfileInput:
+      type: object
+      required: [username]
+      properties:
+        username:
+          type: string
+          minLength: 1
+          maxLength: 30
+        avatar:
+          type: string
+        theme:
+          type: string
+          enum: [light, dark]
+        highlightErrors:
+          type: boolean
+        showTimer:
+          type: boolean
+
+    ProfileUpdate:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          maxLength: 30
+        avatar:
+          type: string
+        theme:
+          type: string
+          enum: [light, dark]
+        highlightErrors:
+          type: boolean
+        showTimer:
+          type: boolean
+
+    ProfileSync:
+      type: object
+      properties:
+        clerkUserId:
+          type: string
+        deviceId:
+          type: string
+        username:
+          type: string
+        avatar:
+          type: string
+
+    Puzzle:
+      type: object
+      required: [id, difficulty, gridSize, grid, solution]
+      properties:
+        id:
+          type: integer
+        difficulty:
+          type: string
+          enum: [easy, medium, hard, expert]
+        gridSize:
+          type: integer
+          enum: [3, 4, 9, 16]
+        grid:
+          type: string
+          description: "gridSize*gridSize character string, 0 = empty; 16x16 uses hex chars (a-g for 10-16)"
+        solution:
+          type: string
+        createdAt:
+          type: string
+
+    Game:
+      type: object
+      required: [id, puzzleId, status, currentGrid, elapsedSeconds, mistakeCount, createdAt]
+      properties:
+        id:
+          type: integer
+        profileId:
+          type: ["integer", "null"]
+        puzzleId:
+          type: integer
+        puzzle:
+          $ref: "#/components/schemas/Puzzle"
+        status:
+          type: string
+          enum: [active, completed, abandoned]
+        currentGrid:
+          type: string
+        elapsedSeconds:
+          type: integer
+        mistakeCount:
+          type: integer
+        hintsUsed:
+          type: integer
+        points:
+          type: ["integer", "null"]
+        completedAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    GameInput:
+      type: object
+      required: [puzzleId]
+      properties:
+        profileId:
+          type: integer
+        puzzleId:
+          type: integer
+        difficulty:
+          type: string
+          enum: [easy, medium, hard, expert]
+
+    GameProgress:
+      type: object
+      properties:
+        currentGrid:
+          type: string
+        elapsedSeconds:
+          type: integer
+        mistakeCount:
+          type: integer
+        hintsUsed:
+          type: integer
+
+    GameCompletion:
+      type: object
+      required: [elapsedSeconds]
+      properties:
+        elapsedSeconds:
+          type: integer
+        mistakeCount:
+          type: integer
+        hintsUsed:
+          type: integer
+
+    LeaderboardEntry:
+      type: object
+      required: [rank, profileId, username, elapsedSeconds, completedAt]
+      properties:
+        rank:
+          type: integer
+        profileId:
+          type: integer
+        username:
+          type: string
+        avatar:
+          type: ["string", "null"]
+        difficulty:
+          type: string
+          enum: [easy, medium, hard, expert]
+        gridSize:
+          type: integer
+          enum: [3, 4, 9, 16]
+        elapsedSeconds:
+          type: integer
+        mistakeCount:
+          type: integer
+        completedAt:
+          type: string
+
+    PlayerStats:
+      type: object
+      required: [profileId, totalGames, totalWins, bestTimes]
+      properties:
+        profileId:
+          type: integer
+        totalGames:
+          type: integer
+        totalWins:
+          type: integer
+        winRate:
+          type: number
+        bestTimes:
+          type: object
+          properties:
+            easy:
+              type: ["integer", "null"]
+            medium:
+              type: ["integer", "null"]
+            hard:
+              type: ["integer", "null"]
+            expert:
+              type: ["integer", "null"]
+        averageTime:
+          type: ["integer", "null"]
+        totalMistakes:
+          type: integer
+        currentStreak:
+          type: integer
+
+    TournamentEntry:
+      type: object
+      required: [rank, profileId, username, totalPoints, gamesPlayed]
+      properties:
+        rank:
+          type: integer
+        profileId:
+          type: integer
+        username:
+          type: string
+        avatar:
+          type: ["string", "null"]
+        totalPoints:
+          type: integer
+        gamesPlayed:
+          type: integer
+
+    TournamentLeaderboard:
+      type: object
+      required: [period, periodLabel, type, entries]
+      properties:
+        period:
+          type: string
+        periodLabel:
+          type: string
+        type:
+          type: string
+          enum: [weekly, monthly]
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/TournamentEntry"
+
+    Badge:
+      type: object
+      required: [id, profileId, badgeType, tournamentPeriod, totalPoints, shareToken, awardedAt]
+      properties:
+        id:
+          type: integer
+        profileId:
+          type: integer
+        badgeType:
+          type: string
+        tournamentPeriod:
+          type: string
+        totalPoints:
+          type: integer
+        shareToken:
+          type: string
+        awardedAt:
+          type: string
+
+    BadgeShare:
+      type: object
+      required: [id, badgeType, tournamentPeriod, totalPoints, shareToken, awardedAt, username]
+      properties:
+        id:
+          type: integer
+        badgeType:
+          type: string
+        tournamentPeriod:
+          type: string
+        totalPoints:
+          type: integer
+        shareToken:
+          type: string
+        awardedAt:
+          type: string
+        username:
+          type: string
+        avatar:
+          type: ["string", "null"]
