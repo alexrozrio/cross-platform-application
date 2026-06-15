@@ -11,7 +11,7 @@ import {
 
 const router: IRouter = Router();
 
-const VALID_GRID_SIZES = new Set([3, 4, 9]);
+const VALID_GRID_SIZES = new Set([3, 4, 9, 16]);
 const VALID_TYPES = new Set(["weekly", "monthly"]);
 
 router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {

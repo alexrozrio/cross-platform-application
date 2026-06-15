@@ -50,7 +50,7 @@ router.get("/leaderboard", async (req, res): Promise<void> => {
     username: g.username,
     avatar: g.avatar ?? null,
     difficulty: g.difficulty as "easy" | "medium" | "hard" | "expert",
-    gridSize: g.gridSize as 4 | 9,
+    gridSize: g.gridSize as 3 | 4 | 9 | 16,
     elapsedSeconds: g.elapsedSeconds,
     mistakeCount: g.mistakeCount,
     completedAt: g.completedAt!.toISOString(),

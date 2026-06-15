@@ -38,15 +38,15 @@ const GRID_LABELS: Record<string, string> = {
 };
 
 function AlltimeBoard() {
-  const [gridFilter, setGridFilter] = useState<'all' | '3' | '4' | '9' | '16'>('9');
+  const [gridFilter, setGridFilter] = useState<'all' | '3' | '4' | '9' | '16'>('all');
   const gridSize = gridFilter === 'all' ? undefined : Number(gridFilter) as 3 | 4 | 9 | 16;
   const { data, isLoading } = useGetLeaderboard(
-    gridSize !== undefined ? { gridSize: gridSize as any, limit: 10 } : { limit: 10 } as any,
+    gridSize !== undefined ? { gridSize: gridSize as any, limit: 50 } : { limit: 50 } as any,
   );
 
   return (
     <div className="space-y-5">
-      <Tabs defaultValue="9" onValueChange={(v) => setGridFilter(v as typeof gridFilter)} className="w-full">
+      <Tabs defaultValue="all" onValueChange={(v) => setGridFilter(v as typeof gridFilter)} className="w-full">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="9">9×9</TabsTrigger>
@@ -69,7 +69,11 @@ function AlltimeBoard() {
           ) : !data || data.length === 0 ? (
             <div className="p-12 text-center text-muted-foreground">
               <Trophy className="w-10 h-10 mx-auto mb-3 opacity-20" />
-              <p className="font-medium">No entries yet for {gridSize}×{gridSize}.</p>
+              <p className="font-medium">
+                {gridFilter === 'all'
+                  ? 'No completed games yet.'
+                  : `No entries yet for ${gridSize}×${gridSize}.`}
+              </p>
               <p className="text-sm mt-1">Complete a puzzle to claim the top spot!</p>
             </div>
           ) : (
