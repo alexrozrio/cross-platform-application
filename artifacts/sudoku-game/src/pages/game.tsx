@@ -29,6 +29,8 @@ import {
   Flame,
   Loader2,
   RefreshCw,
+  Pause,
+  Play,
 } from "lucide-react";
 import {
   Select,
@@ -215,6 +217,7 @@ export default function Game({ id }: { id: string }) {
 
   const MAX_MISTAKES = 3;
   const MAX_HINTS = 3;
+  const [isPaused, setIsPaused] = useState(false);
 
   // New-game switcher state — initialise to current game's grid size
   const [newSize, setNewSize] = useState<3 | 4 | 9 | 16>(9);
@@ -245,7 +248,7 @@ export default function Game({ id }: { id: string }) {
 
   const { seconds, formattedTime } = useGameTimer(
     game?.elapsedSeconds || 0,
-    !isCompleted && game?.status === "active",
+    !isCompleted && !isGameOver && !isPaused && game?.status === "active",
   );
   const saveTimeoutRef = useRef<number | null>(null);
 
@@ -371,7 +374,7 @@ export default function Game({ id }: { id: string }) {
 
   const handleNumberInput = useCallback(
     (num: string) => {
-      if (selectedCell === null || isCompleted || isGameOver) return;
+      if (selectedCell === null || isCompleted || isGameOver || isPaused) return;
       if (initialGrid[selectedCell] !== "0") return;
 
       if (notesMode) {
@@ -418,6 +421,7 @@ export default function Game({ id }: { id: string }) {
       selectedCell,
       isCompleted,
       isGameOver,
+      isPaused,
       initialGrid,
       notesMode,
       game,
@@ -578,7 +582,7 @@ export default function Game({ id }: { id: string }) {
           <span>•</span>
           <span className="capitalize">{game.puzzle?.difficulty}</span>
         </div>
-        <div className="flex items-center gap-3 text-sm font-medium">
+        <div className="flex items-center gap-2 text-sm font-medium">
           {profile?.showTimer !== false && (
             <div className="flex items-center gap-1.5 text-muted-foreground">
               <Clock className="h-4 w-4" />
@@ -593,6 +597,16 @@ export default function Game({ id }: { id: string }) {
             <AlertTriangle className="h-4 w-4" />
             <span>{mistakes}/{MAX_MISTAKES}</span>
           </div>
+          {!isCompleted && !isGameOver && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              onClick={() => setIsPaused((p) => !p)}
+            >
+              {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -666,7 +680,21 @@ export default function Game({ id }: { id: string }) {
       </div>
 
       {/* Board */}
-      <Card className="shadow-lg border-2 border-foreground/15 overflow-hidden">
+      <Card className="shadow-lg border-2 border-foreground/15 overflow-hidden relative">
+        {/* Pause overlay */}
+        {isPaused && (
+          <div
+            className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-background/80 backdrop-blur-md cursor-pointer"
+            onClick={() => setIsPaused(false)}
+          >
+            <div className="rounded-full bg-primary/10 p-5">
+              <Play className="h-10 w-10 text-primary" />
+            </div>
+            <p className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
+              Paused — tap to resume
+            </p>
+          </div>
+        )}
         <div
           className="grid p-1"
           style={{
