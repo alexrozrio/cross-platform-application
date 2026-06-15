@@ -214,8 +214,9 @@ export default function Game({ id }: { id: string }) {
   const [wrongCells, setWrongCells] = useState<Set<number>>(new Set());
 
   const MAX_MISTAKES = 3;
+  const MAX_HINTS = 3;
 
-  // New-game switcher state
+  // New-game switcher state — initialise to current game's grid size
   const [newSize, setNewSize] = useState<3 | 4 | 9 | 16>(9);
   const [newDiff, setNewDiff] = useState<"easy" | "medium" | "hard" | "expert">("easy");
 
@@ -247,6 +248,13 @@ export default function Game({ id }: { id: string }) {
     !isCompleted && game?.status === "active",
   );
   const saveTimeoutRef = useRef<number | null>(null);
+
+  // Sync new-game size pill to the current game's grid size
+  useEffect(() => {
+    if (gridSize && [3, 4, 9, 16].includes(gridSize)) {
+      setNewSize(gridSize as 3 | 4 | 9 | 16);
+    }
+  }, [gridSize]);
 
   useEffect(() => {
     if (game && !isCompleted && !isGameOver) {
@@ -441,16 +449,25 @@ export default function Game({ id }: { id: string }) {
     if (
       selectedCell === null ||
       isCompleted ||
+      isGameOver ||
+      hints >= MAX_HINTS ||
       initialGrid[selectedCell] !== "0" ||
       grid[selectedCell] !== "0"
     )
       return;
     const solution = game?.puzzle?.solution;
     if (solution) {
-      setHints((h) => h + 1);
+      const newHints = hints + 1;
+      setHints(newHints);
       const newGrid = [...grid];
       newGrid[selectedCell] = solution[selectedCell];
       setGrid(newGrid);
+      setWrongCells((prev) => {
+        const s = new Set(prev);
+        s.delete(selectedCell);
+        return s;
+      });
+      if (newHints >= MAX_HINTS) toast.error("No more hints available!", { duration: 2000 });
       checkCompletion(newGrid, solution);
     }
   };
@@ -808,30 +825,60 @@ export default function Game({ id }: { id: string }) {
 
       {/* Controls */}
       {!isCompleted && (
-        <div className="grid grid-cols-3 gap-2 w-full">
+        <div className="grid grid-cols-4 gap-2 w-full">
           <Button
             variant={notesMode ? "default" : "secondary"}
-            className="flex-col h-16 gap-1"
+            className="flex-col h-16 gap-0.5"
             onClick={() => setNotesMode(!notesMode)}
           >
             <PenLine className="h-5 w-5" />
             <span className="text-xs">Notes</span>
           </Button>
+
+          {/* Mistakes remaining */}
+          <div className={[
+            "flex flex-col items-center justify-center h-16 rounded-md border gap-0.5 select-none",
+            mistakes === 0
+              ? "bg-muted/50 border-border text-muted-foreground"
+              : mistakes === 1
+              ? "bg-orange-50 border-orange-200 text-orange-600"
+              : "bg-red-50 border-red-200 text-red-600",
+          ].join(" ")}>
+            <AlertTriangle className="h-5 w-5" />
+            <span className="text-[11px] font-semibold leading-none">
+              {MAX_MISTAKES - mistakes} left
+            </span>
+          </div>
+
+          {/* Hint button with remaining count */}
           <Button
             variant="secondary"
-            className="flex-col h-16 gap-1"
+            className="flex-col h-16 gap-0.5 relative"
             onClick={handleHint}
-            disabled={selectedCell === null || grid[selectedCell] !== "0"}
+            disabled={
+              isGameOver ||
+              hints >= MAX_HINTS ||
+              selectedCell === null ||
+              grid[selectedCell] !== "0"
+            }
           >
-            <Lightbulb className="h-5 w-5" />
+            <Lightbulb className={`h-5 w-5 ${hints >= MAX_HINTS ? "opacity-40" : ""}`} />
             <span className="text-xs">Hint</span>
+            <span className={`text-[10px] font-bold leading-none ${
+              hints >= MAX_HINTS ? "text-red-400" : "text-primary"
+            }`}>
+              {MAX_HINTS - hints} left
+            </span>
           </Button>
+
           <Button
             variant="secondary"
-            className="flex-col h-16 gap-1"
+            className="flex-col h-16 gap-0.5"
             onClick={handleErase}
             disabled={
-              selectedCell === null || initialGrid[selectedCell] !== "0"
+              isGameOver ||
+              selectedCell === null ||
+              initialGrid[selectedCell] !== "0"
             }
           >
             <Eraser className="h-5 w-5" />
