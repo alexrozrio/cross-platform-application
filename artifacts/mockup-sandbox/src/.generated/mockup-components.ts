@@ -6,5 +6,9 @@ export const modules: ModuleMap = {
   "./components/mockups/themes/CosmicSunset.tsx": () => import("../components/mockups/themes/CosmicSunset.tsx"),
   "./components/mockups/themes/JungleNeon.tsx": () => import("../components/mockups/themes/JungleNeon.tsx"),
   "./components/mockups/themes/OceanDeep.tsx": () => import("../components/mockups/themes/OceanDeep.tsx"),
+  "./components/mockups/themes/OceanV1.tsx": () => import("../components/mockups/themes/OceanV1.tsx"),
+  "./components/mockups/themes/OceanV2.tsx": () => import("../components/mockups/themes/OceanV2.tsx"),
+  "./components/mockups/themes/OceanV3.tsx": () => import("../components/mockups/themes/OceanV3.tsx"),
+  "./components/mockups/themes/OceanV4.tsx": () => import("../components/mockups/themes/OceanV4.tsx"),
   "./components/mockups/themes/RainbowBurst.tsx": () => import("../components/mockups/themes/RainbowBurst.tsx")
 };
