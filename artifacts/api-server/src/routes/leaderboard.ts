@@ -1,23 +1,21 @@
 import { Router, type IRouter } from "express";
 import { eq, asc, and } from "drizzle-orm";
 import { db, gamesTable, puzzlesTable, profilesTable } from "@workspace/db";
-import { GetLeaderboardQueryParams, GetLeaderboardResponse } from "@workspace/api-zod";
+import { GetLeaderboardResponse } from "@workspace/api-zod";
 
 const router: IRouter = Router();
 
 router.get("/leaderboard", async (req, res): Promise<void> => {
-  const parsed = GetLeaderboardQueryParams.safeParse({
-    ...req.query,
-    gridSize: req.query.gridSize !== undefined ? Number(req.query.gridSize) : undefined,
-    limit: req.query.limit !== undefined ? Number(req.query.limit) : undefined,
-  });
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
+  // Parse gridSize directly from req.query BEFORE Zod applies its default of 9.
+  // When gridSize is absent from the URL, we want undefined (= all grids).
+  const rawGridSize = req.query.gridSize !== undefined ? Number(req.query.gridSize) : undefined;
+  const gridSize: number | undefined =
+    rawGridSize !== undefined && [3, 4, 9, 16].includes(rawGridSize)
+      ? rawGridSize
+      : undefined;
 
-  const limit = parsed.data.limit ?? 10;
-  const gridSize = parsed.data.gridSize; // undefined = all sizes
+  const rawLimit = req.query.limit !== undefined ? Number(req.query.limit) : undefined;
+  const limit = (rawLimit && rawLimit > 0) ? rawLimit : 10;
 
   const completedGames = await db
     .select({
