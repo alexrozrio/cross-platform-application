@@ -31,7 +31,7 @@ export default function Portal() {
     setLoadingSize(size);
     try {
       const puzzle = await customFetch<{ id: number; difficulty: string }>(
-        `/api/puzzles/generate?difficulty=easy&gridSize=${size}`,
+        `/api/puzzles/new?difficulty=easy&gridSize=${size}`,
       );
       const game = await customFetch<{ id: number }>('/api/games', {
         method: 'POST',
