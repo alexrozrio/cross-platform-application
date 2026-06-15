@@ -210,6 +210,10 @@ export default function Game({ id }: { id: string }) {
   const [mistakes, setMistakes] = useState(0);
   const [hints, setHints] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isGameOver, setIsGameOver] = useState(false);
+  const [wrongCells, setWrongCells] = useState<Set<number>>(new Set());
+
+  const MAX_MISTAKES = 3;
 
   // New-game switcher state
   const [newSize, setNewSize] = useState<3 | 4 | 9 | 16>(9);
@@ -245,16 +249,29 @@ export default function Game({ id }: { id: string }) {
   const saveTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (game && !isCompleted) {
+    if (game && !isCompleted && !isGameOver) {
       if (game.status === "completed") setIsCompleted(true);
-      setGrid(game.currentGrid.split(""));
-      setInitialGrid(
-        game.puzzle?.grid.split("") || Array(totalCells).fill("0"),
-      );
-      setMistakes(game.mistakeCount || 0);
+      const loadedGrid = game.currentGrid.split("");
+      const loadedInitial = game.puzzle?.grid.split("") || Array(totalCells).fill("0");
+      setGrid(loadedGrid);
+      setInitialGrid(loadedInitial);
+      const loadedMistakes = game.mistakeCount || 0;
+      setMistakes(loadedMistakes);
       setHints(game.hintsUsed || 0);
+      // Derive wrong cells from current grid vs solution
+      const solution = game.puzzle?.solution;
+      if (solution) {
+        const wrong = new Set<number>();
+        loadedGrid.forEach((val, i) => {
+          if (val !== "0" && loadedInitial[i] === "0" && val !== solution[i]) {
+            wrong.add(i);
+          }
+        });
+        setWrongCells(wrong);
+      }
+      if (loadedMistakes >= MAX_MISTAKES) setIsGameOver(true);
     }
-  }, [game, isCompleted, totalCells]);
+  }, [game, isCompleted, isGameOver, totalCells]);
 
   useEffect(() => {
     if (isCompleted || !game || grid.join("") === game.currentGrid) return;
@@ -346,7 +363,7 @@ export default function Game({ id }: { id: string }) {
 
   const handleNumberInput = useCallback(
     (num: string) => {
-      if (selectedCell === null || isCompleted) return;
+      if (selectedCell === null || isCompleted || isGameOver) return;
       if (initialGrid[selectedCell] !== "0") return;
 
       if (notesMode) {
@@ -359,13 +376,6 @@ export default function Game({ id }: { id: string }) {
       }
 
       const solution = game?.puzzle?.solution;
-      if (solution && solution[selectedCell] !== num) {
-        setMistakes((m) => m + 1);
-        if (profile?.highlightErrors !== false)
-          toast.error("Incorrect!", { duration: 700 });
-        return;
-      }
-
       const newGrid = [...grid];
       newGrid[selectedCell] = num;
       setGrid(newGrid);
@@ -374,16 +384,37 @@ export default function Game({ id }: { id: string }) {
         delete n[selectedCell!];
         return n;
       });
-      checkCompletion(newGrid, solution);
+
+      if (solution && solution[selectedCell] !== num) {
+        // Wrong answer — place it (highlighted red) and count mistake
+        const newMistakes = mistakes + 1;
+        setMistakes(newMistakes);
+        setWrongCells((prev) => new Set([...prev, selectedCell]));
+        if (newMistakes >= MAX_MISTAKES) {
+          setIsGameOver(true);
+          toast.error("Game Over! 3 mistakes reached.", { duration: 5000 });
+        } else {
+          toast.error(`Wrong! ${MAX_MISTAKES - newMistakes} mistake${MAX_MISTAKES - newMistakes !== 1 ? "s" : ""} left.`, { duration: 1200 });
+        }
+      } else {
+        // Correct — remove from wrong cells if it was wrong before
+        setWrongCells((prev) => {
+          const s = new Set(prev);
+          s.delete(selectedCell);
+          return s;
+        });
+        checkCompletion(newGrid, solution);
+      }
     },
     [
       selectedCell,
       isCompleted,
+      isGameOver,
       initialGrid,
       notesMode,
       game,
       grid,
-      profile,
+      mistakes,
       checkCompletion,
     ],
   );
@@ -392,13 +423,19 @@ export default function Game({ id }: { id: string }) {
     if (
       selectedCell === null ||
       isCompleted ||
+      isGameOver ||
       initialGrid[selectedCell] !== "0"
     )
       return;
     const newGrid = [...grid];
     newGrid[selectedCell] = "0";
     setGrid(newGrid);
-  }, [selectedCell, isCompleted, initialGrid, grid]);
+    setWrongCells((prev) => {
+      const s = new Set(prev);
+      s.delete(selectedCell);
+      return s;
+    });
+  }, [selectedCell, isCompleted, isGameOver, initialGrid, grid]);
 
   const handleHint = () => {
     if (
@@ -531,9 +568,13 @@ export default function Game({ id }: { id: string }) {
               <span className="font-mono">{formattedTime}</span>
             </div>
           )}
-          <div className="flex items-center gap-1.5 text-muted-foreground">
+          <div className={`flex items-center gap-1.5 font-semibold ${
+            mistakes === 0 ? "text-muted-foreground"
+            : mistakes === 1 ? "text-orange-500"
+            : "text-red-500"
+          }`}>
             <AlertTriangle className="h-4 w-4" />
-            <span>{mistakes}</span>
+            <span>{mistakes}/{MAX_MISTAKES}</span>
           </div>
         </div>
       </div>
@@ -634,6 +675,7 @@ export default function Game({ id }: { id: string }) {
             const isSameValue =
               selectedValue && val === selectedValue && !isSelected;
             const isInitial = initialGrid[index] !== "0";
+            const isWrong = wrongCells.has(index);
             const rightBorder =
               boxSize > 0 && (col + 1) % boxSize === 0 && col !== gridSize - 1;
             const bottomBorder =
@@ -642,25 +684,33 @@ export default function Game({ id }: { id: string }) {
             return (
               <div
                 key={index}
-                onClick={() => !isCompleted && setSelectedCell(index)}
+                onClick={() => !isCompleted && !isGameOver && setSelectedCell(index)}
                 className={[
                   "flex items-center justify-center cursor-pointer select-none transition-colors",
                   cellH,
                   cellText,
                   rightBorder ? "border-r-2 border-r-foreground/40" : "",
                   bottomBorder ? "border-b-2 border-b-foreground/40" : "",
-                  isSelected
+                  isWrong && isSelected
+                    ? "bg-red-200 ring-2 ring-inset ring-red-500"
+                    : "",
+                  isWrong && !isSelected
+                    ? "bg-red-100"
+                    : "",
+                  !isWrong && isSelected
                     ? "bg-primary/20 ring-2 ring-inset ring-primary"
                     : "",
-                  !isSelected && isSameValue ? "bg-primary/15" : "",
-                  !isSelected && !isSameValue && isRelated
+                  !isWrong && !isSelected && isSameValue ? "bg-primary/15" : "",
+                  !isWrong && !isSelected && !isSameValue && isRelated
                     ? "bg-primary/5"
                     : "",
-                  !isSelected && !isRelated && !isSameValue
+                  !isWrong && !isSelected && !isRelated && !isSameValue
                     ? "bg-background"
                     : "",
                   isInitial && !isSelected ? "font-bold text-foreground" : "",
-                  !isInitial && val !== "0" && !isSelected && mode === "number"
+                  isWrong && !isSelected
+                    ? "font-medium text-red-600"
+                    : !isInitial && val !== "0" && !isSelected && mode === "number"
                     ? "font-medium text-primary"
                     : "",
                 ]
@@ -679,6 +729,34 @@ export default function Game({ id }: { id: string }) {
           })}
         </div>
       </Card>
+
+      {/* Game Over banner */}
+      {isGameOver && (
+        <Card className="bg-destructive text-destructive-foreground border-none w-full">
+          <CardContent className="pt-6 flex flex-col items-center text-center gap-3">
+            <h2 className="text-2xl font-serif font-bold">Game Over 💀</h2>
+            <p className="opacity-90 text-sm">
+              You made {MAX_MISTAKES} mistakes — better luck next time!
+            </p>
+            <div className="flex gap-2 w-full mt-2">
+              <Button
+                variant="secondary"
+                className="flex-1"
+                onClick={() => setLocation("/sudoku")}
+              >
+                Try Again
+              </Button>
+              <Button
+                variant="secondary"
+                className="flex-1"
+                onClick={() => setLocation("/")}
+              >
+                Game Hub
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Completed banner */}
       {isCompleted && (
