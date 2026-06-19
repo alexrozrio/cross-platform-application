@@ -1215,17 +1215,904 @@ export function Shape9Icon({ size = 48 }: IconProps) {
   return <svg width={size} height={size} viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="20" stroke="#546E7A" strokeWidth="6"/><circle cx="24" cy="24" r="13" stroke="#90A4AE" strokeWidth="4"/><circle cx="24" cy="24" r="6" fill="#263238"/></svg>;
 }
 
+// ─── SHAPES extra (10–16) ────────────────────────────────────────────────────
+
+export function Shape10Icon({ size = 48 }: IconProps) {
+  // Diamond with glow
+  return <svg width={size} height={size} viewBox="0 0 48 48"><polygon points="24,4 44,24 24,44 4,24" fill="#00BCD4"/><polygon points="24,10 38,24 24,38 10,24" fill="#80DEEA"/><polygon points="24,17 31,24 24,31 17,24" fill="#006064"/></svg>;
+}
+export function Shape11Icon({ size = 48 }: IconProps) {
+  // Spiral
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#FF7043"/>
+      <path d="M24 24 Q30 18 34 24 Q38 32 28 36 Q16 40 10 30 Q4 18 14 10 Q26 2 38 12" stroke="white" strokeWidth="3" fill="none" strokeLinecap="round"/>
+    </svg>
+  );
+}
+export function Shape12Icon({ size = 48 }: IconProps) {
+  // Crescent
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="22" fill="#5C6BC0"/>
+      <path d="M14 10 Q26 12 30 24 Q26 36 14 38 Q8 32 8 24 Q8 16 14 10Z" fill="#FDD835"/>
+      <circle cx="26" cy="24" r="10" fill="#5C6BC0"/>
+    </svg>
+  );
+}
+export function Shape13Icon({ size = 48 }: IconProps) {
+  // Arrow right bold
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="22" fill="#EF5350"/>
+      <polygon points="8,17 30,17 30,10 42,24 30,38 30,31 8,31" fill="white"/>
+    </svg>
+  );
+}
+export function Shape14Icon({ size = 48 }: IconProps) {
+  // Gear / cog
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#8D6E63"/>
+      <path d="M20 6 L22 12 Q18 13 15 16 L10 13 L7 18 L12 21 Q11 24 12 27 L7 30 L10 35 L15 32 Q18 35 22 36 L20 42 L28 42 L26 36 Q30 35 33 32 L38 35 L41 30 L36 27 Q37 24 36 21 L41 18 L38 13 L33 16 Q30 13 26 12 L28 6 Z" fill="#FFB300" stroke="#E65100" strokeWidth="1"/>
+      <circle cx="24" cy="24" r="7" fill="#E65100"/>
+      <circle cx="24" cy="24" r="4" fill="#FFB300"/>
+    </svg>
+  );
+}
+export function Shape15Icon({ size = 48 }: IconProps) {
+  // Lightning bolt
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="22" fill="#FDD835"/>
+      <polygon points="28,5 16,26 24,26 20,43 34,22 26,22" fill="#E65100"/>
+      <polygon points="27,8 17,26 25,26 22,40 32,24 24,24" fill="#FF6F00"/>
+    </svg>
+  );
+}
+export function Shape16Icon({ size = 48 }: IconProps) {
+  // Infinity loop
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#26A69A"/>
+      <path d="M10 24 Q10 16 17 16 Q24 16 24 24 Q24 32 31 32 Q38 32 38 24 Q38 16 31 16 Q24 16 24 24 Q24 32 17 32 Q10 32 10 24Z" stroke="white" strokeWidth="5" fill="none"/>
+    </svg>
+  );
+}
+
+// ─── ADVENTURE extra (10–16) ─────────────────────────────────────────────────
+
+export function CompassIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#5D4037"/>
+      <circle cx="24" cy="24" r="18" fill="#EFEBE9"/>
+      <circle cx="24" cy="24" r="16" fill="#FFF8E1"/>
+      {/* cardinal lines */}
+      <line x1="24" y1="8" x2="24" y2="40" stroke="#BDBDBD" strokeWidth="1"/>
+      <line x1="8" y1="24" x2="40" y2="24" stroke="#BDBDBD" strokeWidth="1"/>
+      {/* N needle red */}
+      <polygon points="24,10 22,24 26,24" fill="#D32F2F"/>
+      {/* S needle grey */}
+      <polygon points="24,38 22,24 26,24" fill="#607D8B"/>
+      {/* center */}
+      <circle cx="24" cy="24" r="3" fill="#5D4037"/>
+      {/* N label */}
+      <text x="24" y="7" textAnchor="middle" fontSize="5" fill="#D32F2F" fontWeight="bold">N</text>
+    </svg>
+  );
+}
+
+export function CampfireIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#1B5E20"/>
+      {/* logs */}
+      <ellipse cx="20" cy="36" rx="10" ry="3" fill="#795548" transform="rotate(-20,20,36)"/>
+      <ellipse cx="28" cy="36" rx="10" ry="3" fill="#5D4037" transform="rotate(20,28,36)"/>
+      {/* flame outer */}
+      <path d="M24 36 Q18 28 20 20 Q22 14 24 10 Q26 14 28 20 Q30 28 24 36Z" fill="#FF6D00"/>
+      {/* flame mid */}
+      <path d="M24 34 Q20 27 22 20 Q23 16 24 13 Q25 16 26 20 Q28 27 24 34Z" fill="#FFA000"/>
+      {/* flame inner */}
+      <path d="M24 32 Q22 27 23 22 Q24 19 24 17 Q24 19 25 22 Q26 27 24 32Z" fill="#FFF176"/>
+      {/* glow */}
+      <circle cx="24" cy="28" r="6" fill="#FF6D00" opacity="0.2"/>
+    </svg>
+  );
+}
+
+export function MoonLanternIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#1A237E"/>
+      {/* lantern body */}
+      <rect x="16" y="14" width="16" height="22" rx="4" fill="#FFD600"/>
+      <rect x="18" y="16" width="12" height="18" rx="3" fill="#FFF9C4"/>
+      {/* vertical bars */}
+      <line x1="22" y1="16" x2="22" y2="34" stroke="#F57F17" strokeWidth="1.5"/>
+      <line x1="26" y1="16" x2="26" y2="34" stroke="#F57F17" strokeWidth="1.5"/>
+      {/* top hook */}
+      <rect x="22" y="8" width="4" height="6" rx="2" fill="#F57F17"/>
+      <path d="M20 8 Q24 4 28 8" stroke="#F57F17" strokeWidth="2" fill="none"/>
+      {/* bottom tassel */}
+      <line x1="24" y1="36" x2="24" y2="42" stroke="#F57F17" strokeWidth="2" strokeLinecap="round"/>
+      <circle cx="24" cy="43" r="2" fill="#FF6F00"/>
+      {/* stars */}
+      <circle cx="8" cy="10" r="1.5" fill="white"/>
+      <circle cx="38" cy="14" r="1" fill="white"/>
+      <circle cx="40" cy="36" r="1.5" fill="white"/>
+    </svg>
+  );
+}
+
+export function ButterflyAdventureIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#7B1FA2"/>
+      {/* upper wings */}
+      <path d="M24 24 Q16 14 8 16 Q4 20 10 26 Q16 30 24 24Z" fill="#CE93D8"/>
+      <path d="M24 24 Q32 14 40 16 Q44 20 38 26 Q32 30 24 24Z" fill="#CE93D8"/>
+      {/* lower wings */}
+      <path d="M24 24 Q14 26 10 34 Q12 40 18 38 Q22 34 24 28Z" fill="#AB47BC"/>
+      <path d="M24 24 Q34 26 38 34 Q36 40 30 38 Q26 34 24 28Z" fill="#AB47BC"/>
+      {/* wing patterns */}
+      <circle cx="14" cy="22" r="4" fill="#F3E5F5" opacity="0.7"/>
+      <circle cx="34" cy="22" r="4" fill="#F3E5F5" opacity="0.7"/>
+      {/* body */}
+      <ellipse cx="24" cy="24" rx="2" ry="8" fill="#4A148C"/>
+      {/* antennae */}
+      <path d="M23 17 Q20 12 18 10" stroke="#4A148C" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M25 17 Q28 12 30 10" stroke="#4A148C" strokeWidth="1.5" strokeLinecap="round"/>
+      <circle cx="18" cy="10" r="2" fill="#E040FB"/>
+      <circle cx="30" cy="10" r="2" fill="#E040FB"/>
+    </svg>
+  );
+}
+
+export function MushroomIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#2E7D32"/>
+      {/* stem */}
+      <rect x="19" y="28" width="10" height="14" rx="4" fill="#EFEBE9"/>
+      <path d="M19 32 Q24 34 29 32" stroke="#D7CCC8" strokeWidth="1" fill="none"/>
+      {/* cap */}
+      <path d="M6 28 Q8 14 24 12 Q40 14 42 28 Z" fill="#D32F2F"/>
+      {/* spots */}
+      <circle cx="16" cy="22" r="4" fill="white"/>
+      <circle cx="32" cy="20" r="4" fill="white"/>
+      <circle cx="24" cy="16" r="3" fill="white"/>
+      <circle cx="38" cy="26" r="3" fill="white"/>
+      <circle cx="10" cy="26" r="3" fill="white"/>
+    </svg>
+  );
+}
+
+export function WandIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#4A148C"/>
+      {/* wand stick */}
+      <line x1="10" y1="38" x2="36" y2="12" stroke="#795548" strokeWidth="4" strokeLinecap="round"/>
+      <line x1="34" y1="10" x2="38" y2="14" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+      {/* star tip */}
+      <polygon points="36,8 37,12 41,12 38,14.5 39,18 36,16 33,18 34,14.5 31,12 35,12" fill="#FFD600"/>
+      {/* sparkles */}
+      <circle cx="16" cy="18" r="2" fill="#FFD600"/>
+      <circle cx="12" cy="28" r="1.5" fill="#E040FB"/>
+      <circle cx="22" cy="14" r="1.5" fill="#40C4FF"/>
+      <path d="M30 26 L31 29 L34 30 L31 31 L30 34 L29 31 L26 30 L29 29 Z" fill="#FFD600"/>
+    </svg>
+  );
+}
+
+export function DartboardIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#B71C1C"/>
+      <circle cx="24" cy="24" r="19" fill="#D32F2F"/>
+      <circle cx="24" cy="24" r="14" fill="white"/>
+      <circle cx="24" cy="24" r="10" fill="#D32F2F"/>
+      <circle cx="24" cy="24" r="6" fill="white"/>
+      <circle cx="24" cy="24" r="3" fill="#D32F2F"/>
+      {/* dart */}
+      <line x1="38" y1="10" x2="26" y2="22" stroke="#424242" strokeWidth="2.5" strokeLinecap="round"/>
+      <polygon points="26,22 30,18 34,14 38,10" fill="#424242"/>
+      <line x1="38" y1="10" x2="42" y2="6" stroke="#FFD600" strokeWidth="3" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+// ─── SUPERHERO extra (10–16) ─────────────────────────────────────────────────
+
+export function VillainIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#212121"/>
+      {/* villain horns */}
+      <path d="M14 16 L10 6 L18 14" fill="#7B1FA2"/>
+      <path d="M34 16 L38 6 L30 14" fill="#7B1FA2"/>
+      {/* head */}
+      <circle cx="24" cy="22" r="11" fill="#6A1B9A"/>
+      {/* evil eyes */}
+      <ellipse cx="19" cy="20" rx="4" ry="3" fill="#FF1744"/>
+      <ellipse cx="29" cy="20" rx="4" ry="3" fill="#FF1744"/>
+      <ellipse cx="19" cy="20" rx="2.5" ry="2" fill="#212121"/>
+      <ellipse cx="29" cy="20" rx="2.5" ry="2" fill="#212121"/>
+      {/* evil grin */}
+      <path d="M16 27 Q24 32 32 27" stroke="#FF1744" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+      <path d="M18 27 L20 30 M24 28 L24 31 M28 27 L30 30" stroke="#FF1744" strokeWidth="1.5" strokeLinecap="round"/>
+      {/* cape */}
+      <path d="M13 28 Q6 36 8 46 L24 40 L40 46 Q42 36 35 28" fill="#4A148C"/>
+    </svg>
+  );
+}
+
+export function TornadoIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#37474F"/>
+      <ellipse cx="24" cy="12" rx="16" ry="4" fill="#90A4AE"/>
+      <ellipse cx="24" cy="19" rx="12" ry="3" fill="#78909C"/>
+      <ellipse cx="24" cy="26" rx="8" ry="2.5" fill="#607D8B"/>
+      <ellipse cx="24" cy="32" rx="5" ry="2" fill="#546E7A"/>
+      <ellipse cx="24" cy="38" rx="2.5" ry="1.5" fill="#455A64"/>
+      <path d="M24 40 L22 46" stroke="#455A64" strokeWidth="2" strokeLinecap="round"/>
+      {/* debris */}
+      <rect x="8" y="14" width="4" height="3" rx="1" fill="#795548" transform="rotate(-20,10,15)"/>
+      <rect x="36" y="16" width="3" height="4" rx="1" fill="#795548" transform="rotate(15,37,18)"/>
+      <circle cx="38" cy="10" r="2" fill="#795548"/>
+    </svg>
+  );
+}
+
+export function SparkleStarIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#0D47A1"/>
+      {/* big sparkle */}
+      <path d="M24 6 L26 20 L40 18 L28 26 L36 38 L24 30 L12 38 L20 26 L8 18 L22 20 Z" fill="#FFD600"/>
+      {/* small sparkles */}
+      <path d="M40 8 L41 12 L45 13 L41 14 L40 18 L39 14 L35 13 L39 12 Z" fill="white"/>
+      <path d="M8 30 L9 33 L12 34 L9 35 L8 38 L7 35 L4 34 L7 33 Z" fill="white"/>
+    </svg>
+  );
+}
+
+export function EagleIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#1565C0"/>
+      {/* wings spread */}
+      <path d="M24 24 Q14 18 4 22 Q6 28 14 28 Q18 28 20 26Z" fill="#795548"/>
+      <path d="M24 24 Q34 18 44 22 Q42 28 34 28 Q30 28 28 26Z" fill="#795548"/>
+      {/* body */}
+      <ellipse cx="24" cy="26" rx="6" ry="8" fill="#5D4037"/>
+      {/* white head */}
+      <circle cx="24" cy="16" r="7" fill="white"/>
+      {/* beak */}
+      <path d="M28 17 L34 19 L28 20 Z" fill="#FFB300"/>
+      {/* eye */}
+      <circle cx="26" cy="15" r="2" fill="#212121"/>
+      <circle cx="26.5" cy="14.5" r="0.7" fill="white"/>
+      {/* tail feathers */}
+      <path d="M20 34 L16 42 L24 38 L28 42 L32 38 L24 34 Z" fill="#5D4037"/>
+    </svg>
+  );
+}
+
+export function CrossedSwordsIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#37474F"/>
+      {/* sword 1 */}
+      <line x1="8" y1="8" x2="40" y2="40" stroke="#B0BEC5" strokeWidth="4" strokeLinecap="round"/>
+      <rect x="5" y="5" width="8" height="3" rx="1.5" fill="#795548" transform="rotate(45,9,6.5)"/>
+      <rect x="22" y="20" width="6" height="2.5" rx="1.25" fill="#FFD600" transform="rotate(45,25,21.25)"/>
+      {/* sword 2 */}
+      <line x1="40" y1="8" x2="8" y2="40" stroke="#CFD8DC" strokeWidth="4" strokeLinecap="round"/>
+      <rect x="37" y="5" width="8" height="3" rx="1.5" fill="#795548" transform="rotate(-45,41,6.5)"/>
+      <rect x="21" y="20" width="6" height="2.5" rx="1.25" fill="#FFD600" transform="rotate(-45,24,21.25)"/>
+      {/* center */}
+      <circle cx="24" cy="24" r="3" fill="#FFD600"/>
+    </svg>
+  );
+}
+
+export function MagnetIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#B71C1C"/>
+      {/* magnet U shape */}
+      <path d="M10 12 L10 30 Q10 42 24 42 Q38 42 38 30 L38 12" stroke="#D32F2F" strokeWidth="8" fill="none" strokeLinecap="square"/>
+      <path d="M10 12 L10 30 Q10 42 24 42 Q38 42 38 30 L38 12" stroke="#EF9A9A" strokeWidth="4" fill="none" strokeLinecap="square"/>
+      {/* poles */}
+      <rect x="6" y="8" width="8" height="8" rx="1" fill="#1565C0"/>
+      <rect x="34" y="8" width="8" height="8" rx="1" fill="#D32F2F"/>
+      <text x="10" y="15" textAnchor="middle" fontSize="6" fill="white" fontWeight="bold">N</text>
+      <text x="38" y="15" textAnchor="middle" fontSize="6" fill="white" fontWeight="bold">S</text>
+      {/* attraction lines */}
+      <path d="M10 6 Q24 2 38 6" stroke="#FFD600" strokeWidth="1.5" strokeDasharray="2,2" fill="none"/>
+    </svg>
+  );
+}
+
+export function BullseyeIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#880E4F"/>
+      <circle cx="24" cy="24" r="19" fill="white"/>
+      <circle cx="24" cy="24" r="14" fill="#C62828"/>
+      <circle cx="24" cy="24" r="9" fill="white"/>
+      <circle cx="24" cy="24" r="5" fill="#C62828"/>
+      <circle cx="24" cy="24" r="2" fill="white"/>
+      {/* arrow */}
+      <line x1="42" y1="6" x2="26" y2="22" stroke="#424242" strokeWidth="2.5" strokeLinecap="round"/>
+      <polygon points="24,24 28,18 30,14 34,10 38,6" fill="#212121"/>
+      <path d="M40 4 L44 8 L40 8 Z" fill="#D32F2F"/>
+    </svg>
+  );
+}
+
+// ─── OCEAN extra (10–16) ─────────────────────────────────────────────────────
+
+export function WhaleIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#0277BD"/>
+      {/* body */}
+      <path d="M6 26 Q12 18 26 20 Q38 20 44 26 Q36 34 24 32 Q12 34 6 26Z" fill="#4FC3F7"/>
+      {/* tail */}
+      <path d="M6 26 Q2 20 4 14 Q6 20 6 26Z" fill="#4FC3F7"/>
+      <path d="M6 26 Q2 32 4 38 Q6 32 6 26Z" fill="#29B6F6"/>
+      {/* belly */}
+      <path d="M12 26 Q24 30 36 26 Q28 32 12 26Z" fill="#E1F5FE"/>
+      {/* blowhole spout */}
+      <path d="M30 20 Q32 14 30 10 Q34 14 34 20" stroke="#81D4FA" strokeWidth="3" fill="none" strokeLinecap="round"/>
+      {/* eye */}
+      <circle cx="38" cy="24" r="2.5" fill="white"/>
+      <circle cx="38.5" cy="24" r="1.5" fill="#01579B"/>
+      <circle cx="39" cy="23.5" r="0.5" fill="white"/>
+      {/* smile */}
+      <path d="M38 27 Q40 30 38 32" stroke="#01579B" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+export function SealIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#0288D1"/>
+      {/* body */}
+      <ellipse cx="24" cy="28" rx="14" ry="10" fill="#78909C"/>
+      {/* head */}
+      <circle cx="24" cy="16" r="10" fill="#90A4AE"/>
+      {/* eyes big */}
+      <circle cx="19" cy="14" r="4" fill="#212121"/>
+      <circle cx="29" cy="14" r="4" fill="#212121"/>
+      <circle cx="19.7" cy="13.3" r="1.5" fill="white"/>
+      <circle cx="29.7" cy="13.3" r="1.5" fill="white"/>
+      {/* nose */}
+      <path d="M22 18 L24 16 L26 18 L24 20 Z" fill="#FFCCBC"/>
+      {/* whiskers */}
+      <line x1="14" y1="18" x2="22" y2="19" stroke="#B0BEC5" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="14" y1="20" x2="22" y2="20" stroke="#B0BEC5" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="26" y1="19" x2="34" y2="18" stroke="#B0BEC5" strokeWidth="1" strokeLinecap="round"/>
+      <line x1="26" y1="20" x2="34" y2="20" stroke="#B0BEC5" strokeWidth="1" strokeLinecap="round"/>
+      {/* flippers */}
+      <path d="M10 30 Q4 34 6 40 Q12 38 14 32" fill="#607D8B"/>
+      <path d="M38 30 Q44 34 42 40 Q36 38 34 32" fill="#607D8B"/>
+      {/* tail */}
+      <path d="M20 36 Q16 42 20 44 L24 40 L28 44 Q32 42 28 36" fill="#607D8B"/>
+    </svg>
+  );
+}
+
+export function SeashellIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#00838F"/>
+      {/* shell body */}
+      <path d="M24 38 Q10 34 8 22 Q8 10 24 8 Q40 8 40 22 Q40 34 24 38Z" fill="#FFCC80"/>
+      {/* shell spiral lines */}
+      <path d="M24 36 Q12 32 12 22 Q12 13 24 12" stroke="#FF8F00" strokeWidth="2" fill="none"/>
+      <path d="M24 33 Q15 30 15 22 Q15 16 24 15" stroke="#FFB300" strokeWidth="1.5" fill="none"/>
+      <path d="M24 30 Q18 28 18 22 Q18 18 24 18" stroke="#FF8F00" strokeWidth="1.5" fill="none"/>
+      <path d="M24 27 Q21 26 21 22 Q21 20 24 21" stroke="#FFB300" strokeWidth="1" fill="none"/>
+      {/* center point */}
+      <circle cx="24" cy="22" r="2" fill="#E65100"/>
+      {/* base */}
+      <path d="M18 38 Q24 42 30 38" stroke="#FF8F00" strokeWidth="3" fill="none" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+export function CoralIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#006064"/>
+      {/* coral branches */}
+      <path d="M24 40 L24 28" stroke="#FF4081" strokeWidth="4" strokeLinecap="round"/>
+      <path d="M24 34 L18 26" stroke="#FF4081" strokeWidth="3" strokeLinecap="round"/>
+      <path d="M24 34 L30 26" stroke="#FF4081" strokeWidth="3" strokeLinecap="round"/>
+      <path d="M18 26 L14 20" stroke="#FF80AB" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M18 26 L20 18" stroke="#FF80AB" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M30 26 L34 20" stroke="#FF80AB" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M30 26 L28 18" stroke="#FF80AB" strokeWidth="2.5" strokeLinecap="round"/>
+      {/* tips */}
+      <circle cx="14" cy="20" r="3" fill="#FF4081"/>
+      <circle cx="20" cy="18" r="3" fill="#F50057"/>
+      <circle cx="34" cy="20" r="3" fill="#FF4081"/>
+      <circle cx="28" cy="18" r="3" fill="#F50057"/>
+      <circle cx="24" cy="28" r="2" fill="#FF80AB"/>
+      {/* base */}
+      <ellipse cx="24" cy="41" rx="8" ry="3" fill="#795548"/>
+    </svg>
+  );
+}
+
+export function ShrimpIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#E65100"/>
+      {/* body segments (curved) */}
+      <path d="M14 36 Q10 30 12 24 Q14 18 20 14 Q28 10 34 14 Q38 18 36 24 Q32 30 26 32 Q20 34 18 36 Q16 38 14 36Z" fill="#FF7043"/>
+      {/* segment lines */}
+      <path d="M18 32 Q16 28 18 24" stroke="#E64A19" strokeWidth="1.5" fill="none"/>
+      <path d="M22 30 Q20 26 22 22" stroke="#E64A19" strokeWidth="1.5" fill="none"/>
+      <path d="M26 28 Q26 24 28 20" stroke="#E64A19" strokeWidth="1.5" fill="none"/>
+      {/* tail fan */}
+      <path d="M14 36 Q10 40 8 38" stroke="#FF5722" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+      <path d="M14 36 Q12 42 10 42" stroke="#FF5722" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+      <path d="M14 36 Q16 42 14 44" stroke="#FF5722" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+      {/* head */}
+      <circle cx="34" cy="14" r="6" fill="#FF7043"/>
+      {/* eye */}
+      <circle cx="37" cy="12" r="3" fill="white"/>
+      <circle cx="37" cy="12" r="2" fill="#212121"/>
+      <circle cx="37.5" cy="11.5" r="0.7" fill="white"/>
+      {/* antennae */}
+      <path d="M34 10 Q32 6 28 4" stroke="#FF7043" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+      <path d="M36 10 Q38 6 42 4" stroke="#FF7043" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+    </svg>
+  );
+}
+
+export function FishIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#01579B"/>
+      {/* tail */}
+      <path d="M10 24 L4 16 L8 24 L4 32 Z" fill="#039BE5"/>
+      {/* body */}
+      <ellipse cx="26" cy="24" rx="16" ry="10" fill="#29B6F6"/>
+      {/* belly */}
+      <ellipse cx="26" cy="26" rx="12" ry="6" fill="#B3E5FC"/>
+      {/* fin top */}
+      <path d="M20 14 Q26 10 32 14" fill="#039BE5"/>
+      {/* fin bottom */}
+      <path d="M22 34 Q26 38 30 34" fill="#039BE5"/>
+      {/* scales */}
+      <path d="M20 22 Q22 20 24 22" stroke="#0288D1" strokeWidth="1" fill="none"/>
+      <path d="M26 20 Q28 18 30 20" stroke="#0288D1" strokeWidth="1" fill="none"/>
+      <path d="M24 26 Q26 24 28 26" stroke="#0288D1" strokeWidth="1" fill="none"/>
+      {/* eye */}
+      <circle cx="36" cy="22" r="3.5" fill="white"/>
+      <circle cx="36" cy="22" r="2.5" fill="#01579B"/>
+      <circle cx="36.5" cy="21.5" r="0.8" fill="white"/>
+      {/* mouth */}
+      <path d="M40 24 Q42 26 40 28" stroke="#01579B" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+export function WaveIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#0277BD"/>
+      {/* large wave */}
+      <path d="M4 30 Q8 20 14 24 Q20 30 24 22 Q28 14 34 20 Q40 28 44 22" stroke="white" strokeWidth="5" fill="none" strokeLinecap="round"/>
+      {/* second wave */}
+      <path d="M4 38 Q10 30 16 34 Q22 40 26 32 Q30 24 36 30 Q40 34 44 30" stroke="#90CAF9" strokeWidth="3" fill="none" strokeLinecap="round"/>
+      {/* foam dots */}
+      <circle cx="14" cy="24" r="2" fill="white" opacity="0.6"/>
+      <circle cx="34" cy="20" r="2" fill="white" opacity="0.6"/>
+      <circle cx="24" cy="22" r="2.5" fill="white" opacity="0.8"/>
+    </svg>
+  );
+}
+
+// ─── JUNGLE extra (10–16) ────────────────────────────────────────────────────
+
+export function CrocodileIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#1B5E20"/>
+      {/* body */}
+      <ellipse cx="24" cy="30" rx="16" ry="8" fill="#388E3C"/>
+      {/* scale bumps on back */}
+      {[12,16,20,24,28,32,36].map((x,i) => (
+        <ellipse key={i} cx={x} cy={26} rx="2" ry="3" fill="#2E7D32"/>
+      ))}
+      {/* head */}
+      <path d="M8 24 Q8 18 24 16 Q40 18 40 24 Q40 28 24 30 Q8 28 8 24Z" fill="#43A047"/>
+      {/* snout */}
+      <path d="M8 24 Q4 22 4 24 Q4 26 8 26" fill="#43A047"/>
+      {/* teeth */}
+      {[12,16,20,24,28,32,36].map((x,i) => (
+        <polygon key={i} points={`${x},16 ${x+1.5},12 ${x+3},16`} fill="white"/>
+      ))}
+      {/* eyes */}
+      <circle cx="36" cy="20" r="4" fill="#388E3C"/>
+      <circle cx="36" cy="20" r="2.5" fill="#FFD600"/>
+      <ellipse cx="36" cy="20" rx="1" ry="2" fill="#212121"/>
+      <circle cx="28" cy="20" r="4" fill="#388E3C"/>
+      <circle cx="28" cy="20" r="2.5" fill="#FFD600"/>
+      <ellipse cx="28" cy="20" rx="1" ry="2" fill="#212121"/>
+    </svg>
+  );
+}
+
+export function LizardIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#33691E"/>
+      {/* tail */}
+      <path d="M30 30 Q38 34 44 40 Q42 44 40 42 Q34 36 28 34" stroke="#558B2F" strokeWidth="5" strokeLinecap="round" fill="none"/>
+      {/* body */}
+      <ellipse cx="22" cy="26" rx="10" ry="7" fill="#7CB342"/>
+      {/* legs */}
+      <path d="M16 24 Q10 20 8 16 Q10 18 14 22" stroke="#558B2F" strokeWidth="3" strokeLinecap="round" fill="none"/>
+      <path d="M28 24 Q34 20 36 16 Q34 18 30 22" stroke="#558B2F" strokeWidth="3" strokeLinecap="round" fill="none"/>
+      <path d="M16 30 Q10 34 8 40 Q10 38 14 34" stroke="#558B2F" strokeWidth="3" strokeLinecap="round" fill="none"/>
+      <path d="M28 30 Q34 34 36 38 Q34 36 30 32" stroke="#558B2F" strokeWidth="3" strokeLinecap="round" fill="none"/>
+      {/* head */}
+      <ellipse cx="14" cy="22" rx="8" ry="6" fill="#8BC34A"/>
+      {/* eye */}
+      <circle cx="10" cy="20" r="3" fill="#FFD600"/>
+      <circle cx="10" cy="20" r="2" fill="#212121"/>
+      <circle cx="10.5" cy="19.5" r="0.7" fill="white"/>
+      {/* tongue */}
+      <path d="M6 22 L4 22 M4 22 L2 20 M4 22 L2 24" stroke="#F44336" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+    </svg>
+  );
+}
+
+export function ButterflyJungleIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#1B5E20"/>
+      {/* upper wings */}
+      <path d="M24 24 Q14 12 6 14 Q2 20 8 26 Q14 30 24 24Z" fill="#F9A825"/>
+      <path d="M24 24 Q34 12 42 14 Q46 20 40 26 Q34 30 24 24Z" fill="#F9A825"/>
+      {/* lower wings */}
+      <path d="M24 24 Q12 26 8 36 Q10 42 16 40 Q20 36 24 28Z" fill="#FF8F00"/>
+      <path d="M24 24 Q36 26 40 36 Q38 42 32 40 Q28 36 24 28Z" fill="#FF8F00"/>
+      {/* wing spots */}
+      <circle cx="12" cy="20" r="4" fill="#1B5E20" opacity="0.5"/>
+      <circle cx="36" cy="20" r="4" fill="#1B5E20" opacity="0.5"/>
+      <circle cx="14" cy="32" r="3" fill="#1B5E20" opacity="0.4"/>
+      <circle cx="34" cy="32" r="3" fill="#1B5E20" opacity="0.4"/>
+      {/* body */}
+      <ellipse cx="24" cy="24" rx="2" ry="8" fill="#4E342E"/>
+      {/* antennae */}
+      <path d="M23 17 Q20 12 18 10" stroke="#4E342E" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M25 17 Q28 12 30 10" stroke="#4E342E" strokeWidth="1.5" strokeLinecap="round"/>
+      <circle cx="18" cy="10" r="2" fill="#FFD600"/>
+      <circle cx="30" cy="10" r="2" fill="#FFD600"/>
+    </svg>
+  );
+}
+
+export function LeafClusterIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#2E7D32"/>
+      {/* stem */}
+      <path d="M24 42 Q22 34 20 26 Q24 22 28 26 Q26 34 24 42" stroke="#388E3C" strokeWidth="2" fill="#33691E"/>
+      {/* large leaf */}
+      <path d="M24 28 Q10 20 8 10 Q20 12 24 28Z" fill="#66BB6A"/>
+      <path d="M24 28 Q10 20 8 10" stroke="#43A047" strokeWidth="1" fill="none"/>
+      {/* right leaf */}
+      <path d="M24 26 Q38 18 40 8 Q28 12 24 26Z" fill="#81C784"/>
+      <path d="M24 26 Q38 18 40 8" stroke="#43A047" strokeWidth="1" fill="none"/>
+      {/* top leaf */}
+      <path d="M24 24 Q20 10 24 4 Q28 10 24 24Z" fill="#A5D6A7"/>
+      {/* veins */}
+      <line x1="24" y1="28" x2="12" y2="14" stroke="#2E7D32" strokeWidth="1"/>
+      <line x1="24" y1="26" x2="36" y2="12" stroke="#2E7D32" strokeWidth="1"/>
+    </svg>
+  );
+}
+
+export function PalmTreeIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#0277BD"/>
+      {/* trunk */}
+      <path d="M22 44 Q20 36 22 28 Q24 24 26 28 Q28 36 26 44" fill="#8D6E63"/>
+      {/* trunk curve marks */}
+      <path d="M22 40 Q24 39 26 40" stroke="#795548" strokeWidth="1" fill="none"/>
+      <path d="M22 36 Q24 35 26 36" stroke="#795548" strokeWidth="1" fill="none"/>
+      <path d="M22 32 Q24 31 26 32" stroke="#795548" strokeWidth="1" fill="none"/>
+      {/* fronds */}
+      <path d="M24 26 Q14 20 8 16 Q14 18 20 24" fill="#388E3C"/>
+      <path d="M24 26 Q34 20 40 16 Q34 18 28 24" fill="#43A047"/>
+      <path d="M24 26 Q18 16 18 8 Q22 16 24 24" fill="#2E7D32"/>
+      <path d="M24 26 Q30 16 30 8 Q26 16 24 24" fill="#388E3C"/>
+      <path d="M24 26 Q10 22 6 26 Q12 24 22 26" fill="#43A047"/>
+      <path d="M24 26 Q38 22 42 26 Q36 24 26 26" fill="#2E7D32"/>
+      {/* coconuts */}
+      <circle cx="22" cy="26" r="3" fill="#795548"/>
+      <circle cx="26" cy="28" r="3" fill="#6D4C41"/>
+      {/* sun/water */}
+      <circle cx="38" cy="10" r="5" fill="#FFD600" opacity="0.7"/>
+      <path d="M4 38 Q12 34 20 38 Q28 42 36 38" stroke="#29B6F6" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.7"/>
+    </svg>
+  );
+}
+
+export function HibiscusIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#1A237E"/>
+      {/* petals */}
+      <ellipse cx="24" cy="12" rx="6" ry="10" fill="#E91E63"/>
+      <ellipse cx="24" cy="36" rx="6" ry="10" fill="#E91E63"/>
+      <ellipse cx="12" cy="24" rx="10" ry="6" fill="#EC407A"/>
+      <ellipse cx="36" cy="24" rx="10" ry="6" fill="#EC407A"/>
+      <ellipse cx="14.3" cy="14.3" rx="6" ry="10" fill="#F06292" transform="rotate(45,14.3,14.3)"/>
+      <ellipse cx="33.7" cy="14.3" rx="6" ry="10" fill="#F06292" transform="rotate(-45,33.7,14.3)"/>
+      <ellipse cx="14.3" cy="33.7" rx="6" ry="10" fill="#F06292" transform="rotate(-45,14.3,33.7)"/>
+      <ellipse cx="33.7" cy="33.7" rx="6" ry="10" fill="#F06292" transform="rotate(45,33.7,33.7)"/>
+      {/* center circle */}
+      <circle cx="24" cy="24" r="7" fill="#FFD600"/>
+      {/* stamen */}
+      <circle cx="24" cy="24" r="4" fill="#FF6F00"/>
+      <circle cx="24" cy="24" r="2" fill="#E65100"/>
+      {/* pollen dots */}
+      {[0,60,120,180,240,300].map((a,i) => (
+        <circle key={i} cx={24+5.5*Math.cos(a*Math.PI/180)} cy={24+5.5*Math.sin(a*Math.PI/180)} r="1.2" fill="#FFD600"/>
+      ))}
+    </svg>
+  );
+}
+
+export function CaterpillarIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#33691E"/>
+      {/* body segments */}
+      <circle cx="36" cy="28" r="6" fill="#7CB342"/>
+      <circle cx="28" cy="26" r="6" fill="#8BC34A"/>
+      <circle cx="20" cy="26" r="6" fill="#7CB342"/>
+      <circle cx="12" cy="28" r="6" fill="#8BC34A"/>
+      {/* dots on body */}
+      <circle cx="36" cy="26" r="2" fill="#558B2F"/>
+      <circle cx="28" cy="24" r="2" fill="#558B2F"/>
+      <circle cx="20" cy="24" r="2" fill="#558B2F"/>
+      <circle cx="12" cy="26" r="2" fill="#558B2F"/>
+      {/* head */}
+      <circle cx="40" cy="22" r="7" fill="#AED581"/>
+      {/* eyes */}
+      <circle cx="38" cy="20" r="2.5" fill="white"/>
+      <circle cx="43" cy="20" r="2.5" fill="white"/>
+      <circle cx="38" cy="20" r="1.5" fill="#212121"/>
+      <circle cx="43" cy="20" r="1.5" fill="#212121"/>
+      <circle cx="38.5" cy="19.5" r="0.5" fill="white"/>
+      <circle cx="43.5" cy="19.5" r="0.5" fill="white"/>
+      {/* smile */}
+      <path d="M37 24 Q40 27 43 24" stroke="#558B2F" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+      {/* antennae */}
+      <path d="M40 16 Q38 10 36 8" stroke="#558B2F" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+      <path d="M42 16 Q44 10 46 8" stroke="#558B2F" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+      <circle cx="36" cy="8" r="2" fill="#FF7043"/>
+      <circle cx="46" cy="8" r="2" fill="#FF7043"/>
+      {/* legs */}
+      {[12,20,28,36].map((x,i) => (
+        <React.Fragment key={i}>
+          <line x1={x} y1="32" x2={x-3} y2="38" stroke="#558B2F" strokeWidth="2" strokeLinecap="round"/>
+          <line x1={x} y1="32" x2={x+3} y2="38" stroke="#558B2F" strokeWidth="2" strokeLinecap="round"/>
+        </React.Fragment>
+      ))}
+    </svg>
+  );
+}
+
+// ─── SPACE extra (10–16) ─────────────────────────────────────────────────────
+
+export function GalaxyIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#0D0221"/>
+      {/* spiral arms */}
+      <path d="M24 24 Q32 18 38 10 Q36 20 30 24 Q36 28 38 38 Q32 30 24 24Z" fill="#7E57C2" opacity="0.8"/>
+      <path d="M24 24 Q16 30 10 38 Q12 28 18 24 Q12 20 10 10 Q16 18 24 24Z" fill="#5C35A5" opacity="0.8"/>
+      {/* core */}
+      <circle cx="24" cy="24" r="6" fill="#FFD600" opacity="0.9"/>
+      <circle cx="24" cy="24" r="3" fill="white"/>
+      {/* stars scattered */}
+      <circle cx="10" cy="14" r="1.2" fill="white"/>
+      <circle cx="38" cy="34" r="1" fill="white"/>
+      <circle cx="36" cy="12" r="1.5" fill="#B39DDB"/>
+      <circle cx="12" cy="36" r="1.5" fill="#B39DDB"/>
+      <circle cx="30" cy="8" r="1" fill="white"/>
+      <circle cx="18" cy="40" r="1" fill="white"/>
+    </svg>
+  );
+}
+
+export function TelescopeSpaceIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#1A237E"/>
+      {/* tripod */}
+      <line x1="24" y1="32" x2="16" y2="44" stroke="#795548" strokeWidth="2.5" strokeLinecap="round"/>
+      <line x1="24" y1="32" x2="32" y2="44" stroke="#795548" strokeWidth="2.5" strokeLinecap="round"/>
+      <line x1="24" y1="36" x2="24" y2="44" stroke="#795548" strokeWidth="2" strokeLinecap="round"/>
+      {/* tube */}
+      <rect x="10" y="14" width="26" height="9" rx="4.5" fill="#8D6E63" transform="rotate(-15,23,18)"/>
+      {/* lens */}
+      <circle cx="34" cy="12" r="5" fill="#B0BEC5"/>
+      <circle cx="34" cy="12" r="3.5" fill="#CFD8DC"/>
+      <circle cx="34" cy="12" r="2" fill="#81D4FA"/>
+      {/* eyepiece */}
+      <circle cx="12" cy="26" r="4" fill="#5D4037"/>
+      <circle cx="12" cy="26" r="2.5" fill="#212121"/>
+      {/* nebula in view */}
+      <circle cx="34" cy="12" r="1" fill="#FF80AB"/>
+      {/* stars */}
+      <circle cx="8" cy="10" r="1.2" fill="white"/>
+      <circle cx="40" cy="20" r="1" fill="white"/>
+      <circle cx="38" cy="6" r="1.5" fill="#90CAF9"/>
+    </svg>
+  );
+}
+
+export function ShootingStarIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#0D0221"/>
+      {/* trail */}
+      <path d="M36 10 L6 32" stroke="#FFD600" strokeWidth="3" strokeLinecap="round" opacity="0.4"/>
+      <path d="M36 10 L10 30" stroke="#FFD600" strokeWidth="4" strokeLinecap="round" opacity="0.6"/>
+      <path d="M36 10 L14 28" stroke="#FFD600" strokeWidth="5" strokeLinecap="round" opacity="0.8"/>
+      <path d="M36 10 L18 26" stroke="white" strokeWidth="3" strokeLinecap="round"/>
+      {/* star head */}
+      <polygon points="36,4 37.5,8.5 42,8.5 38.5,11.5 40,16 36,13.5 32,16 33.5,11.5 30,8.5 34.5,8.5" fill="#FFD600"/>
+      {/* background stars */}
+      <circle cx="10" cy="12" r="1.2" fill="white"/>
+      <circle cx="42" cy="28" r="1" fill="white"/>
+      <circle cx="16" cy="38" r="1.5" fill="#B39DDB"/>
+      <circle cx="38" cy="40" r="1" fill="white"/>
+    </svg>
+  );
+}
+
+export function SatelliteIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#1A237E"/>
+      {/* solar panels */}
+      <rect x="4" y="20" width="14" height="8" rx="2" fill="#1565C0"/>
+      <line x1="4" y1="22" x2="18" y2="22" stroke="#42A5F5" strokeWidth="1"/>
+      <line x1="4" y1="24" x2="18" y2="24" stroke="#42A5F5" strokeWidth="1"/>
+      <line x1="4" y1="26" x2="18" y2="26" stroke="#42A5F5" strokeWidth="1"/>
+      <rect x="30" y="20" width="14" height="8" rx="2" fill="#1565C0"/>
+      <line x1="30" y1="22" x2="44" y2="22" stroke="#42A5F5" strokeWidth="1"/>
+      <line x1="30" y1="24" x2="44" y2="24" stroke="#42A5F5" strokeWidth="1"/>
+      <line x1="30" y1="26" x2="44" y2="26" stroke="#42A5F5" strokeWidth="1"/>
+      {/* body */}
+      <rect x="18" y="18" width="12" height="12" rx="3" fill="#90A4AE"/>
+      <rect x="20" y="20" width="8" height="8" rx="2" fill="#CFD8DC"/>
+      {/* panel connectors */}
+      <rect x="16" y="22" width="4" height="4" rx="1" fill="#607D8B"/>
+      <rect x="28" y="22" width="4" height="4" rx="1" fill="#607D8B"/>
+      {/* dish */}
+      <path d="M26 18 Q30 12 34 14" stroke="#B0BEC5" strokeWidth="2" fill="none" strokeLinecap="round"/>
+      <circle cx="34" cy="14" r="3" fill="#90A4AE"/>
+      <circle cx="34" cy="14" r="1.5" fill="#E0E0E0"/>
+      {/* signal waves */}
+      <path d="M36 12 Q40 8 42 10" stroke="#29B6F6" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.8"/>
+      <path d="M36 14 Q42 10 46 14" stroke="#29B6F6" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.5"/>
+      {/* earth below */}
+      <circle cx="10" cy="40" r="6" fill="#1976D2"/>
+      <path d="M6 38 Q8 36 10 38 Q12 40 10 42 Q8 40 6 38Z" fill="#4CAF50"/>
+      {/* stars */}
+      <circle cx="42" cy="36" r="1.2" fill="white"/>
+      <circle cx="6" cy="14" r="1" fill="white"/>
+    </svg>
+  );
+}
+
+export function SunSpaceIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#E65100"/>
+      {/* rays */}
+      {[0,30,60,90,120,150,180,210,240,270,300,330].map((a,i) => (
+        <line key={i}
+          x1={24+16*Math.cos(a*Math.PI/180)} y1={24+16*Math.sin(a*Math.PI/180)}
+          x2={24+22*Math.cos(a*Math.PI/180)} y2={24+22*Math.sin(a*Math.PI/180)}
+          stroke="#FFD600" strokeWidth="3" strokeLinecap="round"/>
+      ))}
+      {/* sun body */}
+      <circle cx="24" cy="24" r="14" fill="#FFD600"/>
+      <circle cx="24" cy="24" r="11" fill="#FFEE58"/>
+      <circle cx="24" cy="24" r="8" fill="#FFD600"/>
+      {/* face */}
+      <circle cx="20" cy="22" r="2" fill="#FF6F00"/>
+      <circle cx="28" cy="22" r="2" fill="#FF6F00"/>
+      <path d="M19 27 Q24 31 29 27" stroke="#FF6F00" strokeWidth="2" fill="none" strokeLinecap="round"/>
+      {/* flares */}
+      <path d="M10 10 Q14 14 12 18" stroke="#FF8F00" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.7"/>
+      <path d="M38 10 Q34 14 36 18" stroke="#FF8F00" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.7"/>
+    </svg>
+  );
+}
+
+export function MarsIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#1A237E"/>
+      {/* planet */}
+      <circle cx="24" cy="24" r="16" fill="#D32F2F"/>
+      {/* surface features */}
+      <path d="M12 20 Q18 16 26 18 Q32 16 36 20 Q32 16 26 14 Q18 12 12 20Z" fill="#B71C1C" opacity="0.6"/>
+      <circle cx="20" cy="28" r="5" fill="#C62828" opacity="0.7"/>
+      <circle cx="30" cy="22" r="3" fill="#B71C1C" opacity="0.5"/>
+      {/* polar ice cap */}
+      <path d="M16 12 Q24 8 32 12 Q28 14 24 13 Q20 14 16 12Z" fill="white" opacity="0.8"/>
+      {/* valles marineris crack */}
+      <path d="M12 24 Q20 22 28 24 Q34 22 36 26" stroke="#8D1A1A" strokeWidth="2" fill="none" strokeLinecap="round"/>
+      {/* shine */}
+      <path d="M14 14 Q18 12 20 16 Q16 15 14 14Z" fill="white" opacity="0.3"/>
+      {/* stars */}
+      <circle cx="6" cy="8" r="1.2" fill="white"/>
+      <circle cx="40" cy="6" r="1.5" fill="white"/>
+      <circle cx="44" cy="34" r="1" fill="white"/>
+      <circle cx="4" cy="40" r="1.2" fill="white"/>
+    </svg>
+  );
+}
+
+export function NewMoonIcon({ size = 48 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <circle cx="24" cy="24" r="22" fill="#212121"/>
+      {/* dark moon with slight visible rim */}
+      <circle cx="24" cy="24" r="16" fill="#1A1A1A"/>
+      <circle cx="24" cy="24" r="16" fill="none" stroke="#424242" strokeWidth="1.5"/>
+      {/* subtle crater shadows */}
+      <circle cx="18" cy="20" r="3" fill="#262626" stroke="#303030" strokeWidth="0.5"/>
+      <circle cx="28" cy="28" r="4" fill="#1E1E1E" stroke="#2C2C2C" strokeWidth="0.5"/>
+      <circle cx="30" cy="18" r="2" fill="#252525" stroke="#303030" strokeWidth="0.5"/>
+      {/* thin crescent rim glow */}
+      <path d="M20 8 Q10 16 10 28 Q10 36 16 40" stroke="#607D8B" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.5"/>
+      {/* stars around */}
+      <circle cx="8" cy="10" r="1.5" fill="white"/>
+      <circle cx="40" cy="8" r="2" fill="white"/>
+      <circle cx="42" cy="32" r="1.5" fill="white"/>
+      <circle cx="6" cy="36" r="1" fill="white"/>
+      <circle cx="38" cy="42" r="1.2" fill="#B39DDB"/>
+      {/* bright star nearby */}
+      <polygon points="42,14 43,18 47,18 44,20.5 45,24 42,22 39,24 40,20.5 37,18 41,18" fill="white" opacity="0.8"/>
+    </svg>
+  );
+}
+
 // ─── LOOKUP TABLE (SVG fallbacks) ────────────────────────────────────────────
 
 import { type ThemeId } from '@/lib/themes';
 
 const ICON_MAP: Record<ThemeId, React.FC<IconProps>[]> = {
-  shapes:     [Shape1Icon, Shape2Icon, Shape3Icon, Shape4Icon, Shape5Icon, Shape6Icon, Shape7Icon, Shape8Icon, Shape9Icon],
-  adventure:  [ExplorerGirlIcon, FoxIcon, MapIcon, BackpackIcon, FlowerIcon, TelescopeIcon, KeyIcon, RainbowIcon, TrophyIcon],
-  superhero:  [SpiderManIcon, SupermanIcon, BatmanIcon, WonderWomanIcon, IronManIcon, CaptainAmericaIcon, ThorIcon, HulkIcon, FlashIcon],
-  ocean:      [DolphinIcon, OctopusIcon, SharkIcon, ClownfishIcon, CrabIcon, PufferfishIcon, SquidIcon, TurtleIcon, LobsterIcon],
-  jungle:     [MonkeyIcon, LionIcon, ElephantIcon, GiraffeIcon, ZebraIcon, RhinoIcon, LeopardIcon, GorillaIcon, ParrotIcon],
-  space:      [RocketIcon, StarIcon, MoonIcon, CometIcon, SaturnIcon, EarthIcon, AlienIcon, UFOIcon, AstronautIcon],
+  shapes:    [Shape1Icon, Shape2Icon, Shape3Icon, Shape4Icon, Shape5Icon, Shape6Icon, Shape7Icon, Shape8Icon, Shape9Icon, Shape10Icon, Shape11Icon, Shape12Icon, Shape13Icon, Shape14Icon, Shape15Icon, Shape16Icon],
+  adventure: [ExplorerGirlIcon, FoxIcon, MapIcon, BackpackIcon, FlowerIcon, TelescopeIcon, KeyIcon, RainbowIcon, TrophyIcon, CompassIcon, CampfireIcon, MoonLanternIcon, ButterflyAdventureIcon, MushroomIcon, WandIcon, DartboardIcon],
+  superhero: [SpiderManIcon, SupermanIcon, BatmanIcon, WonderWomanIcon, IronManIcon, CaptainAmericaIcon, ThorIcon, HulkIcon, FlashIcon, VillainIcon, TornadoIcon, SparkleStarIcon, EagleIcon, CrossedSwordsIcon, MagnetIcon, BullseyeIcon],
+  ocean:     [DolphinIcon, OctopusIcon, SharkIcon, ClownfishIcon, CrabIcon, PufferfishIcon, SquidIcon, TurtleIcon, LobsterIcon, WhaleIcon, SealIcon, SeashellIcon, CoralIcon, ShrimpIcon, FishIcon, WaveIcon],
+  jungle:    [MonkeyIcon, LionIcon, ElephantIcon, GiraffeIcon, ZebraIcon, RhinoIcon, LeopardIcon, GorillaIcon, ParrotIcon, CrocodileIcon, LizardIcon, ButterflyJungleIcon, LeafClusterIcon, PalmTreeIcon, HibiscusIcon, CaterpillarIcon],
+  space:     [RocketIcon, StarIcon, MoonIcon, CometIcon, SaturnIcon, EarthIcon, AlienIcon, UFOIcon, AstronautIcon, GalaxyIcon, TelescopeSpaceIcon, ShootingStarIcon, SatelliteIcon, SunSpaceIcon, NewMoonIcon, MarsIcon],
 };
 
 // ─── Custom image probe (public/themes/{themeId}/{value}.{ext}) ───────────────
