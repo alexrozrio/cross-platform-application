@@ -14,7 +14,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { data: profile } = useGetProfile(profileId as number, { query: { enabled: !!profileId } });
 
   React.useEffect(() => {
-    if (profile?.theme === "dark") {
+    const theme = profile?.theme ?? "light";
+    document.documentElement.setAttribute("data-theme", theme);
+    if (theme === "dark" || theme === "midnight") {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");

@@ -60,9 +60,21 @@ interface StreakData {
   completedToday: boolean;
 }
 
+const APP_THEMES = [
+  { id: "light",    label: "Classic",   bg: "#f8f6f0", primary: "#4a6585", accent: "#e8e4da", dark: false },
+  { id: "dark",     label: "Dark",      bg: "#1a1f2e", primary: "#6b8fc4", accent: "#2a3045", dark: true  },
+  { id: "ocean",    label: "Ocean",     bg: "#eef7fb", primary: "#2e8a91", accent: "#cce9f0", dark: false },
+  { id: "forest",   label: "Forest",    bg: "#f2f8f2", primary: "#2e6b40", accent: "#cce5cc", dark: false },
+  { id: "sunset",   label: "Sunset",    bg: "#fdf6f0", primary: "#b84e20", accent: "#f0d8c4", dark: false },
+  { id: "midnight", label: "Midnight",  bg: "#0f0b1a", primary: "#8b5cf6", accent: "#2a1f40", dark: true  },
+  { id: "rose",     label: "Rose",      bg: "#fdf5f7", primary: "#a3254e", accent: "#f0d0da", dark: false },
+] as const;
+
+type AppThemeId = typeof APP_THEMES[number]["id"];
+
 const profileSchema = z.object({
   username: z.string().min(2, "At least 2 characters").max(30),
-  theme: z.enum(["light", "dark"]),
+  theme: z.enum(["light", "dark", "ocean", "forest", "sunset", "midnight", "rose"]),
   highlightErrors: z.boolean().default(true),
   showTimer: z.boolean().default(true),
 });
@@ -379,21 +391,37 @@ export default function Profile() {
                   name="theme"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Theme</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="light">Light</SelectItem>
-                          <SelectItem value="dark">Dark</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormLabel>App Theme</FormLabel>
+                      <div className="grid grid-cols-4 gap-2 pt-1">
+                        {APP_THEMES.map((t) => {
+                          const selected = field.value === t.id;
+                          return (
+                            <button
+                              key={t.id}
+                              type="button"
+                              onClick={() => field.onChange(t.id)}
+                              className={[
+                                "rounded-xl border-2 p-2 flex flex-col items-center gap-1.5 transition-all",
+                                selected
+                                  ? "border-primary ring-2 ring-primary/30"
+                                  : "border-border hover:border-primary/40",
+                              ].join(" ")}
+                            >
+                              <div
+                                className="w-full h-8 rounded-md flex items-center justify-center gap-1 overflow-hidden"
+                                style={{ background: t.bg }}
+                              >
+                                <div className="w-3 h-3 rounded-full" style={{ background: t.primary }} />
+                                <div className="w-3 h-3 rounded-full" style={{ background: t.accent }} />
+                              </div>
+                              <span className="text-[10px] font-medium leading-none">{t.label}</span>
+                              {selected && (
+                                <span className="text-[9px] text-primary font-semibold">✓ Active</span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </FormItem>
                   )}
                 />
