@@ -31,7 +31,10 @@ import {
   RefreshCw,
   Pause,
   Play,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
+import { useSound } from "@/hooks/use-sound";
 import {
   Select,
   SelectContent,
@@ -207,6 +210,7 @@ export default function Game({ id }: { id: string }) {
     Array(totalCells).fill("0"),
   );
   const [selectedCell, setSelectedCell] = useState<number | null>(null);
+  const sounds = useSound();
   const [notesMode, setNotesMode] = useState(false);
   const [notes, setNotes] = useState<Record<number, Set<string>>>({});
   const [mistakes, setMistakes] = useState(0);
@@ -309,6 +313,7 @@ export default function Game({ id }: { id: string }) {
     (currentGrid: string[], solution?: string) => {
       if (!solution) return;
       if (currentGrid.join("") === solution) {
+        sounds.complete();
         setIsCompleted(true);
         completeGame.mutate(
           {
@@ -378,6 +383,7 @@ export default function Game({ id }: { id: string }) {
       if (initialGrid[selectedCell] !== "0") return;
 
       if (notesMode) {
+        sounds.note();
         setNotes((prev) => {
           const cellNotes = new Set(prev[selectedCell] || []);
           cellNotes.has(num) ? cellNotes.delete(num) : cellNotes.add(num);
@@ -398,10 +404,12 @@ export default function Game({ id }: { id: string }) {
 
       if (solution && solution[selectedCell] !== num) {
         // Wrong answer — place it (highlighted red) and count mistake
+        sounds.error();
         const newMistakes = mistakes + 1;
         setMistakes(newMistakes);
         setWrongCells((prev) => new Set([...prev, selectedCell]));
         if (newMistakes >= MAX_MISTAKES) {
+          sounds.gameover();
           setIsGameOver(true);
           toast.error("Game Over! 3 mistakes reached.", { duration: 5000 });
         } else {
@@ -409,6 +417,7 @@ export default function Game({ id }: { id: string }) {
         }
       } else {
         // Correct — remove from wrong cells if it was wrong before
+        sounds.place();
         setWrongCells((prev) => {
           const s = new Set(prev);
           s.delete(selectedCell);
@@ -439,6 +448,7 @@ export default function Game({ id }: { id: string }) {
       initialGrid[selectedCell] !== "0"
     )
       return;
+    sounds.erase();
     const newGrid = [...grid];
     newGrid[selectedCell] = "0";
     setGrid(newGrid);
@@ -447,7 +457,7 @@ export default function Game({ id }: { id: string }) {
       s.delete(selectedCell);
       return s;
     });
-  }, [selectedCell, isCompleted, isGameOver, initialGrid, grid]);
+  }, [selectedCell, isCompleted, isGameOver, initialGrid, grid, sounds]);
 
   const handleHint = () => {
     if (
@@ -597,6 +607,15 @@ export default function Game({ id }: { id: string }) {
             <AlertTriangle className="h-4 w-4" />
             <span>{mistakes}/{MAX_MISTAKES}</span>
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            onClick={sounds.toggle}
+            title={sounds.enabled ? "Mute sounds" : "Unmute sounds"}
+          >
+            {sounds.enabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+          </Button>
           {!isCompleted && !isGameOver && (
             <Button
               variant="ghost"
@@ -729,7 +748,7 @@ export default function Game({ id }: { id: string }) {
             return (
               <div
                 key={index}
-                onClick={() => !isCompleted && !isGameOver && setSelectedCell(index)}
+                onClick={() => { if (!isCompleted && !isGameOver) { sounds.click(); setSelectedCell(index); } }}
                 className={[
                   "flex items-center justify-center cursor-pointer select-none transition-colors",
                   cellH,
