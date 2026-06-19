@@ -6,6 +6,8 @@ import { Check } from 'lucide-react';
 import { type ThemeId } from '@/lib/themes';
 import { useAuth } from '@/hooks/use-auth';
 import { useGetProfile, useUpdateProfile } from '@workspace/api-client-react';
+import { applyAppTheme } from '@/components/layout';
+import { useFontTheme, FONT_THEMES, type FontThemeId } from '@/hooks/use-font-theme';
 
 const APP_THEMES = [
   { id: 'light',    label: 'Classic',  bg: '#f8f6f0', primary: '#4a6585', accent: '#e8e4da' },
@@ -22,12 +24,24 @@ export default function Themes() {
   const { profileId } = useAuth();
   const { data: profile } = useGetProfile(profileId as number, { query: { enabled: !!profileId } });
   const updateProfile = useUpdateProfile();
+  const { fontId, setFontId } = useFontTheme();
 
-  const currentAppTheme = profile?.theme ?? 'light';
+  // Local state so the selected swatch updates instantly on click
+  const [activeAppTheme, setActiveAppTheme] = React.useState<string>(profile?.theme ?? 'light');
+
+  // Sync with server value once loaded
+  React.useEffect(() => {
+    if (profile?.theme) setActiveAppTheme(profile.theme);
+  }, [profile?.theme]);
 
   const handleAppTheme = (id: string) => {
-    if (!profileId) return;
-    updateProfile.mutate({ id: profileId, data: { theme: id } });
+    // Apply immediately — no waiting for API
+    setActiveAppTheme(id);
+    applyAppTheme(id);
+    // Persist to DB if signed in
+    if (profileId) {
+      updateProfile.mutate({ id: profileId, data: { theme: id } });
+    }
   };
 
   return (
@@ -35,29 +49,29 @@ export default function Themes() {
       <div>
         <h1 className="text-3xl font-serif font-bold tracking-tight">Themes</h1>
         <p className="text-muted-foreground mt-1">
-          Personalise the look and feel of the app, and choose your game icon set.
+          Personalise the look, feel, and typography of the app, and choose your game icon set.
         </p>
       </div>
 
-      {/* ── App Theme ───────────────────────────────────────────────── */}
+      {/* ── App Colour Theme ─────────────────────────────────────────── */}
       <section className="space-y-3">
         <div>
-          <h2 className="text-xl font-serif font-semibold">App Theme</h2>
+          <h2 className="text-xl font-serif font-semibold">Colour Theme</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Changes the background and colour palette of the entire app.
+            Changes the background and colour palette of the entire app instantly.
           </p>
         </div>
 
         <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
           {APP_THEMES.map(t => {
-            const selected = currentAppTheme === t.id;
+            const selected = activeAppTheme === t.id;
             return (
               <button
                 key={t.id}
                 type="button"
                 onClick={() => handleAppTheme(t.id)}
                 className={[
-                  'rounded-xl border-2 p-2 flex flex-col items-center gap-1.5 transition-all duration-150',
+                  'rounded-xl border-2 p-2 flex flex-col items-center gap-1.5 transition-all duration-150 cursor-pointer',
                   selected
                     ? 'border-primary ring-2 ring-primary/30 shadow-sm'
                     : 'border-border hover:border-primary/40 hover:shadow-sm',
@@ -84,7 +98,51 @@ export default function Themes() {
 
       <div className="border-t" />
 
-      {/* ── Image Theme ─────────────────────────────────────────────── */}
+      {/* ── Font Style ───────────────────────────────────────────────── */}
+      <section className="space-y-3">
+        <div>
+          <h2 className="text-xl font-serif font-semibold">Font Style</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Changes the typeface used throughout the app.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {FONT_THEMES.map(f => {
+            const selected = fontId === f.id;
+            return (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setFontId(f.id as FontThemeId)}
+                className={[
+                  'rounded-xl border-2 p-3 flex flex-col items-center gap-2 transition-all duration-150 cursor-pointer',
+                  selected
+                    ? 'border-primary ring-2 ring-primary/30 shadow-sm bg-primary/5'
+                    : 'border-border hover:border-primary/40 hover:shadow-sm',
+                ].join(' ')}
+              >
+                <span
+                  className="text-3xl font-bold leading-none"
+                  style={f.style}
+                >
+                  Aa
+                </span>
+                <span className="text-[11px] font-medium">{f.label}</span>
+                {selected && (
+                  <span className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                    <Check className="w-2.5 h-2.5 text-primary-foreground" />
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <div className="border-t" />
+
+      {/* ── Game Icon Set ────────────────────────────────────────────── */}
       <section className="space-y-3">
         <div>
           <h2 className="text-xl font-serif font-semibold">Game Icon Set</h2>
@@ -119,7 +177,6 @@ export default function Themes() {
                     {theme.name}
                   </h3>
 
-                  {/* 9×9 icons */}
                   <div>
                     <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">9×9</p>
                     <div className="grid grid-cols-9 gap-0.5">
@@ -129,7 +186,6 @@ export default function Themes() {
                     </div>
                   </div>
 
-                  {/* 16×16 extra icons */}
                   <div>
                     <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">16×16 extras</p>
                     <div className="grid grid-cols-7 gap-0.5">
@@ -139,7 +195,6 @@ export default function Themes() {
                     </div>
                   </div>
 
-                  {/* All 16 character names */}
                   <div className="grid grid-cols-2 gap-x-3 gap-y-1">
                     {names.map((name, i) => (
                       <div key={i} className="flex items-center gap-1.5">

@@ -65,7 +65,7 @@ export const GetProfileResponse = zod.object({
   "id": zod.number(),
   "username": zod.string(),
   "avatar": zod.string().nullish(),
-  "theme": zod.enum(['light', 'dark']),
+  "theme": zod.enum(['light', 'dark', 'ocean', 'forest', 'sunset', 'midnight', 'rose']),
   "highlightErrors": zod.boolean().optional(),
   "showTimer": zod.boolean().optional(),
   "gems": zod.number().optional().describe('Accumulated gem balance usable for future in-game features'),
@@ -87,7 +87,7 @@ export const updateProfileBodyUsernameMax = 30;
 export const UpdateProfileBody = zod.object({
   "username": zod.string().min(1).max(updateProfileBodyUsernameMax).optional(),
   "avatar": zod.string().optional(),
-  "theme": zod.enum(['light', 'dark']).optional(),
+  "theme": zod.enum(['light', 'dark', 'ocean', 'forest', 'sunset', 'midnight', 'rose']).optional(),
   "highlightErrors": zod.boolean().optional(),
   "showTimer": zod.boolean().optional()
 })
@@ -96,7 +96,7 @@ export const UpdateProfileResponse = zod.object({
   "id": zod.number(),
   "username": zod.string(),
   "avatar": zod.string().nullish(),
-  "theme": zod.enum(['light', 'dark']),
+  "theme": zod.enum(['light', 'dark', 'ocean', 'forest', 'sunset', 'midnight', 'rose']),
   "highlightErrors": zod.boolean().optional(),
   "showTimer": zod.boolean().optional(),
   "gems": zod.number().optional().describe('Accumulated gem balance usable for future in-game features'),

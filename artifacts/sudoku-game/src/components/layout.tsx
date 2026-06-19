@@ -5,6 +5,16 @@ import { useClerk, useUser } from "@clerk/react";
 import { useGetProfile } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Trophy, User, Home, BarChart2, Palette, LogIn, LogOut, Gem } from "lucide-react";
+import { useFontTheme } from "@/hooks/use-font-theme";
+
+export function applyAppTheme(theme: string) {
+  document.documentElement.setAttribute("data-theme", theme);
+  if (theme === "dark" || theme === "midnight") {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
@@ -13,14 +23,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { signOut } = useClerk();
   const { data: profile } = useGetProfile(profileId as number, { query: { enabled: !!profileId } });
 
+  useFontTheme();
+
   React.useEffect(() => {
-    const theme = profile?.theme ?? "light";
-    document.documentElement.setAttribute("data-theme", theme);
-    if (theme === "dark" || theme === "midnight") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    applyAppTheme(profile?.theme ?? "light");
   }, [profile?.theme]);
 
   const navItems = [
