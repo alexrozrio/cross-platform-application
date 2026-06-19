@@ -41,7 +41,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     href === "/" ? location === "/" : location.startsWith(href);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background text-foreground transition-colors duration-200">
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-200" style={{ minHeight: "100svh" }}>
       <header className="border-b bg-card py-4 px-6 flex items-center justify-between sticky top-0 z-10">
         <Link href="/" className="font-serif text-2xl font-bold tracking-tight text-primary">
           Game Hub
@@ -103,7 +103,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      <nav className="md:hidden border-t bg-card pt-2 pb-3 px-2 flex items-center justify-around sticky bottom-0 z-10 pb-safe">
+      <nav className="md:hidden border-t bg-card pt-2 px-2 flex items-center justify-around sticky bottom-0 z-10" style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}>
         {navItems.map((item) => (
           <Link
             key={item.href}

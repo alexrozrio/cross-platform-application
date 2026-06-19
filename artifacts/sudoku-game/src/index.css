@@ -311,6 +311,27 @@
   }
 }
 
+/* ─── Mobile / browser compatibility ──────────────────────────────────────── */
+
+/* Eliminate 300 ms tap delay on older Android / Samsung Internet */
+* {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Buttons and interactive elements keep pointer cursor */
+button, [role="button"] {
+  touch-action: manipulation;
+}
+
+/* Backdrop-blur fallback for browsers without filter support */
+@supports not (backdrop-filter: blur(1px)) {
+  .backdrop-blur-md {
+    background-color: hsl(var(--background) / 0.95) !important;
+  }
+}
+
+/* ─── Legacy sudoku classes (used by older pages / tests) ─────────────────── */
 .sudoku-grid {
   display: grid;
   grid-template-columns: repeat(9, 1fr);

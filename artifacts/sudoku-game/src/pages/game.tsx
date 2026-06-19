@@ -117,8 +117,8 @@ function CellContent({
   gridSize: number;
   cellNotes?: Set<string>;
 }) {
-  const imgSize = gridSize === 3 ? 52 : gridSize === 4 ? 46 : gridSize === 16 ? 18 : 32;
-  const alphaSize = gridSize === 3 ? 44 : gridSize === 4 ? 36 : gridSize === 16 ? 12 : 24;
+  const imgSize = gridSize === 3 ? 44 : gridSize === 4 ? 38 : gridSize === 16 ? 14 : 24;
+  const alphaSize = gridSize === 3 ? 36 : gridSize === 4 ? 30 : gridSize === 16 ? 10 : 20;
 
   if (val !== "0") {
     const n = decodeFromGrid(val);
@@ -562,22 +562,17 @@ export default function Game({ id }: { id: string }) {
     16: "16×16 Pro",
   };
 
-  // Cell sizing
-  const cellH =
-    gridSize === 3 ? "h-20 w-20"
-    : gridSize === 4 ? "h-[72px] w-[72px]"
-    : gridSize === 16 ? "h-9 w-9"
-    : "h-11 w-11";
+  // Cell sizing — width is driven by the 1fr grid, height matches via aspect-square
   const cellText =
     mode === "number"
-      ? gridSize === 3 ? "text-4xl"
-        : gridSize === 4 ? "text-2xl"
-        : gridSize === 16 ? "text-xs font-bold"
-        : "text-base"
+      ? gridSize === 3 ? "text-2xl sm:text-4xl"
+        : gridSize === 4 ? "text-lg sm:text-2xl"
+        : gridSize === 16 ? "text-[7px] sm:text-[9px] font-bold"
+        : "text-sm sm:text-base"
       : "";
 
   return (
-    <div className="flex flex-col items-center max-w-lg mx-auto w-full gap-5 animate-in fade-in duration-300 pb-20">
+    <div className="flex flex-col items-center max-w-lg mx-auto w-full gap-3 sm:gap-5 animate-in fade-in duration-300 pb-16 sm:pb-20">
       {/* Header */}
       <div className="flex items-center justify-between w-full">
         <Button
@@ -592,38 +587,38 @@ export default function Game({ id }: { id: string }) {
           <span>•</span>
           <span className="capitalize">{game.puzzle?.difficulty}</span>
         </div>
-        <div className="flex items-center gap-2 text-sm font-medium">
+        <div className="flex items-center gap-1 sm:gap-2 text-sm font-medium">
           {profile?.showTimer !== false && (
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              <span className="font-mono">{formattedTime}</span>
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <Clock className="h-3.5 w-3.5 hidden xs:block" />
+              <span className="font-mono text-xs sm:text-sm">{formattedTime}</span>
             </div>
           )}
-          <div className={`flex items-center gap-1.5 font-semibold ${
+          <div className={`flex items-center gap-1 font-semibold ${
             mistakes === 0 ? "text-muted-foreground"
             : mistakes === 1 ? "text-orange-500"
             : "text-red-500"
           }`}>
-            <AlertTriangle className="h-4 w-4" />
-            <span>{mistakes}/{MAX_MISTAKES}</span>
+            <AlertTriangle className="h-3.5 w-3.5" />
+            <span className="text-xs sm:text-sm">{mistakes}/{MAX_MISTAKES}</span>
           </div>
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-foreground"
             onClick={sounds.toggle}
             title={sounds.enabled ? "Mute sounds" : "Unmute sounds"}
           >
-            {sounds.enabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            {sounds.enabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
           </Button>
           {!isCompleted && !isGameOver && (
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-foreground"
               onClick={() => setIsPaused((p) => !p)}
             >
-              {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+              {isPaused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
             </Button>
           )}
         </div>
@@ -750,8 +745,7 @@ export default function Game({ id }: { id: string }) {
                 key={index}
                 onClick={() => { if (!isCompleted && !isGameOver) { sounds.click(); setSelectedCell(index); } }}
                 className={[
-                  "flex items-center justify-center cursor-pointer select-none transition-colors",
-                  cellH,
+                  "flex items-center justify-center cursor-pointer select-none transition-colors aspect-square min-w-0 min-h-0",
                   cellText,
                   rightBorder ? "border-r-2 border-r-foreground/40" : "",
                   bottomBorder ? "border-b-2 border-b-foreground/40" : "",
@@ -872,27 +866,27 @@ export default function Game({ id }: { id: string }) {
 
       {/* Controls */}
       {!isCompleted && (
-        <div className="grid grid-cols-4 gap-2 w-full">
+        <div className="grid grid-cols-4 gap-1.5 sm:gap-2 w-full">
           <Button
             variant={notesMode ? "default" : "secondary"}
-            className="flex-col h-16 gap-0.5"
+            className="flex-col h-12 sm:h-16 gap-0.5"
             onClick={() => setNotesMode(!notesMode)}
           >
-            <PenLine className="h-5 w-5" />
-            <span className="text-xs">Notes</span>
+            <PenLine className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-[11px] sm:text-xs">Notes</span>
           </Button>
 
           {/* Mistakes remaining */}
           <div className={[
-            "flex flex-col items-center justify-center h-16 rounded-md border gap-0.5 select-none",
+            "flex flex-col items-center justify-center h-12 sm:h-16 rounded-md border gap-0.5 select-none",
             mistakes === 0
               ? "bg-muted/50 border-border text-muted-foreground"
               : mistakes === 1
               ? "bg-orange-50 border-orange-200 text-orange-600"
               : "bg-red-50 border-red-200 text-red-600",
           ].join(" ")}>
-            <AlertTriangle className="h-5 w-5" />
-            <span className="text-[11px] font-semibold leading-none">
+            <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-[10px] sm:text-[11px] font-semibold leading-none">
               {MAX_MISTAKES - mistakes} left
             </span>
           </div>
@@ -900,7 +894,7 @@ export default function Game({ id }: { id: string }) {
           {/* Hint button with remaining count */}
           <Button
             variant="secondary"
-            className="flex-col h-16 gap-0.5 relative"
+            className="flex-col h-12 sm:h-16 gap-0.5 relative"
             onClick={handleHint}
             disabled={
               isGameOver ||
@@ -909,9 +903,9 @@ export default function Game({ id }: { id: string }) {
               grid[selectedCell] !== "0"
             }
           >
-            <Lightbulb className={`h-5 w-5 ${hints >= MAX_HINTS ? "opacity-40" : ""}`} />
-            <span className="text-xs">Hint</span>
-            <span className={`text-[10px] font-bold leading-none ${
+            <Lightbulb className={`h-4 w-4 sm:h-5 sm:w-5 ${hints >= MAX_HINTS ? "opacity-40" : ""}`} />
+            <span className="text-[11px] sm:text-xs">Hint</span>
+            <span className={`text-[9px] sm:text-[10px] font-bold leading-none ${
               hints >= MAX_HINTS ? "text-red-400" : "text-primary"
             }`}>
               {MAX_HINTS - hints} left
@@ -920,7 +914,7 @@ export default function Game({ id }: { id: string }) {
 
           <Button
             variant="secondary"
-            className="flex-col h-16 gap-0.5"
+            className="flex-col h-12 sm:h-16 gap-0.5"
             onClick={handleErase}
             disabled={
               isGameOver ||
@@ -928,8 +922,8 @@ export default function Game({ id }: { id: string }) {
               initialGrid[selectedCell] !== "0"
             }
           >
-            <Eraser className="h-5 w-5" />
-            <span className="text-xs">Erase</span>
+            <Eraser className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-[11px] sm:text-xs">Erase</span>
           </Button>
         </div>
       )}
@@ -950,7 +944,7 @@ export default function Game({ id }: { id: string }) {
               variant="outline"
               className={[
                 "flex items-center justify-center",
-                mode !== "number" ? "h-12 p-0.5" : gridSize === 16 ? "h-10" : "h-14",
+                mode !== "number" ? "h-10 sm:h-12 p-0.5" : gridSize === 16 ? "h-8 sm:h-10" : "h-10 sm:h-14",
               ].join(" ")}
               onClick={() => handleNumberInput(encodeForGrid(num))}
             >
@@ -958,7 +952,7 @@ export default function Game({ id }: { id: string }) {
                 <ThemeIcon
                   themeId={themeId}
                   value={num}
-                  size={gridSize <= 4 ? 46 : gridSize === 16 ? 22 : 34}
+                  size={gridSize <= 4 ? 36 : gridSize === 16 ? 16 : 24}
                 />
               ) : mode === "alpha" ? (
                 <AlphaLetter
