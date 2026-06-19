@@ -20,6 +20,7 @@ export default function Themes() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {IMAGE_THEMES.map(theme => {
           const isSelected = themeId === theme.id;
+          const names = getCharacterNames(theme.id);
           return (
             <button
               key={theme.id}
@@ -37,25 +38,36 @@ export default function Themes() {
                 </span>
               )}
 
-              <div className="space-y-4">
+              <div className="space-y-3">
+                <h2 className={['text-lg font-bold', isSelected ? 'text-primary' : ''].join(' ')}>
+                  {theme.name}
+                </h2>
+
+                {/* 9×9 row (values 1–9) */}
                 <div>
-                  <h2 className={['text-lg font-bold', isSelected ? 'text-primary' : ''].join(' ')}>
-                    {theme.name}
-                  </h2>
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">9×9</p>
+                  <div className="grid grid-cols-9 gap-0.5">
+                    {Array.from({ length: 9 }, (_, i) => i + 1).map(n => (
+                      <ThemeIcon key={n} themeId={theme.id} value={n} size={28} />
+                    ))}
+                  </div>
                 </div>
 
-                {/* Full 9-icon row */}
-                <div className="grid grid-cols-9 gap-0.5">
-                  {Array.from({ length: 9 }, (_, i) => i + 1).map(n => (
-                    <ThemeIcon key={n} themeId={theme.id} value={n} size={30} />
-                  ))}
+                {/* 16×16 row (values 10–16 extras) */}
+                <div>
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">16×16 extras</p>
+                  <div className="grid grid-cols-7 gap-0.5">
+                    {Array.from({ length: 7 }, (_, i) => i + 10).map(n => (
+                      <ThemeIcon key={n} themeId={theme.id} value={n} size={28} />
+                    ))}
+                  </div>
                 </div>
 
-                {/* Character names */}
-                <div className="grid grid-cols-3 gap-x-3 gap-y-1.5">
-                  {getCharacterNames(theme.id).map((name, i) => (
+                {/* Character names — all 16 */}
+                <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                  {names.map((name, i) => (
                     <div key={i} className="flex items-center gap-1.5">
-                      <ThemeIcon themeId={theme.id} value={i + 1} size={16} />
+                      <ThemeIcon themeId={theme.id} value={i + 1} size={14} />
                       <span className="text-[10px] text-muted-foreground truncate">{name}</span>
                     </div>
                   ))}
@@ -75,12 +87,12 @@ export default function Themes() {
 
 function getCharacterNames(themeId: ThemeId): string[] {
   const names: Record<ThemeId, string[]> = {
-    superhero:  ['Spider-Man', 'Superman', 'Batman', 'Wonder Woman', 'Iron Man', 'Cap America', 'Thor', 'Hulk', 'The Flash'],
-    adventure:  ['Explorer', 'Fox', 'Map', 'Backpack', 'Flower', 'Telescope', 'Key', 'Rainbow', 'Trophy'],
-    ocean:      ['Dolphin', 'Octopus', 'Shark', 'Clownfish', 'Crab', 'Pufferfish', 'Squid', 'Turtle', 'Lobster'],
-    jungle:     ['Monkey', 'Lion', 'Elephant', 'Giraffe', 'Zebra', 'Rhino', 'Leopard', 'Gorilla', 'Parrot'],
-    space:      ['Rocket', 'Star', 'Moon', 'Comet', 'Saturn', 'Earth', 'Alien', 'UFO', 'Astronaut'],
-    shapes:     ['Circle', 'Square', 'Triangle', 'Diamond', 'Star', 'Hexagon', 'Heart', 'Cross', 'Ring'],
+    shapes:    ['Circle', 'Square', 'Triangle', 'Diamond', 'Star', 'Hexagon', 'Heart', 'Cross', 'Ring', 'Cyan Diamond', 'Spiral', 'Crescent', 'Arrow', 'Gear', 'Lightning', 'Infinity'],
+    adventure: ['Explorer', 'Fox', 'Map', 'Backpack', 'Flower', 'Telescope', 'Key', 'Rainbow', 'Trophy', 'Compass', 'Campfire', 'Lantern', 'Butterfly', 'Mushroom', 'Magic Wand', 'Dartboard'],
+    superhero: ['Spider-Man', 'Superman', 'Batman', 'Wonder Woman', 'Iron Man', 'Cap America', 'Thor', 'Hulk', 'The Flash', 'Villain', 'Tornado', 'Sparkle', 'Eagle', 'Crossed Swords', 'Magnet', 'Bullseye'],
+    ocean:     ['Dolphin', 'Octopus', 'Shark', 'Clownfish', 'Crab', 'Pufferfish', 'Squid', 'Turtle', 'Lobster', 'Whale', 'Seal', 'Seashell', 'Coral', 'Shrimp', 'Fish', 'Wave'],
+    jungle:    ['Monkey', 'Lion', 'Elephant', 'Giraffe', 'Zebra', 'Rhino', 'Leopard', 'Gorilla', 'Parrot', 'Crocodile', 'Lizard', 'Butterfly', 'Leaf Cluster', 'Palm Tree', 'Hibiscus', 'Caterpillar'],
+    space:     ['Rocket', 'Star', 'Moon', 'Comet', 'Saturn', 'Earth', 'Alien', 'UFO', 'Astronaut', 'Galaxy', 'Telescope', 'Shooting Star', 'Satellite', 'Sun', 'New Moon', 'Mars'],
   };
   return names[themeId] ?? [];
 }
