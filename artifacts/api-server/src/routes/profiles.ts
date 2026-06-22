@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, or } from "drizzle-orm";
+import { eq, or, ilike, ne, and } from "drizzle-orm";
 import { db, profilesTable } from "@workspace/db";
 import {
   CreateProfileBody,
@@ -63,6 +63,31 @@ router.post("/profiles/sync", async (req, res): Promise<void> => {
   }).returning();
 
   res.status(201).json(GetProfileResponse.parse({ ...newProfile, createdAt: newProfile.createdAt.toISOString() }));
+});
+
+// ─── Search profiles ─────────────────────────────────────────────────────────
+
+router.get("/profiles/search", async (req, res): Promise<void> => {
+  const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  const excludeId = req.query.exclude ? parseInt(req.query.exclude as string, 10) : null;
+
+  if (!q || q.length < 1) {
+    res.json([]);
+    return;
+  }
+
+  let query = db
+    .select({ id: profilesTable.id, username: profilesTable.username, avatar: profilesTable.avatar, gems: profilesTable.gems })
+    .from(profilesTable)
+    .where(
+      excludeId
+        ? and(ilike(profilesTable.username, `%${q}%`), ne(profilesTable.id, excludeId))
+        : ilike(profilesTable.username, `%${q}%`),
+    )
+    .$dynamic();
+
+  const results = await query.limit(10);
+  res.json(results);
 });
 
 // ─── Create profile (manual / legacy) ──────────────────────────────────────

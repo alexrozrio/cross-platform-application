@@ -14,6 +14,7 @@ import {
 } from "@workspace/api-zod";
 import { calcPoints, calcGems } from "../utils/points";
 import { awardPreviousPeriodBadges } from "../utils/awards";
+import { resolveChallengeForGame } from "./challenges";
 import { sql } from "drizzle-orm";
 
 function todayDateString(): string {
@@ -196,6 +197,7 @@ router.post("/games/:id/complete", async (req, res): Promise<void> => {
   res.json(CompleteGameResponse.parse(formatGame(game, puzzle)));
 
   awardPreviousPeriodBadges().catch(() => {});
+  resolveChallengeForGame(params.data.id).catch(() => {});
 });
 
 export default router;

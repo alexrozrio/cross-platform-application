@@ -266,6 +266,111 @@ export interface BadgeShare {
   avatar?: string | null;
 }
 
+export interface ProfileSummary {
+  id: number;
+  username: string;
+  /** @nullable */
+  avatar?: string | null;
+  gems?: number;
+}
+
+export type ChallengeInputDifficulty = typeof ChallengeInputDifficulty[keyof typeof ChallengeInputDifficulty];
+
+
+export const ChallengeInputDifficulty = {
+  easy: 'easy',
+  medium: 'medium',
+  hard: 'hard',
+  expert: 'expert',
+} as const;
+
+export type ChallengeInputGridSize = typeof ChallengeInputGridSize[keyof typeof ChallengeInputGridSize];
+
+
+export const ChallengeInputGridSize = {
+  NUMBER_3: 3,
+  NUMBER_4: 4,
+  NUMBER_9: 9,
+  NUMBER_16: 16,
+} as const;
+
+export interface ChallengeInput {
+  challengerId: number;
+  challengedId: number;
+  difficulty: ChallengeInputDifficulty;
+  gridSize: ChallengeInputGridSize;
+}
+
+export type ChallengeResponseAction = typeof ChallengeResponseAction[keyof typeof ChallengeResponseAction];
+
+
+export const ChallengeResponseAction = {
+  accept: 'accept',
+  decline: 'decline',
+} as const;
+
+export interface ChallengeResponse {
+  action: ChallengeResponseAction;
+  profileId?: number;
+}
+
+export type ChallengeDetailStatus = typeof ChallengeDetailStatus[keyof typeof ChallengeDetailStatus];
+
+
+export const ChallengeDetailStatus = {
+  pending: 'pending',
+  accepted: 'accepted',
+  declined: 'declined',
+  completed: 'completed',
+} as const;
+
+export type ChallengeDetailDifficulty = typeof ChallengeDetailDifficulty[keyof typeof ChallengeDetailDifficulty];
+
+
+export const ChallengeDetailDifficulty = {
+  easy: 'easy',
+  medium: 'medium',
+  hard: 'hard',
+  expert: 'expert',
+} as const;
+
+export type ChallengeDetailGridSize = typeof ChallengeDetailGridSize[keyof typeof ChallengeDetailGridSize];
+
+
+export const ChallengeDetailGridSize = {
+  NUMBER_3: 3,
+  NUMBER_4: 4,
+  NUMBER_9: 9,
+  NUMBER_16: 16,
+} as const;
+
+export interface ChallengeDetail {
+  id: number;
+  challengerId: number;
+  challengedId: number;
+  puzzleId: number;
+  status: ChallengeDetailStatus;
+  /** @nullable */
+  challengerGameId?: number | null;
+  /** @nullable */
+  challengedGameId?: number | null;
+  /** @nullable */
+  winnerId?: number | null;
+  challengerUsername: string;
+  challengedUsername: string;
+  /** @nullable */
+  challengerAvatar?: string | null;
+  /** @nullable */
+  challengedAvatar?: string | null;
+  /** @nullable */
+  challengerPoints?: number | null;
+  /** @nullable */
+  challengedPoints?: number | null;
+  difficulty?: ChallengeDetailDifficulty;
+  gridSize?: ChallengeDetailGridSize;
+  createdAt: string;
+}
+
 export type GeneratePuzzleParams = {
 difficulty?: GeneratePuzzleDifficulty;
 gridSize?: GeneratePuzzleGridSize;
@@ -332,4 +437,12 @@ export const GetTournamentLeaderboardGridSize = {
   NUMBER_9: 9,
   NUMBER_16: 16,
 } as const;
+
+export type SearchProfilesParams = {
+q: string;
+/**
+ * Profile ID to exclude from results
+ */
+exclude?: number;
+};
 

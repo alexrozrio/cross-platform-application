@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useClerk, useUser } from "@clerk/react";
 import { useGetProfile } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
-import { Trophy, User, Home, BarChart2, Palette, LogIn, LogOut, Gem } from "lucide-react";
+import { Trophy, User, Home, BarChart2, Palette, LogIn, LogOut, Gem, Swords } from "lucide-react";
 import { useFontTheme } from "@/hooks/use-font-theme";
 
 export function applyAppTheme(theme: string) {
@@ -32,6 +32,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { href: "/", label: "Home", icon: Home },
     { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+    { href: "/challenges", label: "Challenges", icon: Swords },
     { href: "/stats", label: "Stats", icon: BarChart2 },
     { href: "/themes", label: "Themes", icon: Palette },
     { href: "/profile", label: isSignedIn ? (user?.firstName || "Account") : "Profile", icon: User },

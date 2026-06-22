@@ -23,6 +23,8 @@ tags:
     description: Weekly and monthly tournaments
   - name: badges
     description: Achievement badges
+  - name: challenges
+    description: Player vs Player challenges
 paths:
   /healthz:
     get:
@@ -379,6 +381,121 @@ paths:
                 items:
                   $ref: "#/components/schemas/Badge"
 
+  /challenges:
+    post:
+      operationId: createChallenge
+      tags: [challenges]
+      summary: Create a new challenge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChallengeInput"
+      responses:
+        "201":
+          description: Challenge created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChallengeDetail"
+
+  /challenges/for/{profileId}:
+    get:
+      operationId: getChallengesForProfile
+      tags: [challenges]
+      summary: Get all challenges for a profile (incoming and outgoing)
+      parameters:
+        - name: profileId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of challenges
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChallengeDetail"
+
+  /challenges/{id}:
+    get:
+      operationId: getChallenge
+      tags: [challenges]
+      summary: Get a specific challenge
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Challenge detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChallengeDetail"
+        "404":
+          description: Not found
+
+  /challenges/{id}/respond:
+    patch:
+      operationId: respondToChallenge
+      tags: [challenges]
+      summary: Accept or decline a challenge
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChallengeResponse"
+      responses:
+        "200":
+          description: Updated challenge
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChallengeDetail"
+        "404":
+          description: Not found
+
+  /profiles/search:
+    get:
+      operationId: searchProfiles
+      tags: [profiles]
+      summary: Search profiles by username
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: exclude
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Profile ID to exclude from results
+      responses:
+        "200":
+          description: Matching profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProfileSummary"
+
 components:
   schemas:
     HealthStatus:
@@ -671,3 +788,83 @@ components:
           type: string
         avatar:
           type: ["string", "null"]
+
+    ProfileSummary:
+      type: object
+      required: [id, username]
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        avatar:
+          type: ["string", "null"]
+        gems:
+          type: integer
+
+    ChallengeInput:
+      type: object
+      required: [challengerId, challengedId, difficulty, gridSize]
+      properties:
+        challengerId:
+          type: integer
+        challengedId:
+          type: integer
+        difficulty:
+          type: string
+          enum: [easy, medium, hard, expert]
+        gridSize:
+          type: integer
+          enum: [3, 4, 9, 16]
+
+    ChallengeResponse:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+          enum: [accept, decline]
+        profileId:
+          type: integer
+
+    ChallengeDetail:
+      type: object
+      required: [id, challengerId, challengedId, puzzleId, status, createdAt, challengerUsername, challengedUsername]
+      properties:
+        id:
+          type: integer
+        challengerId:
+          type: integer
+        challengedId:
+          type: integer
+        puzzleId:
+          type: integer
+        status:
+          type: string
+          enum: [pending, accepted, declined, completed]
+        challengerGameId:
+          type: ["integer", "null"]
+        challengedGameId:
+          type: ["integer", "null"]
+        winnerId:
+          type: ["integer", "null"]
+        challengerUsername:
+          type: string
+        challengedUsername:
+          type: string
+        challengerAvatar:
+          type: ["string", "null"]
+        challengedAvatar:
+          type: ["string", "null"]
+        challengerPoints:
+          type: ["integer", "null"]
+        challengedPoints:
+          type: ["integer", "null"]
+        difficulty:
+          type: string
+          enum: [easy, medium, hard, expert]
+        gridSize:
+          type: integer
+          enum: [3, 4, 9, 16]
+        createdAt:
+          type: string

@@ -20,6 +20,7 @@ import Stats from "@/pages/stats";
 import Themes from "@/pages/themes";
 import BadgeSharePage from "@/pages/badge-share";
 import DailyChallenge from "@/pages/daily-challenge";
+import Challenges from "@/pages/challenges";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
@@ -157,6 +158,7 @@ function Router() {
           <Route path="/daily-challenge" component={DailyChallenge} />
           <Route path="/leaderboard" component={Leaderboard} />
           <Route path="/stats" component={Stats} />
+          <Route path="/challenges" component={Challenges} />
           <Route path="/badges/:token" component={BadgeSharePage} />
           {/* REQUIRED — /*? matches bare URL and Clerk OAuth sub-paths */}
           <Route path="/sign-in/*?" component={SignInPage} />

@@ -372,3 +372,123 @@ export const GetProfileBadgesResponseItem = zod.object({
 export const GetProfileBadgesResponse = zod.array(GetProfileBadgesResponseItem)
 
 
+/**
+ * @summary Create a new challenge
+ */
+export const CreateChallengeBody = zod.object({
+  "challengerId": zod.number(),
+  "challengedId": zod.number(),
+  "difficulty": zod.enum(['easy', 'medium', 'hard', 'expert']),
+  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(9),zod.literal(16)])
+})
+
+export const CreateChallengeResponse = zod.void()
+
+
+/**
+ * @summary Get all challenges for a profile (incoming and outgoing)
+ */
+export const GetChallengesForProfileParams = zod.object({
+  "profileId": zod.coerce.number()
+})
+
+export const GetChallengesForProfileResponseItem = zod.object({
+  "id": zod.number(),
+  "challengerId": zod.number(),
+  "challengedId": zod.number(),
+  "puzzleId": zod.number(),
+  "status": zod.enum(['pending', 'accepted', 'declined', 'completed']),
+  "challengerGameId": zod.number().nullish(),
+  "challengedGameId": zod.number().nullish(),
+  "winnerId": zod.number().nullish(),
+  "challengerUsername": zod.string(),
+  "challengedUsername": zod.string(),
+  "challengerAvatar": zod.string().nullish(),
+  "challengedAvatar": zod.string().nullish(),
+  "challengerPoints": zod.number().nullish(),
+  "challengedPoints": zod.number().nullish(),
+  "difficulty": zod.enum(['easy', 'medium', 'hard', 'expert']).optional(),
+  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(9),zod.literal(16)]).optional(),
+  "createdAt": zod.string()
+})
+export const GetChallengesForProfileResponse = zod.array(GetChallengesForProfileResponseItem)
+
+
+/**
+ * @summary Get a specific challenge
+ */
+export const GetChallengeParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetChallengeResponse = zod.object({
+  "id": zod.number(),
+  "challengerId": zod.number(),
+  "challengedId": zod.number(),
+  "puzzleId": zod.number(),
+  "status": zod.enum(['pending', 'accepted', 'declined', 'completed']),
+  "challengerGameId": zod.number().nullish(),
+  "challengedGameId": zod.number().nullish(),
+  "winnerId": zod.number().nullish(),
+  "challengerUsername": zod.string(),
+  "challengedUsername": zod.string(),
+  "challengerAvatar": zod.string().nullish(),
+  "challengedAvatar": zod.string().nullish(),
+  "challengerPoints": zod.number().nullish(),
+  "challengedPoints": zod.number().nullish(),
+  "difficulty": zod.enum(['easy', 'medium', 'hard', 'expert']).optional(),
+  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(9),zod.literal(16)]).optional(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Accept or decline a challenge
+ */
+export const RespondToChallengeParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const RespondToChallengeBody = zod.object({
+  "action": zod.enum(['accept', 'decline']),
+  "profileId": zod.number().optional()
+})
+
+export const RespondToChallengeResponse = zod.object({
+  "id": zod.number(),
+  "challengerId": zod.number(),
+  "challengedId": zod.number(),
+  "puzzleId": zod.number(),
+  "status": zod.enum(['pending', 'accepted', 'declined', 'completed']),
+  "challengerGameId": zod.number().nullish(),
+  "challengedGameId": zod.number().nullish(),
+  "winnerId": zod.number().nullish(),
+  "challengerUsername": zod.string(),
+  "challengedUsername": zod.string(),
+  "challengerAvatar": zod.string().nullish(),
+  "challengedAvatar": zod.string().nullish(),
+  "challengerPoints": zod.number().nullish(),
+  "challengedPoints": zod.number().nullish(),
+  "difficulty": zod.enum(['easy', 'medium', 'hard', 'expert']).optional(),
+  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(9),zod.literal(16)]).optional(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Search profiles by username
+ */
+export const SearchProfilesQueryParams = zod.object({
+  "q": zod.coerce.string(),
+  "exclude": zod.coerce.number().optional().describe('Profile ID to exclude from results')
+})
+
+export const SearchProfilesResponseItem = zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "avatar": zod.string().nullish(),
+  "gems": zod.number().optional()
+})
+export const SearchProfilesResponse = zod.array(SearchProfilesResponseItem)
+
+

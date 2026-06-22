@@ -22,6 +22,9 @@ import type {
 import type {
   Badge,
   BadgeShare,
+  ChallengeDetail,
+  ChallengeInput,
+  ChallengeResponse,
   Game,
   GameCompletion,
   GameInput,
@@ -34,9 +37,11 @@ import type {
   PlayerStats,
   Profile,
   ProfileInput,
+  ProfileSummary,
   ProfileSync,
   ProfileUpdate,
   Puzzle,
+  SearchProfilesParams,
   TournamentLeaderboard
 } from './api.schemas';
 
@@ -1254,6 +1259,385 @@ export function useGetProfileBadges<TData = Awaited<ReturnType<typeof getProfile
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetProfileBadgesQueryOptions(profileId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateChallengeUrl = () => {
+
+
+
+
+  return `/api/challenges`
+}
+
+/**
+ * @summary Create a new challenge
+ */
+export const createChallenge = async (challengeInput: ChallengeInput, options?: RequestInit): Promise<ChallengeDetail> => {
+
+  return customFetch<ChallengeDetail>(getCreateChallengeUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(challengeInput)
+  }
+);}
+
+
+
+
+export const getCreateChallengeMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createChallenge>>, TError,{data: BodyType<ChallengeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createChallenge>>, TError,{data: BodyType<ChallengeInput>}, TContext> => {
+
+const mutationKey = ['createChallenge'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createChallenge>>, {data: BodyType<ChallengeInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createChallenge(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateChallengeMutationResult = NonNullable<Awaited<ReturnType<typeof createChallenge>>>
+    export type CreateChallengeMutationBody = BodyType<ChallengeInput>
+    export type CreateChallengeMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a new challenge
+ */
+export const useCreateChallenge = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createChallenge>>, TError,{data: BodyType<ChallengeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createChallenge>>,
+        TError,
+        {data: BodyType<ChallengeInput>},
+        TContext
+      > => {
+      return useMutation(getCreateChallengeMutationOptions(options));
+    }
+
+export const getGetChallengesForProfileUrl = (profileId: number,) => {
+
+
+
+
+  return `/api/challenges/for/${profileId}`
+}
+
+/**
+ * @summary Get all challenges for a profile (incoming and outgoing)
+ */
+export const getChallengesForProfile = async (profileId: number, options?: RequestInit): Promise<ChallengeDetail[]> => {
+
+  return customFetch<ChallengeDetail[]>(getGetChallengesForProfileUrl(profileId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetChallengesForProfileQueryKey = (profileId: number,) => {
+    return [
+    `/api/challenges/for/${profileId}`
+    ] as const;
+    }
+
+
+export const getGetChallengesForProfileQueryOptions = <TData = Awaited<ReturnType<typeof getChallengesForProfile>>, TError = ErrorType<unknown>>(profileId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getChallengesForProfile>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetChallengesForProfileQueryKey(profileId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getChallengesForProfile>>> = ({ signal }) => getChallengesForProfile(profileId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: profileId !== null && profileId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getChallengesForProfile>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetChallengesForProfileQueryResult = NonNullable<Awaited<ReturnType<typeof getChallengesForProfile>>>
+export type GetChallengesForProfileQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get all challenges for a profile (incoming and outgoing)
+ */
+
+export function useGetChallengesForProfile<TData = Awaited<ReturnType<typeof getChallengesForProfile>>, TError = ErrorType<unknown>>(
+ profileId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getChallengesForProfile>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetChallengesForProfileQueryOptions(profileId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetChallengeUrl = (id: number,) => {
+
+
+
+
+  return `/api/challenges/${id}`
+}
+
+/**
+ * @summary Get a specific challenge
+ */
+export const getChallenge = async (id: number, options?: RequestInit): Promise<ChallengeDetail> => {
+
+  return customFetch<ChallengeDetail>(getGetChallengeUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetChallengeQueryKey = (id: number,) => {
+    return [
+    `/api/challenges/${id}`
+    ] as const;
+    }
+
+
+export const getGetChallengeQueryOptions = <TData = Awaited<ReturnType<typeof getChallenge>>, TError = ErrorType<void>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getChallenge>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetChallengeQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getChallenge>>> = ({ signal }) => getChallenge(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getChallenge>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetChallengeQueryResult = NonNullable<Awaited<ReturnType<typeof getChallenge>>>
+export type GetChallengeQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get a specific challenge
+ */
+
+export function useGetChallenge<TData = Awaited<ReturnType<typeof getChallenge>>, TError = ErrorType<void>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getChallenge>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetChallengeQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getRespondToChallengeUrl = (id: number,) => {
+
+
+
+
+  return `/api/challenges/${id}/respond`
+}
+
+/**
+ * @summary Accept or decline a challenge
+ */
+export const respondToChallenge = async (id: number,
+    challengeResponse: ChallengeResponse, options?: RequestInit): Promise<ChallengeDetail> => {
+
+  return customFetch<ChallengeDetail>(getRespondToChallengeUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(challengeResponse)
+  }
+);}
+
+
+
+
+export const getRespondToChallengeMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof respondToChallenge>>, TError,{id: number;data: BodyType<ChallengeResponse>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof respondToChallenge>>, TError,{id: number;data: BodyType<ChallengeResponse>}, TContext> => {
+
+const mutationKey = ['respondToChallenge'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof respondToChallenge>>, {id: number;data: BodyType<ChallengeResponse>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  respondToChallenge(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RespondToChallengeMutationResult = NonNullable<Awaited<ReturnType<typeof respondToChallenge>>>
+    export type RespondToChallengeMutationBody = BodyType<ChallengeResponse>
+    export type RespondToChallengeMutationError = ErrorType<void>
+
+    /**
+ * @summary Accept or decline a challenge
+ */
+export const useRespondToChallenge = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof respondToChallenge>>, TError,{id: number;data: BodyType<ChallengeResponse>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof respondToChallenge>>,
+        TError,
+        {id: number;data: BodyType<ChallengeResponse>},
+        TContext
+      > => {
+      return useMutation(getRespondToChallengeMutationOptions(options));
+    }
+
+export const getSearchProfilesUrl = (params: SearchProfilesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/profiles/search?${stringifiedParams}` : `/api/profiles/search`
+}
+
+/**
+ * @summary Search profiles by username
+ */
+export const searchProfiles = async (params: SearchProfilesParams, options?: RequestInit): Promise<ProfileSummary[]> => {
+
+  return customFetch<ProfileSummary[]>(getSearchProfilesUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getSearchProfilesQueryKey = (params?: SearchProfilesParams,) => {
+    return [
+    `/api/profiles/search`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getSearchProfilesQueryOptions = <TData = Awaited<ReturnType<typeof searchProfiles>>, TError = ErrorType<unknown>>(params: SearchProfilesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchProfiles>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getSearchProfilesQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchProfiles>>> = ({ signal }) => searchProfiles(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchProfiles>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type SearchProfilesQueryResult = NonNullable<Awaited<ReturnType<typeof searchProfiles>>>
+export type SearchProfilesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Search profiles by username
+ */
+
+export function useSearchProfiles<TData = Awaited<ReturnType<typeof searchProfiles>>, TError = ErrorType<unknown>>(
+ params: SearchProfilesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof searchProfiles>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getSearchProfilesQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
