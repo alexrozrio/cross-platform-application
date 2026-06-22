@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ClerkProvider, SignIn, SignUp, useClerk } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
@@ -199,6 +200,7 @@ export default function App() {
       <TooltipProvider>
         <ClerkProviderWithRoutes />
         <Toaster />
+        <SonnerToaster position="top-right" richColors closeButton />
       </TooltipProvider>
     </WouterRouter>
   );
