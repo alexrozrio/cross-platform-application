@@ -43,6 +43,7 @@ import {
   Star,
 } from "lucide-react";
 import { BADGE_META, formatPeriodLabel } from "@/lib/badge-utils";
+import { BadgeShareSheet } from "@/components/badge-share-sheet";
 import { useQuery } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
 
@@ -107,16 +108,12 @@ export default function Profile() {
     enabled: !!profileId,
   });
 
-  const handleShareBadge = async (shareToken: string) => {
-    const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-    const url = `${window.location.origin}${base}/badges/${shareToken}`;
-    if (navigator.share) {
-      await navigator.share({ title: "My tournament badge", url });
-    } else {
-      await navigator.clipboard.writeText(url);
-      toast.success("Badge link copied!");
-    }
-  };
+  const [shareSheetToken, setShareSheetToken] = React.useState<string | null>(null);
+  const shareSheetBadge = badges?.find((b) => b.shareToken === shareSheetToken);
+  const shareSheetMeta = shareSheetBadge ? (BADGE_META[shareSheetBadge.badgeType] ?? BADGE_META["weekly_1st"]) : null;
+  const shareSheetUrl = shareSheetToken
+    ? `${window.location.origin}${import.meta.env.BASE_URL.replace(/\/$/, "")}/badges/${shareSheetToken}`
+    : "";
 
   if (!isLoaded || isLoading) {
     return (
@@ -326,7 +323,7 @@ export default function Profile() {
                       size="sm"
                       variant="ghost"
                       className="gap-1.5 text-xs h-8"
-                      onClick={() => handleShareBadge(badge.shareToken)}
+                      onClick={() => setShareSheetToken(badge.shareToken)}
                     >
                       <Share2 className="w-3.5 h-3.5" />
                       Share
@@ -417,6 +414,17 @@ export default function Profile() {
             </Form>
           </CardContent>
         </Card>
+      )}
+      {shareSheetBadge && shareSheetMeta && (
+        <BadgeShareSheet
+          open={!!shareSheetToken}
+          onClose={() => setShareSheetToken(null)}
+          shareUrl={shareSheetUrl}
+          badgeTitle={shareSheetMeta.title}
+          username={profile?.username ?? "Player"}
+          points={shareSheetBadge.totalPoints}
+          period={formatPeriodLabel(shareSheetBadge.tournamentPeriod)}
+        />
       )}
     </div>
   );

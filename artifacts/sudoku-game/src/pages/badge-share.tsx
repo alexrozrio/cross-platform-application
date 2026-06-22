@@ -5,8 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Share2 } from 'lucide-react';
 import { useLocation } from 'wouter';
-import { toast } from 'sonner';
 import { BADGE_META, formatPeriodLabel } from '@/lib/badge-utils';
+import { BadgeShareSheet } from '@/components/badge-share-sheet';
 
 export default function BadgeSharePage() {
   const params = useParams<{ token: string }>();
@@ -15,15 +15,9 @@ export default function BadgeSharePage() {
     query: { enabled: !!params.token }
   });
 
-  const handleShare = async () => {
-    const url = window.location.href;
-    if (navigator.share) {
-      await navigator.share({ title: 'My tournament badge', url });
-    } else {
-      await navigator.clipboard.writeText(url);
-      toast.success('Link copied!');
-    }
-  };
+  const [shareOpen, setShareOpen] = React.useState(false);
+
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
 
   if (isLoading) return <div className="p-12 text-center text-muted-foreground">Loading badge…</div>;
   if (isError || !badge) return (
@@ -64,10 +58,29 @@ export default function BadgeSharePage() {
         </CardContent>
       </Card>
 
-      <Button className="w-full gap-2" onClick={handleShare}>
+      {/* CTA for visitors */}
+      <div className="rounded-xl border bg-card p-4 text-center space-y-2">
+        <p className="text-sm font-semibold">Can you beat this score?</p>
+        <p className="text-xs text-muted-foreground">Play Game Hub Sudoku — free, no download needed.</p>
+        <Button className="w-full mt-1" onClick={() => setLocation('/')}>
+          Start Playing →
+        </Button>
+      </div>
+
+      <Button className="w-full gap-2" variant="outline" onClick={() => setShareOpen(true)}>
         <Share2 className="w-4 h-4" />
         Share this badge
       </Button>
+
+      <BadgeShareSheet
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        shareUrl={shareUrl}
+        badgeTitle={meta.title}
+        username={badge.username}
+        points={badge.totalPoints}
+        period={periodLabel}
+      />
     </div>
   );
 }
