@@ -651,15 +651,16 @@ export default function Game({ id }: { id: string }) {
       )}
 
       {/* New game switcher */}
-      <div className="w-full rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 flex items-center gap-2 flex-wrap">
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground shrink-0">New Game</span>
-        <div className="flex gap-1 flex-1 min-w-0">
+      <div className="w-full rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 flex flex-col gap-2">
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">New Game</span>
+        {/* Row 1: size buttons */}
+        <div className="grid grid-cols-4 gap-1.5">
           {([3, 4, 9, 16] as const).map((s) => (
             <button
               key={s}
               onClick={() => setNewSize(s)}
               className={[
-                "flex-1 rounded-md px-1 py-1 text-[10px] font-bold transition-all leading-none",
+                "rounded-md py-1.5 text-xs font-bold transition-all leading-none",
                 newSize === s
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "bg-background text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
@@ -669,32 +670,35 @@ export default function Game({ id }: { id: string }) {
             </button>
           ))}
         </div>
-        <Select value={newDiff} onValueChange={(v) => setNewDiff(v as typeof newDiff)}>
-          <SelectTrigger className="h-7 text-xs w-24 shrink-0">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="easy">Easy</SelectItem>
-            <SelectItem value="medium">Medium</SelectItem>
-            <SelectItem value="hard">Hard</SelectItem>
-            <SelectItem value="expert">Expert</SelectItem>
-          </SelectContent>
-        </Select>
-        <Button
-          size="sm"
-          className="h-7 px-3 text-xs shrink-0 gap-1.5"
-          onClick={handleNewGame}
-          disabled={newGameLoading || !profileId}
-        >
-          {newGameLoading
-            ? <Loader2 className="w-3 h-3 animate-spin" />
-            : <RefreshCw className="w-3 h-3" />}
-          Start
-        </Button>
+        {/* Row 2: difficulty + start */}
+        <div className="flex gap-2">
+          <Select value={newDiff} onValueChange={(v) => setNewDiff(v as typeof newDiff)}>
+            <SelectTrigger className="h-8 text-xs flex-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="easy">Easy</SelectItem>
+              <SelectItem value="medium">Medium</SelectItem>
+              <SelectItem value="hard">Hard</SelectItem>
+              <SelectItem value="expert">Expert</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            size="sm"
+            className="h-8 px-4 text-xs gap-1.5 shrink-0"
+            onClick={handleNewGame}
+            disabled={newGameLoading || !profileId}
+          >
+            {newGameLoading
+              ? <Loader2 className="w-3 h-3 animate-spin" />
+              : <RefreshCw className="w-3 h-3" />}
+            Start
+          </Button>
+        </div>
       </div>
 
       {/* Board */}
-      <Card className="shadow-lg border-2 border-foreground/15 overflow-hidden relative">
+      <Card className="w-full shadow-lg border-2 border-foreground/15 overflow-hidden relative">
         {/* Pause overlay */}
         {isPaused && (
           <div
@@ -710,7 +714,7 @@ export default function Game({ id }: { id: string }) {
           </div>
         )}
         <div
-          className="grid p-1"
+          className="grid w-full p-1"
           style={{
             gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
             gap: "1px",
