@@ -572,7 +572,7 @@ export default function Game({ id }: { id: string }) {
       : "";
 
   return (
-    <div className="flex flex-col items-center w-full gap-3 sm:gap-5 animate-in fade-in duration-300 pb-16 sm:pb-20">
+    <div className="flex flex-col w-full gap-3 animate-in fade-in duration-300 pb-16 sm:pb-20 md:pb-4">
       {/* Header */}
       <div className="flex items-center justify-between w-full">
         <Button
@@ -624,352 +624,315 @@ export default function Game({ id }: { id: string }) {
         </div>
       </div>
 
-      {/* Mode switcher */}
-      {!isCompleted && (
-        <div className="flex items-center gap-2 w-full">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground shrink-0">Style</span>
-          <div className="flex gap-1 flex-1">
-            {(["number", "alpha", "image"] as GameMode[]).map((m) => (
-              <button
-                key={m}
-                onClick={() => switchMode(m)}
-                className={[
-                  "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex-1 justify-center",
-                  mode === m
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground",
-                ].join(" ")}
-              >
-                {m === "number" && <Hash className="w-3 h-3" />}
-                {m === "alpha" && <Type className="w-3 h-3" />}
-                {m === "image" && <Image className="w-3 h-3" />}
-                <span>{m === "number" ? "123" : m === "alpha" ? "ABC" : "🖼"}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* ── Two-column layout: board left, controls right on desktop ── */}
+      <div className="flex flex-col md:flex-row md:items-start gap-3 w-full">
 
-      {/* New game switcher */}
-      <div className="w-full rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 flex flex-col gap-2">
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">New Game</span>
-        {/* Row 1: size buttons */}
-        <div className="grid grid-cols-4 gap-1.5">
-          {([3, 4, 9, 16] as const).map((s) => (
-            <button
-              key={s}
-              onClick={() => setNewSize(s)}
-              className={[
-                "rounded-md py-1.5 text-xs font-bold transition-all leading-none",
-                newSize === s
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "bg-background text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
-              ].join(" ")}
-            >
-              {s}×{s}
-            </button>
-          ))}
-        </div>
-        {/* Row 2: difficulty + start */}
-        <div className="flex gap-2">
-          <Select value={newDiff} onValueChange={(v) => setNewDiff(v as typeof newDiff)}>
-            <SelectTrigger className="h-8 text-xs flex-1">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="easy">Easy</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="hard">Hard</SelectItem>
-              <SelectItem value="expert">Expert</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button
-            size="sm"
-            className="h-8 px-4 text-xs gap-1.5 shrink-0"
-            onClick={handleNewGame}
-            disabled={newGameLoading || !profileId}
-          >
-            {newGameLoading
-              ? <Loader2 className="w-3 h-3 animate-spin" />
-              : <RefreshCw className="w-3 h-3" />}
-            Start
-          </Button>
-        </div>
-      </div>
-
-      {/* Board */}
-      <Card className="w-full shadow-lg border-2 border-foreground/15 overflow-hidden relative">
-        {/* Pause overlay */}
-        {isPaused && (
-          <div
-            className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-background/80 backdrop-blur-md cursor-pointer"
-            onClick={() => setIsPaused(false)}
-          >
-            <div className="rounded-full bg-primary/10 p-5">
-              <Play className="h-10 w-10 text-primary" />
-            </div>
-            <p className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
-              Paused — tap to resume
-            </p>
-          </div>
-        )}
-        <div
-          className="grid w-full p-1"
-          style={{
-            gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
-            gap: "1px",
-            background: "hsl(var(--foreground) / 0.12)",
-          }}
-        >
-          {grid.map((val, index) => {
-            const row = Math.floor(index / gridSize);
-            const col = index % gridSize;
-            const isSelected = selectedCell === index;
-            const isRelated =
-              selectedCell !== null &&
-              !isSelected &&
-              (Math.floor(selectedCell / gridSize) === row ||
-                selectedCell % gridSize === col ||
-                (boxSize > 0 &&
-                  Math.floor(Math.floor(selectedCell / gridSize) / boxSize) ===
-                    Math.floor(row / boxSize) &&
-                  Math.floor((selectedCell % gridSize) / boxSize) ===
-                    Math.floor(col / boxSize)));
-            const isSameValue =
-              selectedValue && val === selectedValue && !isSelected;
-            const isInitial = initialGrid[index] !== "0";
-            const isWrong = wrongCells.has(index);
-            const rightBorder =
-              boxSize > 0 && (col + 1) % boxSize === 0 && col !== gridSize - 1;
-            const bottomBorder =
-              boxSize > 0 && (row + 1) % boxSize === 0 && row !== gridSize - 1;
-
-            return (
+        {/* LEFT — Board (fills remaining width on desktop) */}
+        <div className="w-full md:flex-1 min-w-0">
+          <Card className="w-full shadow-lg border-2 border-foreground/15 overflow-hidden relative">
+            {/* Pause overlay */}
+            {isPaused && (
               <div
-                key={index}
-                onClick={() => { if (!isCompleted && !isGameOver) { sounds.click(); setSelectedCell(index); } }}
-                className={[
-                  "flex items-center justify-center cursor-pointer select-none transition-colors aspect-square min-w-0 min-h-0",
-                  cellText,
-                  rightBorder ? "border-r-2 border-r-foreground/40" : "",
-                  bottomBorder ? "border-b-2 border-b-foreground/40" : "",
-                  isWrong && isSelected
-                    ? "bg-red-200 ring-2 ring-inset ring-red-500"
-                    : "",
-                  isWrong && !isSelected
-                    ? "bg-red-100"
-                    : "",
-                  !isWrong && isSelected
-                    ? "bg-primary/20 ring-2 ring-inset ring-primary"
-                    : "",
-                  !isWrong && !isSelected && isSameValue ? "bg-primary/15" : "",
-                  !isWrong && !isSelected && !isSameValue && isRelated
-                    ? "bg-primary/5"
-                    : "",
-                  !isWrong && !isSelected && !isRelated && !isSameValue
-                    ? "bg-background"
-                    : "",
-                  isInitial && !isSelected ? "font-bold text-foreground" : "",
-                  isWrong && !isSelected
-                    ? "font-medium text-red-600"
-                    : !isInitial && val !== "0" && !isSelected && mode === "number"
-                    ? "font-medium text-primary"
-                    : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
+                className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-background/80 backdrop-blur-md cursor-pointer"
+                onClick={() => setIsPaused(false)}
               >
-                <CellContent
-                  val={val}
-                  mode={mode}
-                  themeId={themeId}
-                  gridSize={gridSize}
-                  cellNotes={notes[index]}
-                />
-              </div>
-            );
-          })}
-        </div>
-      </Card>
-
-      {/* Game Over banner */}
-      {isGameOver && (
-        <Card className="bg-destructive text-destructive-foreground border-none w-full">
-          <CardContent className="pt-6 flex flex-col items-center text-center gap-3">
-            <h2 className="text-2xl font-serif font-bold">Game Over 💀</h2>
-            <p className="opacity-90 text-sm">
-              You made {MAX_MISTAKES} mistakes — better luck next time!
-            </p>
-            <div className="flex gap-2 w-full mt-2">
-              <Button
-                variant="secondary"
-                className="flex-1"
-                onClick={() => setLocation("/sudoku")}
-              >
-                Try Again
-              </Button>
-              <Button
-                variant="secondary"
-                className="flex-1"
-                onClick={() => setLocation("/")}
-              >
-                Game Hub
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Completed banner */}
-      {isCompleted && (
-        <Card className="bg-primary text-primary-foreground border-none w-full">
-          <CardContent className="pt-6 flex flex-col items-center text-center gap-3">
-            <h2 className="text-2xl font-serif font-bold">Puzzle Solved! 🎉</h2>
-            <p className="opacity-90 text-sm">
-              {formattedTime} • {mistakes} mistake{mistakes !== 1 ? "s" : ""}
-            </p>
-            {pointsEarned !== null && (
-              <div className="flex gap-6 items-end justify-center">
-                <div className="flex flex-col items-center gap-0.5">
-                  <span className="text-4xl font-black tracking-tight">
-                    +{pointsEarned.toLocaleString()}
-                  </span>
-                  <span className="text-sm opacity-80 uppercase tracking-widest font-semibold">
-                    points
-                  </span>
+                <div className="rounded-full bg-primary/10 p-5">
+                  <Play className="h-10 w-10 text-primary" />
                 </div>
-                <div className="flex flex-col items-center gap-0.5">
-                  <span className="text-4xl font-black tracking-tight">
-                    +{Math.max(1, Math.floor(pointsEarned / 5000))}
-                  </span>
-                  <span className="text-sm opacity-80 uppercase tracking-widest font-semibold">
-                    💎 gems
-                  </span>
-                </div>
+                <p className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
+                  Paused — tap to resume
+                </p>
               </div>
             )}
-            <div className="flex gap-2 w-full mt-2">
+            <div
+              className="grid w-full p-1"
+              style={{
+                gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
+                gap: "1px",
+                background: "hsl(var(--foreground) / 0.12)",
+              }}
+            >
+              {grid.map((val, index) => {
+                const row = Math.floor(index / gridSize);
+                const col = index % gridSize;
+                const isSelected = selectedCell === index;
+                const isRelated =
+                  selectedCell !== null &&
+                  !isSelected &&
+                  (Math.floor(selectedCell / gridSize) === row ||
+                    selectedCell % gridSize === col ||
+                    (boxSize > 0 &&
+                      Math.floor(Math.floor(selectedCell / gridSize) / boxSize) ===
+                        Math.floor(row / boxSize) &&
+                      Math.floor((selectedCell % gridSize) / boxSize) ===
+                        Math.floor(col / boxSize)));
+                const isSameValue =
+                  selectedValue && val === selectedValue && !isSelected;
+                const isInitial = initialGrid[index] !== "0";
+                const isWrong = wrongCells.has(index);
+                const rightBorder =
+                  boxSize > 0 && (col + 1) % boxSize === 0 && col !== gridSize - 1;
+                const bottomBorder =
+                  boxSize > 0 && (row + 1) % boxSize === 0 && row !== gridSize - 1;
+
+                return (
+                  <div
+                    key={index}
+                    onClick={() => { if (!isCompleted && !isGameOver) { sounds.click(); setSelectedCell(index); } }}
+                    className={[
+                      "flex items-center justify-center cursor-pointer select-none transition-colors aspect-square min-w-0 min-h-0",
+                      cellText,
+                      rightBorder ? "border-r-2 border-r-foreground/40" : "",
+                      bottomBorder ? "border-b-2 border-b-foreground/40" : "",
+                      isWrong && isSelected
+                        ? "bg-red-200 ring-2 ring-inset ring-red-500"
+                        : "",
+                      isWrong && !isSelected
+                        ? "bg-red-100"
+                        : "",
+                      !isWrong && isSelected
+                        ? "bg-primary/20 ring-2 ring-inset ring-primary"
+                        : "",
+                      !isWrong && !isSelected && isSameValue ? "bg-primary/15" : "",
+                      !isWrong && !isSelected && !isSameValue && isRelated
+                        ? "bg-primary/5"
+                        : "",
+                      !isWrong && !isSelected && !isRelated && !isSameValue
+                        ? "bg-background"
+                        : "",
+                      isInitial && !isSelected ? "font-bold text-foreground" : "",
+                      isWrong && !isSelected
+                        ? "font-medium text-red-600"
+                        : !isInitial && val !== "0" && !isSelected && mode === "number"
+                        ? "font-medium text-primary"
+                        : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  >
+                    <CellContent
+                      val={val}
+                      mode={mode}
+                      themeId={themeId}
+                      gridSize={gridSize}
+                      cellNotes={notes[index]}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        </div>
+
+        {/* RIGHT — Controls sidebar (full width on mobile, fixed 260px on desktop) */}
+        <div className="flex flex-col gap-3 w-full md:w-[260px] shrink-0">
+
+          {/* Mode switcher */}
+          {!isCompleted && !isGameOver && (
+            <div className="flex items-center gap-2 w-full">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground shrink-0">Style</span>
+              <div className="flex gap-1 flex-1">
+                {(["number", "alpha", "image"] as GameMode[]).map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => switchMode(m)}
+                    className={[
+                      "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex-1 justify-center",
+                      mode === m
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground",
+                    ].join(" ")}
+                  >
+                    {m === "number" && <Hash className="w-3 h-3" />}
+                    {m === "alpha" && <Type className="w-3 h-3" />}
+                    {m === "image" && <Image className="w-3 h-3" />}
+                    <span>{m === "number" ? "123" : m === "alpha" ? "ABC" : "🖼"}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* New game switcher */}
+          <div className="w-full rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 flex flex-col gap-2">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">New Game</span>
+            <div className="grid grid-cols-4 gap-1.5">
+              {([3, 4, 9, 16] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setNewSize(s)}
+                  className={[
+                    "rounded-md py-1.5 text-xs font-bold transition-all leading-none",
+                    newSize === s
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "bg-background text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
+                  ].join(" ")}
+                >
+                  {s}×{s}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Select value={newDiff} onValueChange={(v) => setNewDiff(v as typeof newDiff)}>
+                <SelectTrigger className="h-8 text-xs flex-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="easy">Easy</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="hard">Hard</SelectItem>
+                  <SelectItem value="expert">Expert</SelectItem>
+                </SelectContent>
+              </Select>
               <Button
-                variant="secondary"
-                className="flex-1"
-                onClick={() => setLocation("/sudoku")}
+                size="sm"
+                className="h-8 px-4 text-xs gap-1.5 shrink-0"
+                onClick={handleNewGame}
+                disabled={newGameLoading || !profileId}
               >
-                Play Again
-              </Button>
-              <Button
-                variant="secondary"
-                className="flex-1"
-                onClick={() => setLocation("/leaderboard")}
-              >
-                Leaderboard
+                {newGameLoading
+                  ? <Loader2 className="w-3 h-3 animate-spin" />
+                  : <RefreshCw className="w-3 h-3" />}
+                Start
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Controls */}
-      {!isCompleted && (
-        <div className="grid grid-cols-4 gap-1.5 sm:gap-2 w-full">
-          <Button
-            variant={notesMode ? "default" : "secondary"}
-            className="flex-col h-12 sm:h-16 gap-0.5"
-            onClick={() => setNotesMode(!notesMode)}
-          >
-            <PenLine className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="text-[11px] sm:text-xs">Notes</span>
-          </Button>
-
-          {/* Mistakes remaining */}
-          <div className={[
-            "flex flex-col items-center justify-center h-12 sm:h-16 rounded-md border gap-0.5 select-none",
-            mistakes === 0
-              ? "bg-muted/50 border-border text-muted-foreground"
-              : mistakes === 1
-              ? "bg-orange-50 border-orange-200 text-orange-600"
-              : "bg-red-50 border-red-200 text-red-600",
-          ].join(" ")}>
-            <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="text-[10px] sm:text-[11px] font-semibold leading-none">
-              {MAX_MISTAKES - mistakes} left
-            </span>
           </div>
 
-          {/* Hint button with remaining count */}
-          <Button
-            variant="secondary"
-            className="flex-col h-12 sm:h-16 gap-0.5 relative"
-            onClick={handleHint}
-            disabled={
-              isGameOver ||
-              hints >= MAX_HINTS ||
-              selectedCell === null ||
-              grid[selectedCell] !== "0"
-            }
-          >
-            <Lightbulb className={`h-4 w-4 sm:h-5 sm:w-5 ${hints >= MAX_HINTS ? "opacity-40" : ""}`} />
-            <span className="text-[11px] sm:text-xs">Hint</span>
-            <span className={`text-[9px] sm:text-[10px] font-bold leading-none ${
-              hints >= MAX_HINTS ? "text-red-400" : "text-primary"
-            }`}>
-              {MAX_HINTS - hints} left
-            </span>
-          </Button>
+          {/* Game Over banner */}
+          {isGameOver && (
+            <Card className="bg-destructive text-destructive-foreground border-none w-full">
+              <CardContent className="pt-6 flex flex-col items-center text-center gap-3">
+                <h2 className="text-2xl font-serif font-bold">Game Over 💀</h2>
+                <p className="opacity-90 text-sm">
+                  You made {MAX_MISTAKES} mistakes — better luck next time!
+                </p>
+                <div className="flex gap-2 w-full mt-2">
+                  <Button variant="secondary" className="flex-1" onClick={() => setLocation("/sudoku")}>
+                    Try Again
+                  </Button>
+                  <Button variant="secondary" className="flex-1" onClick={() => setLocation("/")}>
+                    Game Hub
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-          <Button
-            variant="secondary"
-            className="flex-col h-12 sm:h-16 gap-0.5"
-            onClick={handleErase}
-            disabled={
-              isGameOver ||
-              selectedCell === null ||
-              initialGrid[selectedCell] !== "0"
-            }
-          >
-            <Eraser className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="text-[11px] sm:text-xs">Erase</span>
-          </Button>
-        </div>
-      )}
+          {/* Completed banner */}
+          {isCompleted && (
+            <Card className="bg-primary text-primary-foreground border-none w-full">
+              <CardContent className="pt-6 flex flex-col items-center text-center gap-3">
+                <h2 className="text-2xl font-serif font-bold">Puzzle Solved! 🎉</h2>
+                <p className="opacity-90 text-sm">
+                  {formattedTime} • {mistakes} mistake{mistakes !== 1 ? "s" : ""}
+                </p>
+                {pointsEarned !== null && (
+                  <div className="flex gap-4 items-end justify-center">
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span className="text-3xl font-black tracking-tight">+{pointsEarned.toLocaleString()}</span>
+                      <span className="text-xs opacity-80 uppercase tracking-widest font-semibold">points</span>
+                    </div>
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span className="text-3xl font-black tracking-tight">+{Math.max(1, Math.floor(pointsEarned / 5000))}</span>
+                      <span className="text-xs opacity-80 uppercase tracking-widest font-semibold">💎 gems</span>
+                    </div>
+                  </div>
+                )}
+                <div className="flex gap-2 w-full mt-2">
+                  <Button variant="secondary" className="flex-1" onClick={() => setLocation("/sudoku")}>
+                    Play Again
+                  </Button>
+                  <Button variant="secondary" className="flex-1" onClick={() => setLocation("/leaderboard")}>
+                    Leaderboard
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-      {/* Input pad */}
-      {!isCompleted && (
-        <div
-          className="grid gap-1.5 w-full"
-          style={{
-            gridTemplateColumns: `repeat(${
-              gridSize <= 4 ? gridSize : gridSize === 16 ? 8 : 5
-            }, 1fr)`,
-          }}
-        >
-          {Array.from({ length: gridSize }, (_, i) => i + 1).map((num) => (
-            <Button
-              key={num}
-              variant="outline"
-              className={[
-                "flex items-center justify-center",
-                mode !== "number" ? "h-10 sm:h-12 p-0.5" : gridSize === 16 ? "h-8 sm:h-10" : "h-10 sm:h-14",
-              ].join(" ")}
-              onClick={() => handleNumberInput(encodeForGrid(num))}
+          {/* Controls */}
+          {!isCompleted && (
+            <div className="grid grid-cols-4 gap-1.5 w-full">
+              <Button
+                variant={notesMode ? "default" : "secondary"}
+                className="flex-col h-12 gap-0.5"
+                onClick={() => setNotesMode(!notesMode)}
+              >
+                <PenLine className="h-4 w-4" />
+                <span className="text-[11px]">Notes</span>
+              </Button>
+
+              <div className={[
+                "flex flex-col items-center justify-center h-12 rounded-md border gap-0.5 select-none",
+                mistakes === 0
+                  ? "bg-muted/50 border-border text-muted-foreground"
+                  : mistakes === 1
+                  ? "bg-orange-50 border-orange-200 text-orange-600"
+                  : "bg-red-50 border-red-200 text-red-600",
+              ].join(" ")}>
+                <AlertTriangle className="h-4 w-4" />
+                <span className="text-[10px] font-semibold leading-none">{MAX_MISTAKES - mistakes} left</span>
+              </div>
+
+              <Button
+                variant="secondary"
+                className="flex-col h-12 gap-0.5 relative"
+                onClick={handleHint}
+                disabled={isGameOver || hints >= MAX_HINTS || selectedCell === null || grid[selectedCell] !== "0"}
+              >
+                <Lightbulb className={`h-4 w-4 ${hints >= MAX_HINTS ? "opacity-40" : ""}`} />
+                <span className="text-[11px]">Hint</span>
+                <span className={`text-[9px] font-bold leading-none ${hints >= MAX_HINTS ? "text-red-400" : "text-primary"}`}>
+                  {MAX_HINTS - hints} left
+                </span>
+              </Button>
+
+              <Button
+                variant="secondary"
+                className="flex-col h-12 gap-0.5"
+                onClick={handleErase}
+                disabled={isGameOver || selectedCell === null || initialGrid[selectedCell] !== "0"}
+              >
+                <Eraser className="h-4 w-4" />
+                <span className="text-[11px]">Erase</span>
+              </Button>
+            </div>
+          )}
+
+          {/* Input pad */}
+          {!isCompleted && (
+            <div
+              className="grid gap-1.5 w-full"
+              style={{
+                gridTemplateColumns: `repeat(${
+                  gridSize <= 4 ? gridSize : gridSize === 16 ? 8 : 5
+                }, 1fr)`,
+              }}
             >
-              {mode === "image" ? (
-                <ThemeIcon
-                  themeId={themeId}
-                  value={num}
-                  size={gridSize <= 4 ? 36 : gridSize === 16 ? 16 : 24}
-                />
-              ) : mode === "alpha" ? (
-                <AlphaLetter
-                  value={num}
-                  size={gridSize === 3 ? 36 : gridSize === 4 ? 28 : gridSize === 16 ? 14 : 22}
-                />
-              ) : (
-                <span className={gridSize === 16 ? "text-sm font-semibold" : "text-xl font-medium"}>{num}</span>
-              )}
-            </Button>
-          ))}
-        </div>
-      )}
+              {Array.from({ length: gridSize }, (_, i) => i + 1).map((num) => (
+                <Button
+                  key={num}
+                  variant="outline"
+                  className={[
+                    "flex items-center justify-center",
+                    mode !== "number" ? "h-10 p-0.5" : gridSize === 16 ? "h-8" : "h-10",
+                  ].join(" ")}
+                  onClick={() => handleNumberInput(encodeForGrid(num))}
+                >
+                  {mode === "image" ? (
+                    <ThemeIcon themeId={themeId} value={num} size={gridSize <= 4 ? 32 : gridSize === 16 ? 14 : 22} />
+                  ) : mode === "alpha" ? (
+                    <AlphaLetter value={num} size={gridSize === 3 ? 30 : gridSize === 4 ? 24 : gridSize === 16 ? 12 : 18} />
+                  ) : (
+                    <span className={gridSize === 16 ? "text-sm font-semibold" : "text-lg font-medium"}>{num}</span>
+                  )}
+                </Button>
+              ))}
+            </div>
+          )}
+
+        </div>{/* end right sidebar */}
+      </div>{/* end two-column */}
     </div>
   );
 }
