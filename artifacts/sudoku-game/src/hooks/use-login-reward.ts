@@ -9,11 +9,12 @@ export interface LoginRewardResult {
 
 export interface LoginRewardState {
   show: boolean;
+  profileId: number | null;
   result: LoginRewardResult | null;
 }
 
 export function useLoginReward() {
-  const [state, setState] = useState<LoginRewardState>({ show: false, result: null });
+  const [state, setState] = useState<LoginRewardState>({ show: false, profileId: null, result: null });
 
   const claimReward = useCallback(async (profileId: number) => {
     try {
@@ -25,7 +26,7 @@ export function useLoginReward() {
       if (!res.ok) return;
       const data: LoginRewardResult = await res.json();
       if (!data.alreadyClaimed) {
-        setState({ show: true, result: data });
+        setState({ show: true, profileId, result: data });
       }
     } catch {
       // Silently ignore — reward is a nice-to-have

@@ -152,13 +152,21 @@ function SignUpPage() {
 
 function Router() {
   const { rewardState, claimReward, dismissReward } = useLoginReward();
+  const queryClient = useQueryClient();
+
+  const handleDismiss = React.useCallback(() => {
+    dismissReward();
+    if (rewardState.profileId) {
+      queryClient.invalidateQueries({ queryKey: [`/api/profiles/${rewardState.profileId}`] });
+    }
+  }, [dismissReward, queryClient, rewardState.profileId]);
 
   return (
     <AuthProvider onProfileSynced={claimReward}>
       {rewardState.show && rewardState.result && (
         <LoginRewardModal
           open={rewardState.show}
-          onClose={dismissReward}
+          onClose={handleDismiss}
           gemsAwarded={rewardState.result.gemsAwarded}
           loginStreak={rewardState.result.loginStreak}
           totalGems={rewardState.result.totalGems}
