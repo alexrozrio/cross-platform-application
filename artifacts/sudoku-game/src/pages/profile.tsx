@@ -44,7 +44,7 @@ import {
 } from "lucide-react";
 import { BADGE_META, formatPeriodLabel } from "@/lib/badge-utils";
 import { BadgeShareSheet } from "@/components/badge-share-sheet";
-import { LevelCard } from "@/components/level-badge";
+import { LevelCard, RankGuide } from "@/components/level-badge";
 import { useQuery } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
 
@@ -218,7 +218,10 @@ export default function Profile() {
 
       {/* Level / Rank card */}
       {profileId && profile && (
-        <LevelCard xp={profile.xp ?? 0} />
+        <>
+          <LevelCard xp={profile.xp ?? 0} />
+          <RankGuide currentXp={profile.xp ?? 0} />
+        </>
       )}
 
       {/* Gems balance */}

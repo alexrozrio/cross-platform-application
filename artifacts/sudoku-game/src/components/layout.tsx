@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Trophy, User, Home, BarChart2, Palette, LogIn, LogOut, Gem, Swords } from "lucide-react";
 import { useFontTheme } from "@/hooks/use-font-theme";
 import { useChallengeNotifications } from "@/hooks/use-challenge-notifications";
+import { useLevelUpWatcher } from "@/hooks/use-level-up";
 
 export function applyAppTheme(theme: string) {
   document.documentElement.setAttribute("data-theme", theme);
@@ -55,6 +56,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   useFontTheme();
   useChallengeNotifications(profileId);
+  useLevelUpWatcher(profileId);
 
   React.useEffect(() => {
     applyAppTheme(profile?.theme ?? "light");
