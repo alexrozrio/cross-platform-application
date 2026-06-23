@@ -220,7 +220,9 @@ export default function Game({ id }: { id: string }) {
   const [isGameOver, setIsGameOver] = useState(false);
   const [wrongCells, setWrongCells] = useState<Set<number>>(new Set());
   const [highlightedNumber, setHighlightedNumber] = useState<string | null>(null);
-  const [completionMessage, setCompletionMessage] = useState(() => pickCompletionMessage());
+  const [completionMessage, setCompletionMessage] = useState(() =>
+    pickCompletionMessage(game?.puzzle?.difficulty, game?.puzzle?.gridSize),
+  );
 
   const MAX_MISTAKES = 3;
   const MAX_HINTS = 3;
@@ -349,7 +351,7 @@ export default function Game({ id }: { id: string }) {
             onSuccess: async (data) => {
               const pts = data.points ?? null;
               setPointsEarned(pts);
-              const msg = pickCompletionMessage();
+              const msg = pickCompletionMessage(game?.puzzle?.difficulty, game?.puzzle?.gridSize);
               setCompletionMessage(msg);
               toast.success(`${msg.headline} ${msg.emoji}`, {
                 description: pts
