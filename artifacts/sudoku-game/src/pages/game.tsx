@@ -624,6 +624,77 @@ export default function Game({ id }: { id: string }) {
         </div>
       </div>
 
+      {/* ── Mobile-only: Style + New Game above the board ── */}
+      <div className="md:hidden flex flex-col gap-3 w-full">
+        {!isCompleted && !isGameOver && (
+          <div className="flex items-center gap-2 w-full">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground shrink-0">Style</span>
+            <div className="flex gap-1 flex-1">
+              {(["number", "alpha", "image"] as GameMode[]).map((m) => (
+                <button
+                  key={m}
+                  onClick={() => switchMode(m)}
+                  className={[
+                    "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex-1 justify-center",
+                    mode === m
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground",
+                  ].join(" ")}
+                >
+                  {m === "number" && <Hash className="w-3 h-3" />}
+                  {m === "alpha" && <Type className="w-3 h-3" />}
+                  {m === "image" && <Image className="w-3 h-3" />}
+                  <span>{m === "number" ? "123" : m === "alpha" ? "ABC" : "🖼"}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="w-full rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 flex flex-col gap-2">
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">New Game</span>
+          <div className="grid grid-cols-4 gap-1.5">
+            {([3, 4, 9, 16] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => setNewSize(s)}
+                className={[
+                  "rounded-md py-1.5 text-xs font-bold transition-all leading-none",
+                  newSize === s
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-background text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
+                ].join(" ")}
+              >
+                {s}×{s}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <Select value={newDiff} onValueChange={(v) => setNewDiff(v as typeof newDiff)}>
+              <SelectTrigger className="h-8 text-xs flex-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="easy">Easy</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="hard">Hard</SelectItem>
+                <SelectItem value="expert">Expert</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              size="sm"
+              className="h-8 px-4 text-xs gap-1.5 shrink-0"
+              onClick={handleNewGame}
+              disabled={newGameLoading || !profileId}
+            >
+              {newGameLoading
+                ? <Loader2 className="w-3 h-3 animate-spin" />
+                : <RefreshCw className="w-3 h-3" />}
+              Start
+            </Button>
+          </div>
+        </div>
+      </div>
+
       {/* ── Two-column layout: board left, controls right on desktop ── */}
       <div className="flex flex-col md:flex-row md:items-start gap-3 w-full">
 
@@ -727,7 +798,8 @@ export default function Game({ id }: { id: string }) {
         {/* RIGHT — Controls sidebar (full width on mobile, fixed 260px on desktop) */}
         <div className="flex flex-col gap-3 w-full md:w-[260px] shrink-0">
 
-          {/* Mode switcher */}
+          {/* Mode switcher — desktop only (shown above board on mobile) */}
+          <div className="hidden md:block">
           {!isCompleted && !isGameOver && (
             <div className="flex items-center gap-2 w-full">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground shrink-0">Style</span>
@@ -752,8 +824,10 @@ export default function Game({ id }: { id: string }) {
               </div>
             </div>
           )}
+          </div>{/* end hidden md:block — Mode switcher */}
 
-          {/* New game switcher */}
+          {/* New game switcher — desktop only (shown above board on mobile) */}
+          <div className="hidden md:block">
           <div className="w-full rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 flex flex-col gap-2">
             <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">New Game</span>
             <div className="grid grid-cols-4 gap-1.5">
@@ -797,6 +871,7 @@ export default function Game({ id }: { id: string }) {
               </Button>
             </div>
           </div>
+          </div>{/* end hidden md:block — New game switcher */}
 
           {/* Game Over banner */}
           {isGameOver && (
