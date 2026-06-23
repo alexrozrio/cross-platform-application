@@ -43,6 +43,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { pickCompletionMessage } from "@/lib/completion-messages";
 
 interface DailyChallengeInfo { puzzleId: number; date: string; }
 interface StreakData { currentStreak: number; longestStreak: number; completedToday: boolean; }
@@ -219,6 +220,7 @@ export default function Game({ id }: { id: string }) {
   const [isGameOver, setIsGameOver] = useState(false);
   const [wrongCells, setWrongCells] = useState<Set<number>>(new Set());
   const [highlightedNumber, setHighlightedNumber] = useState<string | null>(null);
+  const [completionMessage, setCompletionMessage] = useState(() => pickCompletionMessage());
 
   const MAX_MISTAKES = 3;
   const MAX_HINTS = 3;
@@ -347,7 +349,9 @@ export default function Game({ id }: { id: string }) {
             onSuccess: async (data) => {
               const pts = data.points ?? null;
               setPointsEarned(pts);
-              toast.success("Puzzle Solved!", {
+              const msg = pickCompletionMessage();
+              setCompletionMessage(msg);
+              toast.success(`${msg.headline} ${msg.emoji}`, {
                 description: pts
                   ? `+${pts.toLocaleString()} pts • ${formattedTime}`
                   : `Time: ${formattedTime} • Mistakes: ${mistakes}`,
@@ -917,7 +921,7 @@ export default function Game({ id }: { id: string }) {
           {isCompleted && (
             <Card className="bg-primary text-primary-foreground border-none w-full">
               <CardContent className="pt-6 flex flex-col items-center text-center gap-3">
-                <h2 className="text-2xl font-serif font-bold">Puzzle Solved! 🎉</h2>
+                <h2 className="text-2xl font-serif font-bold">{completionMessage.headline} {completionMessage.emoji}</h2>
                 <p className="opacity-90 text-sm">
                   {formattedTime} • {mistakes} mistake{mistakes !== 1 ? "s" : ""}
                 </p>
