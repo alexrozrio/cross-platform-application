@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/select';
 import { Play, BarChart2, Trophy, ArrowLeft, Hash, Type, Palette, Flame } from 'lucide-react';
 import { IMAGE_THEMES } from '@/lib/themes';
-import { getLevelFromXp } from '@/lib/levels';
 
 type Difficulty = 'easy' | 'medium' | 'hard' | 'expert';
 type GridSize = 3 | 4 | 9 | 16;

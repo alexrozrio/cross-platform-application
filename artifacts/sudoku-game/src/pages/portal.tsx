@@ -5,7 +5,8 @@ import { useImageTheme } from '@/hooks/use-image-theme';
 import { ThemeIcon } from '@/components/theme-icons';
 import { Badge } from '@/components/ui/badge';
 import { Grid3X3, Sparkles, Loader2 } from 'lucide-react';
-import { customFetch } from '@workspace/api-client-react';
+import { customFetch, useGetProfile } from '@workspace/api-client-react';
+import { getLevelFromXp } from '@/lib/levels';
 
 const COMING_SOON = [
   { title: 'Word Search', description: 'Find hidden words in a letter grid', icon: '🔤', color: 'from-emerald-500/20 to-teal-500/20 border-emerald-200/60' },
