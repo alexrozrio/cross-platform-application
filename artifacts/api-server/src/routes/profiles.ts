@@ -169,4 +169,51 @@ router.patch("/profiles/:id", async (req, res): Promise<void> => {
   res.json(UpdateProfileResponse.parse({ ...profile, createdAt: profile.createdAt.toISOString() }));
 });
 
+// ─── Claim daily login reward ────────────────────────────────────────────────
+
+function gemsForLoginStreak(streak: number): number {
+  return Math.min(streak, 7);
+}
+
+function todayUTC(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+router.post("/profiles/:id/claim-login-reward", async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid profile id" });
+    return;
+  }
+
+  const [profile] = await db.select().from(profilesTable).where(eq(profilesTable.id, id));
+  if (!profile) {
+    res.status(404).json({ error: "Profile not found" });
+    return;
+  }
+
+  const today = todayUTC();
+
+  if (profile.lastLoginDate === today) {
+    res.json({ alreadyClaimed: true, loginStreak: profile.loginStreak, gemsAwarded: 0, totalGems: profile.gems });
+    return;
+  }
+
+  const yesterday = new Date();
+  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+  const yesterdayStr = yesterday.toISOString().slice(0, 10);
+
+  const newStreak = profile.lastLoginDate === yesterdayStr ? profile.loginStreak + 1 : 1;
+  const gemsAwarded = gemsForLoginStreak(newStreak);
+  const totalGems = profile.gems + gemsAwarded;
+
+  const [updated] = await db
+    .update(profilesTable)
+    .set({ loginStreak: newStreak, lastLoginDate: today, gems: totalGems })
+    .where(eq(profilesTable.id, id))
+    .returning();
+
+  res.json({ alreadyClaimed: false, loginStreak: newStreak, gemsAwarded, totalGems: updated.gems });
+});
+
 export default router;

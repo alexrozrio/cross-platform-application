@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { useUser } from '@clerk/react';
 
 function getOrCreateDeviceId(): string {
@@ -24,7 +24,13 @@ const AuthContext = createContext<AuthContextType>({
   setProfileId: () => {},
 });
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({
+  children,
+  onProfileSynced,
+}: {
+  children: React.ReactNode;
+  onProfileSynced?: (profileId: number) => void;
+}) {
   const { user, isLoaded } = useUser();
 
   const [profileId, setProfileIdState] = useState<number | null>(() => {
@@ -89,6 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (res.ok) {
           const profile = await res.json();
           setProfileId(profile.id);
+          onProfileSynced?.(profile.id);
         }
       } catch {
         // Network error — keep whatever profileId is already cached

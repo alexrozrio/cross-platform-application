@@ -8,6 +8,8 @@ import { ClerkProvider, SignIn, SignUp, useClerk } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
 import { AuthProvider } from "@/hooks/use-auth";
+import { useLoginReward } from "@/hooks/use-login-reward";
+import { LoginRewardModal } from "@/components/login-reward-modal";
 import NotFound from "@/pages/not-found";
 import { Layout } from "@/components/layout";
 
@@ -149,8 +151,19 @@ function SignUpPage() {
 // ─── Inner router (inside ClerkProvider + QueryClientProvider) ────────────────
 
 function Router() {
+  const { rewardState, claimReward, dismissReward } = useLoginReward();
+
   return (
-    <AuthProvider>
+    <AuthProvider onProfileSynced={claimReward}>
+      {rewardState.show && rewardState.result && (
+        <LoginRewardModal
+          open={rewardState.show}
+          onClose={dismissReward}
+          gemsAwarded={rewardState.result.gemsAwarded}
+          loginStreak={rewardState.result.loginStreak}
+          totalGems={rewardState.result.totalGems}
+        />
+      )}
       <Layout>
         <Switch>
           <Route path="/" component={Portal} />
