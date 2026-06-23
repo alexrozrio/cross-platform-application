@@ -218,6 +218,7 @@ export default function Game({ id }: { id: string }) {
   const [isCompleted, setIsCompleted] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
   const [wrongCells, setWrongCells] = useState<Set<number>>(new Set());
+  const [highlightedNumber, setHighlightedNumber] = useState<string | null>(null);
 
   const MAX_MISTAKES = 3;
   const MAX_HINTS = 3;
@@ -755,8 +756,9 @@ export default function Game({ id }: { id: string }) {
                         Math.floor(row / boxSize) &&
                       Math.floor((selectedCell % gridSize) / boxSize) ===
                         Math.floor(col / boxSize)));
+                const activeHighlight = selectedValue ?? highlightedNumber;
                 const isSameValue =
-                  selectedValue && val === selectedValue && !isSelected;
+                  activeHighlight && val === activeHighlight && !isSelected;
                 const isInitial = initialGrid[index] !== "0";
                 const isWrong = wrongCells.has(index);
                 const rightBorder =
@@ -767,7 +769,7 @@ export default function Game({ id }: { id: string }) {
                 return (
                   <div
                     key={index}
-                    onClick={() => { if (!isCompleted && !isGameOver) { sounds.click(); setSelectedCell(index); } }}
+                    onClick={() => { if (!isCompleted && !isGameOver) { sounds.click(); setSelectedCell(index); setHighlightedNumber(null); } }}
                     className={[
                       "flex items-center justify-center cursor-pointer select-none transition-colors aspect-square min-w-0 min-h-0",
                       cellText,
@@ -1015,8 +1017,9 @@ export default function Game({ id }: { id: string }) {
                       "flex flex-col items-center justify-center relative gap-0",
                       mode !== "number" ? "h-12 p-0.5" : gridSize === 16 ? "h-10" : "h-12",
                       done ? "opacity-30" : "",
+                      highlightedNumber === encoded && !done ? "ring-2 ring-primary" : "",
                     ].join(" ")}
-                    onClick={() => handleNumberInput(encoded)}
+                    onClick={() => { setHighlightedNumber(encoded); handleNumberInput(encoded); }}
                   >
                     {mode === "image" ? (
                       <ThemeIcon themeId={themeId} value={num} size={gridSize <= 4 ? 28 : gridSize === 16 ? 12 : 20} />
