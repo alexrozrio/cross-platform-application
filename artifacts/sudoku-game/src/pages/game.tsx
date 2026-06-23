@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useLocation, useSearch } from "wouter";
 import {
   useGetGame,
@@ -221,6 +221,17 @@ export default function Game({ id }: { id: string }) {
 
   const MAX_MISTAKES = 3;
   const MAX_HINTS = 3;
+
+  // Numbers that are fully placed (count in grid === gridSize) — disable their pad button
+  const completedNumbers = useMemo(() => {
+    const done = new Set<string>();
+    for (let n = 1; n <= gridSize; n++) {
+      const encoded = encodeForGrid(n);
+      const count = grid.filter((c) => c === encoded).length;
+      if (count >= gridSize) done.add(encoded);
+    }
+    return done;
+  }, [grid, gridSize]);
   const [isPaused, setIsPaused] = useState(false);
 
   // New-game switcher state — initialise to current game's grid size
@@ -984,25 +995,31 @@ export default function Game({ id }: { id: string }) {
                 }, 1fr)`,
               }}
             >
-              {Array.from({ length: gridSize }, (_, i) => i + 1).map((num) => (
-                <Button
-                  key={num}
-                  variant="outline"
-                  className={[
-                    "flex items-center justify-center",
-                    mode !== "number" ? "h-10 p-0.5" : gridSize === 16 ? "h-8" : "h-10",
-                  ].join(" ")}
-                  onClick={() => handleNumberInput(encodeForGrid(num))}
-                >
-                  {mode === "image" ? (
-                    <ThemeIcon themeId={themeId} value={num} size={gridSize <= 4 ? 32 : gridSize === 16 ? 14 : 22} />
-                  ) : mode === "alpha" ? (
-                    <AlphaLetter value={num} size={gridSize === 3 ? 30 : gridSize === 4 ? 24 : gridSize === 16 ? 12 : 18} />
-                  ) : (
-                    <span className={gridSize === 16 ? "text-sm font-semibold" : "text-lg font-medium"}>{num}</span>
-                  )}
-                </Button>
-              ))}
+              {Array.from({ length: gridSize }, (_, i) => i + 1).map((num) => {
+                const encoded = encodeForGrid(num);
+                const done = completedNumbers.has(encoded);
+                return (
+                  <Button
+                    key={num}
+                    variant="outline"
+                    disabled={done || isGameOver}
+                    className={[
+                      "flex items-center justify-center relative",
+                      mode !== "number" ? "h-10 p-0.5" : gridSize === 16 ? "h-8" : "h-10",
+                      done ? "opacity-30" : "",
+                    ].join(" ")}
+                    onClick={() => handleNumberInput(encoded)}
+                  >
+                    {mode === "image" ? (
+                      <ThemeIcon themeId={themeId} value={num} size={gridSize <= 4 ? 32 : gridSize === 16 ? 14 : 22} />
+                    ) : mode === "alpha" ? (
+                      <AlphaLetter value={num} size={gridSize === 3 ? 30 : gridSize === 4 ? 24 : gridSize === 16 ? 12 : 18} />
+                    ) : (
+                      <span className={gridSize === 16 ? "text-sm font-semibold" : "text-lg font-medium"}>{num}</span>
+                    )}
+                  </Button>
+                );
+              })}
             </div>
           )}
 
