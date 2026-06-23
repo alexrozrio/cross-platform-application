@@ -39,6 +39,10 @@ const clerkPubKey = publishableKeyFromHost(
 // REQUIRED — empty in dev (Clerk hits dev FAPI directly), auto-set in prod.
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 
+// Force Clerk to load its JS from the official CDN rather than attempting to
+// serve it from the Replit dev domain (which causes a failed-to-load error).
+const clerkJSUrl = "https://cdn.jsdelivr.net/npm/@clerk/clerk-js@6/dist/clerk.browser.js";
+
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function stripBase(path: string): string {
@@ -180,6 +184,7 @@ function ClerkProviderWithRoutes() {
     <ClerkProvider
       publishableKey={clerkPubKey}
       proxyUrl={clerkProxyUrl}
+      clerkJSUrl={clerkJSUrl}
       appearance={clerkAppearance}
       signInUrl={`${basePath}/sign-in`}
       signUpUrl={`${basePath}/sign-up`}
