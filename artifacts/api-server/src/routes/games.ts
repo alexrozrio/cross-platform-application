@@ -13,6 +13,7 @@ import {
   CompleteGameResponse,
 } from "@workspace/api-zod";
 import { calcPoints, calcGems } from "../utils/points";
+import { XP_PER_DIFFICULTY } from "../utils/levels";
 import { awardPreviousPeriodBadges } from "../utils/awards";
 import { resolveChallengeForGame } from "./challenges";
 import { sql } from "drizzle-orm";
@@ -184,11 +185,12 @@ router.post("/games/:id/complete", async (req, res): Promise<void> => {
     .where(eq(gamesTable.id, params.data.id))
     .returning();
 
-  // Award gems to the player's profile
+  // Award gems and XP to the player's profile
   if (existing.profileId) {
+    const xpEarned = puzzle ? (XP_PER_DIFFICULTY[puzzle.difficulty] ?? 1) : 1;
     await db
       .update(profilesTable)
-      .set({ gems: sql`gems + ${gemsEarned}` })
+      .set({ gems: sql`gems + ${gemsEarned}`, xp: sql`xp + ${xpEarned}` })
       .where(eq(profilesTable.id, existing.profileId));
 
     updateStreakIfDailyChallenge(existing.profileId, existing.puzzleId).catch(() => {});

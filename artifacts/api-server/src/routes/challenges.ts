@@ -59,6 +59,8 @@ async function formatChallenge(challenge: typeof challengesTable.$inferSelect) {
     challengedUsername: challenged?.username ?? "Unknown",
     challengerAvatar: challenger?.avatar ?? null,
     challengedAvatar: challenged?.avatar ?? null,
+    challengerXp: challenger?.xp ?? 0,
+    challengedXp: challenged?.xp ?? 0,
     challengerPoints,
     challengedPoints,
     difficulty: puzzle?.difficulty ?? "medium",

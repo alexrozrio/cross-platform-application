@@ -28,6 +28,7 @@ router.get("/leaderboard", async (req, res): Promise<void> => {
       gridSize: puzzlesTable.gridSize,
       username: profilesTable.username,
       avatar: profilesTable.avatar,
+      xp: profilesTable.xp,
     })
     .from(gamesTable)
     .innerJoin(puzzlesTable, eq(gamesTable.puzzleId, puzzlesTable.id))
@@ -47,6 +48,7 @@ router.get("/leaderboard", async (req, res): Promise<void> => {
     profileId: g.profileId!,
     username: g.username,
     avatar: g.avatar ?? null,
+    xp: g.xp ?? 0,
     difficulty: g.difficulty as "easy" | "medium" | "hard" | "expert",
     gridSize: g.gridSize as 3 | 4 | 9 | 16,
     elapsedSeconds: g.elapsedSeconds,

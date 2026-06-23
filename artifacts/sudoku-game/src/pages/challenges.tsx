@@ -37,6 +37,7 @@ import {
   Minus,
 } from "lucide-react";
 import { toast } from "sonner";
+import { LevelBadge } from "@/components/level-badge";
 
 type Difficulty = "easy" | "medium" | "hard" | "expert";
 type GridSize = 3 | 4 | 9 | 16;
@@ -55,6 +56,8 @@ interface ChallengeDetail {
   challengedUsername: string;
   challengerAvatar: string | null;
   challengedAvatar: string | null;
+  challengerXp: number;
+  challengedXp: number;
   challengerPoints: number | null;
   challengedPoints: number | null;
   difficulty: Difficulty;
@@ -130,6 +133,7 @@ function ChallengeCard({
   const isChallenger = challenge.challengerId === myProfileId;
   const opponent = isChallenger ? challenge.challengedUsername : challenge.challengerUsername;
   const opponentAvatar = isChallenger ? challenge.challengedAvatar : challenge.challengerAvatar;
+  const opponentXp = isChallenger ? (challenge.challengedXp ?? 0) : (challenge.challengerXp ?? 0);
   const myPoints = isChallenger ? challenge.challengerPoints : challenge.challengedPoints;
   const theirPoints = isChallenger ? challenge.challengedPoints : challenge.challengerPoints;
   const myGameId = isChallenger ? challenge.challengerGameId : challenge.challengedGameId;
@@ -145,6 +149,7 @@ function ChallengeCard({
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="font-semibold truncate">{opponent}</p>
+                <LevelBadge xp={opponentXp} size="xs" />
                 {challenge.status === "completed" && (
                   <span className={`text-xs font-bold flex items-center gap-1 ${isWinner ? "text-yellow-600" : isTie ? "text-slate-500" : "text-red-500"}`}>
                     {isWinner ? <><Crown className="w-3 h-3" /> Won +10 💎</> : isTie ? <><Minus className="w-3 h-3" /> Tie</> : <><XCircle className="w-3 h-3" /> Lost</>}

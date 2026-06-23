@@ -1,13 +1,15 @@
 import React from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { useGetPlayerStats } from '@workspace/api-client-react';
+import { useGetPlayerStats, useGetProfile } from '@workspace/api-client-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Target, TrendingUp, Zap, Clock, Hash } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LevelCard } from '@/components/level-badge';
 
 export default function Stats() {
   const { profileId } = useAuth();
   const { data: stats, isLoading } = useGetPlayerStats(profileId as number, { query: { enabled: !!profileId } });
+  const { data: profile } = useGetProfile(profileId as number, { query: { enabled: !!profileId } });
 
   const formatTime = (seconds: number | null | undefined) => {
     if (seconds == null) return '--:--';
@@ -38,6 +40,8 @@ export default function Stats() {
         <h1 className="text-3xl font-serif font-bold tracking-tight">Your Statistics</h1>
         <p className="text-muted-foreground">Track your puzzle-solving journey.</p>
       </div>
+
+      {profile && <LevelCard xp={profile.xp ?? 0} />}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="bg-card border-primary/10 shadow-sm">

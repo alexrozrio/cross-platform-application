@@ -71,6 +71,7 @@ export const GetProfileResponse = zod.object({
   "highlightErrors": zod.boolean().optional(),
   "showTimer": zod.boolean().optional(),
   "gems": zod.number().optional().describe('Accumulated gem balance usable for future in-game features'),
+  "xp": zod.number().optional().describe('Experience points for level progression'),
   "createdAt": zod.string()
 })
 
@@ -102,6 +103,7 @@ export const UpdateProfileResponse = zod.object({
   "highlightErrors": zod.boolean().optional(),
   "showTimer": zod.boolean().optional(),
   "gems": zod.number().optional().describe('Accumulated gem balance usable for future in-game features'),
+  "xp": zod.number().optional().describe('Experience points for level progression'),
   "createdAt": zod.string()
 })
 
@@ -275,6 +277,7 @@ export const GetLeaderboardResponseItem = zod.object({
   "profileId": zod.number(),
   "username": zod.string(),
   "avatar": zod.string().nullish(),
+  "xp": zod.number().optional(),
   "difficulty": zod.enum(['easy', 'medium', 'hard', 'expert']).optional(),
   "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(9),zod.literal(16)]).optional(),
   "elapsedSeconds": zod.number(),

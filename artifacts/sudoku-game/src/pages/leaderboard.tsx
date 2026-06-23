@@ -3,6 +3,7 @@ import { useGetLeaderboard, useGetTournamentLeaderboard } from '@workspace/api-c
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Trophy, Medal, Award, Star, CalendarDays, Calendar, Zap } from 'lucide-react';
+import { LevelBadge } from '@/components/level-badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
 type MainTab = 'alltime' | 'weekly' | 'monthly';
@@ -83,7 +84,10 @@ function AlltimeBoard() {
                   <div className="flex items-center gap-4">
                     <RankBadge rank={entry.rank} />
                     <div className="min-w-0">
-                      <p className="font-semibold truncate">{entry.username}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-semibold truncate">{entry.username}</p>
+                        {entry.xp !== undefined && <LevelBadge xp={entry.xp} size="xs" />}
+                      </div>
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className="text-xs text-muted-foreground">{entry.mistakeCount ?? 0} mistake{entry.mistakeCount !== 1 ? 's' : ''}</span>
                         {entry.difficulty && (
