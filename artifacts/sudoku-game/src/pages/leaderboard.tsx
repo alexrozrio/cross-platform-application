@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { useGetLeaderboard, useGetTournamentLeaderboard } from '@workspace/api-client-react';
+import React, { useState, useEffect } from 'react';
+import { useGetLeaderboard, useGetTournamentLeaderboard, customFetch } from '@workspace/api-client-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Medal, Award, Star, CalendarDays, Calendar, Zap, ChevronDown, ChevronUp } from 'lucide-react';
+import { Trophy, Medal, Award, Star, CalendarDays, Calendar, Zap, ChevronDown, ChevronUp, Brain, Timer, Repeat2 } from 'lucide-react';
 import { LevelBadge } from '@/components/level-badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/use-auth';
 
-type MainTab = 'alltime' | 'weekly' | 'monthly';
+type MainTab = 'alltime' | 'weekly' | 'monthly' | 'memory';
 
 function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60);
@@ -322,6 +322,115 @@ function TournamentBoard({ type, myProfileId }: { type: 'weekly' | 'monthly'; my
   );
 }
 
+// ─── Memory Match leaderboard ─────────────────────────────────────────────────
+
+type MemorySize = 2 | 4 | 6 | 8;
+
+const MEMORY_SIZES: { size: MemorySize; label: string; pairs: number }[] = [
+  { size: 2, label: 'Beginner', pairs: 4  },
+  { size: 4, label: 'Easy',     pairs: 8  },
+  { size: 6, label: 'Medium',   pairs: 16 },
+  { size: 8, label: 'Hard',     pairs: 32 },
+];
+
+interface MemoryEntry {
+  profileId: number;
+  username: string;
+  avatar: string | null;
+  points: number;
+  elapsedSeconds: number;
+  flips: number;
+  completedAt: string | null;
+}
+
+function MemoryBoard({ myProfileId }: { myProfileId?: number }) {
+  const [size, setSize] = useState<MemorySize>(2);
+  const [data, setData] = useState<MemoryEntry[] | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    setData(null);
+    customFetch<MemoryEntry[]>(`/api/memory-games/leaderboard?gridSize=${size}`)
+      .then(rows => setData(rows))
+      .catch(() => setData([]))
+      .finally(() => setLoading(false));
+  }, [size]);
+
+  return (
+    <div className="space-y-5">
+      <Tabs value={String(size)} onValueChange={(v) => setSize(Number(v) as MemorySize)} className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          {MEMORY_SIZES.map(opt => (
+            <TabsTrigger key={opt.size} value={String(opt.size)}>
+              {opt.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+
+      <Card className="shadow-md border-primary/10">
+        <CardHeader className="bg-card pb-4 border-b">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Brain className="w-5 h-5 text-violet-500" />
+            Memory Match — {MEMORY_SIZES.find(o => o.size === size)?.label} ({MEMORY_SIZES.find(o => o.size === size)?.pairs} pairs)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="p-6 space-y-4">{[1,2,3,4,5].map(i => <Skeleton key={i} className="h-14 w-full" />)}</div>
+          ) : !data || data.length === 0 ? (
+            <div className="p-12 text-center text-muted-foreground">
+              <Brain className="w-10 h-10 mx-auto mb-3 opacity-20" />
+              <p className="font-medium">No completed games yet for this level.</p>
+              <p className="text-sm mt-1">Play Memory Match to claim the top spot!</p>
+            </div>
+          ) : (
+            <div className="divide-y">
+              {data.map((entry, i) => {
+                const rank = i + 1;
+                const isMe = myProfileId !== undefined && entry.profileId === myProfileId;
+                const m = Math.floor(entry.elapsedSeconds / 60);
+                const s = entry.elapsedSeconds % 60;
+                const timeStr = `${m}:${s.toString().padStart(2, '0')}`;
+                return (
+                  <div
+                    key={`${entry.profileId}-${i}`}
+                    className={`flex items-center justify-between px-5 py-4 transition-colors ${isMe ? 'bg-primary/8 hover:bg-primary/12' : 'hover:bg-muted/40'}`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <RankBadge rank={rank} />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className={`font-semibold truncate ${isMe ? 'text-primary' : ''}`}>{entry.username}</p>
+                          {isMe && <span className="text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-full px-2 py-0.5">You</span>}
+                        </div>
+                        <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1"><Timer className="w-3 h-3" />{timeStr}</span>
+                          <span className="flex items-center gap-1"><Repeat2 className="w-3 h-3" />{entry.flips} flips</span>
+                          {entry.completedAt && (
+                            <span>{new Date(entry.completedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0 ml-4">
+                      <p className={`font-black text-xl tabular-nums ${isMe ? 'text-primary' : 'text-primary'}`}>
+                        {entry.points.toLocaleString()}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">pts</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Leaderboard() {
@@ -337,16 +446,18 @@ export default function Leaderboard() {
       </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as MainTab)} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="weekly" className="gap-1.5"><CalendarDays className="w-3.5 h-3.5" />Weekly</TabsTrigger>
           <TabsTrigger value="monthly" className="gap-1.5"><Calendar className="w-3.5 h-3.5" />Monthly</TabsTrigger>
           <TabsTrigger value="alltime" className="gap-1.5"><Zap className="w-3.5 h-3.5" />All-time</TabsTrigger>
+          <TabsTrigger value="memory" className="gap-1.5"><Brain className="w-3.5 h-3.5" />Memory</TabsTrigger>
         </TabsList>
       </Tabs>
 
       {tab === 'alltime' && <AlltimeBoard myProfileId={myProfileId} />}
       {tab === 'weekly' && <TournamentBoard type="weekly" myProfileId={myProfileId} />}
       {tab === 'monthly' && <TournamentBoard type="monthly" myProfileId={myProfileId} />}
+      {tab === 'memory' && <MemoryBoard myProfileId={myProfileId} />}
     </div>
   );
 }
