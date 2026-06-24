@@ -32,7 +32,7 @@ interface WinResult {
 const GRID_OPTIONS: { size: GridSize; label: string; pairs: number; desc: string }[] = [
   { size: 2, label: '2×4', pairs: 4,  desc: 'Beginner · 4 pairs' },
   { size: 4, label: '4×4', pairs: 8,  desc: 'Easy · 8 pairs' },
-  { size: 6, label: '6×6', pairs: 18, desc: 'Medium · 18 pairs' },
+  { size: 6, label: '4×8', pairs: 16, desc: 'Medium · 16 pairs' },
   { size: 8, label: '8×8', pairs: 32, desc: 'Hard · 32 pairs' },
 ];
 
@@ -48,8 +48,10 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function getPairs(gridSize: GridSize): number {
-  if (gridSize === 2) return 4; // 2×4 grid = 8 cards = 4 pairs
-  return (gridSize * gridSize) / 2;
+  if (gridSize === 2) return 4;  // 2×4  = 8 cards  = 4 pairs
+  if (gridSize === 4) return 8;  // 4×4  = 16 cards = 8 pairs
+  if (gridSize === 6) return 16; // 4×8  = 32 cards = 16 pairs
+  return 32;                     // 8×8  = 64 cards = 32 pairs
 }
 
 function buildDeck(gridSize: GridSize): Card[] {
@@ -82,8 +84,8 @@ function MemoryCard({
 }) {
   const theme = getTheme(themeId as any);
   const symbol = theme.symbols[(card.value - 1) % theme.symbols.length];
-  const fontSize = size === 8 ? 'text-xl' : size === 6 ? 'text-2xl' : 'text-3xl';
-  const cardH = size === 8 ? 'h-10 sm:h-12' : size === 6 ? 'h-14 sm:h-16' : size === 2 ? 'h-20 sm:h-24' : 'h-16 sm:h-20';
+  const fontSize = size === 8 || size === 6 ? 'text-xl' : size === 4 ? 'text-2xl' : 'text-3xl';
+  const cardH = size === 8 || size === 6 ? 'h-10 sm:h-12' : size === 2 ? 'h-20 sm:h-24' : 'h-16 sm:h-20';
 
   return (
     <motion.button
@@ -392,7 +394,7 @@ export default function MemoryMatchPage() {
   }
 
   // ── Game board ───────────────────────────────────────────────────────────────
-  const colClass = gridSize === 2 ? 'grid-cols-4' : gridSize === 4 ? 'grid-cols-4' : gridSize === 6 ? 'grid-cols-6' : 'grid-cols-8';
+  const colClass = gridSize === 2 ? 'grid-cols-4' : gridSize === 4 ? 'grid-cols-4' : 'grid-cols-8';
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-4 animate-in fade-in duration-300">
