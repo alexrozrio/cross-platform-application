@@ -140,8 +140,8 @@ export default function Portal() {
                   </div>
                 </button>
                 <div className="px-6 pb-5 pt-1">
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {[{size:4,label:'4×4',sub:'8 pairs'},{size:6,label:'6×6',sub:'18 pairs'},{size:8,label:'8×8',sub:'32 pairs'}].map(opt => (
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {[{size:2,label:'2×4',sub:'4 pairs'},{size:4,label:'4×4',sub:'8 pairs'},{size:6,label:'6×6',sub:'18 pairs'},{size:8,label:'8×8',sub:'32 pairs'}].map(opt => (
                       <button
                         key={opt.size}
                         onClick={() => setLocation(`/memory?size=${opt.size}`)}

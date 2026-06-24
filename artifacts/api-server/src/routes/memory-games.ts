@@ -7,10 +7,10 @@ const router: IRouter = Router();
 
 // ─── Points / XP / Gems helpers ───────────────────────────────────────────────
 
-const BASE_POINTS: Record<number, number> = { 4: 500, 6: 1200, 8: 2500 };
-const PAR_SECONDS: Record<number, number> = { 4: 60, 6: 120, 8: 200 };
-const XP_PER_SIZE: Record<number, number> = { 4: 1, 6: 2, 8: 3 };
-const MIN_FLIPS: Record<number, number> = { 4: 16, 6: 36, 8: 64 };
+const BASE_POINTS: Record<number, number> = { 2: 150, 4: 500, 6: 1200, 8: 2500 };
+const PAR_SECONDS: Record<number, number> = { 2: 25, 4: 60, 6: 120, 8: 200 };
+const XP_PER_SIZE: Record<number, number> = { 2: 1, 4: 1, 6: 2, 8: 3 };
+const MIN_FLIPS: Record<number, number> = { 2: 8, 4: 16, 6: 36, 8: 64 };
 
 function calcMemoryPoints(gridSize: number, elapsedSeconds: number, flips: number): number {
   const base = BASE_POINTS[gridSize] ?? 500;
@@ -31,8 +31,8 @@ function calcMemoryGems(points: number): number {
 router.post("/memory-games", async (req, res): Promise<void> => {
   const { profileId, gridSize } = req.body as { profileId?: number; gridSize?: number };
 
-  if (!gridSize || ![4, 6, 8].includes(gridSize)) {
-    res.status(400).json({ error: "gridSize must be 4, 6, or 8" });
+  if (!gridSize || ![2, 4, 6, 8].includes(gridSize)) {
+    res.status(400).json({ error: "gridSize must be 2, 4, 6, or 8" });
     return;
   }
 

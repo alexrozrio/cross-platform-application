@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useLocation } from 'wouter';
+import { useLocation, useSearch } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/use-auth';
 import { useImageTheme } from '@/hooks/use-image-theme';
@@ -11,7 +11,7 @@ import { ArrowLeft, Timer, Repeat2, Trophy, Gem, Star, RotateCcw, Zap } from 'lu
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type GridSize = 4 | 6 | 8;
+type GridSize = 2 | 4 | 6 | 8;
 type GamePhase = 'setup' | 'playing' | 'won';
 
 interface Card {
@@ -30,7 +30,8 @@ interface WinResult {
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const GRID_OPTIONS: { size: GridSize; label: string; pairs: number; desc: string }[] = [
-  { size: 4, label: '4×4', pairs: 8,  desc: 'Beginner · 8 pairs' },
+  { size: 2, label: '2×4', pairs: 4,  desc: 'Beginner · 4 pairs' },
+  { size: 4, label: '4×4', pairs: 8,  desc: 'Easy · 8 pairs' },
   { size: 6, label: '6×6', pairs: 18, desc: 'Medium · 18 pairs' },
   { size: 8, label: '8×8', pairs: 32, desc: 'Hard · 32 pairs' },
 ];
@@ -46,8 +47,13 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+function getPairs(gridSize: GridSize): number {
+  if (gridSize === 2) return 4; // 2×4 grid = 8 cards = 4 pairs
+  return (gridSize * gridSize) / 2;
+}
+
 function buildDeck(gridSize: GridSize): Card[] {
-  const pairs = (gridSize * gridSize) / 2;
+  const pairs = getPairs(gridSize);
   const values = Array.from({ length: pairs }, (_, i) => i + 1);
   const doubled = [...values, ...values];
   return shuffle(doubled).map((value, id) => ({ id, value, flipped: false, matched: false }));
@@ -77,7 +83,7 @@ function MemoryCard({
   const theme = getTheme(themeId as any);
   const symbol = theme.symbols[(card.value - 1) % theme.symbols.length];
   const fontSize = size === 8 ? 'text-xl' : size === 6 ? 'text-2xl' : 'text-3xl';
-  const cardH = size === 8 ? 'h-10 sm:h-12' : size === 6 ? 'h-14 sm:h-16' : 'h-16 sm:h-20';
+  const cardH = size === 8 ? 'h-10 sm:h-12' : size === 6 ? 'h-14 sm:h-16' : size === 2 ? 'h-20 sm:h-24' : 'h-16 sm:h-20';
 
   return (
     <motion.button
@@ -119,11 +125,12 @@ function MemoryCard({
 
 export default function MemoryMatchPage() {
   const [, setLocation] = useLocation();
+  const search = useSearch();
   const { profileId } = useAuth();
   const { themeId } = useImageTheme();
 
   const [phase, setPhase] = useState<GamePhase>('setup');
-  const [gridSize, setGridSize] = useState<GridSize>(4);
+  const [gridSize, setGridSize] = useState<GridSize>(2);
   const [cards, setCards] = useState<Card[]>([]);
   const [flippedIds, setFlippedIds] = useState<number[]>([]);
   const [matchedCount, setMatchedCount] = useState(0);
@@ -169,6 +176,17 @@ export default function MemoryMatchPage() {
     }
   }, [profileId]);
 
+  // Auto-start when ?size= is in the URL (e.g. from portal quick-start buttons)
+  const startGameRef = useRef(startGame);
+  useEffect(() => { startGameRef.current = startGame; }, [startGame]);
+  useEffect(() => {
+    const params = new URLSearchParams(search);
+    const s = parseInt(params.get('size') ?? '', 10);
+    if ([2, 4, 6, 8].includes(s)) {
+      startGameRef.current(s as GridSize);
+    }
+  }, [search]);
+
   const handleCardClick = useCallback((cardId: number) => {
     if (lockBoard) return;
 
@@ -194,7 +212,7 @@ export default function MemoryMatchPage() {
             setMatchedCount(newMatchedCount);
 
             // Check win
-            const totalPairs = (gridSize * gridSize) / 2;
+            const totalPairs = getPairs(gridSize);
             if (newMatchedCount === totalPairs) {
               setTimeout(() => completeGame(updated), 400);
             } else {
@@ -256,7 +274,7 @@ export default function MemoryMatchPage() {
   const completeGameRef = useRef(completeGame);
   useEffect(() => { completeGameRef.current = completeGame; }, [completeGame]);
 
-  const totalPairs = (gridSize * gridSize) / 2;
+  const totalPairs = getPairs(gridSize);
   const theme = getTheme(themeId as any);
 
   // ── Setup screen ─────────────────────────────────────────────────────────────
@@ -298,7 +316,7 @@ export default function MemoryMatchPage() {
                 <div>
                   <p className="font-semibold">{opt.desc}</p>
                   <p className="text-xs text-muted-foreground">
-                    {opt.size === 4 ? '+1 XP · min 1 💎' : opt.size === 6 ? '+2 XP · min 1 💎' : '+3 XP · min 1 💎'}
+                    {opt.size === 2 || opt.size === 4 ? '+1 XP · min 1 💎' : opt.size === 6 ? '+2 XP · min 1 💎' : '+3 XP · min 1 💎'}
                   </p>
                 </div>
               </div>
@@ -374,7 +392,7 @@ export default function MemoryMatchPage() {
   }
 
   // ── Game board ───────────────────────────────────────────────────────────────
-  const colClass = gridSize === 4 ? 'grid-cols-4' : gridSize === 6 ? 'grid-cols-6' : 'grid-cols-8';
+  const colClass = gridSize === 2 ? 'grid-cols-4' : gridSize === 4 ? 'grid-cols-4' : gridSize === 6 ? 'grid-cols-6' : 'grid-cols-8';
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-4 animate-in fade-in duration-300">
