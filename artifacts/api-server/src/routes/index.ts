@@ -10,6 +10,7 @@ import badgesRouter from "./badges";
 import dailyChallengeRouter from "./daily-challenge";
 import challengesRouter from "./challenges";
 import unlocksRouter from "./unlocks";
+import achievementsRouter from "./achievements";
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use(badgesRouter);
 router.use(dailyChallengeRouter);
 router.use(challengesRouter);
 router.use(unlocksRouter);
+router.use(achievementsRouter);
 
 export default router;

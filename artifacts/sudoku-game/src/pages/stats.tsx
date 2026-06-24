@@ -3,9 +3,10 @@ import { useAuth } from '@/hooks/use-auth';
 import { useGetPlayerStats, useGetProfile, customFetch } from '@workspace/api-client-react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Target, TrendingUp, Zap, Clock, Hash, ChevronLeft, ChevronRight, Flame } from 'lucide-react';
+import { Target, TrendingUp, Zap, Clock, Hash, ChevronLeft, ChevronRight, Flame, Trophy } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LevelCard } from '@/components/level-badge';
+import { ACHIEVEMENT_META, type AchievementsData } from '@/lib/achievement-utils';
 
 const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -125,6 +126,82 @@ function StreakCalendar({ profileId }: { profileId: number }) {
   );
 }
 
+const GROUPS = ['Milestones', 'Difficulty', 'Skill', 'Daily'];
+
+function AchievementsCard({ profileId }: { profileId: number }) {
+  const { data } = useQuery({
+    queryKey: [`/api/achievements/${profileId}`],
+    queryFn: () => customFetch<AchievementsData>(`/api/achievements/${profileId}`),
+    enabled: !!profileId,
+  });
+
+  const unlockedCount = data ? ACHIEVEMENT_META.filter(a => data[a.id]?.unlocked).length : 0;
+
+  return (
+    <Card className="shadow-md border-primary/10">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Trophy className="w-5 h-5 text-yellow-500" /> Achievements
+          </CardTitle>
+          <span className="text-sm text-muted-foreground font-semibold">
+            {unlockedCount} / {ACHIEVEMENT_META.length}
+          </span>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {GROUPS.map(group => {
+          const group_items = ACHIEVEMENT_META.filter(a => a.group === group);
+          return (
+            <div key={group}>
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">{group}</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {group_items.map(a => {
+                  const status = data?.[a.id];
+                  const unlocked = status?.unlocked ?? false;
+                  const progress = status?.progress ?? 0;
+                  const total = status?.total ?? 1;
+                  const showBar = total > 1 && !unlocked;
+
+                  return (
+                    <div
+                      key={a.id}
+                      title={a.description}
+                      className={[
+                        'rounded-xl p-3 flex flex-col gap-1.5 border transition-all',
+                        unlocked
+                          ? 'bg-primary/5 border-primary/20 shadow-sm'
+                          : 'bg-muted/30 border-transparent opacity-50',
+                      ].join(' ')}
+                    >
+                      <span className={`text-2xl ${unlocked ? '' : 'grayscale'}`}>{a.emoji}</span>
+                      <p className={`text-xs font-bold leading-tight ${unlocked ? 'text-foreground' : 'text-muted-foreground'}`}>
+                        {a.title}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground leading-snug">{a.description}</p>
+                      {showBar && (
+                        <div className="mt-1">
+                          <div className="h-1 rounded-full bg-muted overflow-hidden">
+                            <div
+                              className="h-full bg-primary/50 rounded-full transition-all"
+                              style={{ width: `${Math.round((progress / total) * 100)}%` }}
+                            />
+                          </div>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">{progress} / {total}</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function Stats() {
   const { profileId } = useAuth();
   const { data: stats, isLoading } = useGetPlayerStats(profileId as number, { query: { enabled: !!profileId } });
@@ -225,6 +302,8 @@ export default function Stats() {
           </div>
         </CardContent>
       </Card>
+
+      <AchievementsCard profileId={profileId!} />
     </div>
   );
 }
