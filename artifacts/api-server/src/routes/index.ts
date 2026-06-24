@@ -12,6 +12,7 @@ import challengesRouter from "./challenges";
 import unlocksRouter from "./unlocks";
 import achievementsRouter from "./achievements";
 import memoryGamesRouter from "./memory-games";
+import memoryChallengesRouter from "./memory-challenges";
 
 const router: IRouter = Router();
 
@@ -28,5 +29,6 @@ router.use(challengesRouter);
 router.use(unlocksRouter);
 router.use(achievementsRouter);
 router.use(memoryGamesRouter);
+router.use(memoryChallengesRouter);
 
 export default router;

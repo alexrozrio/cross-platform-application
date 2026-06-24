@@ -6,3 +6,4 @@ export * from "./daily-challenges";
 export * from "./challenges";
 export * from "./unlocked-items";
 export * from "./memory-games";
+export * from "./memory-challenge-completions";

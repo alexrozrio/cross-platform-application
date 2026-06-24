@@ -7,7 +7,7 @@ import { getTheme } from '@/lib/themes';
 import { customFetch } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Timer, Repeat2, Trophy, Gem, Star, RotateCcw, Zap } from 'lucide-react';
+import { ArrowLeft, Timer, Repeat2, Trophy, Gem, Star, RotateCcw, Zap, Brain } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -141,6 +141,14 @@ export default function MemoryMatchPage() {
   const [lockBoard, setLockBoard] = useState(false);
   const [winResult, setWinResult] = useState<WinResult | null>(null);
   const [gameId, setGameId] = useState<number | null>(null);
+  const [challengeBonus, setChallengeBonus] = useState<{ bonusXp: number; bonusGems: number } | null>(null);
+
+  // Read ?challenge=daily|weekly from URL
+  const challengeType = (() => {
+    const p = new URLSearchParams(search);
+    const c = p.get('challenge');
+    return c === 'daily' || c === 'weekly' ? c : null;
+  })();
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -252,10 +260,10 @@ export default function MemoryMatchPage() {
     setPhase('won');
     if (timerRef.current) clearInterval(timerRef.current);
 
-    // Use the elapsed ref value captured in closure won't be fresh; read from state via ref
     const currentElapsed = elapsed;
-    const currentFlips = flips + 1; // +1 for the final match
+    const currentFlips = flips + 1;
 
+    let pts = 0;
     if (gameId) {
       try {
         const result = await customFetch<WinResult>(`/api/memory-games/${gameId}/complete`, {
@@ -263,14 +271,27 @@ export default function MemoryMatchPage() {
           body: JSON.stringify({ elapsedSeconds: currentElapsed, flips: currentFlips }),
         });
         setWinResult(result);
+        pts = result.points;
       } catch {
-        // show generic result
         setWinResult({ points: 0, xpEarned: 0, gemsEarned: 0 });
       }
     } else {
       setWinResult({ points: 0, xpEarned: 0, gemsEarned: 0 });
     }
-  }, [gameId, elapsed, flips]);
+
+    // Claim challenge bonus if this game was started from a challenge
+    if (challengeType && profileId) {
+      try {
+        const bonus = await customFetch<{ alreadyClaimed: boolean; bonusXp: number; bonusGems: number }>(
+          '/api/memory-challenges/complete',
+          { method: 'POST', body: JSON.stringify({ profileId, type: challengeType, elapsedSeconds: currentElapsed, flips: currentFlips, points: pts }) }
+        );
+        if (!bonus.alreadyClaimed) {
+          setChallengeBonus({ bonusXp: bonus.bonusXp, bonusGems: bonus.bonusGems });
+        }
+      } catch { /* non-fatal */ }
+    }
+  }, [gameId, elapsed, flips, challengeType, profileId]);
 
   // Wrap completeGame in a ref so the card-click closure captures it fresh
   const completeGameRef = useRef(completeGame);
@@ -327,6 +348,23 @@ export default function MemoryMatchPage() {
           ))}
         </div>
 
+        {/* Challenge banner */}
+        <button
+          onClick={() => setLocation('/memory-challenge')}
+          className="w-full flex items-center justify-between rounded-xl border-2 border-violet-300/50 bg-gradient-to-r from-violet-50 to-purple-50 hover:border-violet-400/60 hover:from-violet-100 hover:to-purple-100 transition-all px-4 py-3 text-left"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-violet-500/15 flex items-center justify-center">
+              <Brain className="w-4 h-4 text-violet-600" />
+            </div>
+            <div>
+              <p className="font-semibold text-sm text-violet-900">Daily &amp; Weekly Challenges</p>
+              <p className="text-xs text-violet-600">Earn bonus XP and gems for completing challenges</p>
+            </div>
+          </div>
+          <span className="text-violet-500 font-bold">→</span>
+        </button>
+
         <div className="rounded-xl border bg-muted/30 p-4 space-y-1.5 text-sm text-muted-foreground">
           <p className="font-semibold text-foreground text-xs uppercase tracking-widest">How to play</p>
           <p>Tap any card to reveal it, then tap a second card to find its pair.</p>
@@ -370,6 +408,25 @@ export default function MemoryMatchPage() {
             <div className="flex items-center gap-2">
               <Gem className="w-5 h-5 text-cyan-500" />
               <span className="font-black text-lg">+{winResult.gemsEarned} 💎</span>
+            </div>
+          </div>
+        )}
+
+        {challengeBonus && (
+          <div className="rounded-xl border-2 border-violet-300/50 bg-gradient-to-r from-violet-50 to-purple-50 p-4 space-y-2">
+            <div className="flex items-center gap-2 text-violet-700 font-semibold text-sm">
+              <Brain className="w-4 h-4" />
+              {challengeType === 'daily' ? 'Daily' : 'Weekly'} Challenge Complete! 🎊
+            </div>
+            <div className="flex items-center gap-5">
+              <div className="flex items-center gap-1.5">
+                <Zap className="w-4 h-4 text-yellow-500" />
+                <span className="font-black">+{challengeBonus.bonusXp} bonus XP</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Gem className="w-4 h-4 text-cyan-500" />
+                <span className="font-black">+{challengeBonus.bonusGems} bonus 💎</span>
+              </div>
             </div>
           </div>
         )}
