@@ -5,6 +5,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Trophy, Medal, Award, Star, CalendarDays, Calendar, Zap, ChevronDown, ChevronUp } from 'lucide-react';
 import { LevelBadge } from '@/components/level-badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/hooks/use-auth';
 
 type MainTab = 'alltime' | 'weekly' | 'monthly';
 
@@ -148,7 +149,7 @@ const GRID_LABELS: Record<string, string> = {
   '16': '16×16 Pro',
 };
 
-function AlltimeBoard() {
+function AlltimeBoard({ myProfileId }: { myProfileId?: number }) {
   const [gridFilter, setGridFilter] = useState<'all' | '3' | '4' | '9' | '16'>('all');
   const gridSize = gridFilter === 'all' ? undefined : Number(gridFilter) as 3 | 4 | 9 | 16;
   const { data, isLoading } = useGetLeaderboard(
@@ -191,32 +192,39 @@ function AlltimeBoard() {
             </div>
           ) : (
             <div className="divide-y">
-              {data.map((entry) => (
-                <div key={`${entry.profileId}-${entry.rank}`} className="flex items-center justify-between px-5 py-4 hover:bg-muted/40 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <RankBadge rank={entry.rank} />
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-semibold truncate">{entry.username}</p>
-                        {entry.xp !== undefined && <LevelBadge xp={entry.xp} size="xs" />}
-                      </div>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs text-muted-foreground">{entry.mistakeCount ?? 0} mistake{entry.mistakeCount !== 1 ? 's' : ''}</span>
-                        {entry.difficulty && (
-                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium capitalize ${diffColor[entry.difficulty] ?? ''}`}>{entry.difficulty}</span>
-                        )}
-                        {gridFilter === 'all' && entry.gridSize && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded-full border font-medium bg-blue-50 text-blue-700 border-blue-200">{entry.gridSize}×{entry.gridSize}</span>
-                        )}
+              {data.map((entry) => {
+                const isMe = myProfileId !== undefined && entry.profileId === myProfileId;
+                return (
+                  <div
+                    key={`${entry.profileId}-${entry.rank}`}
+                    className={`flex items-center justify-between px-5 py-4 transition-colors ${isMe ? 'bg-primary/8 hover:bg-primary/12' : 'hover:bg-muted/40'}`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <RankBadge rank={entry.rank} />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className={`font-semibold truncate ${isMe ? 'text-primary' : ''}`}>{entry.username}</p>
+                          {isMe && <span className="text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-full px-2 py-0.5">You</span>}
+                          {entry.xp !== undefined && <LevelBadge xp={entry.xp} size="xs" />}
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs text-muted-foreground">{entry.mistakeCount ?? 0} mistake{entry.mistakeCount !== 1 ? 's' : ''}</span>
+                          {entry.difficulty && (
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium capitalize ${diffColor[entry.difficulty] ?? ''}`}>{entry.difficulty}</span>
+                          )}
+                          {gridFilter === 'all' && entry.gridSize && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full border font-medium bg-blue-50 text-blue-700 border-blue-200">{entry.gridSize}×{entry.gridSize}</span>
+                          )}
+                        </div>
                       </div>
                     </div>
+                    <div className="text-right shrink-0 ml-4">
+                      <p className={`font-mono text-xl font-bold tabular-nums ${isMe ? 'text-primary' : 'text-primary'}`}>{formatTime(entry.elapsedSeconds)}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{new Date(entry.completedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
+                    </div>
                   </div>
-                  <div className="text-right shrink-0 ml-4">
-                    <p className="font-mono text-xl font-bold text-primary tabular-nums">{formatTime(entry.elapsedSeconds)}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{new Date(entry.completedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>
@@ -227,7 +235,7 @@ function AlltimeBoard() {
 
 // ─── Tournament leaderboard ───────────────────────────────────────────────────
 
-function TournamentBoard({ type }: { type: 'weekly' | 'monthly' }) {
+function TournamentBoard({ type, myProfileId }: { type: 'weekly' | 'monthly'; myProfileId?: number }) {
   const [gridSize, setGridSize] = useState<3 | 4 | 9 | 16 | undefined>(undefined);
   const { data, isLoading } = useGetTournamentLeaderboard(
     { type, ...(gridSize !== undefined ? { gridSize: gridSize as any } : {}) },
@@ -276,25 +284,34 @@ function TournamentBoard({ type }: { type: 'weekly' | 'monthly' }) {
             </div>
           ) : (
             <div className="divide-y">
-              {data.entries.map((entry) => (
-                <div key={entry.profileId} className="flex items-center justify-between px-5 py-4 hover:bg-muted/40 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <RankBadge rank={entry.rank} />
-                    <div className="min-w-0">
-                      <p className="font-semibold truncate">{entry.username}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {entry.gamesPlayed} game{entry.gamesPlayed !== 1 ? 's' : ''} completed
+              {data.entries.map((entry) => {
+                const isMe = myProfileId !== undefined && entry.profileId === myProfileId;
+                return (
+                  <div
+                    key={entry.profileId}
+                    className={`flex items-center justify-between px-5 py-4 transition-colors ${isMe ? 'bg-primary/8 hover:bg-primary/12' : 'hover:bg-muted/40'}`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <RankBadge rank={entry.rank} />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className={`font-semibold truncate ${isMe ? 'text-primary' : ''}`}>{entry.username}</p>
+                          {isMe && <span className="text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-full px-2 py-0.5">You</span>}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {entry.gamesPlayed} game{entry.gamesPlayed !== 1 ? 's' : ''} completed
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0 ml-4">
+                      <p className="text-xl font-black text-primary tabular-nums">
+                        {entry.totalPoints.toLocaleString()}
                       </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">points</p>
                     </div>
                   </div>
-                  <div className="text-right shrink-0 ml-4">
-                    <p className="text-xl font-black text-primary tabular-nums">
-                      {entry.totalPoints.toLocaleString()}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">points</p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>
@@ -309,6 +326,8 @@ function TournamentBoard({ type }: { type: 'weekly' | 'monthly' }) {
 
 export default function Leaderboard() {
   const [tab, setTab] = useState<MainTab>('weekly');
+  const { profileId } = useAuth();
+  const myProfileId = profileId ?? undefined;
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-8 animate-in fade-in duration-500">
@@ -325,9 +344,9 @@ export default function Leaderboard() {
         </TabsList>
       </Tabs>
 
-      {tab === 'alltime' && <AlltimeBoard />}
-      {tab === 'weekly' && <TournamentBoard type="weekly" />}
-      {tab === 'monthly' && <TournamentBoard type="monthly" />}
+      {tab === 'alltime' && <AlltimeBoard myProfileId={myProfileId} />}
+      {tab === 'weekly' && <TournamentBoard type="weekly" myProfileId={myProfileId} />}
+      {tab === 'monthly' && <TournamentBoard type="monthly" myProfileId={myProfileId} />}
     </div>
   );
 }
