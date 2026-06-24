@@ -24,6 +24,9 @@ import Themes from "@/pages/themes";
 import BadgeSharePage from "@/pages/badge-share";
 import DailyChallenge from "@/pages/daily-challenge";
 import Challenges from "@/pages/challenges";
+import About from "@/pages/about";
+import PrivacyPolicy from "@/pages/privacy-policy";
+import TermsOfService from "@/pages/terms-of-service";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
@@ -186,6 +189,9 @@ function Router() {
           <Route path="/stats" component={Stats} />
           <Route path="/challenges" component={Challenges} />
           <Route path="/badges/:token" component={BadgeSharePage} />
+          <Route path="/about" component={About} />
+          <Route path="/privacy" component={PrivacyPolicy} />
+          <Route path="/terms" component={TermsOfService} />
           {/* REQUIRED — /*? matches bare URL and Clerk OAuth sub-paths */}
           <Route path="/sign-in/*?" component={SignInPage} />
           <Route path="/sign-up/*?" component={SignUpPage} />
