@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, and, asc } from "drizzle-orm";
+import { eq, and, asc, gte, lt } from "drizzle-orm";
 import { db, puzzlesTable, gamesTable, profilesTable, dailyChallengesTable } from "@workspace/db";
 import { generatePuzzle } from "../lib/sudoku";
 
@@ -96,6 +96,37 @@ router.get("/daily-challenge/leaderboard", async (req, res): Promise<void> => {
   } catch (err) {
     res.status(500).json({ error: "Failed to get leaderboard" });
   }
+});
+
+router.get("/daily-challenge/history/:profileId", async (req, res): Promise<void> => {
+  const profileId = Number(req.params.profileId);
+  if (isNaN(profileId)) { res.status(400).json({ error: "Invalid profileId" }); return; }
+
+  // month param: "YYYY-MM", defaults to current month
+  const monthParam = typeof req.query.month === "string" ? req.query.month : todayDateString().slice(0, 7);
+  const [year, mon] = monthParam.split("-").map(Number);
+  if (!year || !mon) { res.status(400).json({ error: "Invalid month" }); return; }
+
+  const monthStart = `${year}-${String(mon).padStart(2, "0")}-01`;
+  const nextYear = mon === 12 ? year + 1 : year;
+  const nextMon = mon === 12 ? 1 : mon + 1;
+  const monthEnd = `${nextYear}-${String(nextMon).padStart(2, "0")}-01`;
+
+  const rows = await db
+    .select({ date: dailyChallengesTable.date })
+    .from(gamesTable)
+    .innerJoin(dailyChallengesTable, eq(gamesTable.puzzleId, dailyChallengesTable.puzzleId))
+    .where(
+      and(
+        eq(gamesTable.profileId, profileId),
+        eq(gamesTable.status, "completed"),
+        gte(dailyChallengesTable.date, monthStart),
+        lt(dailyChallengesTable.date, monthEnd),
+      )
+    );
+
+  const dates = [...new Set(rows.map(r => r.date))];
+  res.json({ month: monthParam, completedDates: dates });
 });
 
 router.get("/daily-challenge/streak/:profileId", async (req, res): Promise<void> => {

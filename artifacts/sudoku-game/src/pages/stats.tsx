@@ -1,10 +1,129 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { useGetPlayerStats, useGetProfile } from '@workspace/api-client-react';
+import { useGetPlayerStats, useGetProfile, customFetch } from '@workspace/api-client-react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Target, TrendingUp, Zap, Clock, Hash } from 'lucide-react';
+import { Target, TrendingUp, Zap, Clock, Hash, ChevronLeft, ChevronRight, Flame } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LevelCard } from '@/components/level-badge';
+
+const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function StreakCalendar({ profileId }: { profileId: number }) {
+  const today = new Date();
+  const [viewDate, setViewDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+
+  const month = `${viewDate.getFullYear()}-${String(viewDate.getMonth() + 1).padStart(2, '0')}`;
+
+  const { data: streakInfo } = useQuery({
+    queryKey: [`/api/daily-challenge/streak/${profileId}`],
+    queryFn: () => customFetch<{ currentStreak: number; longestStreak: number; lastChallengeDate: string | null; completedToday: boolean }>(
+      `/api/daily-challenge/streak/${profileId}`
+    ),
+    enabled: !!profileId,
+  });
+
+  const { data: historyData } = useQuery({
+    queryKey: [`/api/daily-challenge/history/${profileId}`, month],
+    queryFn: () => customFetch<{ month: string; completedDates: string[] }>(
+      `/api/daily-challenge/history/${profileId}?month=${month}`
+    ),
+    enabled: !!profileId,
+  });
+
+  const completedSet = new Set(historyData?.completedDates ?? []);
+
+  // Build the grid: days of the month padded by weekday offset
+  const daysInMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
+  const startWeekday = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1).getDay();
+  const todayStr = today.toISOString().slice(0, 10);
+
+  const isPrevDisabled = viewDate <= new Date(today.getFullYear() - 1, today.getMonth(), 1);
+  const isNextDisabled = viewDate >= new Date(today.getFullYear(), today.getMonth(), 1);
+
+  const prevMonth = () => setViewDate(d => new Date(d.getFullYear(), d.getMonth() - 1, 1));
+  const nextMonth = () => setViewDate(d => new Date(d.getFullYear(), d.getMonth() + 1, 1));
+
+  return (
+    <Card className="shadow-md border-primary/10">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Flame className="w-5 h-5 text-orange-500" /> Daily Challenge
+          </CardTitle>
+          <div className="flex items-center gap-3 text-sm">
+            <div className="text-center">
+              <p className="text-xl font-black text-orange-500">{streakInfo?.currentStreak ?? 0}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">streak</p>
+            </div>
+            <div className="w-px h-8 bg-border" />
+            <div className="text-center">
+              <p className="text-xl font-black text-primary">{streakInfo?.longestStreak ?? 0}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">best</p>
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {/* Month nav */}
+        <div className="flex items-center justify-between">
+          <button onClick={prevMonth} disabled={isPrevDisabled} className="p-1 rounded hover:bg-muted disabled:opacity-30 transition-colors">
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <p className="text-sm font-semibold">{MONTH_NAMES[viewDate.getMonth()]} {viewDate.getFullYear()}</p>
+          <button onClick={nextMonth} disabled={isNextDisabled} className="p-1 rounded hover:bg-muted disabled:opacity-30 transition-colors">
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Weekday headers */}
+        <div className="grid grid-cols-7 gap-1">
+          {WEEKDAYS.map(d => (
+            <div key={d} className="text-center text-[10px] font-semibold text-muted-foreground py-1">{d}</div>
+          ))}
+
+          {/* Empty leading cells */}
+          {Array.from({ length: startWeekday }, (_, i) => (
+            <div key={`empty-${i}`} />
+          ))}
+
+          {/* Day cells */}
+          {Array.from({ length: daysInMonth }, (_, i) => {
+            const day = i + 1;
+            const dateStr = `${month}-${String(day).padStart(2, '0')}`;
+            const done = completedSet.has(dateStr);
+            const isToday = dateStr === todayStr;
+            const isFuture = dateStr > todayStr;
+
+            return (
+              <div
+                key={day}
+                title={done ? `Completed on ${dateStr}` : undefined}
+                className={[
+                  'aspect-square flex items-center justify-center rounded-full text-xs font-semibold transition-colors',
+                  done
+                    ? 'bg-orange-500 text-white'
+                    : isToday
+                    ? 'ring-2 ring-orange-400 text-foreground'
+                    : isFuture
+                    ? 'text-muted-foreground/40'
+                    : 'text-muted-foreground',
+                ].join(' ')}
+              >
+                {done ? '🔥' : day}
+              </div>
+            );
+          })}
+        </div>
+
+        <p className="text-[11px] text-muted-foreground text-center">
+          {completedSet.size} day{completedSet.size !== 1 ? 's' : ''} completed this month
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function Stats() {
   const { profileId } = useAuth();
@@ -42,6 +161,8 @@ export default function Stats() {
       </div>
 
       {profile && <LevelCard xp={profile.xp ?? 0} />}
+
+      {profileId && <StreakCalendar profileId={profileId} />}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="bg-card border-primary/10 shadow-sm">
