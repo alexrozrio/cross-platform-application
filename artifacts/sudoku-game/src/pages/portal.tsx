@@ -27,6 +27,10 @@ export default function Portal() {
   const { themeId } = useImageTheme();
   const [loadingSize, setLoadingSize] = useState<number | null>(null);
 
+  const { data: profile } = useGetProfile(profileId as number, {
+    query: { enabled: !!profileId },
+  });
+
   const handleQuickStart = async (size: number) => {
     if (!isReady || !profileId || loadingSize !== null) return;
     setLoadingSize(size);
@@ -58,6 +62,50 @@ export default function Portal() {
           </p>
         )}
       </div>
+
+      {/* Rank quick-stats banner */}
+      {profile && (() => {
+        const xp = profile.xp ?? 0;
+        const level = getLevelFromXp(xp);
+        return (
+          <button
+            onClick={() => setLocation('/profile')}
+            className="w-full text-left rounded-2xl px-4 py-3 flex items-center gap-4 transition-all hover:opacity-90 active:scale-[0.99]"
+            style={{
+              background: `linear-gradient(135deg, ${level.color}22 0%, ${level.ring}18 100%)`,
+              border: `1.5px solid ${level.ring}55`,
+            }}
+          >
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm shrink-0"
+              style={{ backgroundColor: level.color, color: level.textColor, boxShadow: `0 0 0 2.5px ${level.ring}` }}
+            >
+              {level.index + 1}
+            </div>
+            <div className="flex-1 min-w-0 space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm font-black" style={{ color: level.color }}>{level.name}</span>
+                <span className="text-xs text-muted-foreground tabular-nums">{xp.toLocaleString()} XP</span>
+              </div>
+              {level.nextTier ? (
+                <>
+                  <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: `${level.color}22` }}>
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{ width: `${level.progress}%`, backgroundColor: level.color }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">
+                    {(level.nextTier.minXp - xp).toLocaleString()} XP to <span style={{ color: level.nextTier.color, fontWeight: 700 }}>{level.nextTier.name}</span>
+                  </p>
+                </>
+              ) : (
+                <p className="text-xs font-semibold" style={{ color: level.color }}>🏆 Max Rank</p>
+              )}
+            </div>
+          </button>
+        );
+      })()}
 
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Available Games</p>
