@@ -9,7 +9,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { Play, BarChart2, Trophy, ArrowLeft, Hash, Type, Palette, Flame } from 'lucide-react';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
+import { Play, BarChart2, Trophy, ArrowLeft, Hash, Type, Palette, Flame, BookOpen, Keyboard, Scroll } from 'lucide-react';
 import { IMAGE_THEMES } from '@/lib/themes';
 
 type Difficulty = 'easy' | 'medium' | 'hard' | 'expert';
@@ -41,6 +44,8 @@ const GRID_OPTIONS: { size: GridSize; label: string; sublabel: string; difficult
   { size: 16, label: '16×16', sublabel: 'Pro', difficulties: ['easy', 'medium', 'hard', 'expert'] },
 ];
 
+type InfoModal = 'rules' | 'controls' | 'backstory' | null;
+
 export default function SudokuHome() {
   const { profileId, isReady } = useAuth();
   const [, setLocation] = useLocation();
@@ -50,6 +55,7 @@ export default function SudokuHome() {
   const [difficulty, setDifficulty] = useState<Difficulty>('easy');
   const [gridSize, setGridSize] = useState<GridSize>(initialSize);
   const { themeId } = useImageTheme();
+  const [infoModal, setInfoModal] = useState<InfoModal>(null);
 
   const { data: profile } = useGetProfile(profileId as number, {
     query: { enabled: !!profileId },
@@ -249,6 +255,132 @@ export default function SudokuHome() {
           </div>
         </button>
       </div>
+
+      {/* Info links */}
+      <div className="flex items-center justify-center gap-6 pb-4">
+        <button
+          onClick={() => setInfoModal('rules')}
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <BookOpen className="w-3.5 h-3.5" /> Rules
+        </button>
+        <span className="text-border">·</span>
+        <button
+          onClick={() => setInfoModal('controls')}
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <Keyboard className="w-3.5 h-3.5" /> Controls
+        </button>
+        <span className="text-border">·</span>
+        <button
+          onClick={() => setInfoModal('backstory')}
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <Scroll className="w-3.5 h-3.5" /> Backstory
+        </button>
+      </div>
+
+      {/* Rules modal */}
+      <Dialog open={infoModal === 'rules'} onOpenChange={o => !o && setInfoModal(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-primary" /> Rules
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
+            <p>Sudoku is a logic puzzle played on a grid divided into rows, columns, and boxes.</p>
+            <ul className="space-y-2 list-none">
+              {[
+                'Every row must contain each symbol exactly once.',
+                'Every column must contain each symbol exactly once.',
+                'Every box must contain each symbol exactly once.',
+                'No guessing required — every puzzle has a unique solution.',
+                'Cells with pre-filled values are fixed and cannot be changed.',
+              ].map((rule, i) => (
+                <li key={i} className="flex gap-2">
+                  <span className="mt-0.5 w-5 h-5 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">{i + 1}</span>
+                  <span>{rule}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="pt-1">
+              Grid sizes range from 3×3 (9 cells) up to 16×16 (256 cells). Larger grids use letters or images instead of numbers.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Controls modal */}
+      <Dialog open={infoModal === 'controls'} onOpenChange={o => !o && setInfoModal(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Keyboard className="w-5 h-5 text-primary" /> Controls
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 text-sm">
+            <div>
+              <p className="font-semibold text-foreground mb-2">Mouse / Touch</p>
+              <div className="space-y-1.5 text-muted-foreground">
+                {[
+                  ['Tap a cell', 'Select it'],
+                  ['Tap a number / letter', 'Fill the selected cell'],
+                  ['Tap the eraser', 'Clear the selected cell'],
+                  ['Tap the pencil', 'Toggle note (candidate) mode'],
+                ].map(([action, result]) => (
+                  <div key={action} className="flex justify-between gap-4">
+                    <span>{action}</span>
+                    <span className="text-foreground font-medium text-right">{result}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="border-t pt-3">
+              <p className="font-semibold text-foreground mb-2">Keyboard</p>
+              <div className="space-y-1.5 text-muted-foreground">
+                {[
+                  ['Arrow keys', 'Move between cells'],
+                  ['1–9 / A–P', 'Fill selected cell'],
+                  ['Backspace / Delete', 'Clear selected cell'],
+                  ['N', 'Toggle note mode'],
+                  ['Z (Ctrl+Z)', 'Undo last move'],
+                ].map(([key, result]) => (
+                  <div key={key} className="flex justify-between gap-4">
+                    <kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-xs border">{key}</kbd>
+                    <span className="text-right">{result}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Backstory modal */}
+      <Dialog open={infoModal === 'backstory'} onOpenChange={o => !o && setInfoModal(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Scroll className="w-5 h-5 text-primary" /> Backstory
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
+            <p>
+              Sudoku traces its roots to the 18th-century Swiss mathematician Leonhard Euler, who invented the concept of <em>Latin squares</em> — grids where each symbol appears exactly once in every row and column.
+            </p>
+            <p>
+              The modern puzzle was popularised in 1979 by American architect Howard Garns, who published it as <em>Number Place</em> in Dell Magazines. It remained relatively obscure until 1984, when Japanese publisher Nikoli introduced it as <em>Sūji wa dokushin ni kagiru</em> — literally "the digits must remain single" — later shortened to <strong>Sudoku</strong>.
+            </p>
+            <p>
+              The puzzle exploded globally after Wayne Gould, a retired New Zealand judge, wrote a computer program to generate puzzles and persuaded The Times of London to publish them in 2004. Within months Sudoku had become a worldwide phenomenon.
+            </p>
+            <p>
+              Today billions of puzzles are solved every year, and the game has expanded far beyond classic 9×9 grids — into the multi-size, multi-symbol variants you can play right here.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
