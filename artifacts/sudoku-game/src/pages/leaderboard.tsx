@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useGetLeaderboard, useGetTournamentLeaderboard } from '@workspace/api-client-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Medal, Award, Star, CalendarDays, Calendar, Zap } from 'lucide-react';
+import { Trophy, Medal, Award, Star, CalendarDays, Calendar, Zap, ChevronDown, ChevronUp } from 'lucide-react';
 import { LevelBadge } from '@/components/level-badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -26,6 +26,116 @@ function RankBadge({ rank }: { rank: number }) {
   if (rank === 2) return <div className="w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 text-slate-600 ring-1 ring-slate-300 shrink-0"><Medal className="w-4 h-4" /></div>;
   if (rank === 3) return <div className="w-9 h-9 rounded-full flex items-center justify-center bg-orange-100 text-orange-700 ring-1 ring-orange-300 shrink-0"><Award className="w-4 h-4" /></div>;
   return <div className="w-9 h-9 rounded-full flex items-center justify-center bg-secondary text-secondary-foreground font-bold text-sm shrink-0">{rank}</div>;
+}
+
+// ─── Collapsible XP guide (all-time tab) ──────────────────────────────────────
+
+function XpGuide() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-2xl border border-border overflow-hidden">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center justify-between px-5 py-4 bg-card hover:bg-muted/40 transition-colors text-left"
+      >
+        <div>
+          <p className="font-semibold text-sm">How XP is earned</p>
+          <p className="text-xs text-muted-foreground mt-0.5">XP builds your rank — earned by completing puzzles</p>
+        </div>
+        {open ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
+      </button>
+      {open && (
+        <div className="border-t border-border px-5 py-4 bg-muted/10 space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">XP per completed puzzle</p>
+          <div className="grid grid-cols-4 gap-2">
+            {([
+              { diff: 'easy',   label: 'Easy',   xp: '1 XP',  cls: 'bg-green-100 text-green-700' },
+              { diff: 'medium', label: 'Medium', xp: '2 XP',  cls: 'bg-yellow-100 text-yellow-700' },
+              { diff: 'hard',   label: 'Hard',   xp: '3 XP',  cls: 'bg-orange-100 text-orange-700' },
+              { diff: 'expert', label: 'Expert', xp: '5 XP',  cls: 'bg-red-100 text-red-700' },
+            ] as const).map(({ diff, label, xp, cls }) => (
+              <div key={diff} className="text-center">
+                <div className={`text-xs font-bold rounded-full px-2 py-1 mb-1 ${cls}`}>{label}</div>
+                <p className="text-xs font-bold text-foreground">{xp}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            XP is added to your total after every completed game, regardless of speed or mistakes. Harder puzzles reward more XP.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Collapsible points guide (tournament tabs) ────────────────────────────────
+
+function PointsGuide() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-2xl border border-border overflow-hidden">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center justify-between px-5 py-4 bg-card hover:bg-muted/40 transition-colors text-left"
+      >
+        <div>
+          <p className="font-semibold text-sm">How points are calculated</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Speed, difficulty, mistakes and hints all matter</p>
+        </div>
+        {open ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
+      </button>
+      {open && (
+        <div className="border-t border-border px-5 py-4 bg-muted/10 space-y-4">
+          {/* Modifiers */}
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Score modifiers</p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
+              <span>⚡ Fast finish bonus</span><span className="font-mono text-right text-green-600 font-semibold">up to +50%</span>
+              <span>❌ Per mistake penalty</span><span className="font-mono text-right text-red-500">−5% each</span>
+              <span>💡 Per hint penalty</span><span className="font-mono text-right text-orange-500">−10% each</span>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2 italic">
+              Fast bonus: finish before par time to earn up to +50%. The faster, the higher the bonus.
+            </p>
+          </div>
+          {/* Base points table */}
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Base points × difficulty</p>
+            <div className="rounded-xl border overflow-hidden text-xs">
+              <div className="grid grid-cols-5 bg-muted/50 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+                <span>Grid</span>
+                <span className="text-center text-green-700">Easy</span>
+                <span className="text-center text-yellow-700">Medium</span>
+                <span className="text-center text-orange-700">Hard</span>
+                <span className="text-center text-red-700">Expert</span>
+              </div>
+              {[
+                { label: '3×3',   base: 100,  par: '2:00' },
+                { label: '4×4',   base: 250,  par: '5:00' },
+                { label: '9×9',   base: 1000, par: '15:00' },
+                { label: '16×16', base: 2500, par: '45:00' },
+              ].map((row, i) => (
+                <div key={row.label} className={`grid grid-cols-5 px-3 py-2 text-xs ${i % 2 !== 0 ? 'bg-muted/20' : ''}`}>
+                  <span className="font-semibold">
+                    {row.label}
+                    <span className="text-[9px] text-muted-foreground font-normal block">par {row.par}</span>
+                  </span>
+                  <span className="text-center font-mono text-green-700">{row.base}</span>
+                  <span className="text-center font-mono text-yellow-700">{Math.round(row.base * 1.5)}</span>
+                  <span className="text-center font-mono text-orange-700">{row.base * 2}</span>
+                  <span className="text-center font-mono text-red-700">{row.base * 3}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2">
+              Final score = base × (1 + time bonus) × mistake factor × hint factor. Min 10 pts.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ─── All-time leaderboard ─────────────────────────────────────────────────────
@@ -56,6 +166,8 @@ function AlltimeBoard() {
           <TabsTrigger value="3">3×3</TabsTrigger>
         </TabsList>
       </Tabs>
+
+      <XpGuide />
 
       <Card className="shadow-md border-primary/10">
         <CardHeader className="bg-card pb-4 border-b">
@@ -188,54 +300,7 @@ function TournamentBoard({ type }: { type: 'weekly' | 'monthly' }) {
         </CardContent>
       </Card>
 
-      {/* Points guide */}
-      <Card className="border-dashed">
-        <CardContent className="pt-4 pb-4 space-y-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">How points are calculated</p>
-
-          {/* Formula modifiers */}
-          <div>
-            <p className="text-[11px] font-semibold text-muted-foreground mb-1.5">Score modifiers</p>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
-              <span>⚡ Fast finish bonus</span><span className="font-mono text-right text-green-600 font-semibold">up to +50%</span>
-              <span>❌ Per mistake penalty</span><span className="font-mono text-right text-red-500">−5% each</span>
-              <span>💡 Per hint penalty</span><span className="font-mono text-right text-orange-500">−10% each</span>
-            </div>
-            <p className="text-[10px] text-muted-foreground mt-1.5 italic">
-              Fast bonus: finish before par time to earn up to +50%. The faster, the higher the bonus.
-            </p>
-          </div>
-
-          {/* Base points table */}
-          <div>
-            <p className="text-[11px] font-semibold text-muted-foreground mb-1.5">Base points × difficulty</p>
-            <div className="rounded-md border overflow-hidden text-xs">
-              <div className="grid grid-cols-5 bg-muted/50 text-[10px] font-semibold text-muted-foreground px-2 py-1.5">
-                <span>Grid</span>
-                <span className="text-center text-green-700">Easy</span>
-                <span className="text-center text-yellow-700">Medium</span>
-                <span className="text-center text-orange-700">Hard</span>
-                <span className="text-center text-red-700">Expert</span>
-              </div>
-              {[
-                { label: '3×3', base: 100, par: '2:00' },
-                { label: '4×4', base: 250, par: '5:00' },
-                { label: '9×9', base: 1000, par: '15:00' },
-                { label: '16×16', base: 2500, par: '45:00' },
-              ].map((row, i) => (
-                <div key={row.label} className={`grid grid-cols-5 px-2 py-1.5 text-xs ${i % 2 === 0 ? '' : 'bg-muted/20'}`}>
-                  <span className="font-semibold">{row.label}<span className="text-[9px] text-muted-foreground font-normal block">par {row.par}</span></span>
-                  <span className="text-center font-mono text-green-700">{row.base}</span>
-                  <span className="text-center font-mono text-yellow-700">{Math.round(row.base * 1.5)}</span>
-                  <span className="text-center font-mono text-orange-700">{row.base * 2}</span>
-                  <span className="text-center font-mono text-red-700">{row.base * 3}</span>
-                </div>
-              ))}
-            </div>
-            <p className="text-[10px] text-muted-foreground mt-1.5">Final score = base × (1 + time bonus) × mistake factor × hint factor. Min 10 pts.</p>
-          </div>
-        </CardContent>
-      </Card>
+      <PointsGuide />
     </div>
   );
 }
