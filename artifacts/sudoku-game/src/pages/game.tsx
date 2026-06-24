@@ -33,6 +33,7 @@ import {
   Play,
   Volume2,
   VolumeX,
+  Share2,
 } from "lucide-react";
 import { useSound } from "@/hooks/use-sound";
 import {
@@ -44,6 +45,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { pickCompletionMessage } from "@/lib/completion-messages";
+import { getLevelFromXp } from "@/lib/levels";
 
 interface DailyChallengeInfo { puzzleId: number; date: string; }
 interface StreakData { currentStreak: number; longestStreak: number; completedToday: boolean; }
@@ -511,6 +513,33 @@ export default function Game({ id }: { id: string }) {
     }
   };
 
+  const handleShare = useCallback(async () => {
+    const diff = game?.puzzle?.difficulty ?? "";
+    const size = game?.puzzle?.gridSize ?? 9;
+    const diffLabel = diff.charAt(0).toUpperCase() + diff.slice(1);
+    const sizeLabel = `${size}×${size}`;
+    const xpGain = { easy: 1, medium: 2, hard: 3, expert: 5 }[diff] ?? 1;
+    const rank = profile ? getLevelFromXp(profile.xp ?? 0).name : null;
+    const lines = [
+      `${completionMessage.emoji} Solved a ${sizeLabel} ${diffLabel} Sudoku in ${formattedTime}!`,
+      `❌ ${mistakes} mistake${mistakes !== 1 ? "s" : ""} · 💡 ${hints} hint${hints !== 1 ? "s" : ""}`,
+      pointsEarned !== null ? `+${pointsEarned.toLocaleString()} pts · +${xpGain} XP` : `+${xpGain} XP`,
+      rank ? `🏅 ${rank} · Game Hub` : "🎮 Game Hub",
+    ];
+    const text = lines.join("\n");
+
+    try {
+      if (navigator.share) {
+        await navigator.share({ text });
+      } else {
+        await navigator.clipboard.writeText(text);
+        toast.success("Result copied to clipboard!", { duration: 2500 });
+      }
+    } catch {
+      // user cancelled or clipboard blocked — silent
+    }
+  }, [game, profile, completionMessage, formattedTime, mistakes, hints, pointsEarned]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (mode === "alpha") {
@@ -947,6 +976,15 @@ export default function Game({ id }: { id: string }) {
                     Leaderboard
                   </Button>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full opacity-80 hover:opacity-100 gap-2 text-primary-foreground hover:text-primary-foreground hover:bg-white/15"
+                  onClick={handleShare}
+                >
+                  <Share2 className="w-4 h-4" />
+                  Share your result
+                </Button>
               </CardContent>
             </Card>
           )}
