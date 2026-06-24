@@ -7,11 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Grid3X3, Sparkles, Loader2 } from 'lucide-react';
 import { customFetch, useGetProfile } from '@workspace/api-client-react';
 import { getLevelFromXp } from '@/lib/levels';
+import { getTheme } from '@/lib/themes';
 
 const COMING_SOON = [
   { title: 'Word Search', description: 'Find hidden words in a letter grid', icon: '🔤', color: 'from-emerald-500/20 to-teal-500/20 border-emerald-200/60' },
   { title: 'Minesweeper', description: 'Clear the field without hitting mines', icon: '💣', color: 'from-rose-500/20 to-orange-500/20 border-rose-200/60' },
-  { title: 'Memory Match', description: 'Match pairs of hidden cards', icon: '🃏', color: 'from-violet-500/20 to-purple-500/20 border-violet-200/60' },
 ];
 
 const GRID_QUICK_START = [
@@ -110,6 +110,54 @@ export default function Portal() {
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Available Games</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Memory Match Card */}
+          {(() => {
+            const theme = getTheme(themeId as any);
+            const previewSymbols = theme.symbols.slice(0, 4);
+            return (
+              <div className="group relative rounded-2xl border-2 border-violet-400/25 bg-gradient-to-br from-violet-500/10 to-purple-500/5 overflow-hidden">
+                <button
+                  onClick={() => setLocation('/memory')}
+                  className="w-full text-left p-6 space-y-4 hover:from-violet-500/15 hover:to-purple-500/10 hover:border-violet-400/40 transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-14 h-14 rounded-xl bg-violet-500/10 flex items-center justify-center ring-1 ring-violet-400/20 text-3xl">
+                      🃏
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold font-serif">Memory Match</h2>
+                      <p className="text-xs text-muted-foreground">Card matching game</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Flip cards to find matching pairs. Beat the clock and minimise your flips to maximise your score.
+                  </p>
+                  <div className="flex gap-1 items-center">
+                    {previewSymbols.map((sym, i) => (
+                      <span key={i} className="text-xl leading-none opacity-80 group-hover:opacity-100 transition-opacity">{sym}</span>
+                    ))}
+                    <span className="text-muted-foreground/60 text-xs self-end pb-0.5 ml-1">…</span>
+                  </div>
+                </button>
+                <div className="px-6 pb-5 pt-1">
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[{size:4,label:'4×4',sub:'8 pairs'},{size:6,label:'6×6',sub:'18 pairs'},{size:8,label:'8×8',sub:'32 pairs'}].map(opt => (
+                      <button
+                        key={opt.size}
+                        onClick={() => setLocation(`/memory?size=${opt.size}`)}
+                        className="flex flex-col items-center justify-center rounded-lg border border-violet-400/20 bg-violet-500/5 hover:bg-violet-500/15 hover:border-violet-400/40 transition-all py-2 px-1 cursor-pointer min-h-[52px]"
+                      >
+                        <span className="font-bold text-xs leading-none text-violet-600">{opt.label}</span>
+                        <span className="text-[10px] text-muted-foreground mt-0.5 leading-none">{opt.sub}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-green-400" title="Available" />
+              </div>
+            );
+          })()}
+
           {/* Sudoku Card */}
           <div className="group relative rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 overflow-hidden">
             {/* Clickable card body → goes to /sudoku */}
