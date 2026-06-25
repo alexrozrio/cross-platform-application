@@ -106,6 +106,7 @@ router.get("/memory-games/leaderboard", async (req, res): Promise<void> => {
       username: profilesTable.username,
       avatar: profilesTable.avatar,
       points: memoryGamesTable.points,
+      xpEarned: memoryGamesTable.xpEarned,
       elapsedSeconds: memoryGamesTable.elapsedSeconds,
       flips: memoryGamesTable.flips,
       completedAt: memoryGamesTable.completedAt,

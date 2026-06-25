@@ -338,6 +338,7 @@ interface MemoryEntry {
   username: string;
   avatar: string | null;
   points: number;
+  xpEarned: number | null;
   elapsedSeconds: number;
   flips: number;
   completedAt: string | null;
@@ -404,6 +405,9 @@ function MemoryBoard({ myProfileId }: { myProfileId?: number }) {
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className={`font-semibold truncate ${isMe ? 'text-primary' : ''}`}>{entry.username}</p>
                           {isMe && <span className="text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-full px-2 py-0.5">You</span>}
+                          {entry.xpEarned != null && (
+                            <span className="text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200 rounded-full px-1.5 py-0.5">+{entry.xpEarned} XP</span>
+                          )}
                         </div>
                         <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1"><Timer className="w-3 h-3" />{timeStr}</span>
@@ -427,6 +431,32 @@ function MemoryBoard({ myProfileId }: { myProfileId?: number }) {
           )}
         </CardContent>
       </Card>
+
+      {/* Memory XP guide */}
+      <div className="rounded-2xl border border-border overflow-hidden">
+        <div className="px-5 py-4 bg-card">
+          <p className="font-semibold text-sm">How XP is earned in Memory Match</p>
+          <p className="text-xs text-muted-foreground mt-0.5">XP is awarded once per completed game and added to your total rank</p>
+        </div>
+        <div className="border-t border-border px-5 py-4 bg-muted/10 space-y-3">
+          <div className="grid grid-cols-4 gap-2">
+            {([
+              { label: 'Beginner', xp: '1 XP', cls: 'bg-green-100 text-green-700' },
+              { label: 'Easy',     xp: '1 XP', cls: 'bg-blue-100 text-blue-700' },
+              { label: 'Medium',   xp: '2 XP', cls: 'bg-yellow-100 text-yellow-700' },
+              { label: 'Hard',     xp: '3 XP', cls: 'bg-orange-100 text-orange-700' },
+            ]).map(({ label, xp, cls }) => (
+              <div key={label} className="text-center">
+                <div className={`text-xs font-bold rounded-full px-2 py-1 mb-1 ${cls}`}>{label}</div>
+                <p className="text-xs font-bold text-foreground">{xp}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            Harder grids reward more XP. Daily and weekly challenge bonuses stack on top.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
