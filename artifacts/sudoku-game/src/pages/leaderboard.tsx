@@ -100,9 +100,9 @@ function PointsGuide() {
               Fast bonus: finish before par time to earn up to +50%. The faster, the higher the bonus.
             </p>
           </div>
-          {/* Base points table */}
+          {/* Sudoku base points table */}
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Base points × difficulty</p>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">🔢 Sudoku — base points × difficulty</p>
             <div className="rounded-xl border overflow-hidden text-xs">
               <div className="grid grid-cols-5 bg-muted/50 text-[10px] font-semibold text-muted-foreground px-3 py-2">
                 <span>Grid</span>
@@ -131,6 +131,35 @@ function PointsGuide() {
             </div>
             <p className="text-[10px] text-muted-foreground mt-2">
               Final score = base × (1 + time bonus) × mistake factor × hint factor. Min 10 pts.
+            </p>
+          </div>
+
+          {/* Memory Match base points table */}
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">🃏 Memory Match — base points (All tab only)</p>
+            <div className="rounded-xl border overflow-hidden text-xs">
+              <div className="grid grid-cols-4 bg-muted/50 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+                <span>Level</span>
+                <span className="text-center">Base pts</span>
+                <span className="text-center">Par time</span>
+                <span className="text-center">Max pts</span>
+              </div>
+              {[
+                { label: 'Beginner', base: 150,   par: '0:25', max: 225,   cls: 'text-green-700' },
+                { label: 'Easy',     base: 500,   par: '1:00', max: 750,   cls: 'text-blue-700' },
+                { label: 'Medium',   base: 1200,  par: '2:00', max: 1800,  cls: 'text-yellow-700' },
+                { label: 'Hard',     base: 2500,  par: '3:20', max: 3750,  cls: 'text-orange-700' },
+              ].map((row, i) => (
+                <div key={row.label} className={`grid grid-cols-4 px-3 py-2 text-xs ${i % 2 !== 0 ? 'bg-muted/20' : ''}`}>
+                  <span className={`font-semibold ${row.cls}`}>{row.label}</span>
+                  <span className="text-center font-mono">{row.base}</span>
+                  <span className="text-center font-mono">{row.par}</span>
+                  <span className="text-center font-mono text-green-600">~{row.max}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2">
+              score = base × (1 + speed bonus) × flip factor &nbsp;·&nbsp; speed bonus up to +50%, −2% per extra flip.
             </p>
           </div>
         </div>
@@ -298,9 +327,18 @@ function TournamentBoard({ type, myProfileId }: { type: 'weekly' | 'monthly'; my
                           <p className={`font-semibold truncate ${isMe ? 'text-primary' : ''}`}>{entry.username}</p>
                           {isMe && <span className="text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-full px-2 py-0.5">You</span>}
                         </div>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {entry.gamesPlayed} game{entry.gamesPlayed !== 1 ? 's' : ''} completed
-                        </p>
+                        <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground flex-wrap">
+                          {gridSize === undefined && (entry as any).memoryGamesPlayed > 0 ? (
+                            <>
+                              {(entry as any).sudokuGamesPlayed > 0 && (
+                                <span>🔢 {(entry as any).sudokuGamesPlayed} sudoku</span>
+                              )}
+                              <span>🃏 {(entry as any).memoryGamesPlayed} memory</span>
+                            </>
+                          ) : (
+                            <span>{entry.gamesPlayed} game{entry.gamesPlayed !== 1 ? 's' : ''} completed</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="text-right shrink-0 ml-4">

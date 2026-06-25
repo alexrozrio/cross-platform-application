@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and, gte, lt } from "drizzle-orm";
-import { db, gamesTable, puzzlesTable, profilesTable } from "@workspace/db";
+import { db, gamesTable, puzzlesTable, profilesTable, memoryGamesTable } from "@workspace/db";
 import {
   getWeekPeriod,
   getMonthPeriod,
@@ -27,7 +27,8 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
   const period = rawPeriod ?? (type === "weekly" ? getWeekPeriod(now) : getMonthPeriod(now));
   const range = type === "weekly" ? getWeekRange(period) : getMonthRange(period);
 
-  const rows = await db
+  // ── Sudoku games ──────────────────────────────────────────────────────────
+  const sudokuRows = await db
     .select({
       profileId: gamesTable.profileId,
       username: profilesTable.username,
@@ -46,28 +47,65 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
       ),
     );
 
-  const filtered =
-    gridSize !== undefined ? rows.filter((r) => r.gridSizeVal === gridSize) : rows;
+  // ── Memory Match games (only included in "All" view, i.e. no gridSize filter) ──
+  const memoryRows = gridSize === undefined
+    ? await db
+        .select({
+          profileId: memoryGamesTable.profileId,
+          username: profilesTable.username,
+          avatar: profilesTable.avatar,
+          points: memoryGamesTable.points,
+        })
+        .from(memoryGamesTable)
+        .innerJoin(profilesTable, eq(memoryGamesTable.profileId, profilesTable.id))
+        .where(
+          and(
+            eq(memoryGamesTable.status, "completed"),
+            gte(memoryGamesTable.completedAt, range.start),
+            lt(memoryGamesTable.completedAt, range.end),
+          ),
+        )
+    : [];
 
+  // ── Filter Sudoku by gridSize if requested ────────────────────────────────
+  const filteredSudoku = gridSize !== undefined
+    ? sudokuRows.filter((r) => r.gridSizeVal === gridSize)
+    : sudokuRows;
+
+  // ── Aggregate by profile ──────────────────────────────────────────────────
   const grouped = new Map<
     number,
-    { username: string; avatar: string | null; totalPoints: number; gamesPlayed: number }
-  >();
-  for (const row of filtered) {
-    if (!row.profileId) continue;
-    const existing = grouped.get(row.profileId);
-    const pts = row.points ?? 0;
-    if (existing) {
-      existing.totalPoints += pts;
-      existing.gamesPlayed += 1;
-    } else {
-      grouped.set(row.profileId, {
-        username: row.username,
-        avatar: row.avatar ?? null,
-        totalPoints: pts,
-        gamesPlayed: 1,
-      });
+    {
+      username: string;
+      avatar: string | null;
+      totalPoints: number;
+      gamesPlayed: number;
+      sudokuGamesPlayed: number;
+      memoryGamesPlayed: number;
     }
+  >();
+
+  const ensureEntry = (profileId: number, username: string, avatar: string | null) => {
+    if (!grouped.has(profileId)) {
+      grouped.set(profileId, { username, avatar, totalPoints: 0, gamesPlayed: 0, sudokuGamesPlayed: 0, memoryGamesPlayed: 0 });
+    }
+    return grouped.get(profileId)!;
+  };
+
+  for (const row of filteredSudoku) {
+    if (!row.profileId) continue;
+    const entry = ensureEntry(row.profileId, row.username, row.avatar ?? null);
+    entry.totalPoints += row.points ?? 0;
+    entry.gamesPlayed += 1;
+    entry.sudokuGamesPlayed += 1;
+  }
+
+  for (const row of memoryRows) {
+    if (!row.profileId) continue;
+    const entry = ensureEntry(row.profileId, row.username, row.avatar ?? null);
+    entry.totalPoints += row.points ?? 0;
+    entry.gamesPlayed += 1;
+    entry.memoryGamesPlayed += 1;
   }
 
   const entries = Array.from(grouped.entries())
@@ -80,6 +118,8 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
       avatar: data.avatar,
       totalPoints: data.totalPoints,
       gamesPlayed: data.gamesPlayed,
+      sudokuGamesPlayed: data.sudokuGamesPlayed,
+      memoryGamesPlayed: data.memoryGamesPlayed,
     }));
 
   res.json({ period, periodLabel: formatPeriodLabel(period), type, entries });
