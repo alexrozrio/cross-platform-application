@@ -4,15 +4,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/use-auth';
 import { useImageTheme } from '@/hooks/use-image-theme';
 import { getTheme } from '@/lib/themes';
-import { customFetch } from '@workspace/api-client-react';
+import { customFetch, useGetProfile } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Timer, Repeat2, Trophy, Gem, Star, RotateCcw, Zap, Brain } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ArrowLeft, Timer, Repeat2, Trophy, Gem, Star, RotateCcw, Zap, Brain, BarChart2, BookOpen, Keyboard, Scroll } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type GridSize = 2 | 4 | 6 | 8;
 type GamePhase = 'setup' | 'playing' | 'won';
+type InfoModal = 'rules' | 'controls' | 'backstory' | null;
 
 interface Card {
   id: number;
@@ -133,6 +135,11 @@ export default function MemoryMatchPage() {
 
   const [phase, setPhase] = useState<GamePhase>('setup');
   const [gridSize, setGridSize] = useState<GridSize>(2);
+  const [infoModal, setInfoModal] = useState<InfoModal>(null);
+
+  const { data: profile } = useGetProfile(profileId as number, {
+    query: { enabled: !!profileId },
+  });
   const [cards, setCards] = useState<Card[]>([]);
   const [flippedIds, setFlippedIds] = useState<number[]>([]);
   const [matchedCount, setMatchedCount] = useState(0);
@@ -313,7 +320,11 @@ export default function MemoryMatchPage() {
 
         <div>
           <h1 className="text-3xl font-serif font-bold tracking-tight">Memory Match</h1>
-          <p className="text-muted-foreground mt-0.5">Flip cards to find matching pairs</p>
+          {profile ? (
+            <p className="text-muted-foreground mt-0.5">Welcome back, {profile.username}</p>
+          ) : (
+            <p className="text-muted-foreground mt-0.5">Flip cards to find matching pairs</p>
+          )}
         </div>
 
         {/* Theme preview */}
@@ -365,12 +376,154 @@ export default function MemoryMatchPage() {
           <span className="text-violet-500 font-bold">→</span>
         </button>
 
-        <div className="rounded-xl border bg-muted/30 p-4 space-y-1.5 text-sm text-muted-foreground">
-          <p className="font-semibold text-foreground text-xs uppercase tracking-widest">How to play</p>
-          <p>Tap any card to reveal it, then tap a second card to find its pair.</p>
-          <p>Match all pairs as fast as possible with as few flips as possible to maximise your score.</p>
-          <p>Points, XP, and 💎 gems are awarded on completion.</p>
+        {/* Quick links — Stats & Leaderboard */}
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => setLocation('/stats')}
+            className="flex items-center gap-3 rounded-xl border bg-card p-4 hover:bg-muted/50 hover:border-primary/30 transition-all text-left"
+          >
+            <BarChart2 className="w-5 h-5 text-primary shrink-0" />
+            <div>
+              <p className="font-semibold text-sm">My Stats</p>
+              <p className="text-xs text-muted-foreground">Wins &amp; best times</p>
+            </div>
+          </button>
+          <button
+            onClick={() => setLocation('/leaderboard')}
+            className="flex items-center gap-3 rounded-xl border bg-card p-4 hover:bg-muted/50 hover:border-primary/30 transition-all text-left"
+          >
+            <Trophy className="w-5 h-5 text-primary shrink-0" />
+            <div>
+              <p className="font-semibold text-sm">Leaderboard</p>
+              <p className="text-xs text-muted-foreground">Top players</p>
+            </div>
+          </button>
         </div>
+
+        {/* Info links */}
+        <div className="flex items-center justify-center gap-6 pb-4">
+          <button
+            onClick={() => setInfoModal('rules')}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <BookOpen className="w-3.5 h-3.5" /> Rules
+          </button>
+          <span className="text-border">·</span>
+          <button
+            onClick={() => setInfoModal('controls')}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Keyboard className="w-3.5 h-3.5" /> Controls
+          </button>
+          <span className="text-border">·</span>
+          <button
+            onClick={() => setInfoModal('backstory')}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Scroll className="w-3.5 h-3.5" /> Backstory
+          </button>
+        </div>
+
+        {/* Rules modal */}
+        <Dialog open={infoModal === 'rules'} onOpenChange={o => !o && setInfoModal(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-primary" /> Rules
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
+              <p>Memory Match is a classic concentration game where all cards start face-down.</p>
+              <ul className="space-y-2 list-none">
+                {[
+                  'Tap any face-down card to flip it and reveal its symbol.',
+                  'Tap a second card — if the symbols match, both cards stay face-up.',
+                  'If they don\'t match, both cards flip back after a short delay.',
+                  'Match all pairs to complete the game.',
+                  'Fewer flips and less time earns a higher score.',
+                ].map((rule, i) => (
+                  <li key={i} className="flex gap-2">
+                    <span className="mt-0.5 w-5 h-5 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">{i + 1}</span>
+                    <span>{rule}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="pt-1">
+                Grid sizes range from 2×4 (4 pairs) up to 8×8 (32 pairs). Points, XP, and 💎 gems are awarded on completion.
+              </p>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Controls modal */}
+        <Dialog open={infoModal === 'controls'} onOpenChange={o => !o && setInfoModal(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Keyboard className="w-5 h-5 text-primary" /> Controls
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 text-sm">
+              <div>
+                <p className="font-semibold text-foreground mb-2">Mouse / Touch</p>
+                <div className="space-y-1.5 text-muted-foreground">
+                  {[
+                    ['Tap a face-down card', 'Flip it to reveal its symbol'],
+                    ['Tap a second card', 'Attempt a match'],
+                    ['Wait after a mismatch', 'Cards auto-flip back'],
+                    ['Reset button', 'Start the same grid over'],
+                  ].map(([action, result]) => (
+                    <div key={action} className="flex justify-between gap-4">
+                      <span>{action}</span>
+                      <span className="text-foreground font-medium text-right">{result}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="border-t pt-3">
+                <p className="font-semibold text-foreground mb-2">Scoring</p>
+                <div className="space-y-1.5 text-muted-foreground">
+                  {[
+                    ['Base score', 'Increases with grid size'],
+                    ['Time bonus', 'Faster completion = more points'],
+                    ['Flip bonus', 'Fewer flips = more points'],
+                    ['XP & Gems', 'Awarded on game completion'],
+                  ].map(([key, result]) => (
+                    <div key={key} className="flex justify-between gap-4">
+                      <span className="font-medium text-foreground">{key}</span>
+                      <span className="text-right">{result}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Backstory modal */}
+        <Dialog open={infoModal === 'backstory'} onOpenChange={o => !o && setInfoModal(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Scroll className="w-5 h-5 text-primary" /> Backstory
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
+              <p>
+                Memory Match — also known as Concentration, Pairs, or Pelmanism — is one of the oldest card games in the world, with roots stretching back to 19th-century Japan.
+              </p>
+              <p>
+                The game was popularised in the West as <em>Concentration</em>, named after the mental effort required to hold multiple card positions in mind simultaneously. It appeared in parlour game books as early as the 1890s and became a staple of children's toy boxes throughout the 20th century.
+              </p>
+              <p>
+                Memory training with matching cards has been studied extensively by cognitive scientists. Regularly playing the game is linked to improvements in short-term visual memory, pattern recognition, and focus — benefits that hold across all age groups.
+              </p>
+              <p>
+                In the digital era the game has evolved far beyond a standard 52-card deck. Here you can play with themed emoji symbols across grids from a quick 2×4 sprint to a challenging 8×8 marathon — and compete on global leaderboards for the fastest solve.
+              </p>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
