@@ -1,5 +1,5 @@
 import { eq, and, gte, lt } from "drizzle-orm";
-import { db, gamesTable, badgesTable } from "@workspace/db";
+import { db, gamesTable, badgesTable, memoryGamesTable } from "@workspace/db";
 import {
   getWeekRange,
   getMonthRange,
@@ -13,19 +13,25 @@ async function awardBadgesForPeriod(
 ): Promise<void> {
   const range = type === "weekly" ? getWeekRange(period) : getMonthRange(period);
 
-  const rows = await db
-    .select({ profileId: gamesTable.profileId, points: gamesTable.points })
-    .from(gamesTable)
-    .where(
-      and(
+  const [sudokuRows, memoryRows] = await Promise.all([
+    db.select({ profileId: gamesTable.profileId, points: gamesTable.points })
+      .from(gamesTable)
+      .where(and(
         eq(gamesTable.status, "completed"),
         gte(gamesTable.completedAt, range.start),
         lt(gamesTable.completedAt, range.end),
-      ),
-    );
+      )),
+    db.select({ profileId: memoryGamesTable.profileId, points: memoryGamesTable.points })
+      .from(memoryGamesTable)
+      .where(and(
+        eq(memoryGamesTable.status, "completed"),
+        gte(memoryGamesTable.completedAt, range.start),
+        lt(memoryGamesTable.completedAt, range.end),
+      )),
+  ]);
 
   const totals = new Map<number, number>();
-  for (const row of rows) {
+  for (const row of [...sudokuRows, ...memoryRows]) {
     if (!row.profileId) continue;
     totals.set(row.profileId, (totals.get(row.profileId) ?? 0) + (row.points ?? 0));
   }

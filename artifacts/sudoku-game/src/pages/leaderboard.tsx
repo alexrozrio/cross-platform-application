@@ -326,6 +326,15 @@ function TournamentBoard({ type, myProfileId }: { type: 'weekly' | 'monthly'; my
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className={`font-semibold truncate ${isMe ? 'text-primary' : ''}`}>{entry.username}</p>
                           {isMe && <span className="text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-full px-2 py-0.5">You</span>}
+                          {(entry as any).streak >= 2 && (
+                            <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.5 border flex items-center gap-0.5 ${
+                              (entry as any).streak >= 5
+                                ? 'bg-orange-100 text-orange-700 border-orange-200'
+                                : 'bg-amber-100 text-amber-700 border-amber-200'
+                            }`}>
+                              🔥 {(entry as any).streak}w
+                            </span>
+                          )}
                         </div>
                         <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground flex-wrap">
                           {gridSize === undefined && (entry as any).memoryGamesPlayed > 0 ? (

@@ -1,12 +1,13 @@
 import { Router, type IRouter } from "express";
-import { eq, and, gte, lt } from "drizzle-orm";
-import { db, gamesTable, puzzlesTable, profilesTable, memoryGamesTable } from "@workspace/db";
+import { eq, and, gte, lt, inArray } from "drizzle-orm";
+import { db, gamesTable, puzzlesTable, profilesTable, memoryGamesTable, badgesTable } from "@workspace/db";
 import {
   getWeekPeriod,
   getMonthPeriod,
   getWeekRange,
   getMonthRange,
   formatPeriodLabel,
+  getNthPreviousWeekPeriod,
 } from "../utils/periods";
 
 const router: IRouter = Router();
@@ -108,21 +109,98 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
     entry.memoryGamesPlayed += 1;
   }
 
-  const entries = Array.from(grouped.entries())
+  const sorted = Array.from(grouped.entries())
     .sort((a, b) => b[1].totalPoints - a[1].totalPoints)
-    .slice(0, 25)
-    .map(([profileId, data], i) => ({
-      rank: i + 1,
-      profileId,
-      username: data.username,
-      avatar: data.avatar,
-      totalPoints: data.totalPoints,
-      gamesPlayed: data.gamesPlayed,
-      sudokuGamesPlayed: data.sudokuGamesPlayed,
-      memoryGamesPlayed: data.memoryGamesPlayed,
-    }));
+    .slice(0, 25);
+
+  // ── Batch-fetch streak data for top players (weekly only) ─────────────────
+  const profileIds = sorted.map(([id]) => id);
+  let streakMap = new Map<number, number>();
+
+  if (type === "weekly" && profileIds.length > 0) {
+    const STREAK_WEEKS = 12;
+    const pastPeriods = Array.from({ length: STREAK_WEEKS }, (_, i) => getNthPreviousWeekPeriod(i + 1));
+
+    const streakBadges = await db
+      .select({ profileId: badgesTable.profileId, period: badgesTable.tournamentPeriod })
+      .from(badgesTable)
+      .where(and(
+        inArray(badgesTable.profileId, profileIds),
+        inArray(badgesTable.tournamentPeriod, pastPeriods),
+      ));
+
+    const badgeSet = new Set(streakBadges.map(b => `${b.profileId}::${b.period}`));
+
+    for (const profileId of profileIds) {
+      let streak = 0;
+      for (let i = 1; i <= STREAK_WEEKS; i++) {
+        if (badgeSet.has(`${profileId}::${getNthPreviousWeekPeriod(i)}`)) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+      streakMap.set(profileId, streak);
+    }
+  }
+
+  const entries = sorted.map(([profileId, data], i) => ({
+    rank: i + 1,
+    profileId,
+    username: data.username,
+    avatar: data.avatar,
+    totalPoints: data.totalPoints,
+    gamesPlayed: data.gamesPlayed,
+    sudokuGamesPlayed: data.sudokuGamesPlayed,
+    memoryGamesPlayed: data.memoryGamesPlayed,
+    streak: streakMap.get(profileId) ?? 0,
+  }));
 
   res.json({ period, periodLabel: formatPeriodLabel(period), type, entries });
+});
+
+// ─── GET /tournaments/streak/:profileId ──────────────────────────────────────
+
+router.get("/tournaments/streak/:profileId", async (req, res): Promise<void> => {
+  const profileId = parseInt(req.params.profileId, 10);
+  if (isNaN(profileId)) { res.status(400).json({ error: "Invalid profileId" }); return; }
+
+  const STREAK_WEEKS = 26;
+  const pastPeriods = Array.from({ length: STREAK_WEEKS }, (_, i) => getNthPreviousWeekPeriod(i + 1));
+
+  const badges = await db
+    .select({ period: badgesTable.tournamentPeriod, badgeType: badgesTable.badgeType })
+    .from(badgesTable)
+    .where(and(
+      eq(badgesTable.profileId, profileId),
+      inArray(badgesTable.tournamentPeriod, pastPeriods),
+    ));
+
+  const periodSet = new Set(badges.map(b => b.period));
+
+  let currentStreak = 0;
+  let bestStreak = 0;
+  let run = 0;
+  for (let i = 1; i <= STREAK_WEEKS; i++) {
+    const p = getNthPreviousWeekPeriod(i);
+    if (periodSet.has(p)) {
+      run++;
+      if (i === currentStreak + 1 || currentStreak === 0) currentStreak = run;
+      bestStreak = Math.max(bestStreak, run);
+    } else {
+      if (currentStreak === 0) currentStreak = 0;
+      run = 0;
+    }
+  }
+
+  // Recalculate currentStreak properly (consecutive from most recent)
+  currentStreak = 0;
+  for (let i = 1; i <= STREAK_WEEKS; i++) {
+    if (periodSet.has(getNthPreviousWeekPeriod(i))) currentStreak++;
+    else break;
+  }
+
+  res.json({ profileId, currentStreak, bestStreak, totalTop3Finishes: periodSet.size });
 });
 
 export default router;

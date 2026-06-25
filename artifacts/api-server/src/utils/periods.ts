@@ -41,6 +41,12 @@ export function getPreviousWeekPeriod(): string {
   return getWeekPeriod(d);
 }
 
+export function getNthPreviousWeekPeriod(n: number): string {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() - 7 * n);
+  return getWeekPeriod(d);
+}
+
 export function getPreviousMonthPeriod(): string {
   const d = new Date();
   d.setUTCDate(1);
