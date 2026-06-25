@@ -322,6 +322,73 @@ function TournamentBoard({ type, myProfileId }: { type: 'weekly' | 'monthly'; my
   );
 }
 
+// ─── Memory scoring guide ─────────────────────────────────────────────────────
+
+function MemoryScoringGuide() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-2xl border border-border overflow-hidden">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center justify-between px-5 py-4 bg-card hover:bg-muted/40 transition-colors text-left"
+      >
+        <div>
+          <p className="font-semibold text-sm">How points &amp; XP are calculated</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Score is based on difficulty, speed, and efficiency</p>
+        </div>
+        {open ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
+      </button>
+      {open && (
+        <div className="border-t border-border px-5 py-4 bg-muted/10 space-y-4">
+          {/* Base points table */}
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Base points &amp; par time per difficulty</p>
+            <div className="rounded-xl border overflow-hidden text-xs">
+              <div className="grid grid-cols-4 bg-muted/50 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+                <span>Level</span>
+                <span className="text-center">Base pts</span>
+                <span className="text-center">Par time</span>
+                <span className="text-center">XP</span>
+              </div>
+              {([
+                { label: 'Beginner', cls: 'text-green-700',  base: '150',   par: '0:25', xp: '1 XP' },
+                { label: 'Easy',     cls: 'text-blue-700',   base: '500',   par: '1:00', xp: '1 XP' },
+                { label: 'Medium',   cls: 'text-yellow-700', base: '1,200', par: '2:00', xp: '2 XP' },
+                { label: 'Hard',     cls: 'text-orange-700', base: '2,500', par: '3:20', xp: '3 XP' },
+              ]).map((row, i) => (
+                <div key={row.label} className={`grid grid-cols-4 px-3 py-2 text-xs ${i % 2 === 0 ? 'bg-background' : 'bg-muted/20'}`}>
+                  <span className={`font-semibold ${row.cls}`}>{row.label}</span>
+                  <span className="text-center font-mono">{row.base}</span>
+                  <span className="text-center font-mono">{row.par}</span>
+                  <span className="text-center font-bold text-amber-600">{row.xp}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Score modifiers */}
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Score modifiers</p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
+              <span>⚡ Fast finish bonus</span><span className="font-mono text-right text-green-600 font-semibold">up to +50%</span>
+              <span>🔁 Per extra flip penalty</span><span className="font-mono text-right text-red-500">−2% each</span>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2 italic">
+              Speed bonus applies when you finish under par time. Minimum flips = 2 × number of pairs.
+            </p>
+          </div>
+          {/* Formula */}
+          <div className="rounded-lg bg-muted/30 px-4 py-3 text-[11px] text-muted-foreground font-mono leading-relaxed">
+            score = base × (1 + time bonus) × flip factor &nbsp;·&nbsp; min 10 pts
+          </div>
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            Daily &amp; weekly challenge bonuses award extra XP and gems on top of the base XP above.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Memory Match leaderboard ─────────────────────────────────────────────────
 
 type MemorySize = 2 | 4 | 6 | 8;
@@ -432,31 +499,8 @@ function MemoryBoard({ myProfileId }: { myProfileId?: number }) {
         </CardContent>
       </Card>
 
-      {/* Memory XP guide */}
-      <div className="rounded-2xl border border-border overflow-hidden">
-        <div className="px-5 py-4 bg-card">
-          <p className="font-semibold text-sm">How XP is earned in Memory Match</p>
-          <p className="text-xs text-muted-foreground mt-0.5">XP is awarded once per completed game and added to your total rank</p>
-        </div>
-        <div className="border-t border-border px-5 py-4 bg-muted/10 space-y-3">
-          <div className="grid grid-cols-4 gap-2">
-            {([
-              { label: 'Beginner', xp: '1 XP', cls: 'bg-green-100 text-green-700' },
-              { label: 'Easy',     xp: '1 XP', cls: 'bg-blue-100 text-blue-700' },
-              { label: 'Medium',   xp: '2 XP', cls: 'bg-yellow-100 text-yellow-700' },
-              { label: 'Hard',     xp: '3 XP', cls: 'bg-orange-100 text-orange-700' },
-            ]).map(({ label, xp, cls }) => (
-              <div key={label} className="text-center">
-                <div className={`text-xs font-bold rounded-full px-2 py-1 mb-1 ${cls}`}>{label}</div>
-                <p className="text-xs font-bold text-foreground">{xp}</p>
-              </div>
-            ))}
-          </div>
-          <p className="text-[11px] text-muted-foreground leading-relaxed">
-            Harder grids reward more XP. Daily and weekly challenge bonuses stack on top.
-          </p>
-        </div>
-      </div>
+      {/* Memory scoring guide */}
+      <MemoryScoringGuide />
     </div>
   );
 }
