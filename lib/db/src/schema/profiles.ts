@@ -11,6 +11,7 @@ export const profilesTable = pgTable("profiles", {
   showTimer: boolean("show_timer").notNull().default(true),
   gems: integer("gems").notNull().default(0),
   clerkUserId: text("clerk_user_id").unique(),
+  replitUserId: text("replit_user_id").unique(),
   deviceId: text("device_id").unique(),
   currentStreak: integer("current_streak").notNull().default(0),
   longestStreak: integer("longest_streak").notNull().default(0),

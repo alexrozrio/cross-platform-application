@@ -12,24 +12,28 @@ import {
 
 const router: IRouter = Router();
 
-// ─── Sync: find-or-create by Clerk user ID or device ID ────────────────────
+// ─── Sync: find-or-create by Replit user ID, Clerk user ID, or device ID ────────────────────
 
 router.post("/profiles/sync", async (req, res): Promise<void> => {
-  const { clerkUserId, deviceId, username, avatar } = req.body as {
+  const { replitUserId, clerkUserId, deviceId, username, avatar } = req.body as {
+    replitUserId?: string;
     clerkUserId?: string;
     deviceId?: string;
     username?: string;
     avatar?: string;
   };
 
-  if (!clerkUserId && !deviceId) {
-    res.status(400).json({ error: "clerkUserId or deviceId is required" });
+  if (!replitUserId && !clerkUserId && !deviceId) {
+    res.status(400).json({ error: "replitUserId, clerkUserId, or deviceId is required" });
     return;
   }
 
   let profile;
 
-  if (clerkUserId) {
+  if (replitUserId) {
+    [profile] = await db.select().from(profilesTable).where(eq(profilesTable.replitUserId, replitUserId));
+  }
+  if (!profile && clerkUserId) {
     [profile] = await db.select().from(profilesTable).where(eq(profilesTable.clerkUserId, clerkUserId));
   }
   if (!profile && deviceId) {
@@ -37,8 +41,9 @@ router.post("/profiles/sync", async (req, res): Promise<void> => {
   }
 
   if (profile) {
-    // Update username/avatar if Clerk provides them and they changed
+    // Update username/avatar if they changed
     const updates: Record<string, unknown> = {};
+    if (replitUserId && profile.replitUserId !== replitUserId) updates.replitUserId = replitUserId;
     if (clerkUserId && profile.clerkUserId !== clerkUserId) updates.clerkUserId = clerkUserId;
     if (username && profile.username !== username) updates.username = username;
     if (avatar && profile.avatar !== avatar) updates.avatar = avatar;
@@ -58,6 +63,7 @@ router.post("/profiles/sync", async (req, res): Promise<void> => {
   const [newProfile] = await db.insert(profilesTable).values({
     username: autoUsername,
     avatar: avatar ?? null,
+    replitUserId: replitUserId ?? null,
     clerkUserId: clerkUserId ?? null,
     deviceId: deviceId ?? null,
   }).returning();

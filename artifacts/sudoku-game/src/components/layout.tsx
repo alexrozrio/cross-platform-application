@@ -1,7 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { useClerk, useUser } from "@clerk/react";
 import { useGetProfile, customFetch } from "@workspace/api-client-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -48,9 +47,7 @@ function NotifBadge({ count }: { count: number }) {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
-  const { profileId } = useAuth();
-  const { user, isSignedIn } = useUser();
-  const { signOut } = useClerk();
+  const { profileId, isSignedIn, replitUser } = useAuth();
   const { data: profile } = useGetProfile(profileId as number, { query: { enabled: !!profileId } });
   const pendingCount = usePendingChallengeCount(profileId);
 
@@ -68,11 +65,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/challenges", label: "Challenges", icon: Swords, badge: pendingCount },
     { href: "/stats", label: "Stats", icon: BarChart2, badge: 0 },
     { href: "/themes", label: "Themes", icon: Palette, badge: 0 },
-    { href: "/profile", label: isSignedIn ? (user?.firstName || "Account") : "Profile", icon: User, badge: 0 },
+    { href: "/profile", label: isSignedIn ? (replitUser?.firstName || "Account") : "Profile", icon: User, badge: 0 },
   ];
 
   const isActive = (href: string) =>
     href === "/" ? location === "/" : location.startsWith(href);
+
+  const handleSignInOut = () => {
+    if (isSignedIn) {
+      window.location.href = "/api/logout";
+    } else {
+      window.location.href = "/api/login";
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-200" style={{ minHeight: "100svh" }}>
@@ -99,8 +104,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   className="gap-2 relative"
                 >
                   <span className="relative inline-flex">
-                    {isSignedIn && item.href === "/profile" && user?.imageUrl ? (
-                      <img src={user.imageUrl} alt="" className="h-4 w-4 rounded-full object-cover" />
+                    {isSignedIn && item.href === "/profile" && replitUser?.profileImageUrl ? (
+                      <img src={replitUser.profileImageUrl} alt="" className="h-4 w-4 rounded-full object-cover" />
                     ) : (
                       <item.icon className="h-4 w-4" />
                     )}
@@ -115,27 +120,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
 
-          {isSignedIn ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-2 ml-1 text-muted-foreground"
-              onClick={() => signOut({ redirectUrl: "/" })}
-            >
-              <LogOut className="h-4 w-4" />
-              Sign out
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2 ml-1"
-              onClick={() => setLocation("/sign-in")}
-            >
-              <LogIn className="h-4 w-4" />
-              Sign in
-            </Button>
-          )}
+          <Button
+            variant={isSignedIn ? "ghost" : "outline"}
+            size="sm"
+            className="gap-2 ml-1 text-muted-foreground"
+            onClick={handleSignInOut}
+          >
+            {isSignedIn ? <LogOut className="h-4 w-4" /> : <LogIn className="h-4 w-4" />}
+            {isSignedIn ? "Sign out" : "Sign in"}
+          </Button>
         </div>
       </header>
 
@@ -151,8 +144,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
             className="flex flex-col items-center gap-0.5 text-xs min-w-[48px] py-1"
           >
             <div className={`relative p-1.5 rounded-xl ${isActive(item.href) ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}>
-              {isSignedIn && item.href === "/profile" && user?.imageUrl ? (
-                <img src={user.imageUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
+              {isSignedIn && item.href === "/profile" && replitUser?.profileImageUrl ? (
+                <img src={replitUser.profileImageUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
               ) : (
                 <item.icon className="h-5 w-5" />
               )}
@@ -166,7 +159,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* Sign in / out pill */}
         <button
           className="flex flex-col items-center gap-0.5 text-xs min-w-[48px] py-1"
-          onClick={() => isSignedIn ? signOut({ redirectUrl: "/" }) : setLocation("/sign-in")}
+          onClick={handleSignInOut}
         >
           <div className="p-1.5 rounded-xl text-muted-foreground">
             {isSignedIn ? <LogOut className="h-5 w-5" /> : <LogIn className="h-5 w-5" />}

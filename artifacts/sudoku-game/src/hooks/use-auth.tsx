@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
-import { useUser } from '@clerk/react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 
 function getOrCreateDeviceId(): string {
   const KEY = 'sudoku-device-id';
@@ -12,15 +11,27 @@ function getOrCreateDeviceId(): string {
   return id;
 }
 
+interface ReplitUser {
+  id: string;
+  email?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  profileImageUrl?: string | null;
+}
+
 interface AuthContextType {
   profileId: number | null;
   isReady: boolean;
+  replitUser: ReplitUser | null;
+  isSignedIn: boolean;
   setProfileId: (id: number | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
   profileId: null,
   isReady: false,
+  replitUser: null,
+  isSignedIn: false,
   setProfileId: () => {},
 });
 
@@ -31,20 +42,19 @@ export function AuthProvider({
   children: React.ReactNode;
   onProfileSynced?: (profileId: number) => void;
 }) {
-  const { user, isLoaded } = useUser();
+  const [replitUser, setReplitUser] = useState<ReplitUser | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const [profileId, setProfileIdState] = useState<number | null>(() => {
     const stored = typeof window !== 'undefined' ? localStorage.getItem('sudoku-profile-id') : null;
     return stored ? parseInt(stored, 10) : null;
   });
 
-  // isReady = true once the first sync attempt has completed (success or failure)
   const [isReady, setIsReady] = useState<boolean>(() => {
-    // If we already have a cached profileId, consider ready immediately
     return !!localStorage.getItem('sudoku-profile-id');
   });
 
-  const prevClerkUserIdRef = useRef<string | null | undefined>(undefined);
+  const prevUserIdRef = useRef<string | null | undefined>(undefined);
 
   const setProfileId = (id: number | null) => {
     if (id) {
@@ -56,29 +66,46 @@ export function AuthProvider({
   };
 
   useEffect(() => {
+    fetch('/api/auth/user', { credentials: 'include' })
+      .then((res) => {
+        if (res.status === 401) return null;
+        if (!res.ok) return null;
+        return res.json() as Promise<ReplitUser>;
+      })
+      .then((user) => {
+        setReplitUser(user);
+        setIsLoaded(true);
+      })
+      .catch(() => {
+        setIsLoaded(true);
+      });
+  }, []);
+
+  useEffect(() => {
     if (!isLoaded) return;
 
-    const currentClerkUserId = user?.id ?? null;
+    const currentUserId = replitUser?.id ?? null;
 
-    if (prevClerkUserIdRef.current === currentClerkUserId) {
-      // Nothing changed — mark ready if not already
+    if (prevUserIdRef.current === currentUserId) {
       setIsReady(true);
       return;
     }
-    prevClerkUserIdRef.current = currentClerkUserId;
+    prevUserIdRef.current = currentUserId;
 
     const syncProfile = async () => {
       try {
         let body: Record<string, string>;
 
-        if (user) {
-          const email = user.primaryEmailAddress?.emailAddress ?? '';
-          const nameFromEmail = email.split('@')[0];
-          const displayName = user.fullName || user.firstName || nameFromEmail || 'Player';
+        if (replitUser) {
+          const nameFromEmail = replitUser.email?.split('@')[0];
+          const fullName = replitUser.firstName && replitUser.lastName
+            ? `${replitUser.firstName} ${replitUser.lastName}`
+            : replitUser.firstName ?? null;
+          const displayName = fullName || nameFromEmail || 'Player';
           body = {
-            clerkUserId: user.id,
+            replitUserId: replitUser.id,
             username: displayName,
-            ...(user.imageUrl ? { avatar: user.imageUrl } : {}),
+            ...(replitUser.profileImageUrl ? { avatar: replitUser.profileImageUrl } : {}),
           };
         } else {
           body = { deviceId: getOrCreateDeviceId() };
@@ -105,10 +132,10 @@ export function AuthProvider({
     };
 
     syncProfile();
-  }, [isLoaded, user]);
+  }, [isLoaded, replitUser]);
 
   return (
-    <AuthContext.Provider value={{ profileId, isReady, setProfileId }}>
+    <AuthContext.Provider value={{ profileId, isReady, replitUser, isSignedIn: !!replitUser, setProfileId }}>
       {children}
     </AuthContext.Provider>
   );

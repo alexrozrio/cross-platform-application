@@ -1,6 +1,5 @@
 import React from "react";
 import { useLocation } from "wouter";
-import { useUser, useClerk } from "@clerk/react";
 import { useAuth } from "@/hooks/use-auth";
 import {
   useGetProfile,
@@ -29,7 +28,6 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
   LogIn,
@@ -40,7 +38,6 @@ import {
   Trophy,
   Gem,
   Flame,
-  Star,
   Info,
   ShieldCheck,
   FileText,
@@ -75,9 +72,7 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export default function Profile() {
   const [, setLocation] = useLocation();
-  const { user, isSignedIn, isLoaded } = useUser();
-  const { signOut } = useClerk();
-  const { profileId } = useAuth();
+  const { profileId, isSignedIn, replitUser } = useAuth();
   const { data: profile, isLoading } = useGetProfile(profileId as number, {
     query: { enabled: !!profileId },
   });
@@ -132,7 +127,7 @@ export default function Profile() {
     ? `${window.location.origin}${import.meta.env.BASE_URL.replace(/\/$/, "")}/badges/${shareSheetToken}`
     : "";
 
-  if (!isLoaded || isLoading) {
+  if (isLoading) {
     return (
       <div className="p-8 text-center text-muted-foreground">Loading…</div>
     );
@@ -162,39 +157,31 @@ export default function Profile() {
           </CardTitle>
           {!isSignedIn && (
             <CardDescription className="text-xs">
-              Sign in with Google or Facebook to sync your progress across
-              devices.
+              Sign in to sync your progress across devices.
             </CardDescription>
           )}
         </CardHeader>
         <CardContent className="space-y-4">
-          {isSignedIn ? (
+          {isSignedIn && replitUser ? (
             <div className="flex items-center gap-4">
-              {user.imageUrl && (
+              {replitUser.profileImageUrl && (
                 <img
-                  src={user.imageUrl}
+                  src={replitUser.profileImageUrl}
                   alt=""
                   className="w-14 h-14 rounded-full object-cover border-2 border-border"
                 />
               )}
               <div className="min-w-0">
                 <p className="font-semibold truncate">
-                  {user.fullName || user.firstName}
+                  {replitUser.firstName && replitUser.lastName
+                    ? `${replitUser.firstName} ${replitUser.lastName}`
+                    : replitUser.firstName ?? replitUser.email ?? "User"}
                 </p>
-                <p className="text-sm text-muted-foreground truncate">
-                  {user.primaryEmailAddress?.emailAddress}
-                </p>
-                <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                  {user.externalAccounts.map((acc) => (
-                    <Badge
-                      key={acc.id}
-                      variant="secondary"
-                      className="text-xs capitalize"
-                    >
-                      {acc.provider}
-                    </Badge>
-                  ))}
-                </div>
+                {replitUser.email && (
+                  <p className="text-sm text-muted-foreground truncate">
+                    {replitUser.email}
+                  </p>
+                )}
               </div>
             </div>
           ) : (
@@ -215,7 +202,7 @@ export default function Profile() {
             <Button
               variant="outline"
               className="w-full gap-2 text-destructive hover:text-destructive"
-              onClick={() => signOut({ redirectUrl: "/" })}
+              onClick={() => { window.location.href = "/api/logout"; }}
             >
               <LogOut className="w-4 h-4" />
               Sign out
@@ -223,10 +210,10 @@ export default function Profile() {
           ) : (
             <Button
               className="w-full gap-2"
-              onClick={() => setLocation("/sign-in")}
+              onClick={() => { window.location.href = "/api/login"; }}
             >
               <LogIn className="w-4 h-4" />
-              Sign in with Google or Facebook
+              Sign in
             </Button>
           )}
         </CardContent>
@@ -348,34 +335,27 @@ export default function Profile() {
             </CardTitle>
             {(!badges || badges.length === 0) && (
               <CardDescription className="text-xs">
-                Finish in the top 3 of a weekly or monthly tournament to earn
-                badges.
+                Finish in the top 3 of a weekly or monthly tournament to earn badges.
               </CardDescription>
             )}
           </CardHeader>
           {badges && badges.length > 0 && (
             <CardContent className="space-y-3">
               {badges.map((badge) => {
-                const meta =
-                  BADGE_META[badge.badgeType] ?? BADGE_META["weekly_1st"];
+                const meta = BADGE_META[badge.badgeType] ?? BADGE_META["weekly_1st"];
                 return (
                   <div
                     key={badge.id}
                     className={`flex items-center justify-between rounded-xl border-2 p-3 ${meta.borderColor}`}
                   >
                     <div className="flex items-center gap-3">
-                      <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center text-2xl ${meta.bg}`}
-                      >
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-2xl ${meta.bg}`}>
                         {meta.emoji}
                       </div>
                       <div>
-                        <p className={`text-sm font-bold ${meta.color}`}>
-                          {meta.title}
-                        </p>
+                        <p className={`text-sm font-bold ${meta.color}`}>{meta.title}</p>
                         <p className="text-xs text-muted-foreground">
-                          {formatPeriodLabel(badge.tournamentPeriod)} ·{" "}
-                          {badge.totalPoints.toLocaleString()} pts
+                          {formatPeriodLabel(badge.tournamentPeriod)} · {badge.totalPoints.toLocaleString()} pts
                         </p>
                       </div>
                     </div>
@@ -404,10 +384,7 @@ export default function Profile() {
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
-              >
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
                   control={form.control}
                   name="username"
@@ -427,18 +404,11 @@ export default function Profile() {
                   render={({ field }) => (
                     <FormItem className="flex items-center justify-between rounded-lg border p-4">
                       <div>
-                        <FormLabel className="text-base">
-                          Highlight Errors
-                        </FormLabel>
-                        <FormDescription>
-                          Show feedback on incorrect placement.
-                        </FormDescription>
+                        <FormLabel className="text-base">Highlight Errors</FormLabel>
+                        <FormDescription>Show feedback on incorrect placement.</FormDescription>
                       </div>
                       <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
                       </FormControl>
                     </FormItem>
                   )}
@@ -450,24 +420,15 @@ export default function Profile() {
                     <FormItem className="flex items-center justify-between rounded-lg border p-4">
                       <div>
                         <FormLabel className="text-base">Show Timer</FormLabel>
-                        <FormDescription>
-                          Display elapsed time during gameplay.
-                        </FormDescription>
+                        <FormDescription>Display elapsed time during gameplay.</FormDescription>
                       </div>
                       <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
                       </FormControl>
                     </FormItem>
                   )}
                 />
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={updateProfile.isPending}
-                >
+                <Button type="submit" className="w-full" disabled={updateProfile.isPending}>
                   {updateProfile.isPending ? "Saving…" : "Save Preferences"}
                 </Button>
               </form>
@@ -475,6 +436,7 @@ export default function Profile() {
           </CardContent>
         </Card>
       )}
+
       {shareSheetBadge && shareSheetMeta && (
         <BadgeShareSheet
           open={!!shareSheetToken}
@@ -511,7 +473,7 @@ export default function Profile() {
             <FileText className="w-3.5 h-3.5" /> Terms
           </button>
         </div>
-        <p className="text-xs text-muted-foreground/60">© {new Date().getFullYear()} Sudoku Game. All rights reserved.</p>
+        <p className="text-xs text-muted-foreground/60">© {new Date().getFullYear()} Game Hub. All rights reserved.</p>
       </div>
     </div>
   );
