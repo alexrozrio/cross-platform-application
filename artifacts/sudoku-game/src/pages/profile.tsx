@@ -58,6 +58,13 @@ interface StreakData {
   completedToday: boolean;
 }
 
+interface TournamentStreakData {
+  profileId: number;
+  currentStreak: number;
+  bestStreak: number;
+  totalTop3Finishes: number;
+}
+
 const profileSchema = z.object({
   username: z.string().min(2, "At least 2 characters").max(30),
   highlightErrors: z.boolean().default(true),
@@ -109,6 +116,12 @@ export default function Profile() {
   const { data: streak } = useQuery<StreakData>({
     queryKey: ["daily-challenge-streak", profileId],
     queryFn: () => customFetch<StreakData>(`/api/daily-challenge/streak/${profileId}`),
+    enabled: !!profileId,
+  });
+
+  const { data: tournamentStreak } = useQuery<TournamentStreakData>({
+    queryKey: ["tournament-streak", profileId],
+    queryFn: () => customFetch<TournamentStreakData>(`/api/tournaments/streak/${profileId}`),
     enabled: !!profileId,
   });
 
@@ -284,6 +297,41 @@ export default function Profile() {
                   {streak.completedToday ? "✓ Done" : "Pending"}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">today</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tournament Streak */}
+      {profileId && tournamentStreak && tournamentStreak.totalTop3Finishes > 0 && (
+        <Card
+          className="cursor-pointer hover:border-violet-300 transition-colors border-violet-200/70 bg-gradient-to-br from-violet-50 to-purple-50"
+          onClick={() => setLocation("/leaderboard")}
+        >
+          <CardContent className="pt-5 pb-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-violet-500" />
+                <p className="text-sm font-semibold text-violet-800">Tournament Streak</p>
+              </div>
+              <span className="text-xs text-violet-500 underline underline-offset-2">View leaderboard →</span>
+            </div>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div>
+                <p className="text-2xl font-black text-violet-600 flex items-center justify-center gap-0.5">
+                  {tournamentStreak.currentStreak > 0 && <span className="text-lg">🔥</span>}
+                  {tournamentStreak.currentStreak}
+                </p>
+                <p className="text-xs text-muted-foreground">current</p>
+              </div>
+              <div>
+                <p className="text-2xl font-black text-foreground">{tournamentStreak.bestStreak}</p>
+                <p className="text-xs text-muted-foreground">best</p>
+              </div>
+              <div>
+                <p className="text-2xl font-black text-foreground">{tournamentStreak.totalTop3Finishes}</p>
+                <p className="text-xs text-muted-foreground">top-3 total</p>
               </div>
             </div>
           </CardContent>
