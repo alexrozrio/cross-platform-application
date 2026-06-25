@@ -102,8 +102,79 @@ router.post("/memory-games/:id/complete", async (req, res): Promise<void> => {
 // ─── GET /memory-games/leaderboard ───────────────────────────────────────────
 
 router.get("/memory-games/leaderboard", async (req, res): Promise<void> => {
-  const gridSize = req.query.gridSize ? parseInt(req.query.gridSize as string, 10) : 4;
+  const rawGridSize = req.query.gridSize as string | undefined;
+  const isAll = !rawGridSize || rawGridSize === "all";
+  const gridSize = isAll ? null : parseInt(rawGridSize, 10);
 
+  if (isAll) {
+    // Aggregate total points per player across all grid sizes
+    const rows = await db
+      .select({
+        profileId: memoryGamesTable.profileId,
+        username: profilesTable.username,
+        avatar: profilesTable.avatar,
+        points: memoryGamesTable.points,
+        xpEarned: memoryGamesTable.xpEarned,
+        gridSize: memoryGamesTable.gridSize,
+        completedAt: memoryGamesTable.completedAt,
+      })
+      .from(memoryGamesTable)
+      .innerJoin(profilesTable, eq(memoryGamesTable.profileId, profilesTable.id))
+      .where(eq(memoryGamesTable.status, "completed"))
+      .orderBy(desc(memoryGamesTable.points));
+
+    // Aggregate by profile
+    const agg = new Map<number, {
+      username: string;
+      avatar: string | null;
+      totalPoints: number;
+      totalXp: number;
+      gamesPlayed: number;
+      lastCompletedAt: string | null;
+    }>();
+
+    for (const row of rows) {
+      if (!row.profileId) continue;
+      const cur = agg.get(row.profileId) ?? {
+        username: row.username,
+        avatar: row.avatar ?? null,
+        totalPoints: 0,
+        totalXp: 0,
+        gamesPlayed: 0,
+        lastCompletedAt: null,
+      };
+      cur.totalPoints += row.points ?? 0;
+      cur.totalXp += row.xpEarned ?? 0;
+      cur.gamesPlayed += 1;
+      const ca = row.completedAt?.toISOString() ?? null;
+      if (ca && (!cur.lastCompletedAt || ca > cur.lastCompletedAt)) cur.lastCompletedAt = ca;
+      agg.set(row.profileId, cur);
+    }
+
+    const sorted = Array.from(agg.entries())
+      .sort((a, b) => b[1].totalPoints - a[1].totalPoints)
+      .slice(0, 25)
+      .map(([profileId, d], i) => ({
+        rank: i + 1,
+        profileId,
+        username: d.username,
+        avatar: d.avatar,
+        totalPoints: d.totalPoints,
+        totalXp: d.totalXp,
+        gamesPlayed: d.gamesPlayed,
+        completedAt: d.lastCompletedAt,
+        // these fields null for "All" view
+        points: d.totalPoints,
+        xpEarned: d.totalXp,
+        elapsedSeconds: null,
+        flips: null,
+      }));
+
+    res.json(sorted);
+    return;
+  }
+
+  // Single grid size
   const rows = await db
     .select({
       profileId: memoryGamesTable.profileId,
@@ -117,7 +188,7 @@ router.get("/memory-games/leaderboard", async (req, res): Promise<void> => {
     })
     .from(memoryGamesTable)
     .innerJoin(profilesTable, eq(memoryGamesTable.profileId, profilesTable.id))
-    .where(and(eq(memoryGamesTable.status, "completed"), eq(memoryGamesTable.gridSize, gridSize)))
+    .where(and(eq(memoryGamesTable.status, "completed"), eq(memoryGamesTable.gridSize, gridSize!)))
     .orderBy(desc(memoryGamesTable.points))
     .limit(20);
 

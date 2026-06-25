@@ -598,6 +598,7 @@ function MemoryScoringGuide() {
 // ─── Memory Match leaderboard ─────────────────────────────────────────────────
 
 type MemorySize = 2 | 4 | 6 | 8;
+type MemoryTab = 'all' | MemorySize;
 
 const MEMORY_SIZES: { size: MemorySize; label: string; pairs: number }[] = [
   { size: 2, label: 'Beginner', pairs: 4  },
@@ -612,29 +613,42 @@ interface MemoryEntry {
   avatar: string | null;
   points: number;
   xpEarned: number | null;
-  elapsedSeconds: number;
-  flips: number;
+  elapsedSeconds: number | null;
+  flips: number | null;
   completedAt: string | null;
+  // "All" tab extras
+  gamesPlayed?: number;
+  totalXp?: number;
 }
 
 function MemoryBoard({ myProfileId }: { myProfileId?: number }) {
-  const [size, setSize] = useState<MemorySize>(2);
+  const [tab, setTab] = useState<MemoryTab>('all');
   const [data, setData] = useState<MemoryEntry[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
     setData(null);
-    customFetch<MemoryEntry[]>(`/api/memory-games/leaderboard?gridSize=${size}`)
+    const url = tab === 'all'
+      ? '/api/memory-games/leaderboard?gridSize=all'
+      : `/api/memory-games/leaderboard?gridSize=${tab}`;
+    customFetch<MemoryEntry[]>(url)
       .then(rows => setData(rows))
       .catch(() => setData([]))
       .finally(() => setLoading(false));
-  }, [size]);
+  }, [tab]);
+
+  const currentSize = MEMORY_SIZES.find(o => o.size === tab);
+
+  const cardTitle = tab === 'all'
+    ? 'Memory Match — All Levels Combined'
+    : `Memory Match — ${currentSize?.label} (${currentSize?.pairs} pairs)`;
 
   return (
     <div className="space-y-5">
-      <Tabs value={String(size)} onValueChange={(v) => setSize(Number(v) as MemorySize)} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs value={String(tab)} onValueChange={(v) => setTab(v === 'all' ? 'all' : Number(v) as MemorySize)} className="w-full">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="all">All</TabsTrigger>
           {MEMORY_SIZES.map(opt => (
             <TabsTrigger key={opt.size} value={String(opt.size)}>
               {opt.label}
@@ -647,7 +661,7 @@ function MemoryBoard({ myProfileId }: { myProfileId?: number }) {
         <CardHeader className="bg-card pb-4 border-b">
           <CardTitle className="text-lg flex items-center gap-2">
             <Brain className="w-5 h-5 text-violet-500" />
-            Memory Match — {MEMORY_SIZES.find(o => o.size === size)?.label} ({MEMORY_SIZES.find(o => o.size === size)?.pairs} pairs)
+            {cardTitle}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -656,7 +670,7 @@ function MemoryBoard({ myProfileId }: { myProfileId?: number }) {
           ) : !data || data.length === 0 ? (
             <div className="p-12 text-center text-muted-foreground">
               <Brain className="w-10 h-10 mx-auto mb-3 opacity-20" />
-              <p className="font-medium">No completed games yet for this level.</p>
+              <p className="font-medium">{tab === 'all' ? 'No Memory Match games played yet.' : 'No completed games yet for this level.'}</p>
               <p className="text-sm mt-1">Play Memory Match to claim the top spot!</p>
             </div>
           ) : (
@@ -664,9 +678,9 @@ function MemoryBoard({ myProfileId }: { myProfileId?: number }) {
               {data.map((entry, i) => {
                 const rank = i + 1;
                 const isMe = myProfileId !== undefined && entry.profileId === myProfileId;
-                const m = Math.floor(entry.elapsedSeconds / 60);
-                const s = entry.elapsedSeconds % 60;
-                const timeStr = `${m}:${s.toString().padStart(2, '0')}`;
+                const timeStr = entry.elapsedSeconds != null
+                  ? `${Math.floor(entry.elapsedSeconds / 60)}:${String(entry.elapsedSeconds % 60).padStart(2, '0')}`
+                  : null;
                 return (
                   <div
                     key={`${entry.profileId}-${i}`}
@@ -678,13 +692,19 @@ function MemoryBoard({ myProfileId }: { myProfileId?: number }) {
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className={`font-semibold truncate ${isMe ? 'text-primary' : ''}`}>{entry.username}</p>
                           {isMe && <span className="text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-full px-2 py-0.5">You</span>}
-                          {entry.xpEarned != null && (
+                          {entry.xpEarned != null && entry.xpEarned > 0 && (
                             <span className="text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200 rounded-full px-1.5 py-0.5">+{entry.xpEarned} XP</span>
                           )}
                         </div>
                         <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1"><Timer className="w-3 h-3" />{timeStr}</span>
-                          <span className="flex items-center gap-1"><Repeat2 className="w-3 h-3" />{entry.flips} flips</span>
+                          {tab === 'all' ? (
+                            <span>{(entry as any).gamesPlayed ?? 0} game{((entry as any).gamesPlayed ?? 0) !== 1 ? 's' : ''} across all levels</span>
+                          ) : (
+                            <>
+                              {timeStr && <span className="flex items-center gap-1"><Timer className="w-3 h-3" />{timeStr}</span>}
+                              {entry.flips != null && <span className="flex items-center gap-1"><Repeat2 className="w-3 h-3" />{entry.flips} flips</span>}
+                            </>
+                          )}
                           {entry.completedAt && (
                             <span>{new Date(entry.completedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                           )}
