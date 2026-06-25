@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useGetLeaderboard, useGetTournamentLeaderboard, customFetch } from '@workspace/api-client-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -264,15 +265,111 @@ function AlltimeBoard({ myProfileId }: { myProfileId?: number }) {
 
 // ─── Tournament leaderboard ───────────────────────────────────────────────────
 
+interface BreakdownData {
+  sudoku: { gridSize: number; points: number; games: number }[];
+  memory: { gridSize: number; points: number; games: number }[];
+}
+
+const SUDOKU_GRID_NAMES: Record<number, string> = { 3: '3×3', 4: '4×4', 9: '9×9', 16: '16×16' };
+const MEMORY_LEVEL_NAMES: Record<number, string> = { 2: 'Beginner', 4: 'Easy', 6: 'Medium', 8: 'Hard' };
+
+function BreakdownPanel({
+  profileId,
+  type,
+  period,
+}: {
+  profileId: number;
+  type: 'weekly' | 'monthly';
+  period: string;
+}) {
+  const [bdTab, setBdTab] = useState<'sudoku' | 'memory'>('sudoku');
+  const { data, isLoading } = useQuery<BreakdownData>({
+    queryKey: ['tournament-breakdown', profileId, type, period],
+    queryFn: () =>
+      customFetch<BreakdownData>(
+        `/api/tournaments/breakdown?profileId=${profileId}&type=${type}&period=${encodeURIComponent(period)}`
+      ),
+    staleTime: 30_000,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="px-5 pb-4 pt-2 space-y-2">
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-16 w-full" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-5 pb-4 pt-1 border-t bg-muted/20">
+      {/* mini tabs */}
+      <div className="flex gap-1 mt-2 mb-3">
+        <button
+          onClick={() => setBdTab('sudoku')}
+          className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${bdTab === 'sudoku' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}
+        >
+          🔢 Sudoku
+        </button>
+        <button
+          onClick={() => setBdTab('memory')}
+          className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${bdTab === 'memory' ? 'bg-violet-600 text-white' : 'bg-muted text-muted-foreground hover:text-foreground'}`}
+        >
+          🃏 Memory
+        </button>
+      </div>
+
+      {bdTab === 'sudoku' && (
+        <div className="grid grid-cols-4 gap-2">
+          {(data?.sudoku ?? [3, 4, 9, 16].map(gs => ({ gridSize: gs, points: 0, games: 0 }))).map(item => (
+            <div
+              key={item.gridSize}
+              className={`rounded-xl border p-2.5 text-center transition-colors ${item.games > 0 ? 'bg-background border-primary/20' : 'bg-muted/30 border-border opacity-50'}`}
+            >
+              <p className="text-xs font-bold text-foreground">{SUDOKU_GRID_NAMES[item.gridSize]}</p>
+              <p className="text-lg font-black text-primary mt-0.5 tabular-nums leading-tight">
+                {item.points > 0 ? item.points.toLocaleString() : '—'}
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{item.games > 0 ? `${item.games} game${item.games !== 1 ? 's' : ''}` : 'no games'}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {bdTab === 'memory' && (
+        <div className="grid grid-cols-4 gap-2">
+          {(data?.memory ?? [2, 4, 6, 8].map(gs => ({ gridSize: gs, points: 0, games: 0 }))).map(item => (
+            <div
+              key={item.gridSize}
+              className={`rounded-xl border p-2.5 text-center transition-colors ${item.games > 0 ? 'bg-background border-violet-300' : 'bg-muted/30 border-border opacity-50'}`}
+            >
+              <p className="text-xs font-bold text-foreground">{MEMORY_LEVEL_NAMES[item.gridSize]}</p>
+              <p className="text-lg font-black text-violet-600 mt-0.5 tabular-nums leading-tight">
+                {item.points > 0 ? item.points.toLocaleString() : '—'}
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{item.games > 0 ? `${item.games} game${item.games !== 1 ? 's' : ''}` : 'no games'}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TournamentBoard({ type, myProfileId }: { type: 'weekly' | 'monthly'; myProfileId?: number }) {
-  const [gridSize, setGridSize] = useState<3 | 4 | 9 | 16 | undefined>(undefined);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+
   const { data, isLoading } = useGetTournamentLeaderboard(
-    { type, ...(gridSize !== undefined ? { gridSize: gridSize as any } : {}) },
+    { type } as any,
     { query: { refetchInterval: 60_000 } }
   );
 
   const Icon = type === 'weekly' ? CalendarDays : Calendar;
   const label = type === 'weekly' ? 'Weekly Tournament' : 'Monthly Tournament';
+
+  const toggleRow = (profileId: number) => {
+    setExpandedId(prev => prev === profileId ? null : profileId);
+  };
 
   return (
     <div className="space-y-5">
@@ -284,22 +381,11 @@ function TournamentBoard({ type, myProfileId }: { type: 'weekly' | 'monthly'; my
         </div>
       )}
 
-      {/* Grid filter */}
-      <Tabs defaultValue="all" onValueChange={(v) => setGridSize(v === 'all' ? undefined : Number(v) as 3 | 4 | 9 | 16)} className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="9">9×9</TabsTrigger>
-          <TabsTrigger value="16">16×16</TabsTrigger>
-          <TabsTrigger value="4">4×4</TabsTrigger>
-          <TabsTrigger value="3">3×3</TabsTrigger>
-        </TabsList>
-      </Tabs>
-
       <Card className="shadow-md border-primary/10">
         <CardHeader className="bg-card pb-4 border-b">
           <CardTitle className="text-lg flex items-center gap-2">
             <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
-            {label} — Points Ranking
+            {label} — Total Score Ranking
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -315,47 +401,63 @@ function TournamentBoard({ type, myProfileId }: { type: 'weekly' | 'monthly'; my
             <div className="divide-y">
               {data.entries.map((entry) => {
                 const isMe = myProfileId !== undefined && entry.profileId === myProfileId;
+                const isExpanded = expandedId === entry.profileId;
                 return (
-                  <div
-                    key={entry.profileId}
-                    className={`flex items-center justify-between px-5 py-4 transition-colors ${isMe ? 'bg-primary/8 hover:bg-primary/12' : 'hover:bg-muted/40'}`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <RankBadge rank={entry.rank} />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className={`font-semibold truncate ${isMe ? 'text-primary' : ''}`}>{entry.username}</p>
-                          {isMe && <span className="text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-full px-2 py-0.5">You</span>}
-                          {(entry as any).streak >= 2 && (
-                            <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.5 border flex items-center gap-0.5 ${
-                              (entry as any).streak >= 5
-                                ? 'bg-orange-100 text-orange-700 border-orange-200'
-                                : 'bg-amber-100 text-amber-700 border-amber-200'
-                            }`}>
-                              🔥 {(entry as any).streak}w
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground flex-wrap">
-                          {gridSize === undefined && (entry as any).memoryGamesPlayed > 0 ? (
-                            <>
-                              {(entry as any).sudokuGamesPlayed > 0 && (
-                                <span>🔢 {(entry as any).sudokuGamesPlayed} sudoku</span>
-                              )}
+                  <div key={entry.profileId}>
+                    <button
+                      onClick={() => toggleRow(entry.profileId)}
+                      className={`w-full flex items-center justify-between px-5 py-4 transition-colors text-left ${isMe ? 'bg-primary/8 hover:bg-primary/12' : 'hover:bg-muted/40'} ${isExpanded ? 'bg-muted/30' : ''}`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <RankBadge rank={entry.rank} />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className={`font-semibold truncate ${isMe ? 'text-primary' : ''}`}>{entry.username}</p>
+                            {isMe && <span className="text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-full px-2 py-0.5">You</span>}
+                            {(entry as any).streak >= 2 && (
+                              <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.5 border flex items-center gap-0.5 ${
+                                (entry as any).streak >= 5
+                                  ? 'bg-orange-100 text-orange-700 border-orange-200'
+                                  : 'bg-amber-100 text-amber-700 border-amber-200'
+                              }`}>
+                                🔥 {(entry as any).streak}w
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground flex-wrap">
+                            {(entry as any).sudokuGamesPlayed > 0 && (
+                              <span>🔢 {(entry as any).sudokuGamesPlayed} sudoku</span>
+                            )}
+                            {(entry as any).memoryGamesPlayed > 0 && (
                               <span>🃏 {(entry as any).memoryGamesPlayed} memory</span>
-                            </>
-                          ) : (
-                            <span>{entry.gamesPlayed} game{entry.gamesPlayed !== 1 ? 's' : ''} completed</span>
-                          )}
+                            )}
+                            {(entry as any).sudokuGamesPlayed === 0 && (entry as any).memoryGamesPlayed === 0 && (
+                              <span>{entry.gamesPlayed} game{entry.gamesPlayed !== 1 ? 's' : ''}</span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="text-right shrink-0 ml-4">
-                      <p className="text-xl font-black text-primary tabular-nums">
-                        {entry.totalPoints.toLocaleString()}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">points</p>
-                    </div>
+                      <div className="flex items-center gap-3 shrink-0 ml-4">
+                        <div className="text-right">
+                          <p className="text-xl font-black text-primary tabular-nums">
+                            {entry.totalPoints.toLocaleString()}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">total pts</p>
+                        </div>
+                        {isExpanded
+                          ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" />
+                          : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+                        }
+                      </div>
+                    </button>
+
+                    {isExpanded && data.period && (
+                      <BreakdownPanel
+                        profileId={entry.profileId}
+                        type={type}
+                        period={data.period}
+                      />
+                    )}
                   </div>
                 );
               })}

@@ -159,6 +159,90 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
   res.json({ period, periodLabel: formatPeriodLabel(period), type, entries });
 });
 
+// ─── GET /tournaments/breakdown ──────────────────────────────────────────────
+// Returns one user's per-grid-size / per-memory-size breakdown for the period.
+
+router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
+  const profileId = parseInt(String(req.query.profileId ?? ""), 10);
+  if (isNaN(profileId)) { res.status(400).json({ error: "Invalid profileId" }); return; }
+
+  const rawType = String(req.query.type ?? "weekly");
+  const type = VALID_TYPES.has(rawType) ? (rawType as "weekly" | "monthly") : "weekly";
+
+  const now = new Date();
+  const period = req.query.period ? String(req.query.period)
+    : (type === "weekly" ? getWeekPeriod(now) : getMonthPeriod(now));
+  const range = type === "weekly" ? getWeekRange(period) : getMonthRange(period);
+
+  // Sudoku breakdown by grid size
+  const sudokuRows = await db
+    .select({
+      gridSizeVal: puzzlesTable.gridSize,
+      points: gamesTable.points,
+    })
+    .from(gamesTable)
+    .innerJoin(puzzlesTable, eq(gamesTable.puzzleId, puzzlesTable.id))
+    .where(
+      and(
+        eq(gamesTable.status, "completed"),
+        eq(gamesTable.profileId, profileId),
+        gte(gamesTable.completedAt, range.start),
+        lt(gamesTable.completedAt, range.end),
+      ),
+    );
+
+  // Memory breakdown by grid size
+  const memoryRows = await db
+    .select({
+      gridSize: memoryGamesTable.gridSize,
+      points: memoryGamesTable.points,
+    })
+    .from(memoryGamesTable)
+    .where(
+      and(
+        eq(memoryGamesTable.status, "completed"),
+        eq(memoryGamesTable.profileId, profileId),
+        gte(memoryGamesTable.completedAt, range.start),
+        lt(memoryGamesTable.completedAt, range.end),
+      ),
+    );
+
+  // Aggregate sudoku by grid size
+  const sudokuByGrid = new Map<number, { points: number; games: number }>();
+  for (const row of sudokuRows) {
+    const gs = row.gridSizeVal;
+    const cur = sudokuByGrid.get(gs) ?? { points: 0, games: 0 };
+    cur.points += row.points ?? 0;
+    cur.games += 1;
+    sudokuByGrid.set(gs, cur);
+  }
+
+  // Aggregate memory by grid size
+  const memoryByGrid = new Map<number, { points: number; games: number }>();
+  for (const row of memoryRows) {
+    const gs = row.gridSize;
+    const cur = memoryByGrid.get(gs) ?? { points: 0, games: 0 };
+    cur.points += row.points ?? 0;
+    cur.games += 1;
+    memoryByGrid.set(gs, cur);
+  }
+
+  res.json({
+    profileId,
+    period,
+    sudoku: [3, 4, 9, 16].map(gs => ({
+      gridSize: gs,
+      points: sudokuByGrid.get(gs)?.points ?? 0,
+      games: sudokuByGrid.get(gs)?.games ?? 0,
+    })),
+    memory: [2, 4, 6, 8].map(gs => ({
+      gridSize: gs,
+      points: memoryByGrid.get(gs)?.points ?? 0,
+      games: memoryByGrid.get(gs)?.games ?? 0,
+    })),
+  });
+});
+
 // ─── GET /tournaments/streak/:profileId ──────────────────────────────────────
 
 router.get("/tournaments/streak/:profileId", async (req, res): Promise<void> => {
