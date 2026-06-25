@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useGetLeaderboard, useGetTournamentLeaderboard, customFetch } from '@workspace/api-client-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Medal, Award, Star, CalendarDays, Calendar, Zap, ChevronDown, ChevronUp, Brain, Timer, Repeat2 } from 'lucide-react';
+import { Trophy, Medal, Award, Star, CalendarDays, Calendar, Zap, ChevronDown, ChevronUp, Brain, Timer, Repeat2, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { LevelBadge } from '@/components/level-badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/use-auth';
+import { toast } from 'sonner';
 
 type MainTab = 'alltime' | 'weekly' | 'monthly' | 'memory';
 
@@ -358,11 +359,51 @@ function BreakdownPanel({
 
 function TournamentBoard({ type, myProfileId }: { type: 'weekly' | 'monthly'; myProfileId?: number }) {
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [rankDelta, setRankDelta] = useState<number | null>(null);
+
+  const prevRankRef = useRef<number | null>(null);
+  const isFirstFetchRef = useRef(true);
 
   const { data, isLoading } = useGetTournamentLeaderboard(
     { type } as any,
-    { query: { refetchInterval: 60_000 } }
+    { query: { refetchInterval: 30_000 } }
   );
+
+  // Detect rank changes across refetches and show toast + delta badge
+  useEffect(() => {
+    if (!data?.entries || !myProfileId) return;
+    const myEntry = data.entries.find(e => e.profileId === myProfileId);
+    const newRank = myEntry?.rank ?? null;
+
+    if (isFirstFetchRef.current) {
+      // First load — just record, no notification
+      prevRankRef.current = newRank;
+      isFirstFetchRef.current = false;
+      return;
+    }
+
+    if (newRank !== null && prevRankRef.current !== null && newRank !== prevRankRef.current) {
+      const delta = prevRankRef.current - newRank; // positive = moved up
+      setRankDelta(delta);
+
+      if (delta > 0) {
+        toast.success(`You moved up ${delta} spot${delta !== 1 ? 's' : ''}! 🎉`, {
+          description: `Now ranked #${newRank} on the ${type} leaderboard.`,
+          duration: 6000,
+        });
+      } else {
+        toast(`You dropped ${Math.abs(delta)} spot${Math.abs(delta) !== 1 ? 's' : ''}.`, {
+          description: `Now ranked #${newRank}. Keep playing to climb back up!`,
+          duration: 5000,
+        });
+      }
+
+      // Clear the visual delta badge after 12 s
+      setTimeout(() => setRankDelta(null), 12000);
+    }
+
+    prevRankRef.current = newRank;
+  }, [data, myProfileId, type]);
 
   const Icon = type === 'weekly' ? CalendarDays : Calendar;
   const label = type === 'weekly' ? 'Weekly Tournament' : 'Monthly Tournament';
@@ -414,6 +455,22 @@ function TournamentBoard({ type, myProfileId }: { type: 'weekly' | 'monthly'; my
                           <div className="flex items-center gap-2 flex-wrap">
                             <p className={`font-semibold truncate ${isMe ? 'text-primary' : ''}`}>{entry.username}</p>
                             {isMe && <span className="text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-full px-2 py-0.5">You</span>}
+                            {isMe && rankDelta !== null && (
+                              <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.5 border flex items-center gap-0.5 animate-in fade-in duration-300 ${
+                                rankDelta > 0
+                                  ? 'bg-green-100 text-green-700 border-green-200'
+                                  : rankDelta < 0
+                                  ? 'bg-red-100 text-red-600 border-red-200'
+                                  : 'bg-slate-100 text-slate-500 border-slate-200'
+                              }`}>
+                                {rankDelta > 0
+                                  ? <><TrendingUp className="w-2.5 h-2.5" /> +{rankDelta}</>
+                                  : rankDelta < 0
+                                  ? <><TrendingDown className="w-2.5 h-2.5" /> {rankDelta}</>
+                                  : <><Minus className="w-2.5 h-2.5" /> 0</>
+                                }
+                              </span>
+                            )}
                             {(entry as any).streak >= 2 && (
                               <span className={`text-[10px] font-bold rounded-full px-1.5 py-0.5 border flex items-center gap-0.5 ${
                                 (entry as any).streak >= 5
