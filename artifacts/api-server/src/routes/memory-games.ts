@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { eq, desc, and } from "drizzle-orm";
 import { db, memoryGamesTable, profilesTable } from "@workspace/db";
 import { sql } from "drizzle-orm";
+import { resolveDuelForMemoryGame } from "./memory-duels";
 
 const router: IRouter = Router();
 
@@ -91,6 +92,9 @@ router.post("/memory-games/:id/complete", async (req, res): Promise<void> => {
       .set({ gems: sql`gems + ${gemsEarned}`, xp: sql`xp + ${xpEarned}` })
       .where(eq(profilesTable.id, existing.profileId));
   }
+
+  // Resolve any memory duel that references this game
+  await resolveDuelForMemoryGame(id).catch(() => {});
 
   res.json({ points, xpEarned, gemsEarned, completedAt: game.completedAt?.toISOString() });
 });

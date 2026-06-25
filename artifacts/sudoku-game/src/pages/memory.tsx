@@ -157,6 +157,13 @@ export default function MemoryMatchPage() {
     return c === 'daily' || c === 'weekly' ? c : null;
   })();
 
+  // Read ?duelGameId=X&gridSize=Y from URL (when starting from a challenge duel)
+  const duelGameId = (() => {
+    const p = new URLSearchParams(search);
+    const d = parseInt(p.get('duelGameId') ?? '', 10);
+    return isNaN(d) ? null : d;
+  })();
+
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Timer
@@ -169,7 +176,7 @@ export default function MemoryMatchPage() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [phase]);
 
-  const startGame = useCallback(async (size: GridSize) => {
+  const startGame = useCallback(async (size: GridSize, presetGameId?: number) => {
     setGridSize(size);
     setCards(buildDeck(size));
     setFlippedIds([]);
@@ -178,8 +185,11 @@ export default function MemoryMatchPage() {
     setElapsed(0);
     setLockBoard(false);
     setWinResult(null);
-    setGameId(null);
+    setGameId(presetGameId ?? null);
     setPhase('playing');
+
+    // If a duel game ID was pre-created by the server, skip creation
+    if (presetGameId) return;
 
     // Create server-side game record (best-effort)
     try {
@@ -193,12 +203,18 @@ export default function MemoryMatchPage() {
     }
   }, [profileId]);
 
-  // Auto-start when ?size= is in the URL (e.g. from portal quick-start buttons)
+  // Auto-start when ?size= or ?duelGameId= is in the URL
   const startGameRef = useRef(startGame);
   useEffect(() => { startGameRef.current = startGame; }, [startGame]);
   useEffect(() => {
     const params = new URLSearchParams(search);
-    const s = parseInt(params.get('size') ?? '', 10);
+    const duelId = parseInt(params.get('duelGameId') ?? '', 10);
+    const gs = parseInt(params.get('gridSize') ?? params.get('size') ?? '', 10);
+    if (!isNaN(duelId) && [2, 4, 6, 8].includes(gs)) {
+      startGameRef.current(gs as GridSize, duelId);
+      return;
+    }
+    const s = gs;
     if ([2, 4, 6, 8].includes(s)) {
       startGameRef.current(s as GridSize);
     }

@@ -8,3 +8,4 @@ export * from "./challenges";
 export * from "./unlocked-items";
 export * from "./memory-games";
 export * from "./memory-challenge-completions";
+export * from "./memory-duels";
