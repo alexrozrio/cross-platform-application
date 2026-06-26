@@ -351,6 +351,11 @@ export default function Game({ id }: { id: string }) {
           },
           {
             onSuccess: async (data) => {
+              // Trigger achievement detection
+              if (profileId) {
+                queryClient.invalidateQueries({ queryKey: [`/api/achievements/${profileId}`] });
+              }
+
               const pts = data.points ?? null;
               setPointsEarned(pts);
               const msg = pickCompletionMessage(game?.puzzle?.difficulty, game?.puzzle?.gridSize);

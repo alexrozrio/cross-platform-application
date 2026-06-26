@@ -8,6 +8,7 @@ import { Trophy, User, Home, BarChart2, Palette, LogIn, LogOut, Gem, Swords } fr
 import { useFontTheme } from "@/hooks/use-font-theme";
 import { useChallengeNotifications } from "@/hooks/use-challenge-notifications";
 import { useLevelUpWatcher } from "@/hooks/use-level-up";
+import { useAchievementNotifier } from "@/hooks/use-achievement-notifier";
 
 export function applyAppTheme(theme: string) {
   document.documentElement.setAttribute("data-theme", theme);
@@ -54,6 +55,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   useFontTheme();
   useChallengeNotifications(profileId);
   useLevelUpWatcher(profileId);
+  useAchievementNotifier(profileId);
 
   React.useEffect(() => {
     applyAppTheme(profile?.theme ?? "light");

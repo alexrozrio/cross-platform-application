@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useImageTheme } from '@/hooks/use-image-theme';
 import { getTheme } from '@/lib/themes';
 import { customFetch, useGetProfile } from '@workspace/api-client-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -132,6 +133,7 @@ export default function MemoryMatchPage() {
   const search = useSearch();
   const { profileId } = useAuth();
   const { themeId } = useImageTheme();
+  const queryClient = useQueryClient();
 
   const [phase, setPhase] = useState<GamePhase>('setup');
   const [gridSize, setGridSize] = useState<GridSize>(2);
@@ -300,6 +302,11 @@ export default function MemoryMatchPage() {
       }
     } else {
       setWinResult({ points: 0, xpEarned: 0, gemsEarned: 0 });
+    }
+
+    // Trigger achievement detection
+    if (profileId) {
+      queryClient.invalidateQueries({ queryKey: [`/api/achievements/${profileId}`] });
     }
 
     // Claim challenge bonus if this game was started from a challenge
