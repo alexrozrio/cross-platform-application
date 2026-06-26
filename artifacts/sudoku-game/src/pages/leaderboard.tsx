@@ -403,6 +403,15 @@ function AlltimeBoard({ myProfileId }: { myProfileId?: number }) {
                           {entry.xp !== undefined && (
                             <LevelBadge xp={entry.xp} size="xs" />
                           )}
+                          {entry.difficulty && (() => {
+                            const xpMap: Record<string, number> = { easy: 1, medium: 2, hard: 3, expert: 5 };
+                            const earned = xpMap[entry.difficulty];
+                            return earned ? (
+                              <span className="text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200 rounded-full px-1.5 py-0.5">
+                                +{earned} XP
+                              </span>
+                            ) : null;
+                          })()}
                         </div>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-xs text-muted-foreground">
