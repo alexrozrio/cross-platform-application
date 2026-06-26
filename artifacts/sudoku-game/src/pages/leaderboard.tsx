@@ -938,6 +938,7 @@ interface MemoryEntry {
   profileId: number;
   username: string;
   avatar: string | null;
+  profileXp?: number;
   points: number;
   xpEarned: number | null;
   elapsedSeconds: number | null;
@@ -1046,6 +1047,9 @@ function MemoryBoard({ myProfileId }: { myProfileId?: number }) {
                             <span className="text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-full px-2 py-0.5">
                               You
                             </span>
+                          )}
+                          {entry.profileXp != null && (
+                            <LevelBadge xp={entry.profileXp} size="xs" />
                           )}
                           {entry.xpEarned != null && entry.xpEarned > 0 && (
                             <span className="text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200 rounded-full px-1.5 py-0.5">

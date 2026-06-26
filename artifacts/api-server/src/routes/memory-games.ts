@@ -113,6 +113,7 @@ router.get("/memory-games/leaderboard", async (req, res): Promise<void> => {
         profileId: memoryGamesTable.profileId,
         username: profilesTable.username,
         avatar: profilesTable.avatar,
+        profileXp: profilesTable.xp,
         points: memoryGamesTable.points,
         xpEarned: memoryGamesTable.xpEarned,
         gridSize: memoryGamesTable.gridSize,
@@ -127,6 +128,7 @@ router.get("/memory-games/leaderboard", async (req, res): Promise<void> => {
     const agg = new Map<number, {
       username: string;
       avatar: string | null;
+      profileXp: number;
       totalPoints: number;
       totalXp: number;
       gamesPlayed: number;
@@ -138,6 +140,7 @@ router.get("/memory-games/leaderboard", async (req, res): Promise<void> => {
       const cur = agg.get(row.profileId) ?? {
         username: row.username,
         avatar: row.avatar ?? null,
+        profileXp: row.profileXp ?? 0,
         totalPoints: 0,
         totalXp: 0,
         gamesPlayed: 0,
@@ -159,11 +162,11 @@ router.get("/memory-games/leaderboard", async (req, res): Promise<void> => {
         profileId,
         username: d.username,
         avatar: d.avatar,
+        profileXp: d.profileXp,
         totalPoints: d.totalPoints,
         totalXp: d.totalXp,
         gamesPlayed: d.gamesPlayed,
         completedAt: d.lastCompletedAt,
-        // these fields null for "All" view
         points: d.totalPoints,
         xpEarned: d.totalXp,
         elapsedSeconds: null,
@@ -180,6 +183,7 @@ router.get("/memory-games/leaderboard", async (req, res): Promise<void> => {
       profileId: memoryGamesTable.profileId,
       username: profilesTable.username,
       avatar: profilesTable.avatar,
+      profileXp: profilesTable.xp,
       points: memoryGamesTable.points,
       xpEarned: memoryGamesTable.xpEarned,
       elapsedSeconds: memoryGamesTable.elapsedSeconds,
