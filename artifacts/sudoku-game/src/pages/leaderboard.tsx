@@ -354,7 +354,7 @@ function AlltimeBoard({ myProfileId }: { myProfileId?: number }) {
         <CardHeader className="bg-card pb-4 border-b">
           <CardTitle className="text-lg flex items-center gap-2">
             <Zap className="w-5 h-5 text-primary" />
-            Fastest Times — {GRID_LABELS[gridFilter]}
+            {gridFilter === "all" ? "Top Scores — All Grids" : `Fastest Times — ${GRID_LABELS[gridFilter]}`}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -403,7 +403,7 @@ function AlltimeBoard({ myProfileId }: { myProfileId?: number }) {
                           {entry.xp !== undefined && (
                             <LevelBadge xp={entry.xp} size="xs" />
                           )}
-                          {entry.difficulty && (() => {
+                          {gridFilter !== "all" && entry.difficulty && (() => {
                             const xpMap: Record<string, number> = { easy: 1, medium: 2, hard: 3, expert: 5 };
                             const earned = xpMap[entry.difficulty];
                             return earned ? (
@@ -413,22 +413,18 @@ function AlltimeBoard({ myProfileId }: { myProfileId?: number }) {
                             ) : null;
                           })()}
                         </div>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs text-muted-foreground">
-                            {entry.mistakeCount ?? 0} mistake
-                            {entry.mistakeCount !== 1 ? "s" : ""}
-                          </span>
-                          {entry.difficulty && (
-                            <span
-                              className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium capitalize ${diffColor[entry.difficulty] ?? ""}`}
-                            >
-                              {entry.difficulty}
-                            </span>
-                          )}
-                          {gridFilter === "all" && entry.gridSize && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-full border font-medium bg-blue-50 text-blue-700 border-blue-200">
-                              {entry.gridSize}×{entry.gridSize}
-                            </span>
+                        <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+                          {gridFilter === "all" ? (
+                            <span>{(entry as any).gamesPlayed ?? 0} game{((entry as any).gamesPlayed ?? 0) !== 1 ? "s" : ""} across all grids</span>
+                          ) : (
+                            <>
+                              <span>{entry.mistakeCount ?? 0} mistake{entry.mistakeCount !== 1 ? "s" : ""}</span>
+                              {entry.difficulty && (
+                                <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium capitalize ${diffColor[entry.difficulty] ?? ""}`}>
+                                  {entry.difficulty}
+                                </span>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>
