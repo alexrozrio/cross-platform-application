@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, asc, and } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { db, gamesTable, puzzlesTable, profilesTable } from "@workspace/db";
 import { GetLeaderboardResponse } from "@workspace/api-zod";
 
@@ -21,6 +21,7 @@ router.get("/leaderboard", async (req, res): Promise<void> => {
     .select({
       gameId: gamesTable.id,
       profileId: gamesTable.profileId,
+      points: gamesTable.points,
       elapsedSeconds: gamesTable.elapsedSeconds,
       mistakeCount: gamesTable.mistakeCount,
       completedAt: gamesTable.completedAt,
@@ -38,7 +39,7 @@ router.get("/leaderboard", async (req, res): Promise<void> => {
         ? and(eq(gamesTable.status, "completed"), eq(puzzlesTable.gridSize, gridSize))
         : eq(gamesTable.status, "completed"),
     )
-    .orderBy(asc(gamesTable.elapsedSeconds))
+    .orderBy(desc(gamesTable.points))
     .limit(limit);
 
   const filtered = completedGames;
@@ -51,12 +52,13 @@ router.get("/leaderboard", async (req, res): Promise<void> => {
     xp: g.xp ?? 0,
     difficulty: g.difficulty as "easy" | "medium" | "hard" | "expert",
     gridSize: g.gridSize as 3 | 4 | 9 | 16,
+    points: g.points ?? 0,
     elapsedSeconds: g.elapsedSeconds,
     mistakeCount: g.mistakeCount,
     completedAt: g.completedAt!.toISOString(),
   }));
 
-  res.json(GetLeaderboardResponse.parse(entries));
+  res.json(entries);
 });
 
 export default router;
