@@ -55,6 +55,13 @@ interface StreakData {
   completedToday: boolean;
 }
 
+interface MemoryStreakData {
+  currentStreak: number;
+  longestStreak: number;
+  lastMemoryDate: string | null;
+  completedToday: boolean;
+}
+
 interface TournamentStreakData {
   profileId: number;
   currentStreak: number;
@@ -111,6 +118,12 @@ export default function Profile() {
   const { data: streak } = useQuery<StreakData>({
     queryKey: ["daily-challenge-streak", profileId],
     queryFn: () => customFetch<StreakData>(`/api/daily-challenge/streak/${profileId}`),
+    enabled: !!profileId,
+  });
+
+  const { data: memoryStreak } = useQuery<MemoryStreakData>({
+    queryKey: ["memory-streak", profileId],
+    queryFn: () => customFetch<MemoryStreakData>(`/api/memory-games/streak/${profileId}`),
     enabled: !!profileId,
   });
 
@@ -282,6 +295,40 @@ export default function Profile() {
               <div>
                 <div className={`inline-block text-xs font-bold px-2 py-0.5 rounded-full ${streak.completedToday ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
                   {streak.completedToday ? "✓ Done" : "Pending"}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">today</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Memory Match Daily Streak */}
+      {profileId && memoryStreak !== undefined && (
+        <Card
+          className="cursor-pointer hover:border-purple-300 transition-colors border-purple-200/70 bg-gradient-to-br from-purple-50 to-fuchsia-50"
+          onClick={() => setLocation("/memory")}
+        >
+          <CardContent className="pt-5 pb-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Flame className="w-4 h-4 text-purple-500" />
+                <p className="text-sm font-semibold text-purple-800">Memory Match Streak</p>
+              </div>
+              <span className="text-xs text-purple-500 underline underline-offset-2">Play today →</span>
+            </div>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div>
+                <p className="text-2xl font-black text-purple-600">{memoryStreak.currentStreak}</p>
+                <p className="text-xs text-muted-foreground">current</p>
+              </div>
+              <div>
+                <p className="text-2xl font-black text-foreground">{memoryStreak.longestStreak}</p>
+                <p className="text-xs text-muted-foreground">best</p>
+              </div>
+              <div>
+                <div className={`inline-block text-xs font-bold px-2 py-0.5 rounded-full ${memoryStreak.completedToday ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                  {memoryStreak.completedToday ? "✓ Done" : "Pending"}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">today</p>
               </div>

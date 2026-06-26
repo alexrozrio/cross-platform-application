@@ -226,4 +226,24 @@ router.get("/memory-games/leaderboard", async (req, res): Promise<void> => {
   res.json(rows.map(r => ({ ...r, completedAt: r.completedAt?.toISOString() ?? null })));
 });
 
+// ─── GET /memory-games/streak/:profileId ─────────────────────────────────────
+
+router.get("/memory-games/streak/:profileId", async (req, res): Promise<void> => {
+  const profileId = Number(req.params.profileId);
+  if (isNaN(profileId)) { res.status(400).json({ error: "Invalid profileId" }); return; }
+
+  const [profile] = await db.select().from(profilesTable).where(eq(profilesTable.id, profileId));
+  if (!profile) { res.status(404).json({ error: "Profile not found" }); return; }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const completedToday = (profile.lastMemoryDate as string | null) === today;
+
+  res.json({
+    currentStreak: profile.memoryStreak ?? 0,
+    longestStreak: profile.longestMemoryStreak ?? 0,
+    lastMemoryDate: (profile.lastMemoryDate as string | null) ?? null,
+    completedToday,
+  });
+});
+
 export default router;
