@@ -307,7 +307,17 @@ export const GetPlayerStatsResponse = zod.object({
 }),
   "averageTime": zod.number().nullish(),
   "totalMistakes": zod.number().optional(),
-  "currentStreak": zod.number().optional()
+  "currentStreak": zod.number().optional(),
+  "memory": zod.object({
+    "totalGames": zod.number(),
+    "totalWins": zod.number(),
+    "winRate": zod.number().optional(),
+    "bestTimes": zod.record(zod.string(), zod.number().nullable()),
+    "averageTime": zod.number().nullish(),
+    "averageFlips": zod.number().nullish(),
+    "currentStreak": zod.number().optional(),
+    "longestStreak": zod.number().optional(),
+  }).optional()
 })
 
 

@@ -217,6 +217,18 @@ export interface PlayerStats {
   averageTime?: number | null;
   totalMistakes?: number;
   currentStreak?: number;
+  memory?: {
+    totalGames: number;
+    totalWins: number;
+    winRate?: number;
+    bestTimes: Record<string, number | null>;
+    /** @nullable */
+    averageTime?: number | null;
+    /** @nullable */
+    averageFlips?: number | null;
+    currentStreak?: number;
+    longestStreak?: number;
+  };
 }
 
 export interface TournamentEntry {

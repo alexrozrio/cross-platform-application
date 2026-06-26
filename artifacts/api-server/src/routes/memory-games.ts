@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, gte, lt } from "drizzle-orm";
 import { db, memoryGamesTable, profilesTable } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { resolveDuelForMemoryGame } from "./memory-duels";
@@ -224,6 +224,44 @@ router.get("/memory-games/leaderboard", async (req, res): Promise<void> => {
     .limit(20);
 
   res.json(rows.map(r => ({ ...r, completedAt: r.completedAt?.toISOString() ?? null })));
+});
+
+// ─── GET /memory-games/history/:profileId ────────────────────────────────────
+
+router.get("/memory-games/history/:profileId", async (req, res): Promise<void> => {
+  const profileId = Number(req.params.profileId);
+  if (isNaN(profileId)) { res.status(400).json({ error: "Invalid profileId" }); return; }
+
+  const rawMonth = typeof req.query.month === "string" ? req.query.month : new Date().toISOString().slice(0, 7);
+  // Strict validation: must be YYYY-MM with valid month 01-12
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(rawMonth)) {
+    res.status(400).json({ error: "Invalid month — use YYYY-MM format (e.g. 2026-06)" }); return;
+  }
+
+  const [year, mon] = rawMonth.split("-").map(Number);
+  // Build UTC timestamp boundaries so filtering is timezone-consistent with returned date strings
+  const monthStart = new Date(Date.UTC(year, mon - 1, 1));
+  const monthEnd   = new Date(Date.UTC(year, mon, 1));
+
+  // Filter in SQL using the timestamp range — avoids loading all rows into JS
+  const rows = await db
+    .select({ completedAt: memoryGamesTable.completedAt })
+    .from(memoryGamesTable)
+    .where(
+      and(
+        eq(memoryGamesTable.profileId, profileId),
+        eq(memoryGamesTable.status, "completed"),
+        gte(memoryGamesTable.completedAt, monthStart),
+        lt(memoryGamesTable.completedAt, monthEnd),
+      )
+    );
+
+  // Deduplicate: one calendar dot per UTC date even if the player finished multiple games that day
+  const completedDates = [
+    ...new Set(rows.map(r => r.completedAt!.toISOString().slice(0, 10))),
+  ];
+
+  res.json({ month: rawMonth, completedDates });
 });
 
 // ─── GET /memory-games/streak/:profileId ─────────────────────────────────────
