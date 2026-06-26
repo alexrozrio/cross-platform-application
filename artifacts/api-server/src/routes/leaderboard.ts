@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, asc, and } from "drizzle-orm";
 import { db, gamesTable, puzzlesTable, profilesTable } from "@workspace/db";
 import { GetLeaderboardResponse } from "@workspace/api-zod";
 
@@ -39,7 +39,7 @@ router.get("/leaderboard", async (req, res): Promise<void> => {
         ? and(eq(gamesTable.status, "completed"), eq(puzzlesTable.gridSize, gridSize))
         : eq(gamesTable.status, "completed"),
     )
-    .orderBy(desc(gamesTable.points))
+    .orderBy(gridSize !== undefined ? asc(gamesTable.elapsedSeconds) : desc(gamesTable.points))
     .limit(limit);
 
   const filtered = completedGames;

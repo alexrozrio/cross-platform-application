@@ -425,16 +425,23 @@ function AlltimeBoard({ myProfileId }: { myProfileId?: number }) {
                       </div>
                     </div>
                     <div className="text-right shrink-0 ml-4">
-                      <p
-                        className={`font-black text-xl tabular-nums ${isMe ? "text-primary" : "text-primary"}`}
-                      >
-                        {(entry as any).points != null
-                          ? ((entry as any).points as number).toLocaleString()
-                          : formatTime(entry.elapsedSeconds)}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {(entry as any).points != null ? "pts" : ""}
-                      </p>
+                      {gridFilter === "all" ? (
+                        <>
+                          <p className={`font-black text-xl tabular-nums ${isMe ? "text-primary" : "text-primary"}`}>
+                            {((entry as any).points as number ?? 0).toLocaleString()}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">pts</p>
+                        </>
+                      ) : (
+                        <>
+                          <p className={`font-mono text-xl font-bold tabular-nums ${isMe ? "text-primary" : "text-primary"}`}>
+                            {formatTime(entry.elapsedSeconds)}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {new Date(entry.completedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                          </p>
+                        </>
+                      )}
                     </div>
                   </div>
                 );
