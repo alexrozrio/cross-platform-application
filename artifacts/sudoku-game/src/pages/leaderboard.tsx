@@ -1145,13 +1145,13 @@ export default function Leaderboard() {
             <Calendar className="w-3.5 h-3.5" />
             Monthly
           </TabsTrigger>
-          <TabsTrigger value="alltime" className="gap-1.5">
-            <Zap className="w-3.5 h-3.5" />
-            All-time
+          <TabsTrigger value="alltime" className="flex-col gap-0 leading-tight py-1.5">
+            <span className="flex items-center gap-1"><Zap className="w-3.5 h-3.5" />Sudoku</span>
+            <span className="text-[9px] font-normal opacity-60 -mt-0.5">all-time</span>
           </TabsTrigger>
-          <TabsTrigger value="memory" className="gap-1.5">
-            <Brain className="w-3.5 h-3.5" />
-            Memory
+          <TabsTrigger value="memory" className="flex-col gap-0 leading-tight py-1.5">
+            <span className="flex items-center gap-1"><Brain className="w-3.5 h-3.5" />Memory</span>
+            <span className="text-[9px] font-normal opacity-60 -mt-0.5">all-time</span>
           </TabsTrigger>
         </TabsList>
       </Tabs>
