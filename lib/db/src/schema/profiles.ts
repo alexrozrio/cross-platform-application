@@ -18,6 +18,9 @@ export const profilesTable = pgTable("profiles", {
   lastChallengeDate: date("last_challenge_date"),
   loginStreak: integer("login_streak").notNull().default(0),
   lastLoginDate: date("last_login_date"),
+  memoryStreak: integer("memory_streak").notNull().default(0),
+  longestMemoryStreak: integer("longest_memory_streak").notNull().default(0),
+  lastMemoryDate: date("last_memory_date"),
   xp: integer("xp").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
