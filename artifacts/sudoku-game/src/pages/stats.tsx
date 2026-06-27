@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
+import { useSearch } from 'wouter';
 import { useGetPlayerStats, useGetProfile, customFetch } from '@workspace/api-client-react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -201,7 +202,10 @@ function MemoryStreakCalendar({ profileId }: { profileId: number }) {
 
 // ─── Achievements Card ────────────────────────────────────────────────────────
 
-const GROUPS = ['Milestones', 'Difficulty', 'Skill', 'Daily'];
+// Derive the ordered group list from ACHIEVEMENT_META so new groups are picked up automatically
+const ALL_GROUPS = Array.from(
+  ACHIEVEMENT_META.reduce((acc, a) => { acc.add(a.group); return acc; }, new Set<string>())
+);
 
 function AchievementsCard({ profileId }: { profileId: number }) {
   const { data } = useQuery({
@@ -223,11 +227,14 @@ function AchievementsCard({ profileId }: { profileId: number }) {
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {GROUPS.map(group => {
+        {ALL_GROUPS.map(group => {
           const items = ACHIEVEMENT_META.filter(a => a.group === group);
+          const isMemory = items[0]?.game === 'memory';
           return (
             <div key={group}>
-              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">{group}</p>
+              <p className={`text-xs font-bold uppercase tracking-widest mb-3 ${isMemory ? 'text-purple-500' : 'text-muted-foreground'}`}>
+                {group}
+              </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {items.map(a => {
                   const status = data?.[a.id];
@@ -238,7 +245,11 @@ function AchievementsCard({ profileId }: { profileId: number }) {
                   return (
                     <div key={a.id} title={a.description}
                       className={['rounded-xl p-3 flex flex-col gap-1.5 border transition-all',
-                        unlocked ? 'bg-primary/5 border-primary/20 shadow-sm' : 'bg-muted/30 border-transparent opacity-50',
+                        unlocked
+                          ? isMemory
+                            ? 'bg-purple-50 dark:bg-purple-950/20 border-purple-200/60 shadow-sm'
+                            : 'bg-primary/5 border-primary/20 shadow-sm'
+                          : 'bg-muted/30 border-transparent opacity-50',
                       ].join(' ')}>
                       <span className={`text-2xl ${unlocked ? '' : 'grayscale'}`}>{a.emoji}</span>
                       <p className={`text-xs font-bold leading-tight ${unlocked ? 'text-foreground' : 'text-muted-foreground'}`}>{a.title}</p>
@@ -246,7 +257,8 @@ function AchievementsCard({ profileId }: { profileId: number }) {
                       {showBar && (
                         <div className="mt-1">
                           <div className="h-1 rounded-full bg-muted overflow-hidden">
-                            <div className="h-full bg-primary/50 rounded-full transition-all" style={{ width: `${Math.round((progress / total) * 100)}%` }} />
+                            <div className={`h-full rounded-full transition-all ${isMemory ? 'bg-purple-400/60' : 'bg-primary/50'}`}
+                              style={{ width: `${Math.round((progress / total) * 100)}%` }} />
                           </div>
                           <p className="text-[10px] text-muted-foreground mt-0.5">{progress} / {total}</p>
                         </div>
@@ -269,7 +281,15 @@ type GameMode = 'sudoku' | 'memory';
 
 export default function Stats() {
   const { profileId } = useAuth();
-  const [mode, setMode] = useState<GameMode>('sudoku');
+  const search = useSearch();
+  const tabParam = new URLSearchParams(search).get('tab');
+  const [mode, setMode] = useState<GameMode>(tabParam === 'memory' ? 'memory' : 'sudoku');
+
+  // Sync tab if the URL param changes (e.g. from the achievement modal link)
+  useEffect(() => {
+    if (tabParam === 'memory') setMode('memory');
+    else if (tabParam === 'sudoku') setMode('sudoku');
+  }, [tabParam]);
   const { data: stats, isLoading } = useGetPlayerStats(profileId as number, { query: { enabled: !!profileId } });
   const { data: profile } = useGetProfile(profileId as number, { query: { enabled: !!profileId } });
 

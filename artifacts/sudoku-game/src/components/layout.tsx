@@ -9,6 +9,7 @@ import { useFontTheme } from "@/hooks/use-font-theme";
 import { useChallengeNotifications } from "@/hooks/use-challenge-notifications";
 import { useLevelUpWatcher } from "@/hooks/use-level-up";
 import { useAchievementNotifier } from "@/hooks/use-achievement-notifier";
+import { AchievementUnlockModal } from "@/components/achievement-unlock-modal";
 
 export function applyAppTheme(theme: string) {
   document.documentElement.setAttribute("data-theme", theme);
@@ -55,7 +56,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   useFontTheme();
   useChallengeNotifications(profileId);
   useLevelUpWatcher(profileId);
-  useAchievementNotifier(profileId);
+  const { newlyUnlocked, dismiss } = useAchievementNotifier(profileId);
 
   React.useEffect(() => {
     applyAppTheme(profile?.theme ?? "light");
@@ -83,6 +84,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-200" style={{ minHeight: "100svh" }}>
+      <AchievementUnlockModal achievements={newlyUnlocked} onDismiss={dismiss} />
       <header className="border-b bg-card py-4 px-6 flex items-center justify-between sticky top-0 z-10">
         <Link href="/" className="font-serif text-2xl font-bold tracking-tight text-primary">
           Game Hub
