@@ -207,29 +207,36 @@ const ALL_GROUPS = Array.from(
   ACHIEVEMENT_META.reduce((acc, a) => { acc.add(a.group); return acc; }, new Set<string>())
 );
 
-function AchievementsCard({ profileId }: { profileId: number }) {
+function AchievementsCard({ profileId, game }: { profileId: number; game: 'sudoku' | 'memory' }) {
   const { data } = useQuery({
     queryKey: [`/api/achievements/${profileId}`],
     queryFn: () => customFetch<AchievementsData>(`/api/achievements/${profileId}`),
     enabled: !!profileId,
   });
 
-  const unlockedCount = data ? ACHIEVEMENT_META.filter(a => data[a.id]?.unlocked).length : 0;
+  const isMemory = game === 'memory';
+
+  // Only the achievements that belong to this game
+  const gameMeta = ACHIEVEMENT_META.filter(a => a.game === game);
+  const gameGroups = Array.from(
+    gameMeta.reduce((acc, a) => { acc.add(a.group); return acc; }, new Set<string>())
+  );
+
+  const unlockedCount = data ? gameMeta.filter(a => data[a.id]?.unlocked).length : 0;
 
   return (
-    <Card className="shadow-md border-primary/10">
+    <Card className={`shadow-md ${isMemory ? 'border-purple-200/60 dark:border-purple-800/40' : 'border-primary/10'}`}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Trophy className="w-5 h-5 text-yellow-500" /> Achievements
+            <Trophy className={`w-5 h-5 ${isMemory ? 'text-purple-500' : 'text-yellow-500'}`} /> Achievements
           </CardTitle>
-          <span className="text-sm text-muted-foreground font-semibold">{unlockedCount} / {ACHIEVEMENT_META.length}</span>
+          <span className="text-sm text-muted-foreground font-semibold">{unlockedCount} / {gameMeta.length}</span>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {ALL_GROUPS.map(group => {
-          const items = ACHIEVEMENT_META.filter(a => a.group === group);
-          const isMemory = items[0]?.game === 'memory';
+        {gameGroups.map(group => {
+          const items = gameMeta.filter(a => a.group === group);
           return (
             <div key={group}>
               <p className={`text-xs font-bold uppercase tracking-widest mb-3 ${isMemory ? 'text-purple-500' : 'text-muted-foreground'}`}>
@@ -426,6 +433,8 @@ export default function Stats() {
               )}
             </CardContent>
           </Card>
+
+          <AchievementsCard profileId={profileId!} game="sudoku" />
         </div>
       )}
 
@@ -511,11 +520,10 @@ export default function Stats() {
               </div>
             </CardContent>
           </Card>
+
+          <AchievementsCard profileId={profileId!} game="memory" />
         </div>
       )}
-
-      {/* Achievements — always shown */}
-      <AchievementsCard profileId={profileId!} />
     </div>
   );
 }
