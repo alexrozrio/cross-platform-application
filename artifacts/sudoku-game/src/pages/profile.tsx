@@ -307,7 +307,7 @@ export default function Profile() {
       {profileId && memoryStreak !== undefined && (
         <Card
           className="cursor-pointer hover:border-purple-300 transition-colors border-purple-200/70 bg-gradient-to-br from-purple-50 to-fuchsia-50"
-          onClick={() => setLocation("/memory")}
+          onClick={() => setLocation("/memory-challenge")}
         >
           <CardContent className="pt-5 pb-5">
             <div className="flex items-center justify-between mb-3">
