@@ -1,8 +1,8 @@
 import React from 'react';
 import { useImageTheme } from '@/hooks/use-image-theme';
 import { ThemeIcon } from '@/components/theme-icons';
-import { IMAGE_THEMES } from '@/lib/themes';
-import { Check, Lock, Gem } from 'lucide-react';
+import { IMAGE_THEMES, getTheme } from '@/lib/themes';
+import { Check, Lock, Gem, LayoutGrid } from 'lucide-react';
 import { type ThemeId } from '@/lib/themes';
 import { useAuth } from '@/hooks/use-auth';
 import { useGetProfile, useUpdateProfile } from '@workspace/api-client-react';
@@ -48,6 +48,8 @@ export default function Themes() {
 
   const [activeAppTheme, setActiveAppTheme] = React.useState<string>(profile?.theme ?? 'light');
   const [pendingUnlock, setPendingUnlock] = React.useState<PendingUnlock | null>(null);
+  const [overviewThemeId, setOverviewThemeId] = React.useState<ThemeId | null>(null);
+  const overviewTheme = overviewThemeId ? getTheme(overviewThemeId) : null;
 
   React.useEffect(() => {
     if (profile?.theme) setActiveAppTheme(profile.theme);
@@ -271,11 +273,14 @@ export default function Themes() {
             const cost = getItemCost('icon_set', theme.id);
             const names = getCharacterNames(theme.id);
             return (
-              <button
+              <div
                 key={theme.id}
+                role="button"
+                tabIndex={0}
                 onClick={() => handleIconSet(theme.id)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleIconSet(theme.id); }}
                 className={[
-                  'relative text-left rounded-2xl border-2 p-5 transition-all duration-200',
+                  'relative text-left rounded-2xl border-2 p-5 transition-all duration-200 cursor-pointer',
                   isSelected
                     ? 'border-primary bg-primary/6 shadow-md ring-1 ring-primary/20'
                     : unlocked
@@ -330,14 +335,22 @@ export default function Themes() {
                   </div>
                 </div>
 
-                {!unlocked && (
-                  <div className="mt-3 text-center">
+                <div className="mt-3 flex items-center justify-between">
+                  {!unlocked ? (
                     <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
                       Tap to unlock for {cost} gems
                     </span>
-                  </div>
-                )}
-              </button>
+                  ) : <span />}
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setOverviewThemeId(theme.id); }}
+                    className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground border border-border rounded-lg px-2.5 py-1 hover:bg-muted/50 transition-colors"
+                  >
+                    <LayoutGrid className="w-3 h-3" />
+                    All symbols
+                  </button>
+                </div>
+              </div>
             );
           })}
         </div>
@@ -346,6 +359,33 @@ export default function Themes() {
       <p className="text-xs text-center text-muted-foreground pb-4">
         Free selections save automatically. Unlocks are permanent.
       </p>
+
+      {/* ── Symbol Overview Dialog ───────────────────────────────────── */}
+      <Dialog open={!!overviewThemeId} onOpenChange={(open) => { if (!open) setOverviewThemeId(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="text-xl">{overviewTheme?.preview}</span>
+              {overviewTheme?.name} — All Symbols
+            </DialogTitle>
+            <DialogDescription>
+              All {overviewTheme?.symbols.length} symbols used in Memory Match
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-8 gap-1.5 pt-1">
+            {overviewTheme?.symbols.map((sym, i) => (
+              <div
+                key={i}
+                className="flex flex-col items-center gap-0.5 rounded-lg bg-muted/40 p-1.5"
+                title={`#${i + 1}`}
+              >
+                <span className="text-xl leading-none">{sym}</span>
+                <span className="text-[8px] text-muted-foreground font-mono">{i + 1}</span>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Unlock Confirmation Dialog ────────────────────────────────── */}
       <Dialog open={!!pendingUnlock} onOpenChange={(open) => { if (!open) setPendingUnlock(null); }}>
