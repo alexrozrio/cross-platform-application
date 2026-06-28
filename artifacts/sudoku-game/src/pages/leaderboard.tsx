@@ -457,6 +457,7 @@ function AlltimeBoard({ myProfileId }: { myProfileId?: number }) {
       </Card>
 
       <XpGuide />
+      <PointsGuide />
     </div>
   );
 }
