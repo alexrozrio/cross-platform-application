@@ -361,31 +361,84 @@ export default function Themes() {
       </p>
 
       {/* ── Symbol Overview Dialog ───────────────────────────────────── */}
-      <Dialog open={!!overviewThemeId} onOpenChange={(open) => { if (!open) setOverviewThemeId(null); }}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <span className="text-xl">{overviewTheme?.preview}</span>
-              {overviewTheme?.name} — All Symbols
-            </DialogTitle>
-            <DialogDescription>
-              All {overviewTheme?.symbols.length} symbols used in Memory Match
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid grid-cols-8 gap-1.5 pt-1">
-            {overviewTheme?.symbols.map((sym, i) => (
-              <div
-                key={i}
-                className="flex flex-col items-center gap-0.5 rounded-lg bg-muted/40 p-1.5"
-                title={`#${i + 1}`}
-              >
-                <span className="text-xl leading-none">{sym}</span>
-                <span className="text-[8px] text-muted-foreground font-mono">{i + 1}</span>
+      {(() => {
+        const ovId = overviewThemeId;
+        const ovTheme = overviewTheme;
+        if (!ovId || !ovTheme) return null;
+        const ovUnlocked = isUnlocked('icon_set', ovId);
+        const ovSelected = themeId === ovId;
+        const ovCost = getItemCost('icon_set', ovId);
+        const canAfford = gems >= ovCost;
+        return (
+          <Dialog open={!!overviewThemeId} onOpenChange={(open) => { if (!open) setOverviewThemeId(null); }}>
+            <DialogContent className="max-w-sm">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <span className="text-xl">{ovTheme.preview}</span>
+                  {ovTheme.name} — All Symbols
+                </DialogTitle>
+                <DialogDescription>
+                  All {ovTheme.symbols.length} symbols used in Memory Match
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="grid grid-cols-8 gap-1.5 pt-1">
+                {ovTheme.symbols.map((sym, i) => (
+                  <div
+                    key={i}
+                    className="flex flex-col items-center gap-0.5 rounded-lg bg-muted/40 p-1.5"
+                    title={`#${i + 1}`}
+                  >
+                    <span className="text-xl leading-none">{sym}</span>
+                    <span className="text-[8px] text-muted-foreground font-mono">{i + 1}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
+
+              <div className="pt-2 border-t border-border">
+                {ovSelected ? (
+                  <div className="flex items-center justify-center gap-2 py-2 text-sm font-semibold text-primary">
+                    <Check className="w-4 h-4" />
+                    Currently selected
+                  </div>
+                ) : ovUnlocked ? (
+                  <Button
+                    className="w-full"
+                    onClick={() => { handleIconSet(ovId); setOverviewThemeId(null); }}
+                  >
+                    <Check className="w-4 h-4 mr-1.5" />
+                    Select this theme
+                  </Button>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground px-0.5">
+                      <span className="flex items-center gap-1">
+                        <Gem className="w-3.5 h-3.5 text-cyan-500" />
+                        Your balance: <strong className="text-foreground">{gems} gems</strong>
+                      </span>
+                      <span className="flex items-center gap-1">
+                        Cost: <strong className={canAfford ? 'text-foreground' : 'text-destructive'}>{ovCost} gems</strong>
+                      </span>
+                    </div>
+                    <Button
+                      className="w-full"
+                      variant={canAfford ? 'default' : 'secondary'}
+                      disabled={!canAfford}
+                      onClick={() => {
+                        setOverviewThemeId(null);
+                        handleIconSet(ovId);
+                      }}
+                    >
+                      <Gem className="w-4 h-4 mr-1.5" />
+                      {canAfford ? `Unlock for ${ovCost} gems` : `Need ${ovCost - gems} more gems`}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        );
+      })()}
 
       {/* ── Unlock Confirmation Dialog ────────────────────────────────── */}
       <Dialog open={!!pendingUnlock} onOpenChange={(open) => { if (!open) setPendingUnlock(null); }}>
