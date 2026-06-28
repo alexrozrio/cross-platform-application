@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customFetch } from '@workspace/api-client-react';
@@ -6,9 +6,8 @@ import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Brain, CalendarDays, CalendarRange, Trophy, Medal, Award,
+  Brain, CalendarDays, Trophy, Medal, Award,
   Play, Timer, Repeat2, Zap, Gem, CheckCircle2, Clock, ArrowLeft,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -192,7 +191,6 @@ export default function MemoryChallengePage() {
   const [, setLocation] = useLocation();
   const { profileId } = useAuth();
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<'daily' | 'weekly'>('daily');
 
   const { data: status, isLoading: statusLoading } = useQuery<ChallengeStatus>({
     queryKey: ['memory-challenge-status', profileId],
@@ -221,15 +219,13 @@ export default function MemoryChallengePage() {
     },
   });
 
-  const handlePlay = (type: 'daily' | 'weekly') => {
-    const cfg = type === 'daily' ? (status?.daily ?? info?.daily) : (status?.weekly ?? info?.weekly);
+  const handlePlay = () => {
+    const cfg = status?.daily ?? info?.daily;
     if (!cfg) return;
-    // Navigate to memory game with size + challenge params so win screen can claim bonus
-    setLocation(`/memory?size=${cfg.gridSize}&challenge=${type}`);
+    setLocation(`/memory?size=${cfg.gridSize}&challenge=daily`);
   };
 
   const dailyCfg = status?.daily ?? info?.daily;
-  const weeklyCfg = status?.weekly ?? info?.weekly;
 
   return (
     <div className="max-w-lg mx-auto w-full space-y-6 animate-in fade-in duration-500">
@@ -246,58 +242,26 @@ export default function MemoryChallengePage() {
           Memory Challenges
         </h1>
         <p className="text-muted-foreground text-sm">
-          Complete the daily and weekly challenges for bonus XP and gems.
+          Complete the daily challenge for bonus XP and gems.
         </p>
       </div>
 
-      {/* Tabs */}
-      <Tabs value={tab} onValueChange={(v) => setTab(v as 'daily' | 'weekly')} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="daily" className="gap-1.5"><CalendarDays className="w-3.5 h-3.5" />Daily</TabsTrigger>
-          <TabsTrigger value="weekly" className="gap-1.5"><CalendarRange className="w-3.5 h-3.5" />Weekly</TabsTrigger>
-        </TabsList>
-      </Tabs>
-
-      {/* Challenge card */}
-      {tab === 'daily' && (
-        <>
-          {statusLoading || !dailyCfg ? (
-            <Skeleton className="h-40 w-full rounded-xl" />
-          ) : (
-            <ChallengeCard
-              config={dailyCfg}
-              completed={status?.daily.completed ?? false}
-              onPlay={() => handlePlay('daily')}
-            />
-          )}
-          {!profileId && (
-            <p className="text-sm text-center text-muted-foreground">
-              <button onClick={() => setLocation('/sign-in')} className="text-primary underline">Sign in</button> to track completions and earn bonus rewards.
-            </p>
-          )}
-          <ChallengeLeaderboard type="daily" myProfileId={profileId ?? undefined} />
-        </>
+      {/* Daily challenge card */}
+      {statusLoading || !dailyCfg ? (
+        <Skeleton className="h-40 w-full rounded-xl" />
+      ) : (
+        <ChallengeCard
+          config={dailyCfg}
+          completed={status?.daily.completed ?? false}
+          onPlay={handlePlay}
+        />
       )}
-
-      {tab === 'weekly' && (
-        <>
-          {statusLoading || !weeklyCfg ? (
-            <Skeleton className="h-40 w-full rounded-xl" />
-          ) : (
-            <ChallengeCard
-              config={weeklyCfg}
-              completed={status?.weekly.completed ?? false}
-              onPlay={() => handlePlay('weekly')}
-            />
-          )}
-          {!profileId && (
-            <p className="text-sm text-center text-muted-foreground">
-              <button onClick={() => setLocation('/sign-in')} className="text-primary underline">Sign in</button> to track completions and earn bonus rewards.
-            </p>
-          )}
-          <ChallengeLeaderboard type="weekly" myProfileId={profileId ?? undefined} />
-        </>
+      {!profileId && (
+        <p className="text-sm text-center text-muted-foreground">
+          <button onClick={() => setLocation('/sign-in')} className="text-primary underline">Sign in</button> to track completions and earn bonus rewards.
+        </p>
       )}
+      <ChallengeLeaderboard type="daily" myProfileId={profileId ?? undefined} />
     </div>
   );
 }
