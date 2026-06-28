@@ -459,6 +459,102 @@
   --destructive-foreground: 166 76% 97%;
 }
 
+/* ── Coral ───────────────────────────────────────────────────────────── */
+[data-theme="coral"] {
+  --background: 10 100% 97%;
+  --foreground: 4 30% 14%;
+  --border: 10 25% 84%;
+  --input: 10 25% 84%;
+  --ring: 4 70% 59%;
+
+  --card: 10 80% 99%;
+  --card-foreground: 4 30% 14%;
+  --card-border: 10 25% 84%;
+
+  --popover: 10 80% 99%;
+  --popover-foreground: 4 30% 14%;
+  --popover-border: 10 25% 84%;
+
+  --primary: 4 70% 59%;
+  --primary-foreground: 10 100% 97%;
+
+  --secondary: 10 22% 90%;
+  --secondary-foreground: 4 30% 14%;
+
+  --muted: 10 16% 92%;
+  --muted-foreground: 10 12% 46%;
+
+  --accent: 10 60% 88%;
+  --accent-foreground: 4 70% 59%;
+
+  --destructive: 0 60% 50%;
+  --destructive-foreground: 10 100% 97%;
+}
+
+/* ── Arctic ──────────────────────────────────────────────────────────── */
+[data-theme="arctic"] {
+  --background: 208 100% 97%;
+  --foreground: 221 30% 14%;
+  --border: 208 30% 84%;
+  --input: 208 30% 84%;
+  --ring: 221 83% 53%;
+
+  --card: 208 80% 99%;
+  --card-foreground: 221 30% 14%;
+  --card-border: 208 30% 84%;
+
+  --popover: 208 80% 99%;
+  --popover-foreground: 221 30% 14%;
+  --popover-border: 208 30% 84%;
+
+  --primary: 221 83% 53%;
+  --primary-foreground: 208 100% 97%;
+
+  --secondary: 208 28% 90%;
+  --secondary-foreground: 221 30% 14%;
+
+  --muted: 208 20% 92%;
+  --muted-foreground: 208 14% 46%;
+
+  --accent: 208 40% 86%;
+  --accent-foreground: 221 83% 53%;
+
+  --destructive: 0 60% 50%;
+  --destructive-foreground: 208 100% 97%;
+}
+
+/* ── Mocha ───────────────────────────────────────────────────────────── */
+[data-theme="mocha"] {
+  --background: 36 33% 97%;
+  --foreground: 20 30% 12%;
+  --border: 36 20% 83%;
+  --input: 36 20% 83%;
+  --ring: 20 37% 35%;
+
+  --card: 36 25% 99%;
+  --card-foreground: 20 30% 12%;
+  --card-border: 36 20% 83%;
+
+  --popover: 36 25% 99%;
+  --popover-foreground: 20 30% 12%;
+  --popover-border: 36 20% 83%;
+
+  --primary: 20 37% 35%;
+  --primary-foreground: 36 33% 97%;
+
+  --secondary: 36 18% 89%;
+  --secondary-foreground: 20 30% 12%;
+
+  --muted: 36 14% 91%;
+  --muted-foreground: 36 10% 46%;
+
+  --accent: 36 25% 85%;
+  --accent-foreground: 20 37% 35%;
+
+  --destructive: 0 60% 50%;
+  --destructive-foreground: 36 33% 97%;
+}
+
 /* ── Crimson ─────────────────────────────────────────────────────────── */
 [data-theme="crimson"] {
   --background: 0 100% 97%;

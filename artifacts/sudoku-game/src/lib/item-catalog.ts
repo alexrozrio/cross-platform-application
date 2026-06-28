@@ -15,6 +15,9 @@ export const ITEM_COSTS: Record<ItemType, Record<string, number>> = {
     amber: 150,
     teal: 200,
     crimson: 200,
+    coral: 150,
+    arctic: 150,
+    mocha: 200,
   },
   font: {
     default: 0,

@@ -34,6 +34,9 @@ const APP_THEMES = [
   { id: 'amber',       label: 'Amber',        bg: '#fffbeb', primary: '#d97706', accent: '#fef3c7' },
   { id: 'teal',        label: 'Teal',         bg: '#f0fdfa', primary: '#0d9488', accent: '#ccfbf1' },
   { id: 'crimson',     label: 'Crimson',      bg: '#fff5f5', primary: '#dc2626', accent: '#fee2e2' },
+  { id: 'coral',       label: 'Coral',        bg: '#fff7f5', primary: '#e05a4e', accent: '#ffd5d0' },
+  { id: 'arctic',      label: 'Arctic',       bg: '#f0f8ff', primary: '#2563eb', accent: '#dbeafe' },
+  { id: 'mocha',       label: 'Mocha',        bg: '#faf8f5', primary: '#78503a', accent: '#e8ddd5' },
 ] as const;
 
 interface PendingUnlock {
