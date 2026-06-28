@@ -33,6 +33,38 @@ export const FONT_THEMES = [
     preview: 'Aa',
     style: { fontFamily: "'Nunito', sans-serif" },
   },
+  {
+    id: 'playful',
+    label: 'Playful',
+    sans: "'Quicksand', sans-serif",
+    serif: "'Pacifico', cursive",
+    preview: 'Aa',
+    style: { fontFamily: "'Pacifico', cursive" },
+  },
+  {
+    id: 'mono',
+    label: 'Mono',
+    sans: "'Space Mono', monospace",
+    serif: "'Space Mono', monospace",
+    preview: 'Aa',
+    style: { fontFamily: "'Space Mono', monospace" },
+  },
+  {
+    id: 'classic',
+    label: 'Classic Serif',
+    sans: "'Source Sans 3', sans-serif",
+    serif: "'Merriweather', serif",
+    preview: 'Aa',
+    style: { fontFamily: "'Merriweather', serif" },
+  },
+  {
+    id: 'handwritten',
+    label: 'Handwritten',
+    sans: "'Karla', sans-serif",
+    serif: "'Caveat', cursive",
+    preview: 'Aa',
+    style: { fontFamily: "'Caveat', cursive" },
+  },
 ] as const;
 
 export type FontThemeId = typeof FONT_THEMES[number]['id'];

@@ -21,13 +21,19 @@ import {
 import { Button } from '@/components/ui/button';
 
 const APP_THEMES = [
-  { id: 'light',    label: 'Classic',  bg: '#f8f6f0', primary: '#4a6585', accent: '#e8e4da' },
-  { id: 'dark',     label: 'Dark',     bg: '#1a1f2e', primary: '#6b8fc4', accent: '#2a3045' },
-  { id: 'ocean',    label: 'Ocean',    bg: '#eef7fb', primary: '#2e8a91', accent: '#cce9f0' },
-  { id: 'forest',   label: 'Forest',   bg: '#f2f8f2', primary: '#2e6b40', accent: '#cce5cc' },
-  { id: 'sunset',   label: 'Sunset',   bg: '#fdf6f0', primary: '#b84e20', accent: '#f0d8c4' },
-  { id: 'midnight', label: 'Midnight', bg: '#0f0b1a', primary: '#8b5cf6', accent: '#2a1f40' },
-  { id: 'rose',     label: 'Rose',     bg: '#fdf5f7', primary: '#a3254e', accent: '#f0d0da' },
+  { id: 'light',       label: 'Classic',      bg: '#f8f6f0', primary: '#4a6585', accent: '#e8e4da' },
+  { id: 'dark',        label: 'Dark',         bg: '#1a1f2e', primary: '#6b8fc4', accent: '#2a3045' },
+  { id: 'ocean',       label: 'Ocean',        bg: '#eef7fb', primary: '#2e8a91', accent: '#cce9f0' },
+  { id: 'forest',      label: 'Forest',       bg: '#f2f8f2', primary: '#2e6b40', accent: '#cce5cc' },
+  { id: 'sunset',      label: 'Sunset',       bg: '#fdf6f0', primary: '#b84e20', accent: '#f0d8c4' },
+  { id: 'midnight',    label: 'Midnight',     bg: '#0f0b1a', primary: '#8b5cf6', accent: '#2a1f40' },
+  { id: 'rose',        label: 'Rose',         bg: '#fdf5f7', primary: '#a3254e', accent: '#f0d0da' },
+  { id: 'emerald',     label: 'Emerald',      bg: '#f0fdf4', primary: '#059669', accent: '#d1fae5' },
+  { id: 'slate',       label: 'Slate',        bg: '#f8fafc', primary: '#475569', accent: '#e2e8f0' },
+  { id: 'lavender',    label: 'Lavender',     bg: '#f5f0ff', primary: '#7c3aed', accent: '#ede9fe' },
+  { id: 'amber',       label: 'Amber',        bg: '#fffbeb', primary: '#d97706', accent: '#fef3c7' },
+  { id: 'teal',        label: 'Teal',         bg: '#f0fdfa', primary: '#0d9488', accent: '#ccfbf1' },
+  { id: 'crimson',     label: 'Crimson',      bg: '#fff5f5', primary: '#dc2626', accent: '#fee2e2' },
 ] as const;
 
 interface PendingUnlock {
@@ -154,7 +160,7 @@ export default function Themes() {
           </p>
         </div>
 
-        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 flex-wrap">
           {APP_THEMES.map(t => {
             const selected = activeAppTheme === t.id;
             const unlocked = isUnlocked('color_theme', t.id);

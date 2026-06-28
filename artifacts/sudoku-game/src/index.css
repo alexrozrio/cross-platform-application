@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&family=Lato:wght@300;400;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Nunito:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&family=Lato:wght@300;400;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Nunito:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&family=Pacifico&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600;700&family=Karla:wght@300;400;500;600;700&family=Caveat:wght@400;500;600;700&display=swap');
 @layer theme, base, clerk, components, utilities;
 @import "tailwindcss";
 @import "@clerk/themes/shadcn.css";
@@ -297,6 +297,198 @@
 
   --destructive: 0 60% 50%;
   --destructive-foreground: 340 38% 97%;
+}
+
+/* ── Emerald ─────────────────────────────────────────────────────────── */
+[data-theme="emerald"] {
+  --background: 141 84% 96%;
+  --foreground: 161 40% 12%;
+  --border: 141 30% 84%;
+  --input: 141 30% 84%;
+  --ring: 161 94% 30%;
+
+  --card: 141 60% 98%;
+  --card-foreground: 161 40% 12%;
+  --card-border: 141 30% 84%;
+
+  --popover: 141 60% 98%;
+  --popover-foreground: 161 40% 12%;
+  --popover-border: 141 30% 84%;
+
+  --primary: 161 94% 30%;
+  --primary-foreground: 141 84% 96%;
+
+  --secondary: 141 28% 89%;
+  --secondary-foreground: 161 40% 12%;
+
+  --muted: 141 20% 91%;
+  --muted-foreground: 141 14% 44%;
+
+  --accent: 141 40% 86%;
+  --accent-foreground: 161 94% 30%;
+
+  --destructive: 0 60% 50%;
+  --destructive-foreground: 141 84% 96%;
+}
+
+/* ── Slate ───────────────────────────────────────────────────────────── */
+[data-theme="slate"] {
+  --background: 210 40% 98%;
+  --foreground: 215 25% 15%;
+  --border: 215 20% 84%;
+  --input: 215 20% 84%;
+  --ring: 215 19% 35%;
+
+  --card: 210 40% 99%;
+  --card-foreground: 215 25% 15%;
+  --card-border: 215 20% 84%;
+
+  --popover: 210 40% 99%;
+  --popover-foreground: 215 25% 15%;
+  --popover-border: 215 20% 84%;
+
+  --primary: 215 19% 35%;
+  --primary-foreground: 210 40% 98%;
+
+  --secondary: 215 18% 90%;
+  --secondary-foreground: 215 25% 15%;
+
+  --muted: 215 14% 92%;
+  --muted-foreground: 215 12% 46%;
+
+  --accent: 215 22% 86%;
+  --accent-foreground: 215 19% 35%;
+
+  --destructive: 0 60% 50%;
+  --destructive-foreground: 210 40% 98%;
+}
+
+/* ── Lavender ────────────────────────────────────────────────────────── */
+[data-theme="lavender"] {
+  --background: 258 100% 97%;
+  --foreground: 262 30% 14%;
+  --border: 258 35% 85%;
+  --input: 258 35% 85%;
+  --ring: 262 83% 58%;
+
+  --card: 258 80% 99%;
+  --card-foreground: 262 30% 14%;
+  --card-border: 258 35% 85%;
+
+  --popover: 258 80% 99%;
+  --popover-foreground: 262 30% 14%;
+  --popover-border: 258 35% 85%;
+
+  --primary: 262 83% 58%;
+  --primary-foreground: 258 100% 97%;
+
+  --secondary: 258 30% 90%;
+  --secondary-foreground: 262 30% 14%;
+
+  --muted: 258 22% 92%;
+  --muted-foreground: 258 16% 46%;
+
+  --accent: 258 42% 87%;
+  --accent-foreground: 262 83% 58%;
+
+  --destructive: 0 60% 50%;
+  --destructive-foreground: 258 100% 97%;
+}
+
+/* ── Amber ───────────────────────────────────────────────────────────── */
+[data-theme="amber"] {
+  --background: 48 100% 96%;
+  --foreground: 37 40% 12%;
+  --border: 48 30% 83%;
+  --input: 48 30% 83%;
+  --ring: 37 91% 43%;
+
+  --card: 48 80% 98%;
+  --card-foreground: 37 40% 12%;
+  --card-border: 48 30% 83%;
+
+  --popover: 48 80% 98%;
+  --popover-foreground: 37 40% 12%;
+  --popover-border: 48 30% 83%;
+
+  --primary: 37 91% 43%;
+  --primary-foreground: 48 100% 96%;
+
+  --secondary: 48 28% 89%;
+  --secondary-foreground: 37 40% 12%;
+
+  --muted: 48 22% 91%;
+  --muted-foreground: 48 14% 46%;
+
+  --accent: 48 38% 86%;
+  --accent-foreground: 37 91% 43%;
+
+  --destructive: 0 60% 50%;
+  --destructive-foreground: 48 100% 96%;
+}
+
+/* ── Teal ────────────────────────────────────────────────────────────── */
+[data-theme="teal"] {
+  --background: 166 76% 97%;
+  --foreground: 176 40% 12%;
+  --border: 166 30% 84%;
+  --input: 166 30% 84%;
+  --ring: 176 83% 32%;
+
+  --card: 166 60% 98%;
+  --card-foreground: 176 40% 12%;
+  --card-border: 166 30% 84%;
+
+  --popover: 166 60% 98%;
+  --popover-foreground: 176 40% 12%;
+  --popover-border: 166 30% 84%;
+
+  --primary: 176 83% 32%;
+  --primary-foreground: 166 76% 97%;
+
+  --secondary: 166 28% 89%;
+  --secondary-foreground: 176 40% 12%;
+
+  --muted: 166 20% 91%;
+  --muted-foreground: 166 14% 44%;
+
+  --accent: 166 38% 86%;
+  --accent-foreground: 176 83% 32%;
+
+  --destructive: 0 60% 50%;
+  --destructive-foreground: 166 76% 97%;
+}
+
+/* ── Crimson ─────────────────────────────────────────────────────────── */
+[data-theme="crimson"] {
+  --background: 0 100% 97%;
+  --foreground: 0 30% 14%;
+  --border: 0 25% 84%;
+  --input: 0 25% 84%;
+  --ring: 0 72% 51%;
+
+  --card: 0 80% 99%;
+  --card-foreground: 0 30% 14%;
+  --card-border: 0 25% 84%;
+
+  --popover: 0 80% 99%;
+  --popover-foreground: 0 30% 14%;
+  --popover-border: 0 25% 84%;
+
+  --primary: 0 72% 51%;
+  --primary-foreground: 0 100% 97%;
+
+  --secondary: 0 22% 90%;
+  --secondary-foreground: 0 30% 14%;
+
+  --muted: 0 16% 92%;
+  --muted-foreground: 0 12% 46%;
+
+  --accent: 0 30% 87%;
+  --accent-foreground: 0 72% 51%;
+
+  --destructive: 0 60% 50%;
+  --destructive-foreground: 0 100% 97%;
 }
 
 @layer base {
