@@ -2,7 +2,7 @@ import React from 'react';
 import { useImageTheme } from '@/hooks/use-image-theme';
 import { ThemeIcon } from '@/components/theme-icons';
 import { IMAGE_THEMES, getTheme } from '@/lib/themes';
-import { Check, Lock, Gem, LayoutGrid } from 'lucide-react';
+import { Check, Lock, Gem, LayoutGrid, Eye } from 'lucide-react';
 import { type ThemeId } from '@/lib/themes';
 import { useAuth } from '@/hooks/use-auth';
 import { useGetProfile, useUpdateProfile } from '@workspace/api-client-react';
@@ -50,6 +50,10 @@ export default function Themes() {
   const [pendingUnlock, setPendingUnlock] = React.useState<PendingUnlock | null>(null);
   const [overviewThemeId, setOverviewThemeId] = React.useState<ThemeId | null>(null);
   const overviewTheme = overviewThemeId ? getTheme(overviewThemeId) : null;
+  const [previewColourId, setPreviewColourId] = React.useState<string | null>(null);
+  const previewColour = previewColourId ? APP_THEMES.find(t => t.id === previewColourId) ?? null : null;
+  const [previewFontId, setPreviewFontId] = React.useState<string | null>(null);
+  const previewFont = previewFontId ? FONT_THEMES.find(f => f.id === previewFontId) ?? null : null;
 
   React.useEffect(() => {
     if (profile?.theme) setActiveAppTheme(profile.theme);
@@ -157,10 +161,12 @@ export default function Themes() {
             const free = isFreeItem('color_theme', t.id);
             const cost = getItemCost('color_theme', t.id);
             return (
-              <button
+              <div
                 key={t.id}
-                type="button"
+                role="button"
+                tabIndex={0}
                 onClick={() => handleAppTheme(t.id)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleAppTheme(t.id); }}
                 className={[
                   'relative rounded-xl border-2 p-2 flex flex-col items-center gap-1.5 transition-all duration-150 cursor-pointer',
                   selected
@@ -188,14 +194,20 @@ export default function Themes() {
                   </span>
                 ) : null}
                 {!unlocked && (
-                  <div className="absolute inset-0 rounded-xl flex items-end justify-center pb-1 pointer-events-none">
-                    <Lock className="absolute top-1.5 right-1.5 w-3 h-3 text-amber-500/80" />
-                  </div>
+                  <Lock className="absolute top-1.5 right-1.5 w-3 h-3 text-amber-500/80" />
                 )}
                 {free && !unlocked && (
                   <span className="absolute top-1 left-1 bg-emerald-500 text-white text-[8px] font-bold px-1 rounded">FREE</span>
                 )}
-              </button>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setPreviewColourId(t.id); }}
+                  className="absolute bottom-1 right-1 p-0.5 rounded text-muted-foreground/60 hover:text-foreground hover:bg-black/10 transition-colors"
+                  title="Preview"
+                >
+                  <Eye className="w-2.5 h-2.5" />
+                </button>
+              </div>
             );
           })}
         </div>
@@ -219,10 +231,12 @@ export default function Themes() {
             const unlocked = isUnlocked('font', f.id);
             const cost = getItemCost('font', f.id);
             return (
-              <button
+              <div
                 key={f.id}
-                type="button"
+                role="button"
+                tabIndex={0}
                 onClick={() => handleFont(f.id)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleFont(f.id); }}
                 className={[
                   'relative rounded-xl border-2 p-3 flex flex-col items-center gap-2 transition-all duration-150 cursor-pointer',
                   selected
@@ -249,7 +263,15 @@ export default function Themes() {
                     <Gem className="w-2.5 h-2.5" />{cost} gems
                   </span>
                 ) : null}
-              </button>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setPreviewFontId(f.id); }}
+                  className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-foreground border border-border rounded-md px-2 py-0.5 hover:bg-muted/50 transition-colors mt-0.5"
+                >
+                  <Eye className="w-2.5 h-2.5" />
+                  Preview
+                </button>
+              </div>
             );
           })}
         </div>
@@ -359,6 +381,172 @@ export default function Themes() {
       <p className="text-xs text-center text-muted-foreground pb-4">
         Free selections save automatically. Unlocks are permanent.
       </p>
+
+      {/* ── Colour Theme Preview Dialog ──────────────────────────────── */}
+      {(() => {
+        const ct = previewColour;
+        if (!ct) return null;
+        const ctUnlocked = isUnlocked('color_theme', ct.id);
+        const ctSelected = activeAppTheme === ct.id;
+        const ctCost = getItemCost('color_theme', ct.id);
+        const ctCanAfford = gems >= ctCost;
+        return (
+          <Dialog open={!!previewColourId} onOpenChange={(open) => { if (!open) setPreviewColourId(null); }}>
+            <DialogContent className="max-w-sm p-0 overflow-hidden">
+              <DialogHeader className="px-5 pt-5 pb-0">
+                <DialogTitle>{ct.label} Theme</DialogTitle>
+                <DialogDescription>Colour palette preview</DialogDescription>
+              </DialogHeader>
+
+              {/* Mini app mockup */}
+              <div className="mx-5 mt-3 rounded-xl overflow-hidden border border-border shadow-md text-[11px]" style={{ background: ct.bg, color: ct.primary }}>
+                {/* Header bar */}
+                <div className="flex items-center justify-between px-3 py-2" style={{ background: ct.primary }}>
+                  <span className="font-bold text-white text-xs">Game Hub</span>
+                  <div className="flex gap-1.5">
+                    {['Home', 'Leaderboard', 'Themes'].map(l => (
+                      <span key={l} className="text-white/70 text-[9px]">{l}</span>
+                    ))}
+                  </div>
+                </div>
+                {/* Body */}
+                <div className="p-3 space-y-2">
+                  <div className="rounded-lg p-2.5 border" style={{ background: ct.accent, borderColor: ct.primary + '33' }}>
+                    <p className="font-semibold text-xs mb-1.5" style={{ color: ct.primary }}>Daily Sudoku</p>
+                    <div className="grid grid-cols-9 gap-px" style={{ background: ct.primary + '40' }}>
+                      {[5,3,'',null,7,'',null,null,'', 6,'',null,1,9,5,null,null,'', null,9,8,null,null,'',null,6,''].map((n, i) => (
+                        <div key={i} className="flex items-center justify-center text-[9px] font-bold" style={{ background: ct.bg, height: 14, color: n ? ct.primary : 'transparent' }}>
+                          {n || '·'}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="flex-1 rounded-lg p-2 text-center text-white text-[9px] font-semibold" style={{ background: ct.primary }}>
+                      Play Now
+                    </div>
+                    <div className="flex-1 rounded-lg p-2 text-center text-[9px] font-medium border" style={{ borderColor: ct.primary + '50', color: ct.primary }}>
+                      Stats
+                    </div>
+                  </div>
+                  <div className="flex gap-1.5">
+                    {['bg', 'primary', 'accent'].map((role, i) => (
+                      <div key={role} className="flex-1 rounded-md p-1.5 text-center" style={{ background: [ct.bg, ct.primary, ct.accent][i], border: '1px solid ' + ct.primary + '30' }}>
+                        <p className="text-[7px]" style={{ color: i === 1 ? 'white' : ct.primary }}>{role}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="px-5 pb-5 pt-3 border-t border-border mt-3">
+                {ctSelected ? (
+                  <div className="flex items-center justify-center gap-2 py-2 text-sm font-semibold text-primary">
+                    <Check className="w-4 h-4" />Currently selected
+                  </div>
+                ) : ctUnlocked ? (
+                  <Button className="w-full" onClick={() => { handleAppTheme(ct.id); setPreviewColourId(null); }}>
+                    <Check className="w-4 h-4 mr-1.5" />Select {ct.label}
+                  </Button>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1"><Gem className="w-3.5 h-3.5 text-cyan-500" />Balance: <strong className="text-foreground">{gems}</strong></span>
+                      <span>Cost: <strong className={ctCanAfford ? 'text-foreground' : 'text-destructive'}>{ctCost} gems</strong></span>
+                    </div>
+                    <Button className="w-full" variant={ctCanAfford ? 'default' : 'secondary'} disabled={!ctCanAfford}
+                      onClick={() => { setPreviewColourId(null); handleAppTheme(ct.id); }}>
+                      <Gem className="w-4 h-4 mr-1.5" />
+                      {ctCanAfford ? `Unlock for ${ctCost} gems` : `Need ${ctCost - gems} more gems`}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        );
+      })()}
+
+      {/* ── Font Style Preview Dialog ─────────────────────────────────── */}
+      {(() => {
+        const ft = previewFont;
+        if (!ft) return null;
+        const ftUnlocked = isUnlocked('font', ft.id);
+        const ftSelected = fontId === ft.id;
+        const ftCost = getItemCost('font', ft.id);
+        const ftCanAfford = gems >= ftCost;
+        return (
+          <Dialog open={!!previewFontId} onOpenChange={(open) => { if (!open) setPreviewFontId(null); }}>
+            <DialogContent className="max-w-sm">
+              <DialogHeader>
+                <DialogTitle>{ft.label} Font</DialogTitle>
+                <DialogDescription>How text looks throughout the app</DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-4">
+                {/* Heading specimen */}
+                <div>
+                  <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Heading</p>
+                  <p className="text-2xl font-bold leading-tight" style={{ fontFamily: ft.serif }}>
+                    Daily Sudoku
+                  </p>
+                </div>
+                {/* Body specimen */}
+                <div>
+                  <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Body</p>
+                  <p className="text-sm leading-relaxed text-muted-foreground" style={{ fontFamily: ft.sans }}>
+                    Complete the grid so every row, column, and box contains the digits 1 through 9.
+                  </p>
+                </div>
+                {/* Digits specimen */}
+                <div>
+                  <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5">Sudoku digits</p>
+                  <div className="flex gap-1.5">
+                    {[1,2,3,4,5,6,7,8,9].map(n => (
+                      <div key={n} className="flex-1 aspect-square flex items-center justify-center rounded-md bg-background border border-border text-sm font-bold" style={{ fontFamily: ft.sans }}>
+                        {n}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* UI labels */}
+                <div>
+                  <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">UI labels</p>
+                  <div className="flex flex-wrap gap-2 text-xs" style={{ fontFamily: ft.sans }}>
+                    {['Leaderboard', 'My Stats', 'Streak: 7 days', '⭐ 1,240 XP'].map(l => (
+                      <span key={l} className="px-2 py-0.5 rounded-full bg-muted border border-border">{l}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-1 border-t border-border">
+                {ftSelected ? (
+                  <div className="flex items-center justify-center gap-2 py-2 text-sm font-semibold text-primary">
+                    <Check className="w-4 h-4" />Currently selected
+                  </div>
+                ) : ftUnlocked ? (
+                  <Button className="w-full" onClick={() => { handleFont(ft.id); setPreviewFontId(null); }}>
+                    <Check className="w-4 h-4 mr-1.5" />Select {ft.label}
+                  </Button>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1"><Gem className="w-3.5 h-3.5 text-cyan-500" />Balance: <strong className="text-foreground">{gems}</strong></span>
+                      <span>Cost: <strong className={ftCanAfford ? 'text-foreground' : 'text-destructive'}>{ftCost} gems</strong></span>
+                    </div>
+                    <Button className="w-full" variant={ftCanAfford ? 'default' : 'secondary'} disabled={!ftCanAfford}
+                      onClick={() => { setPreviewFontId(null); handleFont(ft.id); }}>
+                      <Gem className="w-4 h-4 mr-1.5" />
+                      {ftCanAfford ? `Unlock for ${ftCost} gems` : `Need ${ftCost - gems} more gems`}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        );
+      })()}
 
       {/* ── Symbol Overview Dialog ───────────────────────────────────── */}
       {(() => {
