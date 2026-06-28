@@ -402,7 +402,7 @@ export default function MemoryMatchPage() {
         {/* Quick links — Stats & Leaderboard */}
         <div className="grid grid-cols-2 gap-3">
           <button
-            onClick={() => setLocation('/stats')}
+            onClick={() => setLocation('/stats?tab=memory')}
             className="flex items-center gap-3 rounded-xl border bg-card p-4 hover:bg-muted/50 hover:border-primary/30 transition-all text-left"
           >
             <BarChart2 className="w-5 h-5 text-primary shrink-0" />
