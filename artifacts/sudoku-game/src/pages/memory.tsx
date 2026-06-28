@@ -16,6 +16,7 @@ import { ArrowLeft, Timer, Repeat2, Trophy, Gem, Star, RotateCcw, Zap, Brain, Ba
 type GridSize = 2 | 4 | 6 | 8;
 type GamePhase = 'setup' | 'playing' | 'won';
 type InfoModal = 'rules' | 'controls' | 'backstory' | null;
+type DisplayMode = 'image' | 'number' | 'alpha';
 
 interface Card {
   id: number;
@@ -70,6 +71,18 @@ function formatTime(s: number): string {
   return `${m}:${sec.toString().padStart(2, '0')}`;
 }
 
+const ALPHA_LABELS = [
+  'A','B','C','D','E','F','G','H','I','J','K','L','M',
+  'N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
+  'α','β','γ','δ','ε','ζ',
+];
+
+function getCardLabel(value: number, mode: DisplayMode): string {
+  if (mode === 'number') return String(value);
+  if (mode === 'alpha') return ALPHA_LABELS[value - 1] ?? String(value);
+  return '';
+}
+
 // ─── Card component ───────────────────────────────────────────────────────────
 
 function MemoryCard({
@@ -78,17 +91,41 @@ function MemoryCard({
   onClick,
   disabled,
   size,
+  displayMode,
 }: {
   card: Card;
   themeId: string;
   onClick: () => void;
   disabled: boolean;
   size: GridSize;
+  displayMode: DisplayMode;
 }) {
   const theme = getTheme(themeId as any);
   const symbol = theme.symbols[(card.value - 1) % theme.symbols.length];
-  const fontSize = size === 8 || size === 6 ? 'text-xl' : size === 4 ? 'text-2xl' : 'text-3xl';
-  const cardH = size === 8 || size === 6 ? 'h-10 sm:h-12' : size === 2 ? 'h-20 sm:h-24' : 'h-16 sm:h-20';
+
+  const isSmall = size === 8 || size === 6;
+  const isMedium = size === 4;
+  const cardH = isSmall ? 'h-10 sm:h-12' : size === 2 ? 'h-20 sm:h-24' : 'h-16 sm:h-20';
+
+  // Front face content
+  let frontContent: React.ReactNode;
+  if (displayMode === 'image') {
+    const fontSize = isSmall ? 'text-xl' : isMedium ? 'text-2xl' : 'text-3xl';
+    frontContent = <span className={`${fontSize} leading-none`}>{symbol}</span>;
+  } else {
+    const label = getCardLabel(card.value, displayMode);
+    const isGreek = displayMode === 'alpha' && card.value > 26;
+    const fontSize = isSmall
+      ? (label.length > 1 ? 'text-sm' : 'text-base')
+      : isMedium
+        ? (label.length > 1 ? 'text-lg' : 'text-xl')
+        : (label.length > 1 ? 'text-2xl' : 'text-3xl');
+    frontContent = (
+      <span className={`${fontSize} font-black leading-none tabular-nums ${isGreek ? 'italic' : ''}`}>
+        {label}
+      </span>
+    );
+  }
 
   return (
     <motion.button
@@ -115,11 +152,11 @@ function MemoryCard({
         <div
           className={`absolute inset-0 rounded-xl flex items-center justify-center border-2 transition-colors
             ${card.matched
-              ? 'border-green-400/60 bg-green-50'
+              ? 'border-green-400/60 bg-green-50 dark:bg-green-950/30'
               : 'border-primary/30 bg-primary/5'}`}
           style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
         >
-          <span className={`${fontSize} leading-none`}>{symbol}</span>
+          {frontContent}
         </div>
       </motion.div>
     </motion.button>
@@ -138,6 +175,7 @@ export default function MemoryMatchPage() {
   const [phase, setPhase] = useState<GamePhase>('setup');
   const [gridSize, setGridSize] = useState<GridSize>(2);
   const [infoModal, setInfoModal] = useState<InfoModal>(null);
+  const [displayMode, setDisplayMode] = useState<DisplayMode>('image');
 
   const { data: profile } = useGetProfile(profileId as number, {
     query: { enabled: !!profileId },
@@ -350,12 +388,49 @@ export default function MemoryMatchPage() {
           )}
         </div>
 
-        {/* Theme preview */}
+        {/* Theme / mode preview */}
         <div className="flex items-center gap-2 flex-wrap">
-          {theme.symbols.slice(0, 8).map((sym, i) => (
-            <span key={i} className="text-2xl leading-none">{sym}</span>
-          ))}
-          <span className="text-muted-foreground text-sm">… using {theme.name} theme</span>
+          {displayMode === 'image'
+            ? theme.symbols.slice(0, 8).map((sym, i) => (
+                <span key={i} className="text-2xl leading-none">{sym}</span>
+              ))
+            : (displayMode === 'number'
+                ? Array.from({ length: 8 }, (_, i) => String(i + 1))
+                : ALPHA_LABELS.slice(0, 8)
+              ).map((lbl, i) => (
+                <span key={i} className={`text-xl font-black leading-none ${displayMode === 'alpha' ? 'font-mono' : ''}`}>{lbl}</span>
+              ))
+          }
+          <span className="text-muted-foreground text-sm">
+            {displayMode === 'image' ? `… using ${theme.name} theme` : displayMode === 'number' ? '… 1 – 32' : '… A – Z + α β γ δ ε ζ'}
+          </span>
+        </div>
+
+        {/* Display Mode selector */}
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Card Display Mode</p>
+          <div className="grid grid-cols-3 gap-2">
+            {([
+              { id: 'image'  as DisplayMode, label: '🎴 Image',  sub: 'Theme symbols' },
+              { id: 'number' as DisplayMode, label: '1 2 3 Numbers', sub: '1 – 32' },
+              { id: 'alpha'  as DisplayMode, label: 'A B C Alpha',   sub: 'A–Z + α β γ' },
+            ] as const).map(m => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => setDisplayMode(m.id)}
+                className={[
+                  'flex flex-col items-center gap-1 rounded-xl border-2 py-3 px-2 text-center transition-all',
+                  displayMode === m.id
+                    ? 'border-primary bg-primary/8 shadow-sm'
+                    : 'border-border hover:border-primary/40 hover:bg-muted/50',
+                ].join(' ')}
+              >
+                <span className="text-sm font-bold leading-tight">{m.label}</span>
+                <span className="text-[10px] text-muted-foreground">{m.sub}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="space-y-3">
@@ -672,6 +747,30 @@ export default function MemoryMatchPage() {
         >
           <RotateCcw className="w-3 h-3" /> Reset
         </button>
+
+        {/* Mode toggle (cycle through modes during play) */}
+        <div className="flex items-center gap-0.5 rounded-lg border border-border bg-muted/40 p-0.5 shrink-0">
+          {([
+            { id: 'image'  as DisplayMode, title: '🎴' },
+            { id: 'number' as DisplayMode, title: '123' },
+            { id: 'alpha'  as DisplayMode, title: 'ABC' },
+          ] as const).map(m => (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => setDisplayMode(m.id)}
+              className={[
+                'px-1.5 py-0.5 rounded-md text-[10px] font-bold transition-all',
+                displayMode === m.id
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground',
+              ].join(' ')}
+              title={m.id === 'image' ? 'Image mode' : m.id === 'number' ? 'Number mode' : 'Alpha mode'}
+            >
+              {m.title}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Card grid */}
@@ -684,12 +783,18 @@ export default function MemoryMatchPage() {
             onClick={() => handleCardClick(card.id)}
             disabled={lockBoard}
             size={gridSize}
+            displayMode={displayMode}
           />
         ))}
       </div>
 
       <p className="text-center text-xs text-muted-foreground">
-        Theme: {theme.name} · <button onClick={() => setLocation('/themes')} className="underline underline-offset-2 hover:text-foreground transition-colors">Change</button>
+        {displayMode === 'image'
+          ? <>Theme: {theme.name} · <button onClick={() => setLocation('/themes')} className="underline underline-offset-2 hover:text-foreground transition-colors">Change</button></>
+          : displayMode === 'number'
+            ? 'Number mode · 1 – 32'
+            : 'Alpha mode · A–Z + α β γ δ ε ζ'
+        }
       </p>
     </div>
   );
