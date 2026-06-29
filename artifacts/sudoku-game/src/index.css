@@ -587,6 +587,134 @@
   --destructive-foreground: 0 100% 97%;
 }
 
+/* ── Superman ────────────────────────────────────────────────────────── */
+[data-theme="superman"] {
+  --background: 207 85% 95%;
+  --foreground: 230 30% 14%;
+  --border: 207 30% 84%;
+  --input: 207 30% 84%;
+  --ring: 230 68% 33%;
+
+  --card: 207 70% 98%;
+  --card-foreground: 230 30% 14%;
+  --card-border: 207 30% 84%;
+
+  --popover: 207 70% 98%;
+  --popover-foreground: 230 30% 14%;
+  --popover-border: 207 30% 84%;
+
+  --primary: 230 68% 33%;
+  --primary-foreground: 207 85% 95%;
+
+  --secondary: 207 28% 90%;
+  --secondary-foreground: 230 30% 14%;
+
+  --muted: 207 20% 92%;
+  --muted-foreground: 207 14% 46%;
+
+  --accent: 207 50% 87%;
+  --accent-foreground: 230 68% 33%;
+
+  --destructive: 0 60% 50%;
+  --destructive-foreground: 207 85% 95%;
+}
+
+/* ── Spiderman ───────────────────────────────────────────────────────── */
+[data-theme="spiderman"] {
+  --background: 4 80% 97%;
+  --foreground: 4 25% 12%;
+  --border: 4 25% 84%;
+  --input: 4 25% 84%;
+  --ring: 4 72% 38%;
+
+  --card: 4 60% 99%;
+  --card-foreground: 4 25% 12%;
+  --card-border: 4 25% 84%;
+
+  --popover: 4 60% 99%;
+  --popover-foreground: 4 25% 12%;
+  --popover-border: 4 25% 84%;
+
+  --primary: 4 72% 38%;
+  --primary-foreground: 4 80% 97%;
+
+  --secondary: 4 22% 90%;
+  --secondary-foreground: 4 25% 12%;
+
+  --muted: 4 16% 92%;
+  --muted-foreground: 4 12% 46%;
+
+  --accent: 4 45% 87%;
+  --accent-foreground: 4 72% 38%;
+
+  --destructive: 0 60% 50%;
+  --destructive-foreground: 4 80% 97%;
+}
+
+/* ── Batman ──────────────────────────────────────────────────────────── */
+[data-theme="batman"] {
+  --background: 50 10% 6%;
+  --foreground: 50 10% 88%;
+  --border: 50 8% 16%;
+  --input: 50 8% 16%;
+  --ring: 50 100% 55%;
+
+  --card: 50 10% 8%;
+  --card-foreground: 50 10% 88%;
+  --card-border: 50 8% 16%;
+
+  --popover: 50 10% 8%;
+  --popover-foreground: 50 10% 88%;
+  --popover-border: 50 8% 16%;
+
+  --primary: 50 100% 55%;
+  --primary-foreground: 50 10% 6%;
+
+  --secondary: 50 8% 16%;
+  --secondary-foreground: 50 10% 88%;
+
+  --muted: 50 6% 12%;
+  --muted-foreground: 50 5% 55%;
+
+  --accent: 50 45% 16%;
+  --accent-foreground: 50 100% 55%;
+
+  --destructive: 0 62% 30%;
+  --destructive-foreground: 50 10% 88%;
+}
+
+/* ── Dora ────────────────────────────────────────────────────────────── */
+[data-theme="dora"] {
+  --background: 295 60% 97%;
+  --foreground: 295 25% 14%;
+  --border: 295 22% 84%;
+  --input: 295 22% 84%;
+  --ring: 295 58% 44%;
+
+  --card: 295 45% 99%;
+  --card-foreground: 295 25% 14%;
+  --card-border: 295 22% 84%;
+
+  --popover: 295 45% 99%;
+  --popover-foreground: 295 25% 14%;
+  --popover-border: 295 22% 84%;
+
+  --primary: 295 58% 44%;
+  --primary-foreground: 295 60% 97%;
+
+  --secondary: 295 18% 90%;
+  --secondary-foreground: 295 25% 14%;
+
+  --muted: 295 14% 92%;
+  --muted-foreground: 295 10% 46%;
+
+  --accent: 295 32% 87%;
+  --accent-foreground: 295 58% 44%;
+
+  --destructive: 0 60% 50%;
+  --destructive-foreground: 295 60% 97%;
+}
+
 /* ── Neon ────────────────────────────────────────────────────────────── */
 [data-theme="neon"] {
   --background: 210 20% 7%;

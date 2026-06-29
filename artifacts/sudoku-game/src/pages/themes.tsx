@@ -149,7 +149,7 @@ export default function Themes() {
           </p>
         </div>
 
-        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
           {APP_THEMES.map(t => {
             const selected = activeAppTheme === t.id;
             const unlocked = isUnlocked('color_theme', t.id);
