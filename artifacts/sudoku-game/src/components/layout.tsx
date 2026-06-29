@@ -9,6 +9,7 @@ import { useFontTheme } from "@/hooks/use-font-theme";
 import { useChallengeNotifications } from "@/hooks/use-challenge-notifications";
 import { useLevelUpWatcher } from "@/hooks/use-level-up";
 import { useAchievementNotifier } from "@/hooks/use-achievement-notifier";
+import { useBadgeNotifier } from "@/hooks/use-badge-notifier";
 import { AchievementUnlockModal } from "@/components/achievement-unlock-modal";
 
 export function applyAppTheme(theme: string) {
@@ -56,6 +57,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   useFontTheme();
   useChallengeNotifications(profileId);
   useLevelUpWatcher(profileId);
+  useBadgeNotifier(profileId);
   const { newlyUnlocked, dismiss } = useAchievementNotifier(profileId);
 
   React.useEffect(() => {
