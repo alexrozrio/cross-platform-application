@@ -1,73 +1,18 @@
 import { useState, useEffect } from 'react';
+import fontThemesConfig from '@/config/font-themes.json';
 
-export const FONT_THEMES = [
-  {
-    id: 'default',
-    label: 'Default',
-    sans: "'Outfit', sans-serif",
-    serif: "'Playfair Display', serif",
-    preview: 'Aa',
-    style: { fontFamily: "'Outfit', sans-serif" },
-  },
-  {
-    id: 'modern',
-    label: 'Modern',
-    sans: "'DM Sans', sans-serif",
-    serif: "'DM Serif Display', serif",
-    preview: 'Aa',
-    style: { fontFamily: "'DM Sans', sans-serif" },
-  },
-  {
-    id: 'elegant',
-    label: 'Elegant',
-    sans: "'Lato', sans-serif",
-    serif: "'Cormorant Garamond', serif",
-    preview: 'Aa',
-    style: { fontFamily: "'Cormorant Garamond', serif" },
-  },
-  {
-    id: 'rounded',
-    label: 'Rounded',
-    sans: "'Nunito', sans-serif",
-    serif: "'Nunito', sans-serif",
-    preview: 'Aa',
-    style: { fontFamily: "'Nunito', sans-serif" },
-  },
-  {
-    id: 'playful',
-    label: 'Playful',
-    sans: "'Quicksand', sans-serif",
-    serif: "'Pacifico', cursive",
-    preview: 'Aa',
-    style: { fontFamily: "'Pacifico', cursive" },
-  },
-  {
-    id: 'mono',
-    label: 'Mono',
-    sans: "'Space Mono', monospace",
-    serif: "'Space Mono', monospace",
-    preview: 'Aa',
-    style: { fontFamily: "'Space Mono', monospace" },
-  },
-  {
-    id: 'classic',
-    label: 'Classic Serif',
-    sans: "'Source Sans 3', sans-serif",
-    serif: "'Merriweather', serif",
-    preview: 'Aa',
-    style: { fontFamily: "'Merriweather', serif" },
-  },
-  {
-    id: 'handwritten',
-    label: 'Handwritten',
-    sans: "'Karla', sans-serif",
-    serif: "'Caveat', cursive",
-    preview: 'Aa',
-    style: { fontFamily: "'Caveat', cursive" },
-  },
-] as const;
+export const FONT_THEMES = fontThemesConfig
+  .filter(t => t.visible)
+  .map(t => ({
+    id: t.id,
+    label: t.name,
+    sans: t.sans,
+    serif: t.serif,
+    preview: t.preview,
+    style: { fontFamily: t.previewFont },
+  }));
 
-export type FontThemeId = typeof FONT_THEMES[number]['id'];
+export type FontThemeId = string;
 
 const STORAGE_KEY = 'sudoku-font-theme';
 

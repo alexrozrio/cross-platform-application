@@ -1,4 +1,6 @@
-export type ThemeId = 'shapes' | 'adventure' | 'superhero' | 'ocean' | 'jungle' | 'space';
+import iconSetsConfig from '@/config/icon-sets.json';
+
+export type ThemeId = string;
 
 export interface ImageTheme {
   id: ThemeId;
@@ -8,80 +10,15 @@ export interface ImageTheme {
   bg: string;
 }
 
-export const IMAGE_THEMES: ImageTheme[] = [
-  {
-    id: 'shapes',
-    name: 'Shapes',
-    preview: '🔷',
-    bg: 'bg-blue-50 border-blue-200',
-    symbols: [
-      '🔴', '🟦', '🔺', '🔶', '⭐', '🟣', '🩷', '✚',
-      '⚪', '💠', '🔸', '🔹', '🟥', '🟨', '🔻', '🌀',
-      '🟢', '🔵', '🟠', '🟤', '⚫', '⬛', '⬜', '🔷',
-      '🟡', '💎', '🎯', '✨', '🔘', '🔲', '🔳', '🏵️',
-    ],
-  },
-  {
-    id: 'adventure',
-    name: 'Dora Adventure',
-    preview: '🗺️',
-    bg: 'bg-yellow-50 border-yellow-200',
-    symbols: [
-      '🗺️', '🎒', '🦊', '⭐', '🌺', '🔭', '🔑', '🌈',
-      '🏆', '🧭', '⛺', '🌙', '🦋', '🍄', '🪄', '🎯',
-      '🧸', '🎪', '🪁', '🎭', '🎨', '🧩', '🎲', '🚂',
-      '🎠', '🌻', '🦉', '🐾', '🗝️', '🏕️', '🎡', '🎢',
-    ],
-  },
-  {
-    id: 'superhero',
-    name: 'Super Hero',
-    preview: '🦸',
-    bg: 'bg-red-50 border-red-200',
-    symbols: [
-      '🦸', '⚡', '🕷️', '🛡️', '💥', '🔥', '🌩️', '🦾',
-      '👊', '🦹', '🌪️', '💫', '🦅', '⚔️', '🧲', '🎯',
-      '🕶️', '💪', '🏅', '🥇', '🌀', '💡', '🔮', '⚙️',
-      '👁️', '🤖', '🦺', '🧤', '🏟️', '🎭', '🧬', '🔓',
-    ],
-  },
-  {
-    id: 'ocean',
-    name: 'Ocean',
-    preview: '🌊',
-    bg: 'bg-cyan-50 border-cyan-200',
-    symbols: [
-      '🐬', '🐙', '🦈', '🐠', '🦀', '🐡', '🦑', '🐢',
-      '🦞', '🐳', '🦭', '🐚', '🪸', '🦐', '🐟', '🌊',
-      '🦦', '🪼', '⚓', '🏖️', '🚢', '🐧', '🦆', '🌿',
-      '🪨', '💧', '🫧', '🐋', '🌴', '🧊', '🏝️', '🦩',
-    ],
-  },
-  {
-    id: 'jungle',
-    name: 'Jungle',
-    preview: '🌿',
-    bg: 'bg-green-50 border-green-200',
-    symbols: [
-      '🐒', '🦁', '🐘', '🦒', '🦓', '🦏', '🐆', '🦍',
-      '🦜', '🐊', '🦎', '🦋', '🍃', '🌴', '🌺', '🐛',
-      '🐍', '🐅', '🦝', '🦚', '🌿', '🍀', '🪴', '🌸',
-      '🌻', '🐝', '🦟', '🐜', '🦩', '🐦', '🌱', '🍁',
-    ],
-  },
-  {
-    id: 'space',
-    name: 'Space',
-    preview: '🚀',
-    bg: 'bg-purple-50 border-purple-200',
-    symbols: [
-      '🚀', '⭐', '🌙', '☄️', '🪐', '🌟', '💫', '🌍',
-      '🛸', '🌌', '🔭', '👽', '🌠', '🛰️', '🌞', '🌑',
-      '🌏', '🌎', '🌒', '🌓', '🌗', '🌈', '🤖', '👾',
-      '🎇', '🌋', '🧬', '🔬', '⚗️', '🌡️', '💡', '🧲',
-    ],
-  },
-];
+export const IMAGE_THEMES: ImageTheme[] = iconSetsConfig
+  .filter(t => t.visible)
+  .map(t => ({
+    id: t.id,
+    name: t.name,
+    preview: t.preview,
+    symbols: t.symbols,
+    bg: t.bg,
+  }));
 
 export const DEFAULT_THEME_ID: ThemeId = 'shapes';
 

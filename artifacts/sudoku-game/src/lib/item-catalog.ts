@@ -1,31 +1,13 @@
 import colourThemes from '@/config/colour-themes.json';
+import fontThemes from '@/config/font-themes.json';
+import iconSets from '@/config/icon-sets.json';
 
 export type ItemType = "color_theme" | "font" | "icon_set";
 
-const _colorThemeCosts = Object.fromEntries(
-  colourThemes.map(t => [t.id, t.gems])
-);
-
 export const ITEM_COSTS: Record<ItemType, Record<string, number>> = {
-  color_theme: _colorThemeCosts,
-  font: {
-    default: 0,
-    modern: 50,
-    elegant: 50,
-    rounded: 50,
-    playful: 75,
-    mono: 75,
-    classic: 75,
-    handwritten: 75,
-  },
-  icon_set: {
-    shapes: 0,
-    adventure: 0,
-    superhero: 100,
-    ocean: 200,
-    jungle: 300,
-    space: 300,
-  },
+  color_theme: Object.fromEntries(colourThemes.map(t => [t.id, t.gems])),
+  font:        Object.fromEntries(fontThemes.map(t => [t.id, t.gems])),
+  icon_set:    Object.fromEntries(iconSets.map(t => [t.id, t.gems])),
 };
 
 export function isFreeItem(type: ItemType, id: string): boolean {
