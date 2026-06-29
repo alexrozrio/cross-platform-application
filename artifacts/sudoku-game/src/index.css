@@ -971,12 +971,45 @@
   --destructive-foreground: 320 40% 97%;
 }
 
+/* ── Theme background patterns ───────────────────────────────────────────── */
+:root,
+[data-theme="light"]     { --bg-pattern: radial-gradient(circle, rgba(74,101,133,0.07) 1.5px, transparent 1.5px); --bg-pattern-size: 20px 20px; }
+[data-theme="dark"]      { --bg-pattern: radial-gradient(circle, rgba(107,143,196,0.12) 1.5px, transparent 1.5px); --bg-pattern-size: 28px 28px; }
+[data-theme="ocean"]     { --bg-pattern: radial-gradient(circle, rgba(46,138,145,0.10) 1.5px, transparent 1.5px); --bg-pattern-size: 24px 24px; }
+[data-theme="forest"]    { --bg-pattern: radial-gradient(circle, rgba(46,107,64,0.09) 1.5px, transparent 1.5px); --bg-pattern-size: 18px 18px; }
+[data-theme="sunset"]    { --bg-pattern: repeating-linear-gradient(135deg, rgba(184,78,32,0.07) 0, rgba(184,78,32,0.07) 1px, transparent 1px, transparent 14px); --bg-pattern-size: auto; }
+[data-theme="midnight"]  { --bg-pattern: radial-gradient(ellipse, rgba(139,92,246,0.15) 1.5px, transparent 1.5px); --bg-pattern-size: 36px 36px; }
+[data-theme="rose"]      { --bg-pattern: radial-gradient(circle, rgba(163,37,78,0.08) 1.5px, transparent 1.5px); --bg-pattern-size: 22px 22px; }
+[data-theme="emerald"]   { --bg-pattern: radial-gradient(circle, rgba(5,150,105,0.09) 1.5px, transparent 1.5px); --bg-pattern-size: 18px 18px; }
+[data-theme="slate"]     { --bg-pattern: linear-gradient(rgba(71,85,105,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(71,85,105,0.06) 1px, transparent 1px); --bg-pattern-size: 24px 24px; }
+[data-theme="lavender"]  { --bg-pattern: radial-gradient(circle, rgba(124,58,237,0.09) 1.5px, transparent 1.5px); --bg-pattern-size: 24px 24px; }
+[data-theme="amber"]     { --bg-pattern: repeating-linear-gradient(45deg, rgba(217,119,6,0.07) 0, rgba(217,119,6,0.07) 1px, transparent 1px, transparent 14px); --bg-pattern-size: auto; }
+[data-theme="teal"]      { --bg-pattern: radial-gradient(circle, rgba(13,148,136,0.10) 1.5px, transparent 1.5px); --bg-pattern-size: 22px 22px; }
+[data-theme="crimson"]   { --bg-pattern: radial-gradient(circle, rgba(220,38,38,0.08) 1.5px, transparent 1.5px); --bg-pattern-size: 22px 22px; }
+[data-theme="coral"]     { --bg-pattern: radial-gradient(circle, rgba(224,90,78,0.08) 1.5px, transparent 1.5px); --bg-pattern-size: 22px 22px; }
+[data-theme="arctic"]    { --bg-pattern: radial-gradient(circle, rgba(37,99,235,0.09) 1.5px, transparent 1.5px); --bg-pattern-size: 26px 26px; }
+[data-theme="mocha"]     { --bg-pattern: linear-gradient(rgba(120,80,58,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(120,80,58,0.07) 1px, transparent 1px); --bg-pattern-size: 20px 20px; }
+[data-theme="neon"]      { --bg-pattern: linear-gradient(rgba(0,230,118,0.10) 1px, transparent 1px), linear-gradient(90deg, rgba(0,230,118,0.10) 1px, transparent 1px); --bg-pattern-size: 20px 20px; }
+[data-theme="cyberpunk"] { --bg-pattern: repeating-linear-gradient(-45deg, rgba(233,30,140,0.10) 0, rgba(233,30,140,0.10) 1px, transparent 1px, transparent 12px); --bg-pattern-size: auto; }
+[data-theme="deepsea"]   { --bg-pattern: repeating-linear-gradient(0deg, rgba(0,188,212,0.09) 0, rgba(0,188,212,0.09) 1px, transparent 1px, transparent 10px); --bg-pattern-size: auto; }
+[data-theme="obsidian"]  { --bg-pattern: radial-gradient(circle, rgba(201,162,39,0.14) 1.5px, transparent 1.5px); --bg-pattern-size: 28px 28px; }
+[data-theme="mint"]      { --bg-pattern: radial-gradient(circle, rgba(26,122,94,0.09) 1.5px, transparent 1.5px); --bg-pattern-size: 18px 18px; }
+[data-theme="peach"]     { --bg-pattern: repeating-linear-gradient(45deg, rgba(212,98,10,0.07) 0, rgba(212,98,10,0.07) 1px, transparent 1px, transparent 14px); --bg-pattern-size: auto; }
+[data-theme="nordic"]    { --bg-pattern: linear-gradient(rgba(34,72,160,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(34,72,160,0.07) 1px, transparent 1px); --bg-pattern-size: 28px 28px; }
+[data-theme="wine"]      { --bg-pattern: radial-gradient(circle, rgba(139,26,84,0.08) 1.5px, transparent 1.5px); --bg-pattern-size: 24px 24px; }
+[data-theme="superman"]  { --bg-pattern: radial-gradient(circle, rgba(26,58,143,0.09) 1.5px, transparent 1.5px); --bg-pattern-size: 28px 28px; }
+[data-theme="spiderman"] { --bg-pattern: radial-gradient(circle, rgba(183,28,28,0.08) 1.5px, transparent 1.5px); --bg-pattern-size: 20px 20px; }
+[data-theme="batman"]    { --bg-pattern: radial-gradient(circle, rgba(249,202,36,0.14) 1.5px, transparent 1.5px); --bg-pattern-size: 36px 36px; }
+[data-theme="dora"]      { --bg-pattern: radial-gradient(circle, rgba(155,39,175,0.10) 2px, transparent 2px); --bg-pattern-size: 28px 28px; }
+
 @layer base {
   * {
     @apply border-border;
   }
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    background-image: var(--bg-pattern, none);
+    background-size: var(--bg-pattern-size, auto);
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif;
