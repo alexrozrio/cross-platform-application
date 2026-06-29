@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -36,6 +36,7 @@ import {
   Minus,
   Brain,
   Grid2x2,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import { LevelBadge } from "@/components/level-badge";
@@ -133,23 +134,72 @@ function timeAgo(iso: string): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-function Avatar({ src, name, size = 8 }: { src: string | null; name: string; size?: number }) {
+function Avatar({
+  src,
+  name,
+  size = 8,
+}: {
+  src: string | null;
+  name: string;
+  size?: number;
+}) {
   const s = `w-${size} h-${size}`;
   if (src) {
-    return <img src={src} alt={name} className={`${s} rounded-full object-cover ring-2 ring-border shrink-0`} />;
+    return (
+      <img
+        src={src}
+        alt={name}
+        className={`${s} rounded-full object-cover ring-2 ring-border shrink-0`}
+      />
+    );
   }
   return (
-    <div className={`${s} rounded-full bg-primary/10 flex items-center justify-center shrink-0 ring-2 ring-border`}>
-      <span className="text-primary font-bold text-xs">{name.charAt(0).toUpperCase()}</span>
+    <div
+      className={`${s} rounded-full bg-primary/10 flex items-center justify-center shrink-0 ring-2 ring-border`}
+    >
+      <span className="text-primary font-bold text-xs">
+        {name.charAt(0).toUpperCase()}
+      </span>
     </div>
   );
 }
 
 function StatusBadge({ status }: { status: ChallengeStatus }) {
-  if (status === "pending") return <Badge variant="outline" className="text-yellow-600 border-yellow-300 bg-yellow-50 text-xs">Pending</Badge>;
-  if (status === "accepted") return <Badge variant="outline" className="text-blue-600 border-blue-300 bg-blue-50 text-xs">In Progress</Badge>;
-  if (status === "declined") return <Badge variant="outline" className="text-slate-500 border-slate-300 bg-slate-50 text-xs">Declined</Badge>;
-  return <Badge variant="outline" className="text-green-600 border-green-300 bg-green-50 text-xs">Completed</Badge>;
+  if (status === "pending")
+    return (
+      <Badge
+        variant="outline"
+        className="text-yellow-600 border-yellow-300 bg-yellow-50 text-xs"
+      >
+        Pending
+      </Badge>
+    );
+  if (status === "accepted")
+    return (
+      <Badge
+        variant="outline"
+        className="text-blue-600 border-blue-300 bg-blue-50 text-xs"
+      >
+        In Progress
+      </Badge>
+    );
+  if (status === "declined")
+    return (
+      <Badge
+        variant="outline"
+        className="text-slate-500 border-slate-300 bg-slate-50 text-xs"
+      >
+        Declined
+      </Badge>
+    );
+  return (
+    <Badge
+      variant="outline"
+      className="text-green-600 border-green-300 bg-green-50 text-xs"
+    >
+      Completed
+    </Badge>
+  );
 }
 
 // ─── Sudoku ChallengeCard ─────────────────────────────────────────────────────
@@ -170,12 +220,24 @@ function ChallengeCard({
   isResponding: boolean;
 }) {
   const isChallenger = challenge.challengerId === myProfileId;
-  const opponent = isChallenger ? challenge.challengedUsername : challenge.challengerUsername;
-  const opponentAvatar = isChallenger ? challenge.challengedAvatar : challenge.challengerAvatar;
-  const opponentXp = isChallenger ? (challenge.challengedXp ?? 0) : (challenge.challengerXp ?? 0);
-  const myPoints = isChallenger ? challenge.challengerPoints : challenge.challengedPoints;
-  const theirPoints = isChallenger ? challenge.challengedPoints : challenge.challengerPoints;
-  const myGameId = isChallenger ? challenge.challengerGameId : challenge.challengedGameId;
+  const opponent = isChallenger
+    ? challenge.challengedUsername
+    : challenge.challengerUsername;
+  const opponentAvatar = isChallenger
+    ? challenge.challengedAvatar
+    : challenge.challengerAvatar;
+  const opponentXp = isChallenger
+    ? (challenge.challengedXp ?? 0)
+    : (challenge.challengerXp ?? 0);
+  const myPoints = isChallenger
+    ? challenge.challengerPoints
+    : challenge.challengedPoints;
+  const theirPoints = isChallenger
+    ? challenge.challengedPoints
+    : challenge.challengerPoints;
+  const myGameId = isChallenger
+    ? challenge.challengerGameId
+    : challenge.challengedGameId;
   const isWinner = challenge.winnerId === myProfileId;
   const isTie = challenge.status === "completed" && challenge.winnerId === null;
 
@@ -190,28 +252,63 @@ function ChallengeCard({
                 <p className="font-semibold truncate">{opponent}</p>
                 <LevelBadge xp={opponentXp} size="xs" />
                 {challenge.status === "completed" && (
-                  <span className={`text-xs font-bold flex items-center gap-1 ${isWinner ? "text-yellow-600" : isTie ? "text-slate-500" : "text-red-500"}`}>
-                    {isWinner ? <><Crown className="w-3 h-3" /> Won +10 💎</> : isTie ? <><Minus className="w-3 h-3" /> Tie</> : <><XCircle className="w-3 h-3" /> Lost</>}
+                  <span
+                    className={`text-xs font-bold flex items-center gap-1 ${isWinner ? "text-yellow-600" : isTie ? "text-slate-500" : "text-red-500"}`}
+                  >
+                    {isWinner ? (
+                      <>
+                        <Crown className="w-3 h-3" /> Won +10 💎
+                      </>
+                    ) : isTie ? (
+                      <>
+                        <Minus className="w-3 h-3" /> Tie
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="w-3 h-3" /> Lost
+                      </>
+                    )}
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium capitalize ${DIFF_COLORS[challenge.difficulty]}`}>
+                <span
+                  className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium capitalize ${DIFF_COLORS[challenge.difficulty]}`}
+                >
                   {challenge.difficulty}
                 </span>
-                <span className="text-xs text-muted-foreground">{SUDOKU_GRID_LABELS[challenge.gridSize]}</span>
-                <span className="text-xs text-muted-foreground">{timeAgo(challenge.createdAt)}</span>
+                <span className="text-xs text-muted-foreground">
+                  {SUDOKU_GRID_LABELS[challenge.gridSize]}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {timeAgo(challenge.createdAt)}
+                </span>
                 {isChallenger ? (
-                  <span className="text-[10px] text-muted-foreground italic">You challenged</span>
+                  <span className="text-[10px] text-muted-foreground italic">
+                    You challenged
+                  </span>
                 ) : (
-                  <span className="text-[10px] text-blue-600 font-medium">Challenged you</span>
+                  <span className="text-[10px] text-blue-600 font-medium">
+                    Challenged you
+                  </span>
                 )}
               </div>
 
-              {(challenge.status === "accepted" || challenge.status === "completed") && (
+              {(challenge.status === "accepted" ||
+                challenge.status === "completed") && (
                 <div className="flex items-center gap-3 mt-2 text-xs">
-                  <span className="text-muted-foreground">You: <span className="font-bold text-foreground">{myPoints != null ? myPoints.toLocaleString() : "—"}</span></span>
-                  <span className="text-muted-foreground">Them: <span className="font-bold text-foreground">{theirPoints != null ? theirPoints.toLocaleString() : "—"}</span></span>
+                  <span className="text-muted-foreground">
+                    You:{" "}
+                    <span className="font-bold text-foreground">
+                      {myPoints != null ? myPoints.toLocaleString() : "—"}
+                    </span>
+                  </span>
+                  <span className="text-muted-foreground">
+                    Them:{" "}
+                    <span className="font-bold text-foreground">
+                      {theirPoints != null ? theirPoints.toLocaleString() : "—"}
+                    </span>
+                  </span>
                 </div>
               )}
             </div>
@@ -221,17 +318,42 @@ function ChallengeCard({
             <StatusBadge status={challenge.status} />
             {challenge.status === "pending" && !isChallenger && (
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="h-7 text-xs text-red-600 border-red-200 hover:bg-red-50" onClick={() => onDecline(challenge.id)} disabled={isResponding}>Decline</Button>
-                <Button size="sm" className="h-7 text-xs" onClick={() => onAccept(challenge.id)} disabled={isResponding}>Accept</Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs text-red-600 border-red-200 hover:bg-red-50"
+                  onClick={() => onDecline(challenge.id)}
+                  disabled={isResponding}
+                >
+                  Decline
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => onAccept(challenge.id)}
+                  disabled={isResponding}
+                >
+                  Accept
+                </Button>
               </div>
             )}
             {challenge.status === "accepted" && myGameId && (
-              <Button size="sm" className="h-7 text-xs gap-1" onClick={() => onPlay(myGameId)}>
-                {myPoints != null ? "View" : "Play"} <ChevronRight className="w-3 h-3" />
+              <Button
+                size="sm"
+                className="h-7 text-xs gap-1"
+                onClick={() => onPlay(myGameId)}
+              >
+                {myPoints != null ? "View" : "Play"}{" "}
+                <ChevronRight className="w-3 h-3" />
               </Button>
             )}
             {challenge.status === "pending" && isChallenger && myGameId && (
-              <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => onPlay(myGameId)}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-xs gap-1"
+                onClick={() => onPlay(myGameId)}
+              >
                 Play now <ChevronRight className="w-3 h-3" />
               </Button>
             )}
@@ -260,11 +382,19 @@ function MemoryDuelCard({
   isResponding: boolean;
 }) {
   const isChallenger = duel.challengerId === myProfileId;
-  const opponent = isChallenger ? duel.challengedUsername : duel.challengerUsername;
-  const opponentAvatar = isChallenger ? duel.challengedAvatar : duel.challengerAvatar;
-  const opponentXp = isChallenger ? (duel.challengedXp ?? 0) : (duel.challengerXp ?? 0);
+  const opponent = isChallenger
+    ? duel.challengedUsername
+    : duel.challengerUsername;
+  const opponentAvatar = isChallenger
+    ? duel.challengedAvatar
+    : duel.challengerAvatar;
+  const opponentXp = isChallenger
+    ? (duel.challengedXp ?? 0)
+    : (duel.challengerXp ?? 0);
   const myPoints = isChallenger ? duel.challengerPoints : duel.challengedPoints;
-  const theirPoints = isChallenger ? duel.challengedPoints : duel.challengerPoints;
+  const theirPoints = isChallenger
+    ? duel.challengedPoints
+    : duel.challengerPoints;
   const myGameId = isChallenger ? duel.challengerGameId : duel.challengedGameId;
   const isWinner = duel.winnerId === myProfileId;
   const isTie = duel.status === "completed" && duel.winnerId === null;
@@ -281,8 +411,22 @@ function MemoryDuelCard({
                 <p className="font-semibold truncate">{opponent}</p>
                 <LevelBadge xp={opponentXp} size="xs" />
                 {duel.status === "completed" && (
-                  <span className={`text-xs font-bold flex items-center gap-1 ${isWinner ? "text-yellow-600" : isTie ? "text-slate-500" : "text-red-500"}`}>
-                    {isWinner ? <><Crown className="w-3 h-3" /> Won +10 💎</> : isTie ? <><Minus className="w-3 h-3" /> Tie</> : <><XCircle className="w-3 h-3" /> Lost</>}
+                  <span
+                    className={`text-xs font-bold flex items-center gap-1 ${isWinner ? "text-yellow-600" : isTie ? "text-slate-500" : "text-red-500"}`}
+                  >
+                    {isWinner ? (
+                      <>
+                        <Crown className="w-3 h-3" /> Won +10 💎
+                      </>
+                    ) : isTie ? (
+                      <>
+                        <Minus className="w-3 h-3" /> Tie
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="w-3 h-3" /> Lost
+                      </>
+                    )}
                   </span>
                 )}
               </div>
@@ -290,19 +434,37 @@ function MemoryDuelCard({
                 <span className="text-[10px] px-1.5 py-0.5 rounded-full border font-medium bg-violet-100 text-violet-700 border-violet-200">
                   Memory Match
                 </span>
-                <span className="text-xs text-muted-foreground">{MEMORY_GRID_LABELS[duel.gridSize] ?? `${duel.gridSize}×grid`}</span>
-                <span className="text-xs text-muted-foreground">{timeAgo(duel.createdAt)}</span>
+                <span className="text-xs text-muted-foreground">
+                  {MEMORY_GRID_LABELS[duel.gridSize] ?? `${duel.gridSize}×grid`}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {timeAgo(duel.createdAt)}
+                </span>
                 {isChallenger ? (
-                  <span className="text-[10px] text-muted-foreground italic">You challenged</span>
+                  <span className="text-[10px] text-muted-foreground italic">
+                    You challenged
+                  </span>
                 ) : (
-                  <span className="text-[10px] text-blue-600 font-medium">Challenged you</span>
+                  <span className="text-[10px] text-blue-600 font-medium">
+                    Challenged you
+                  </span>
                 )}
               </div>
 
               {(duel.status === "accepted" || duel.status === "completed") && (
                 <div className="flex items-center gap-3 mt-2 text-xs">
-                  <span className="text-muted-foreground">You: <span className="font-bold text-foreground">{myPoints != null ? myPoints.toLocaleString() : "—"}</span></span>
-                  <span className="text-muted-foreground">Them: <span className="font-bold text-foreground">{theirPoints != null ? theirPoints.toLocaleString() : "—"}</span></span>
+                  <span className="text-muted-foreground">
+                    You:{" "}
+                    <span className="font-bold text-foreground">
+                      {myPoints != null ? myPoints.toLocaleString() : "—"}
+                    </span>
+                  </span>
+                  <span className="text-muted-foreground">
+                    Them:{" "}
+                    <span className="font-bold text-foreground">
+                      {theirPoints != null ? theirPoints.toLocaleString() : "—"}
+                    </span>
+                  </span>
                 </div>
               )}
             </div>
@@ -312,17 +474,42 @@ function MemoryDuelCard({
             <StatusBadge status={duel.status} />
             {duel.status === "pending" && !isChallenger && (
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="h-7 text-xs text-red-600 border-red-200 hover:bg-red-50" onClick={() => onDecline(duel.id)} disabled={isResponding}>Decline</Button>
-                <Button size="sm" className="h-7 text-xs" onClick={() => onAccept(duel.id)} disabled={isResponding}>Accept</Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs text-red-600 border-red-200 hover:bg-red-50"
+                  onClick={() => onDecline(duel.id)}
+                  disabled={isResponding}
+                >
+                  Decline
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => onAccept(duel.id)}
+                  disabled={isResponding}
+                >
+                  Accept
+                </Button>
               </div>
             )}
             {duel.status === "accepted" && myGameId && (
-              <Button size="sm" className="h-7 text-xs gap-1" onClick={() => onPlay(duel)}>
-                {hasPlayed ? "Done ✓" : "Play"} <ChevronRight className="w-3 h-3" />
+              <Button
+                size="sm"
+                className="h-7 text-xs gap-1"
+                onClick={() => onPlay(duel)}
+              >
+                {hasPlayed ? "Done ✓" : "Play"}{" "}
+                <ChevronRight className="w-3 h-3" />
               </Button>
             )}
             {duel.status === "pending" && isChallenger && myGameId && (
-              <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => onPlay(duel)}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-xs gap-1"
+                onClick={() => onPlay(duel)}
+              >
                 Play now <ChevronRight className="w-3 h-3" />
               </Button>
             )}
@@ -356,18 +543,26 @@ function NewChallengeDialog({
   const { data: results, isFetching } = useQuery<ProfileSummary[]>({
     queryKey: ["profile-search", search, myProfileId],
     queryFn: () =>
-      customFetch<ProfileSummary[]>(`/api/profiles/search?q=${encodeURIComponent(search)}&exclude=${myProfileId}`),
+      customFetch<ProfileSummary[]>(
+        `/api/profiles/search?q=${encodeURIComponent(search)}&exclude=${myProfileId}`,
+      ),
     enabled: search.length >= 2,
     staleTime: 5000,
   });
 
   const createSudokuMutation = useMutation({
-    mutationFn: (data: { challengerId: number; challengedId: number; difficulty: Difficulty; gridSize: SudokuGridSize }) =>
+    mutationFn: (data: {
+      challengerId: number;
+      challengedId: number;
+      difficulty: Difficulty;
+      gridSize: SudokuGridSize;
+    }) =>
       customFetch<ChallengeDetail>("/api/challenges", { method: "POST", data }),
     onSuccess: (challenge) => {
       queryClient.invalidateQueries({ queryKey: ["challenges"] });
       toast.success(`Sudoku challenge sent to ${selected?.username}!`, {
-        description: "You can start playing now — they'll join once they accept.",
+        description:
+          "You can start playing now — they'll join once they accept.",
       });
       onClose();
       if (challenge.challengerGameId) {
@@ -378,16 +573,26 @@ function NewChallengeDialog({
   });
 
   const createMemoryMutation = useMutation({
-    mutationFn: (data: { challengerId: number; challengedId: number; gridSize: MemoryGridSize }) =>
-      customFetch<MemoryDuelDetail>("/api/memory-duels", { method: "POST", data }),
+    mutationFn: (data: {
+      challengerId: number;
+      challengedId: number;
+      gridSize: MemoryGridSize;
+    }) =>
+      customFetch<MemoryDuelDetail>("/api/memory-duels", {
+        method: "POST",
+        data,
+      }),
     onSuccess: (duel) => {
       queryClient.invalidateQueries({ queryKey: ["memory-duels"] });
       toast.success(`Memory Match challenge sent to ${selected?.username}!`, {
-        description: "You can start playing now — they'll join once they accept.",
+        description:
+          "You can start playing now — they'll join once they accept.",
       });
       onClose();
       if (duel.challengerGameId) {
-        setLocation(`/memory?duelGameId=${duel.challengerGameId}&gridSize=${duel.gridSize}`);
+        setLocation(
+          `/memory?duelGameId=${duel.challengerGameId}&gridSize=${duel.gridSize}`,
+        );
       }
     },
     onError: () => toast.error("Failed to send challenge"),
@@ -396,13 +601,23 @@ function NewChallengeDialog({
   const handleSend = () => {
     if (!selected) return;
     if (gameType === "sudoku") {
-      createSudokuMutation.mutate({ challengerId: myProfileId, challengedId: selected.id, difficulty, gridSize: sudokuGridSize });
+      createSudokuMutation.mutate({
+        challengerId: myProfileId,
+        challengedId: selected.id,
+        difficulty,
+        gridSize: sudokuGridSize,
+      });
     } else {
-      createMemoryMutation.mutate({ challengerId: myProfileId, challengedId: selected.id, gridSize: memoryGridSize });
+      createMemoryMutation.mutate({
+        challengerId: myProfileId,
+        challengedId: selected.id,
+        gridSize: memoryGridSize,
+      });
     }
   };
 
-  const isPending = createSudokuMutation.isPending || createMemoryMutation.isPending;
+  const isPending =
+    createSudokuMutation.isPending || createMemoryMutation.isPending;
 
   const handleClose = () => {
     setSearch("");
@@ -424,7 +639,9 @@ function NewChallengeDialog({
         <div className="space-y-4 py-2">
           {!selected ? (
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Search by username</label>
+              <label className="text-sm font-medium text-foreground">
+                Search by username
+              </label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -434,7 +651,9 @@ function NewChallengeDialog({
                   onChange={(e) => setSearch(e.target.value)}
                   autoFocus
                 />
-                {isFetching && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />}
+                {isFetching && (
+                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
+                )}
               </div>
               {results && results.length > 0 && (
                 <div className="border rounded-lg divide-y max-h-52 overflow-y-auto">
@@ -448,7 +667,8 @@ function NewChallengeDialog({
                       <div>
                         <p className="font-medium text-sm">{p.username}</p>
                         <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Gem className="w-3 h-3 text-cyan-500" />{p.gems?.toLocaleString() ?? 0} gems
+                          <Gem className="w-3 h-3 text-cyan-500" />
+                          {p.gems?.toLocaleString() ?? 0} gems
                         </p>
                       </div>
                     </button>
@@ -456,20 +676,34 @@ function NewChallengeDialog({
                 </div>
               )}
               {search.length >= 2 && !isFetching && results?.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-3">No players found</p>
+                <p className="text-sm text-muted-foreground text-center py-3">
+                  No players found
+                </p>
               )}
             </div>
           ) : (
             <div className="space-y-4">
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border">
-                <Avatar src={selected.avatar} name={selected.username} size={10} />
+                <Avatar
+                  src={selected.avatar}
+                  name={selected.username}
+                  size={10}
+                />
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold">{selected.username}</p>
                   <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Gem className="w-3 h-3 text-cyan-500" />{selected.gems?.toLocaleString() ?? 0} gems
+                    <Gem className="w-3 h-3 text-cyan-500" />
+                    {selected.gems?.toLocaleString() ?? 0} gems
                   </p>
                 </div>
-                <Button variant="ghost" size="sm" className="text-xs" onClick={() => setSelected(null)}>Change</Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs"
+                  onClick={() => setSelected(null)}
+                >
+                  Change
+                </Button>
               </div>
 
               {/* Game type selector */}
@@ -495,8 +729,13 @@ function NewChallengeDialog({
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium">Difficulty</label>
-                    <Select value={difficulty} onValueChange={(v) => setDifficulty(v as Difficulty)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                    <Select
+                      value={difficulty}
+                      onValueChange={(v) => setDifficulty(v as Difficulty)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="easy">Easy</SelectItem>
                         <SelectItem value="medium">Medium</SelectItem>
@@ -507,8 +746,15 @@ function NewChallengeDialog({
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium">Grid Size</label>
-                    <Select value={String(sudokuGridSize)} onValueChange={(v) => setSudokuGridSize(Number(v) as SudokuGridSize)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                    <Select
+                      value={String(sudokuGridSize)}
+                      onValueChange={(v) =>
+                        setSudokuGridSize(Number(v) as SudokuGridSize)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="3">3×3 Baby</SelectItem>
                         <SelectItem value="4">4×4 Mini</SelectItem>
@@ -524,8 +770,15 @@ function NewChallengeDialog({
               {gameType === "memory" && (
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium">Grid Size</label>
-                  <Select value={String(memoryGridSize)} onValueChange={(v) => setMemoryGridSize(Number(v) as MemoryGridSize)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    value={String(memoryGridSize)}
+                    onValueChange={(v) =>
+                      setMemoryGridSize(Number(v) as MemoryGridSize)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="2">2×4 Beginner · 4 pairs</SelectItem>
                       <SelectItem value="4">4×4 Easy · 8 pairs</SelectItem>
@@ -538,20 +791,31 @@ function NewChallengeDialog({
 
               <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 flex items-start gap-2">
                 <Trophy className="w-3.5 h-3.5 mt-0.5 shrink-0 text-amber-600" />
-                <span>Winner gets <strong>10 gems</strong> — whoever scores more points wins!</span>
+                <span>
+                  Winner gets <strong>10 gems</strong> — whoever scores more
+                  points wins!
+                </span>
               </div>
             </div>
           )}
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={handleClose}>Cancel</Button>
+          <Button variant="outline" onClick={handleClose}>
+            Cancel
+          </Button>
           {selected && (
             <Button onClick={handleSend} disabled={isPending} className="gap-2">
               {isPending ? (
-                <><Loader2 className="w-4 h-4 animate-spin" />Sending…</>
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Sending…
+                </>
               ) : (
-                <><Swords className="w-4 h-4" />Send Challenge</>
+                <>
+                  <Swords className="w-4 h-4" />
+                  Send Challenge
+                </>
               )}
             </Button>
           )}
@@ -572,15 +836,24 @@ export default function Challenges() {
   const [activeTab, setActiveTab] = useState<GameType>("sudoku");
 
   // ── Sudoku challenges ────────────────────────────────────────────────────────
-  const { data: challenges, isLoading: challengesLoading } = useQuery<ChallengeDetail[]>({
+  const { data: challenges, isLoading: challengesLoading } = useQuery<
+    ChallengeDetail[]
+  >({
     queryKey: ["challenges", profileId],
-    queryFn: () => customFetch<ChallengeDetail[]>(`/api/challenges/for/${profileId}`),
+    queryFn: () =>
+      customFetch<ChallengeDetail[]>(`/api/challenges/for/${profileId}`),
     enabled: !!profileId,
     refetchInterval: 10000,
   });
 
   const respondMutation = useMutation({
-    mutationFn: ({ id, action }: { id: number; action: "accept" | "decline" }) =>
+    mutationFn: ({
+      id,
+      action,
+    }: {
+      id: number;
+      action: "accept" | "decline";
+    }) =>
       customFetch<ChallengeDetail>(`/api/challenges/${id}/respond`, {
         method: "PATCH",
         data: { action, profileId },
@@ -590,24 +863,37 @@ export default function Challenges() {
       setRespondingId(null);
       if (vars.action === "accept") {
         toast.success("Challenge accepted! Let's go!");
-        if (challenge.challengedGameId) setLocation(`/game/${challenge.challengedGameId}`);
+        if (challenge.challengedGameId)
+          setLocation(`/game/${challenge.challengedGameId}`);
       } else {
         toast("Challenge declined.");
       }
     },
-    onError: () => { setRespondingId(null); toast.error("Failed to respond to challenge"); },
+    onError: () => {
+      setRespondingId(null);
+      toast.error("Failed to respond to challenge");
+    },
   });
 
   // ── Memory duels ─────────────────────────────────────────────────────────────
-  const { data: duels, isLoading: duelsLoading } = useQuery<MemoryDuelDetail[]>({
-    queryKey: ["memory-duels", profileId],
-    queryFn: () => customFetch<MemoryDuelDetail[]>(`/api/memory-duels/for/${profileId}`),
-    enabled: !!profileId,
-    refetchInterval: 10000,
-  });
+  const { data: duels, isLoading: duelsLoading } = useQuery<MemoryDuelDetail[]>(
+    {
+      queryKey: ["memory-duels", profileId],
+      queryFn: () =>
+        customFetch<MemoryDuelDetail[]>(`/api/memory-duels/for/${profileId}`),
+      enabled: !!profileId,
+      refetchInterval: 10000,
+    },
+  );
 
   const respondDuelMutation = useMutation({
-    mutationFn: ({ id, action }: { id: number; action: "accept" | "decline" }) =>
+    mutationFn: ({
+      id,
+      action,
+    }: {
+      id: number;
+      action: "accept" | "decline";
+    }) =>
       customFetch<MemoryDuelDetail>(`/api/memory-duels/${id}/respond`, {
         method: "PATCH",
         data: { action },
@@ -618,76 +904,128 @@ export default function Challenges() {
       if (vars.action === "accept") {
         toast.success("Memory duel accepted! Let's play!");
         if (duel.challengedGameId) {
-          setLocation(`/memory?duelGameId=${duel.challengedGameId}&gridSize=${duel.gridSize}`);
+          setLocation(
+            `/memory?duelGameId=${duel.challengedGameId}&gridSize=${duel.gridSize}`,
+          );
         }
       } else {
         toast("Duel declined.");
       }
     },
-    onError: () => { setRespondingId(null); toast.error("Failed to respond to duel"); },
+    onError: () => {
+      setRespondingId(null);
+      toast.error("Failed to respond to duel");
+    },
   });
 
   // ── Handlers ──────────────────────────────────────────────────────────────────
 
-  const handleAccept = useCallback((id: number) => {
-    setRespondingId(id);
-    respondMutation.mutate({ id, action: "accept" });
-  }, [respondMutation]);
+  const handleAccept = useCallback(
+    (id: number) => {
+      setRespondingId(id);
+      respondMutation.mutate({ id, action: "accept" });
+    },
+    [respondMutation],
+  );
 
-  const handleDecline = useCallback((id: number) => {
-    setRespondingId(id);
-    respondMutation.mutate({ id, action: "decline" });
-  }, [respondMutation]);
+  const handleDecline = useCallback(
+    (id: number) => {
+      setRespondingId(id);
+      respondMutation.mutate({ id, action: "decline" });
+    },
+    [respondMutation],
+  );
 
-  const handlePlay = useCallback((gameId: number) => {
-    setLocation(`/game/${gameId}`);
-  }, [setLocation]);
+  const handlePlay = useCallback(
+    (gameId: number) => {
+      setLocation(`/game/${gameId}`);
+    },
+    [setLocation],
+  );
 
-  const handleDuelAccept = useCallback((id: number) => {
-    setRespondingId(id);
-    respondDuelMutation.mutate({ id, action: "accept" });
-  }, [respondDuelMutation]);
+  const handleDuelAccept = useCallback(
+    (id: number) => {
+      setRespondingId(id);
+      respondDuelMutation.mutate({ id, action: "accept" });
+    },
+    [respondDuelMutation],
+  );
 
-  const handleDuelDecline = useCallback((id: number) => {
-    setRespondingId(id);
-    respondDuelMutation.mutate({ id, action: "decline" });
-  }, [respondDuelMutation]);
+  const handleDuelDecline = useCallback(
+    (id: number) => {
+      setRespondingId(id);
+      respondDuelMutation.mutate({ id, action: "decline" });
+    },
+    [respondDuelMutation],
+  );
 
-  const handleDuelPlay = useCallback((duel: MemoryDuelDetail) => {
-    const myGameId = duel.challengerId === profileId ? duel.challengerGameId : duel.challengedGameId;
-    if (myGameId) {
-      setLocation(`/memory?duelGameId=${myGameId}&gridSize=${duel.gridSize}`);
-    }
-  }, [setLocation, profileId]);
+  const handleDuelPlay = useCallback(
+    (duel: MemoryDuelDetail) => {
+      const myGameId =
+        duel.challengerId === profileId
+          ? duel.challengerGameId
+          : duel.challengedGameId;
+      if (myGameId) {
+        setLocation(`/memory?duelGameId=${myGameId}&gridSize=${duel.gridSize}`);
+      }
+    },
+    [setLocation, profileId],
+  );
 
   // ── Derived lists ─────────────────────────────────────────────────────────────
 
-  const pending = challenges?.filter((c) => c.status === "pending" && c.challengedId === profileId) ?? [];
+  const pending =
+    challenges?.filter(
+      (c) => c.status === "pending" && c.challengedId === profileId,
+    ) ?? [];
   const active = challenges?.filter((c) => c.status === "accepted") ?? [];
-  const outgoing = challenges?.filter((c) => c.status === "pending" && c.challengerId === profileId) ?? [];
-  const finished = challenges?.filter((c) => c.status === "completed" || c.status === "declined") ?? [];
+  const outgoing =
+    challenges?.filter(
+      (c) => c.status === "pending" && c.challengerId === profileId,
+    ) ?? [];
+  const finished =
+    challenges?.filter(
+      (c) => c.status === "completed" || c.status === "declined",
+    ) ?? [];
 
-  const duelPending = duels?.filter((d) => d.status === "pending" && d.challengedId === profileId) ?? [];
+  const duelPending =
+    duels?.filter(
+      (d) => d.status === "pending" && d.challengedId === profileId,
+    ) ?? [];
   const duelActive = duels?.filter((d) => d.status === "accepted") ?? [];
-  const duelOutgoing = duels?.filter((d) => d.status === "pending" && d.challengerId === profileId) ?? [];
-  const duelFinished = duels?.filter((d) => d.status === "completed" || d.status === "declined") ?? [];
+  const duelOutgoing =
+    duels?.filter(
+      (d) => d.status === "pending" && d.challengerId === profileId,
+    ) ?? [];
+  const duelFinished =
+    duels?.filter((d) => d.status === "completed" || d.status === "declined") ??
+    [];
 
   // Badge counts for tab labels
-  const sudokuAlert = pending.length + active.filter(c => {
-    const myGameId = c.challengerId === profileId ? c.challengerGameId : c.challengedGameId;
-    const myPoints = c.challengerId === profileId ? c.challengerPoints : c.challengedPoints;
-    return myGameId && myPoints == null;
-  }).length;
-  const memoryAlert = duelPending.length + duelActive.filter(d => {
-    const myPoints = d.challengerId === profileId ? d.challengerPoints : d.challengedPoints;
-    return myPoints == null;
-  }).length;
+  const sudokuAlert =
+    pending.length +
+    active.filter((c) => {
+      const myGameId =
+        c.challengerId === profileId ? c.challengerGameId : c.challengedGameId;
+      const myPoints =
+        c.challengerId === profileId ? c.challengerPoints : c.challengedPoints;
+      return myGameId && myPoints == null;
+    }).length;
+  const memoryAlert =
+    duelPending.length +
+    duelActive.filter((d) => {
+      const myPoints =
+        d.challengerId === profileId ? d.challengerPoints : d.challengedPoints;
+      return myPoints == null;
+    }).length;
 
   if (!profileId) {
     return (
       <div className="max-w-2xl mx-auto w-full space-y-6 animate-in fade-in duration-500">
         <div className="space-y-1">
-          <h1 className="text-3xl font-serif font-bold tracking-tight">Challenges</h1>
+          <h1 className="text-3xl font-serif font-bold tracking-tight">
+            Challenges
+          </h1>
         </div>
         <Card>
           <CardContent className="pt-8 pb-8 flex flex-col items-center gap-3 text-center">
@@ -706,13 +1044,33 @@ export default function Challenges() {
     <div className="max-w-2xl mx-auto w-full space-y-6 animate-in fade-in duration-500">
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-3xl font-serif font-bold tracking-tight">Challenges</h1>
-          <p className="text-muted-foreground">Beat your opponent's score to win 10 gems.</p>
+          <h1 className="text-3xl font-serif font-bold tracking-tight">
+            Challenges
+          </h1>
+          <p className="text-muted-foreground">
+            Beat your opponent's score to win 10 gems.
+          </p>
         </div>
         <Button className="gap-2 shrink-0" onClick={() => setShowNew(true)}>
           <Swords className="w-4 h-4" />
           Challenge
         </Button>
+      </div>
+      <div className="flex gap-2">
+        <Link
+          href="/sudoku"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-muted transition-colors"
+        >
+          <Zap className="w-3.5 h-3.5 text-primary" />
+          Play Sudoku
+        </Link>
+        <Link
+          href="/memory"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-muted transition-colors"
+        >
+          <Brain className="w-3.5 h-3.5 text-primary" />
+          Play Memory
+        </Link>
       </div>
 
       {/* Game type tabs */}
@@ -724,7 +1082,9 @@ export default function Challenges() {
           <Grid2x2 className="w-4 h-4" />
           Sudoku
           {sudokuAlert > 0 && (
-            <span className="w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">{sudokuAlert}</span>
+            <span className="w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+              {sudokuAlert}
+            </span>
           )}
         </button>
         <button
@@ -734,39 +1094,76 @@ export default function Challenges() {
           <Brain className="w-4 h-4" />
           Memory Match
           {memoryAlert > 0 && (
-            <span className="w-4 h-4 rounded-full bg-violet-500 text-white text-[10px] font-bold flex items-center justify-center">{memoryAlert}</span>
+            <span className="w-4 h-4 rounded-full bg-violet-500 text-white text-[10px] font-bold flex items-center justify-center">
+              {memoryAlert}
+            </span>
           )}
         </button>
       </div>
 
       {isLoading ? (
         <div className="space-y-3">
-          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-24 w-full" />)}
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-24 w-full" />
+          ))}
         </div>
       ) : activeTab === "sudoku" ? (
         <div className="space-y-6">
           {pending.length > 0 && (
             <section className="space-y-3">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" /> Waiting for you ({pending.length})
+                <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />{" "}
+                Waiting for you ({pending.length})
               </h2>
-              {pending.map((c) => <ChallengeCard key={c.id} challenge={c} myProfileId={profileId} onAccept={handleAccept} onDecline={handleDecline} onPlay={handlePlay} isResponding={respondingId === c.id} />)}
+              {pending.map((c) => (
+                <ChallengeCard
+                  key={c.id}
+                  challenge={c}
+                  myProfileId={profileId}
+                  onAccept={handleAccept}
+                  onDecline={handleDecline}
+                  onPlay={handlePlay}
+                  isResponding={respondingId === c.id}
+                />
+              ))}
             </section>
           )}
           {active.length > 0 && (
             <section className="space-y-3">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" /> In Progress ({active.length})
+                <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />{" "}
+                In Progress ({active.length})
               </h2>
-              {active.map((c) => <ChallengeCard key={c.id} challenge={c} myProfileId={profileId} onAccept={handleAccept} onDecline={handleDecline} onPlay={handlePlay} isResponding={respondingId === c.id} />)}
+              {active.map((c) => (
+                <ChallengeCard
+                  key={c.id}
+                  challenge={c}
+                  myProfileId={profileId}
+                  onAccept={handleAccept}
+                  onDecline={handleDecline}
+                  onPlay={handlePlay}
+                  isResponding={respondingId === c.id}
+                />
+              ))}
             </section>
           )}
           {outgoing.length > 0 && (
             <section className="space-y-3">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <Clock className="w-3.5 h-3.5" /> Waiting for them ({outgoing.length})
+                <Clock className="w-3.5 h-3.5" /> Waiting for them (
+                {outgoing.length})
               </h2>
-              {outgoing.map((c) => <ChallengeCard key={c.id} challenge={c} myProfileId={profileId} onAccept={handleAccept} onDecline={handleDecline} onPlay={handlePlay} isResponding={respondingId === c.id} />)}
+              {outgoing.map((c) => (
+                <ChallengeCard
+                  key={c.id}
+                  challenge={c}
+                  myProfileId={profileId}
+                  onAccept={handleAccept}
+                  onDecline={handleDecline}
+                  onPlay={handlePlay}
+                  isResponding={respondingId === c.id}
+                />
+              ))}
             </section>
           )}
           {finished.length > 0 && (
@@ -774,15 +1171,30 @@ export default function Challenges() {
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Finished
               </h2>
-              {finished.map((c) => <ChallengeCard key={c.id} challenge={c} myProfileId={profileId} onAccept={handleAccept} onDecline={handleDecline} onPlay={handlePlay} isResponding={false} />)}
+              {finished.map((c) => (
+                <ChallengeCard
+                  key={c.id}
+                  challenge={c}
+                  myProfileId={profileId}
+                  onAccept={handleAccept}
+                  onDecline={handleDecline}
+                  onPlay={handlePlay}
+                  isResponding={false}
+                />
+              ))}
             </section>
           )}
           {(!challenges || challenges.length === 0) && (
             <Card>
               <CardContent className="pt-10 pb-10 flex flex-col items-center gap-3 text-center">
                 <Swords className="w-12 h-12 text-muted-foreground/30" />
-                <p className="font-semibold text-lg">No Sudoku challenges yet</p>
-                <p className="text-sm text-muted-foreground max-w-xs">Challenge another player to a head-to-head Sudoku battle. Winner takes 10 gems!</p>
+                <p className="font-semibold text-lg">
+                  No Sudoku challenges yet
+                </p>
+                <p className="text-sm text-muted-foreground max-w-xs">
+                  Challenge another player to a head-to-head Sudoku battle.
+                  Winner takes 10 gems!
+                </p>
                 <Button className="mt-2 gap-2" onClick={() => setShowNew(true)}>
                   <Swords className="w-4 h-4" /> Send your first challenge
                 </Button>
@@ -795,25 +1207,58 @@ export default function Challenges() {
           {duelPending.length > 0 && (
             <section className="space-y-3">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" /> Waiting for you ({duelPending.length})
+                <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />{" "}
+                Waiting for you ({duelPending.length})
               </h2>
-              {duelPending.map((d) => <MemoryDuelCard key={d.id} duel={d} myProfileId={profileId} onAccept={handleDuelAccept} onDecline={handleDuelDecline} onPlay={handleDuelPlay} isResponding={respondingId === d.id} />)}
+              {duelPending.map((d) => (
+                <MemoryDuelCard
+                  key={d.id}
+                  duel={d}
+                  myProfileId={profileId}
+                  onAccept={handleDuelAccept}
+                  onDecline={handleDuelDecline}
+                  onPlay={handleDuelPlay}
+                  isResponding={respondingId === d.id}
+                />
+              ))}
             </section>
           )}
           {duelActive.length > 0 && (
             <section className="space-y-3">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" /> In Progress ({duelActive.length})
+                <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />{" "}
+                In Progress ({duelActive.length})
               </h2>
-              {duelActive.map((d) => <MemoryDuelCard key={d.id} duel={d} myProfileId={profileId} onAccept={handleDuelAccept} onDecline={handleDuelDecline} onPlay={handleDuelPlay} isResponding={respondingId === d.id} />)}
+              {duelActive.map((d) => (
+                <MemoryDuelCard
+                  key={d.id}
+                  duel={d}
+                  myProfileId={profileId}
+                  onAccept={handleDuelAccept}
+                  onDecline={handleDuelDecline}
+                  onPlay={handleDuelPlay}
+                  isResponding={respondingId === d.id}
+                />
+              ))}
             </section>
           )}
           {duelOutgoing.length > 0 && (
             <section className="space-y-3">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <Clock className="w-3.5 h-3.5" /> Waiting for them ({duelOutgoing.length})
+                <Clock className="w-3.5 h-3.5" /> Waiting for them (
+                {duelOutgoing.length})
               </h2>
-              {duelOutgoing.map((d) => <MemoryDuelCard key={d.id} duel={d} myProfileId={profileId} onAccept={handleDuelAccept} onDecline={handleDuelDecline} onPlay={handleDuelPlay} isResponding={respondingId === d.id} />)}
+              {duelOutgoing.map((d) => (
+                <MemoryDuelCard
+                  key={d.id}
+                  duel={d}
+                  myProfileId={profileId}
+                  onAccept={handleDuelAccept}
+                  onDecline={handleDuelDecline}
+                  onPlay={handleDuelPlay}
+                  isResponding={respondingId === d.id}
+                />
+              ))}
             </section>
           )}
           {duelFinished.length > 0 && (
@@ -821,16 +1266,34 @@ export default function Challenges() {
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Finished
               </h2>
-              {duelFinished.map((d) => <MemoryDuelCard key={d.id} duel={d} myProfileId={profileId} onAccept={handleDuelAccept} onDecline={handleDuelDecline} onPlay={handleDuelPlay} isResponding={false} />)}
+              {duelFinished.map((d) => (
+                <MemoryDuelCard
+                  key={d.id}
+                  duel={d}
+                  myProfileId={profileId}
+                  onAccept={handleDuelAccept}
+                  onDecline={handleDuelDecline}
+                  onPlay={handleDuelPlay}
+                  isResponding={false}
+                />
+              ))}
             </section>
           )}
           {(!duels || duels.length === 0) && (
             <Card>
               <CardContent className="pt-10 pb-10 flex flex-col items-center gap-3 text-center">
                 <Brain className="w-12 h-12 text-muted-foreground/30" />
-                <p className="font-semibold text-lg">No Memory Match duels yet</p>
-                <p className="text-sm text-muted-foreground max-w-xs">Challenge a friend to a head-to-head Memory Match. Flip all pairs the fastest to win 10 gems!</p>
-                <Button className="mt-2 gap-2 bg-violet-600 hover:bg-violet-700" onClick={() => setShowNew(true)}>
+                <p className="font-semibold text-lg">
+                  No Memory Match duels yet
+                </p>
+                <p className="text-sm text-muted-foreground max-w-xs">
+                  Challenge a friend to a head-to-head Memory Match. Flip all
+                  pairs the fastest to win 10 gems!
+                </p>
+                <Button
+                  className="mt-2 gap-2 bg-violet-600 hover:bg-violet-700"
+                  onClick={() => setShowNew(true)}
+                >
                   <Brain className="w-4 h-4" /> Send a memory duel
                 </Button>
               </CardContent>
@@ -839,7 +1302,11 @@ export default function Challenges() {
         </div>
       )}
 
-      <NewChallengeDialog open={showNew} onClose={() => setShowNew(false)} myProfileId={profileId} />
+      <NewChallengeDialog
+        open={showNew}
+        onClose={() => setShowNew(false)}
+        myProfileId={profileId}
+      />
     </div>
   );
 }
