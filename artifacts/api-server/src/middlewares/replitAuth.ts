@@ -173,14 +173,16 @@ export async function setupAuth(app: Express) {
 
     app.get("/api/login", passport.authenticate("google", { scope: ["openid", "email", "profile"] }));
 
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:19093";
+
     app.get(
       "/api/callback/google",
-      passport.authenticate("google", { failureRedirect: "/" }),
-      (_req, res) => res.redirect("/"),
+      passport.authenticate("google", { failureRedirect: frontendUrl }),
+      (_req, res) => res.redirect(frontendUrl),
     );
 
     app.get("/api/logout", (req, res) => {
-      req.logout(() => res.redirect("/"));
+      req.logout(() => res.redirect(frontendUrl));
     });
 
     app.get("/api/auth/user", async (req: any, res) => {
