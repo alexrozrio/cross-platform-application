@@ -1,0 +1,38 @@
+pnpm --filter @workspace/api-server run dev
+$ cross-env NODE_ENV=development pnpm run build && pnpm run start
+$ node ./build.mjs
+
+  dist\index.mjs                       2.5mb
+  dist\pino-worker.mjs               153.4kb
+  dist\pino-file.mjs                 142.1kb
+  dist\pino-pretty.mjs               114.6kb
+  dist\thread-stream-worker.mjs        7.3kb
+  dist\index.mjs.map                   4.2mb
+  dist\pino-worker.mjs.map           256.9kb
+  dist\pino-file.mjs.map             229.1kb
+  dist\pino-pretty.mjs.map           204.0kb
+  dist\thread-stream-worker.mjs.map   12.0kb
+
+Done in 559ms
+$ node --enable-source-maps ./dist/index.mjs
+file:///D:/Project/Cross-Platform-Game/artifacts/api-server/dist/index.mjs:39896
+  const err = new TypeError(message, { cause });
+              ^
+
+TypeError: "clientId" must be a non-empty string
+    at CodedTypeError (D:\Project\Cross-Platform-Game\node_modules\.pnpm\openid-client@6.8.4\node_modules\openid-client\src\index.ts:867:15)
+    at new Configuration (D:\Project\Cross-Platform-Game\node_modules\.pnpm\openid-client@6.8.4\node_modules\openid-client\src\index.ts:1876:13)
+    at discovery (D:\Project\Cross-Platform-Game\node_modules\.pnpm\openid-client@6.8.4\node_modules\openid-client\src\index.ts:1308:20)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async getOidcConfig.maxAge (D:\Project\Cross-Platform-Game\artifacts\api-server\src\middlewares\replitAuth.ts:13:12)
+    at async setupAuth (D:\Project\Cross-Platform-Game\artifacts\api-server\src\middlewares\replitAuth.ts:81:18)
+    at async <anonymous> (D:\Project\Cross-Platform-Game\artifacts\api-server\src\app.ts:34:1) {
+  code: 'ERR_INVALID_ARG_TYPE',
+  [cause]: undefined
+}
+
+Node.js v24.16.0
+[ELIFECYCLE] Command failed with exit code 1.
+D:\Project\Cross-Platform-Game\artifacts\api-server:
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @workspace/api-server@0.0.0 dev: `cross-env NODE_ENV=development pnpm run build && pnpm run start`
+Exit status 1

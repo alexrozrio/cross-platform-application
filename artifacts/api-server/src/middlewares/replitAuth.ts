@@ -8,6 +8,8 @@ import connectPg from "connect-pg-simple";
 import { db, users } from "@workspace/db";
 import { eq } from "drizzle-orm";
 
+const isReplitEnv = !!process.env.REPL_ID;
+
 const getOidcConfig = memoize(
   async () => {
     return await client.discovery(
@@ -23,7 +25,7 @@ export function getSession() {
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,
-    createTableIfMissing: false,
+    createTableIfMissing: true,
     ttl: sessionTtl,
     tableName: "sessions",
   });
@@ -34,7 +36,7 @@ export function getSession() {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: true,
+      secure: isReplitEnv,
       maxAge: sessionTtl,
     },
   });
@@ -77,6 +79,20 @@ export async function setupAuth(app: Express) {
   app.use(getSession());
   app.use(passport.initialize());
   app.use(passport.session());
+
+  if (!isReplitEnv) {
+    // Running locally — Replit OIDC is not available.
+    // The app works in guest mode (device ID). Sign in is disabled.
+    app.get("/api/login", (_req, res) => {
+      res.status(503).json({ message: "Sign in is only available on Replit" });
+    });
+    app.get("/api/callback", (_req, res) => res.redirect("/"));
+    app.get("/api/logout", (req, res) => {
+      req.logout(() => res.redirect("/"));
+    });
+    app.get("/api/auth/user", (_req, res) => res.status(401).json({ message: "Unauthorized" }));
+    return;
+  }
 
   const config = await getOidcConfig();
 
