@@ -1,17 +1,22 @@
-import { eq, and, gte, lt } from "drizzle-orm";
-import { db, gamesTable, badgesTable, memoryGamesTable } from "@workspace/db";
+import { eq, and, gte, lt, sql } from "drizzle-orm";
+import { db, gamesTable, badgesTable, memoryGamesTable, profilesTable } from "@workspace/db";
 import {
   getWeekRange,
   getMonthRange,
   getPreviousWeekPeriod,
   getPreviousMonthPeriod,
 } from "./periods";
+import { logger } from "../lib/logger";
+
+const WEEKLY_GEMS = [20, 10, 5];
+const MONTHLY_GEMS = [50, 30, 15];
 
 async function awardBadgesForPeriod(
   period: string,
   type: "weekly" | "monthly",
-): Promise<void> {
+): Promise<number> {
   const range = type === "weekly" ? getWeekRange(period) : getMonthRange(period);
+  const gemRewards = type === "weekly" ? WEEKLY_GEMS : MONTHLY_GEMS;
 
   const [sudokuRows, memoryRows] = await Promise.all([
     db.select({ profileId: gamesTable.profileId, points: gamesTable.points })
@@ -36,27 +41,47 @@ async function awardBadgesForPeriod(
     totals.set(row.profileId, (totals.get(row.profileId) ?? 0) + (row.points ?? 0));
   }
 
-  if (totals.size === 0) return;
+  if (totals.size === 0) return 0;
 
   const ranked = Array.from(totals.entries())
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3);
 
-  const TYPES = [`${type}_1st`, `${type}_2nd`, `${type}_3rd`];
+  const BADGE_TYPES = [`${type}_1st`, `${type}_2nd`, `${type}_3rd`];
+  let awarded = 0;
 
   for (let i = 0; i < ranked.length; i++) {
     const [profileId, totalPoints] = ranked[i];
-    await db
+
+    const result = await db
       .insert(badgesTable)
       .values({
         profileId,
-        badgeType: TYPES[i],
+        badgeType: BADGE_TYPES[i],
         tournamentPeriod: period,
         totalPoints,
         shareToken: crypto.randomUUID(),
       })
-      .onConflictDoNothing();
+      .onConflictDoNothing()
+      .returning({ id: badgesTable.id });
+
+    if (result.length > 0) {
+      awarded++;
+      const gems = gemRewards[i] ?? 0;
+      if (gems > 0) {
+        await db
+          .update(profilesTable)
+          .set({ gems: sql`${profilesTable.gems} + ${gems}` })
+          .where(eq(profilesTable.id, profileId));
+      }
+      logger.info(
+        { period, type, place: i + 1, profileId, totalPoints, gems },
+        "Tournament badge awarded",
+      );
+    }
   }
+
+  return awarded;
 }
 
 export async function awardPreviousPeriodBadges(): Promise<void> {
@@ -66,8 +91,12 @@ export async function awardPreviousPeriodBadges(): Promise<void> {
     .from(badgesTable)
     .where(eq(badgesTable.tournamentPeriod, prevWeek))
     .limit(1);
+
   if (weeklyExists.length === 0) {
-    await awardBadgesForPeriod(prevWeek, "weekly");
+    const count = await awardBadgesForPeriod(prevWeek, "weekly");
+    if (count > 0) {
+      logger.info({ period: prevWeek, count }, "Weekly tournament badges awarded");
+    }
   }
 
   const prevMonth = getPreviousMonthPeriod();
@@ -76,7 +105,11 @@ export async function awardPreviousPeriodBadges(): Promise<void> {
     .from(badgesTable)
     .where(eq(badgesTable.tournamentPeriod, prevMonth))
     .limit(1);
+
   if (monthlyExists.length === 0) {
-    await awardBadgesForPeriod(prevMonth, "monthly");
+    const count = await awardBadgesForPeriod(prevMonth, "monthly");
+    if (count > 0) {
+      logger.info({ period: prevMonth, count }, "Monthly tournament badges awarded");
+    }
   }
 }

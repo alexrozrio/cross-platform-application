@@ -4,6 +4,7 @@ import pinoHttp from "pino-http";
 import { setupAuth } from "./middlewares/replitAuth";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { startTournamentScheduler } from "./utils/scheduler";
 
 const app: Express = express();
 
@@ -34,5 +35,7 @@ app.use(express.urlencoded({ extended: true }));
 await setupAuth(app);
 
 app.use("/api", router);
+
+startTournamentScheduler();
 
 export default app;
