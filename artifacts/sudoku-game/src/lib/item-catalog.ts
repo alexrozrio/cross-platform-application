@@ -1,24 +1,13 @@
+import colourThemes from '@/config/colour-themes.json';
+
 export type ItemType = "color_theme" | "font" | "icon_set";
 
+const _colorThemeCosts = Object.fromEntries(
+  colourThemes.map(t => [t.id, t.gems])
+);
+
 export const ITEM_COSTS: Record<ItemType, Record<string, number>> = {
-  color_theme: {
-    light: 0,
-    dark: 0,
-    ocean: 100,
-    forest: 150,
-    sunset: 150,
-    midnight: 200,
-    rose: 200,
-    emerald: 100,
-    slate: 100,
-    lavender: 150,
-    amber: 150,
-    teal: 200,
-    crimson: 200,
-    coral: 150,
-    arctic: 150,
-    mocha: 200,
-  },
+  color_theme: _colorThemeCosts,
   font: {
     default: 0,
     modern: 50,

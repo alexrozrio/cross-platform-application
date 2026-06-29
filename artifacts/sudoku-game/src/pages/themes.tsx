@@ -19,25 +19,11 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import colourThemesConfig from '@/config/colour-themes.json';
 
-const APP_THEMES = [
-  { id: 'light',       label: 'Classic',      bg: '#f8f6f0', primary: '#4a6585', accent: '#e8e4da' },
-  { id: 'dark',        label: 'Dark',         bg: '#1a1f2e', primary: '#6b8fc4', accent: '#2a3045' },
-  { id: 'ocean',       label: 'Ocean',        bg: '#eef7fb', primary: '#2e8a91', accent: '#cce9f0' },
-  { id: 'forest',      label: 'Forest',       bg: '#f2f8f2', primary: '#2e6b40', accent: '#cce5cc' },
-  { id: 'sunset',      label: 'Sunset',       bg: '#fdf6f0', primary: '#b84e20', accent: '#f0d8c4' },
-  { id: 'midnight',    label: 'Midnight',     bg: '#0f0b1a', primary: '#8b5cf6', accent: '#2a1f40' },
-  { id: 'rose',        label: 'Rose',         bg: '#fdf5f7', primary: '#a3254e', accent: '#f0d0da' },
-  { id: 'emerald',     label: 'Emerald',      bg: '#f0fdf4', primary: '#059669', accent: '#d1fae5' },
-  { id: 'slate',       label: 'Slate',        bg: '#f8fafc', primary: '#475569', accent: '#e2e8f0' },
-  { id: 'lavender',    label: 'Lavender',     bg: '#f5f0ff', primary: '#7c3aed', accent: '#ede9fe' },
-  { id: 'amber',       label: 'Amber',        bg: '#fffbeb', primary: '#d97706', accent: '#fef3c7' },
-  { id: 'teal',        label: 'Teal',         bg: '#f0fdfa', primary: '#0d9488', accent: '#ccfbf1' },
-  { id: 'crimson',     label: 'Crimson',      bg: '#fff5f5', primary: '#dc2626', accent: '#fee2e2' },
-  { id: 'coral',       label: 'Coral',        bg: '#fff7f5', primary: '#e05a4e', accent: '#ffd5d0' },
-  { id: 'arctic',      label: 'Arctic',       bg: '#f0f8ff', primary: '#2563eb', accent: '#dbeafe' },
-  { id: 'mocha',       label: 'Mocha',        bg: '#faf8f5', primary: '#78503a', accent: '#e8ddd5' },
-] as const;
+const APP_THEMES = colourThemesConfig
+  .filter(t => t.visible)
+  .map(t => ({ id: t.id, label: t.name, bg: t.bg, primary: t.primary, accent: t.accent }));
 
 interface PendingUnlock {
   type: ItemType;
