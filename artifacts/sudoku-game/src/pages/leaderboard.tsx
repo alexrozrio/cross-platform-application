@@ -1152,22 +1152,22 @@ export default function Leaderboard() {
         onValueChange={(v) => setTab(v as MainTab)}
         className="w-full"
       >
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="weekly" className="gap-1.5">
-            <CalendarDays className="w-3.5 h-3.5" />
-            Weekly
+        <TabsList className="grid w-full grid-cols-4 h-auto p-1">
+          <TabsTrigger value="weekly" className="flex-col gap-0 leading-tight py-1.5">
+            <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" />Weekly</span>
+            <span className="text-[9px] font-normal opacity-60">tournament</span>
           </TabsTrigger>
-          <TabsTrigger value="monthly" className="gap-1.5">
-            <Calendar className="w-3.5 h-3.5" />
-            Monthly
+          <TabsTrigger value="monthly" className="flex-col gap-0 leading-tight py-1.5">
+            <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />Monthly</span>
+            <span className="text-[9px] font-normal opacity-60">tournament</span>
           </TabsTrigger>
           <TabsTrigger value="alltime" className="flex-col gap-0 leading-tight py-1.5">
             <span className="flex items-center gap-1"><Zap className="w-3.5 h-3.5" />Sudoku</span>
-            <span className="text-[9px] font-normal opacity-60 -mt-0.5">all-time</span>
+            <span className="text-[9px] font-normal opacity-60">all-time</span>
           </TabsTrigger>
           <TabsTrigger value="memory" className="flex-col gap-0 leading-tight py-1.5">
             <span className="flex items-center gap-1"><Brain className="w-3.5 h-3.5" />Memory</span>
-            <span className="text-[9px] font-normal opacity-60 -mt-0.5">all-time</span>
+            <span className="text-[9px] font-normal opacity-60">all-time</span>
           </TabsTrigger>
         </TabsList>
       </Tabs>
