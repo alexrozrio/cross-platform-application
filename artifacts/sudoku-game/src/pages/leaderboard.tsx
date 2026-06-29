@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import {
   useGetLeaderboard,
@@ -1138,13 +1139,31 @@ export default function Leaderboard() {
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-8 animate-in fade-in duration-500">
-      <div className="space-y-1">
-        <h1 className="text-3xl font-serif font-bold tracking-tight">
-          Leaderboard
-        </h1>
-        <p className="text-muted-foreground">
-          Compete in weekly and monthly tournaments.
-        </p>
+      <div className="space-y-3">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-serif font-bold tracking-tight">
+            Leaderboard
+          </h1>
+          <p className="text-muted-foreground">
+            Compete in weekly and monthly tournaments.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Link
+            href="/sudoku"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-muted transition-colors"
+          >
+            <Zap className="w-3.5 h-3.5 text-primary" />
+            Play Sudoku
+          </Link>
+          <Link
+            href="/memory"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-muted transition-colors"
+          >
+            <Brain className="w-3.5 h-3.5 text-primary" />
+            Play Memory
+          </Link>
+        </div>
       </div>
 
       <Tabs
