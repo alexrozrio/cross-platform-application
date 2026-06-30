@@ -428,7 +428,7 @@ function AchievementsCard({
                       ].join(" ")}
                     >
                       {unlocked && (
-                        <ShareAchievementButton achievement={a} variant="icon" />
+                        <ShareAchievementButton achievement={a} variant="icon" profileId={profileId} />
                       )}
                       <span
                         className={`text-2xl ${unlocked ? "" : "grayscale"}`}

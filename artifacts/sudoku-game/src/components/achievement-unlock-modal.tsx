@@ -9,9 +9,10 @@ import { ShareAchievementButton } from "@/components/share-achievement";
 interface AchievementUnlockModalProps {
   achievements: AchievementMeta[];
   onDismiss: () => void;
+  profileId?: number | null;
 }
 
-export function AchievementUnlockModal({ achievements, onDismiss }: AchievementUnlockModalProps) {
+export function AchievementUnlockModal({ achievements, onDismiss, profileId }: AchievementUnlockModalProps) {
   const [, setLocation] = useLocation();
 
   if (achievements.length === 0) return null;
@@ -96,6 +97,7 @@ export function AchievementUnlockModal({ achievements, onDismiss }: AchievementU
             achievement={achievements.length === 1 ? achievements[0] : undefined}
             achievements={achievements.length > 1 ? achievements : undefined}
             variant="full"
+            profileId={profileId ?? undefined}
             label={
               achievements.length === 1
                 ? `Share — I have achieved "${achievements[0].title}"!`

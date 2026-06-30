@@ -68,7 +68,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-200" style={{ minHeight: "100svh" }}>
-      <AchievementUnlockModal achievements={newlyUnlocked} onDismiss={dismiss} />
+      <AchievementUnlockModal achievements={newlyUnlocked} onDismiss={dismiss} profileId={profileId} />
       <header className="border-b bg-card py-4 px-6 flex items-center justify-between sticky top-0 z-10">
         <Link href="/" className="font-serif text-2xl font-bold tracking-tight text-primary">
           Game Hub

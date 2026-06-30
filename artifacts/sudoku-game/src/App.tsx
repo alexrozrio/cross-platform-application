@@ -26,6 +26,7 @@ import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
 import MemoryMatch from "@/pages/memory";
 import MemoryChallengePage from "@/pages/memory-challenge";
+import PublicProfilePage from "@/pages/public-profile";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
@@ -71,6 +72,9 @@ function Router() {
           <Route path="/badges/:token" component={BadgeSharePage} />
           <Route path="/memory" component={MemoryMatch} />
           <Route path="/memory-challenge" component={MemoryChallengePage} />
+          <Route path="/players/:profileId">
+            {(params) => <PublicProfilePage profileId={params.profileId} />}
+          </Route>
           <Route path="/about" component={About} />
           <Route path="/privacy" component={PrivacyPolicy} />
           <Route path="/terms" component={TermsOfService} />

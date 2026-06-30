@@ -78,6 +78,8 @@ interface ShareAchievementButtonProps {
   variant?: "icon" | "full";
   /** Custom label for the full-variant button */
   label?: string;
+  /** If provided, the share URL points to the public profile page */
+  profileId?: number;
 }
 
 export function ShareAchievementButton({
@@ -85,11 +87,14 @@ export function ShareAchievementButton({
   achievements,
   variant = "icon",
   label,
+  profileId,
 }: ShareAchievementButtonProps) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const siteUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  // Deep-link to the sharer's public profile when profileId is available
+  const siteUrl = profileId ? `${origin}/players/${profileId}` : origin;
 
   // Build the share text — multi takes priority
   const shareText = achievements && achievements.length > 1
