@@ -9,7 +9,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ArrowLeft, Timer, Repeat2, Trophy, Gem, Star, RotateCcw, Zap, Brain, BarChart2, BookOpen, Keyboard, Scroll, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Timer, Repeat2, Trophy, Gem, Star, RotateCcw, Zap, Brain, BarChart2, BookOpen, Keyboard, Scroll, Lightbulb, Volume2, VolumeX } from 'lucide-react';
+import { useSound } from '@/hooks/use-sound';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -182,6 +183,8 @@ export default function MemoryMatchPage() {
   const { themeId } = useImageTheme();
   const queryClient = useQueryClient();
 
+  const sounds = useSound();
+
   const [phase, setPhase] = useState<GamePhase>('setup');
   const [gridSize, setGridSize] = useState<GridSize>(2);
   const [infoModal, setInfoModal] = useState<InfoModal>(null);
@@ -300,6 +303,7 @@ export default function MemoryMatchPage() {
 
       // Clear the highlight after 2 seconds
       setTimeout(() => setHintedIds([]), 2000);
+      sounds.note();
 
       return currentCards; // no card state change — just highlighting
     });
@@ -323,6 +327,7 @@ export default function MemoryMatchPage() {
 
           if (ca.value === cb.value) {
             // Match
+            sounds.place();
             const updated = cards.map(c =>
               c.id === a || c.id === b ? { ...c, flipped: true, matched: true } : c,
             );
@@ -342,6 +347,7 @@ export default function MemoryMatchPage() {
             return updated;
           } else {
             // No match — flip back after delay
+            sounds.error();
             const flippedTemp = cards.map(c =>
               c.id === a || c.id === b ? { ...c, flipped: true } : c,
             );
@@ -359,6 +365,7 @@ export default function MemoryMatchPage() {
       }
 
       // First card flipped
+      sounds.click();
       setCards(cards => cards.map(c => c.id === cardId ? { ...c, flipped: true } : c));
       return next;
     });
@@ -366,6 +373,7 @@ export default function MemoryMatchPage() {
 
   const completeGame = useCallback(async (finalCards: Card[]) => {
     setPhase('won');
+    sounds.complete();
     if (timerRef.current) clearInterval(timerRef.current);
 
     const currentElapsed = elapsed;
@@ -845,6 +853,17 @@ export default function MemoryMatchPage() {
           <span className={`text-[9px] font-bold leading-none tabular-nums ${tipsUsed >= MAX_TIPS ? 'text-red-400' : 'text-amber-500'}`}>
             {MAX_TIPS - tipsUsed}
           </span>
+        </button>
+
+        <button
+          onClick={sounds.toggle}
+          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
+          title={sounds.enabled ? 'Mute sounds' : 'Enable sounds'}
+        >
+          {sounds.enabled
+            ? <Volume2 className="w-3.5 h-3.5" />
+            : <VolumeX className="w-3.5 h-3.5" />
+          }
         </button>
 
         {/* Mode toggle (cycle through modes during play) */}
