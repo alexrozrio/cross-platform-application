@@ -1,5 +1,7 @@
 export type CustomFetchOptions = RequestInit & {
   responseType?: "json" | "text" | "blob" | "auto";
+  /** Orval-style shorthand: object is JSON-serialised and sent as the body. */
+  data?: unknown;
 };
 
 export type ErrorType<T = unknown> = ApiError<T>;
@@ -327,7 +329,13 @@ export async function customFetch<T = unknown>(
   options: CustomFetchOptions = {},
 ): Promise<T> {
   input = applyBaseUrl(input);
-  const { responseType = "auto", headers: headersInit, ...init } = options;
+  const { responseType = "auto", headers: headersInit, data, ...init } = options;
+
+  // When `data` is provided and `body` is absent, JSON-serialize `data` as the
+  // request body (Orval-style shorthand used by generated and hand-written callers).
+  if (data !== undefined && init.body == null) {
+    init.body = JSON.stringify(data);
+  }
 
   const method = resolveMethod(input, init.method);
 
