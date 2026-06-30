@@ -9,7 +9,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ArrowLeft, Timer, Repeat2, Trophy, Gem, Star, RotateCcw, Zap, Brain, BarChart2, BookOpen, Keyboard, Scroll } from 'lucide-react';
+import { ArrowLeft, Timer, Repeat2, Trophy, Gem, Star, RotateCcw, Zap, Brain, BarChart2, BookOpen, Keyboard, Scroll, Lightbulb } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -32,6 +32,8 @@ interface WinResult {
 }
 
 // ─── Config ───────────────────────────────────────────────────────────────────
+
+const MAX_TIPS = 2;
 
 const GRID_OPTIONS: { size: GridSize; label: string; pairs: number; desc: string }[] = [
   { size: 2, label: '2×4', pairs: 4,  desc: 'Beginner · 4 pairs' },
@@ -177,6 +179,7 @@ export default function MemoryMatchPage() {
   const [infoModal, setInfoModal] = useState<InfoModal>(null);
   const [displayMode, setDisplayMode] = useState<DisplayMode>('image');
   const [showNewGame, setShowNewGame] = useState(false);
+  const [tipsUsed, setTipsUsed] = useState(0);
 
   const { data: profile } = useGetProfile(profileId as number, {
     query: { enabled: !!profileId },
@@ -227,6 +230,7 @@ export default function MemoryMatchPage() {
     setLockBoard(false);
     setWinResult(null);
     setGameId(presetGameId ?? null);
+    setTipsUsed(0);
     setPhase('playing');
 
     // If a duel game ID was pre-created by the server, skip creation
@@ -260,6 +264,18 @@ export default function MemoryMatchPage() {
       startGameRef.current(s as GridSize);
     }
   }, [search]);
+
+  const handleTip = useCallback(() => {
+    if (tipsUsed >= MAX_TIPS || lockBoard) return;
+    setTipsUsed(t => t + 1);
+    setLockBoard(true);
+    // Briefly reveal all unmatched face-down cards
+    setCards(prev => prev.map(c => c.matched ? c : { ...c, flipped: true }));
+    setTimeout(() => {
+      setCards(prev => prev.map(c => c.matched ? c : { ...c, flipped: false }));
+      setLockBoard(false);
+    }, 1500);
+  }, [tipsUsed, lockBoard]);
 
   const handleCardClick = useCallback((cardId: number) => {
     if (lockBoard) return;
@@ -775,6 +791,22 @@ export default function MemoryMatchPage() {
           ].join(' ')}
         >
           <Star className="w-3 h-3" /> New
+        </button>
+
+        <button
+          onClick={handleTip}
+          disabled={tipsUsed >= MAX_TIPS || lockBoard}
+          className={[
+            'flex items-center gap-1 text-xs transition-colors shrink-0 font-medium disabled:cursor-not-allowed',
+            tipsUsed >= MAX_TIPS ? 'text-muted-foreground/40' : 'text-amber-500 hover:text-amber-600',
+          ].join(' ')}
+          title="Tip: briefly reveals all cards"
+        >
+          <Lightbulb className={`w-3 h-3 ${tipsUsed >= MAX_TIPS ? 'opacity-40' : ''}`} />
+          <span>Tip</span>
+          <span className={`text-[9px] font-bold leading-none tabular-nums ${tipsUsed >= MAX_TIPS ? 'text-red-400' : 'text-amber-500'}`}>
+            {MAX_TIPS - tipsUsed}
+          </span>
         </button>
 
         {/* Mode toggle (cycle through modes during play) */}
