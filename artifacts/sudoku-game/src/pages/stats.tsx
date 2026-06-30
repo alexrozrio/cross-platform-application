@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LevelCard } from "@/components/level-badge";
+import { ShareAchievementButton } from "@/components/share-achievement";
 import {
   ACHIEVEMENT_META,
   type AchievementsData,
@@ -416,9 +417,9 @@ function AchievementsCard({
                   return (
                     <div
                       key={a.id}
-                      title={a.description}
+                      title={unlocked ? undefined : a.description}
                       className={[
-                        "rounded-xl p-3 flex flex-col gap-1.5 border transition-all",
+                        "relative group rounded-xl p-3 flex flex-col gap-1.5 border transition-all",
                         unlocked
                           ? isMemory
                             ? "bg-purple-50 dark:bg-purple-950/20 border-purple-200/60 shadow-sm"
@@ -426,6 +427,9 @@ function AchievementsCard({
                           : "bg-muted/30 border-transparent opacity-50",
                       ].join(" ")}
                     >
+                      {unlocked && (
+                        <ShareAchievementButton achievement={a} variant="icon" />
+                      )}
                       <span
                         className={`text-2xl ${unlocked ? "" : "grayscale"}`}
                       >

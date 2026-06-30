@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Trophy } from "lucide-react";
 import { useLocation } from "wouter";
 import { type AchievementMeta } from "@/lib/achievement-utils";
+import { ShareAchievementButton } from "@/components/share-achievement";
 
 interface AchievementUnlockModalProps {
   achievements: AchievementMeta[];
@@ -91,6 +92,16 @@ export function AchievementUnlockModal({ achievements, onDismiss }: AchievementU
           >
             View Achievements →
           </Button>
+          {achievements.length === 1 && (
+            <ShareAchievementButton achievement={achievements[0]} variant="full" />
+          )}
+          {achievements.length > 1 && (
+            <div className="flex flex-col gap-1.5">
+              {achievements.map((a) => (
+                <ShareAchievementButton key={a.id} achievement={a} variant="full" />
+              ))}
+            </div>
+          )}
           <Button
             variant="ghost"
             onClick={onDismiss}
