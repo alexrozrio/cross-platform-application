@@ -529,7 +529,7 @@ export default function Game({ id }: { id: string }) {
       `${completionMessage.emoji} Solved a ${sizeLabel} ${diffLabel} Sudoku in ${formattedTime}!`,
       `❌ ${mistakes} mistake${mistakes !== 1 ? "s" : ""} · 💡 ${hints} hint${hints !== 1 ? "s" : ""}`,
       pointsEarned !== null ? `+${pointsEarned.toLocaleString()} pts · +${xpGain} XP` : `+${xpGain} XP`,
-      rank ? `🏅 ${rank} · Game Hub` : "🎮 Game Hub",
+      rank ? `🏅 ${rank} · Brain Games 4 All` : "🧠 Brain Games 4 All",
     ];
     const text = lines.join("\n");
 
@@ -946,7 +946,7 @@ export default function Game({ id }: { id: string }) {
                     Try Again
                   </Button>
                   <Button variant="secondary" className="flex-1" onClick={() => setLocation("/")}>
-                    Game Hub
+                    Brain Games 4 All
                   </Button>
                 </div>
               </CardContent>

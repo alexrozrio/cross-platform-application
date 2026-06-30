@@ -60,12 +60,12 @@ const PLATFORMS = [
 // ─── Share text builders ───────────────────────────────────────────────────────
 
 function buildShareText(achievement: AchievementMeta, siteUrl: string): string {
-  return `🏆 I have achieved "${achievement.title}" ${achievement.emoji} on Game Hub!\n${achievement.description}\n\nCome play and beat my score 👉 ${siteUrl}`;
+  return `🏆 I have achieved "${achievement.title}" ${achievement.emoji} on Brain Games 4 All!\n${achievement.description}\n\nCome play and beat my score 👉 ${siteUrl}`;
 }
 
 function buildMultiShareText(achievements: AchievementMeta[], siteUrl: string): string {
   const list = achievements.map((a) => `  ${a.emoji} ${a.title}`).join("\n");
-  return `🏆 I just unlocked ${achievements.length} achievements on Game Hub!\n${list}\n\nCome play and beat my score 👉 ${siteUrl}`;
+  return `🏆 I just unlocked ${achievements.length} achievements on Brain Games 4 All!\n${list}\n\nCome play and beat my score 👉 ${siteUrl}`;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────

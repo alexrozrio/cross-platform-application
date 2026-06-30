@@ -429,7 +429,7 @@ export default function MemoryMatchPage() {
           onClick={() => setLocation('/')}
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" /> Game Hub
+          <ArrowLeft className="w-4 h-4" /> Brain Games 4 All
         </button>
 
         <div>
@@ -776,7 +776,7 @@ export default function MemoryMatchPage() {
           onClick={() => setLocation('/')}
           className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          ← Back to Game Hub
+          ← Back to Brain Games 4 All
         </button>
       </div>
     );

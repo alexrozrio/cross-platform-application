@@ -520,7 +520,7 @@ export default function Profile() {
             <FileText className="w-3.5 h-3.5" /> Terms
           </button>
         </div>
-        <p className="text-xs text-muted-foreground/60">© {new Date().getFullYear()} Game Hub. All rights reserved.</p>
+        <p className="text-xs text-muted-foreground/60">© {new Date().getFullYear()} Brain Games 4 All. All rights reserved.</p>
       </div>
     </div>
   );

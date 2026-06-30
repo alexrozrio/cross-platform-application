@@ -20,7 +20,7 @@ interface BadgeShareSheetProps {
 }
 
 function buildText(badgeTitle: string, username: string, points: number, period: string) {
-  return `🏆 ${username} earned the "${badgeTitle}" badge in Game Hub Sudoku!\n${period} · ${points.toLocaleString()} pts\nThink you can beat that?`;
+  return `🏆 ${username} earned the "${badgeTitle}" badge in Brain Games 4 All!\n${period} · ${points.toLocaleString()} pts\nThink you can beat that?`;
 }
 
 export function BadgeShareSheet({
@@ -96,7 +96,7 @@ export function BadgeShareSheet({
 
   const handleNativeShare = async () => {
     try {
-      await navigator.share({ title: `${badgeTitle} — Game Hub`, text, url: shareUrl });
+      await navigator.share({ title: `${badgeTitle} — Brain Games 4 All`, text, url: shareUrl });
     } catch {
       // user cancelled or not supported — fall through
     }
