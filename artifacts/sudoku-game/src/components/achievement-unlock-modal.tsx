@@ -92,16 +92,16 @@ export function AchievementUnlockModal({ achievements, onDismiss }: AchievementU
           >
             View Achievements →
           </Button>
-          {achievements.length === 1 && (
-            <ShareAchievementButton achievement={achievements[0]} variant="full" />
-          )}
-          {achievements.length > 1 && (
-            <div className="flex flex-col gap-1.5">
-              {achievements.map((a) => (
-                <ShareAchievementButton key={a.id} achievement={a} variant="full" />
-              ))}
-            </div>
-          )}
+          <ShareAchievementButton
+            achievement={achievements.length === 1 ? achievements[0] : undefined}
+            achievements={achievements.length > 1 ? achievements : undefined}
+            variant="full"
+            label={
+              achievements.length === 1
+                ? `Share — I have achieved "${achievements[0].title}"!`
+                : `Share my ${achievements.length} achievements!`
+            }
+          />
           <Button
             variant="ghost"
             onClick={onDismiss}

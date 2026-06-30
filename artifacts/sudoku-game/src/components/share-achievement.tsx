@@ -57,28 +57,44 @@ const PLATFORMS = [
   },
 ];
 
-// ─── Share text builder ────────────────────────────────────────────────────────
+// ─── Share text builders ───────────────────────────────────────────────────────
 
 function buildShareText(achievement: AchievementMeta, siteUrl: string): string {
-  return `🏆 Just unlocked "${achievement.title}" ${achievement.emoji} on Game Hub!\n${achievement.description}\n\n👉 Play now: ${siteUrl}`;
+  return `🏆 I have achieved "${achievement.title}" ${achievement.emoji} on Game Hub!\n${achievement.description}\n\nCome play and beat my score 👉 ${siteUrl}`;
+}
+
+function buildMultiShareText(achievements: AchievementMeta[], siteUrl: string): string {
+  const list = achievements.map((a) => `  ${a.emoji} ${a.title}`).join("\n");
+  return `🏆 I just unlocked ${achievements.length} achievements on Game Hub!\n${list}\n\nCome play and beat my score 👉 ${siteUrl}`;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 interface ShareAchievementButtonProps {
-  achievement: AchievementMeta;
+  /** Single achievement to share */
+  achievement?: AchievementMeta;
+  /** Multiple achievements — uses a combined message */
+  achievements?: AchievementMeta[];
   variant?: "icon" | "full";
+  /** Custom label for the full-variant button */
+  label?: string;
 }
 
 export function ShareAchievementButton({
   achievement,
+  achievements,
   variant = "icon",
+  label,
 }: ShareAchievementButtonProps) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const siteUrl = typeof window !== "undefined" ? window.location.origin : "";
-  const shareText = buildShareText(achievement, siteUrl);
+
+  // Build the share text — multi takes priority
+  const shareText = achievements && achievements.length > 1
+    ? buildMultiShareText(achievements, siteUrl)
+    : buildShareText((achievement ?? achievements![0])!, siteUrl);
 
   const handleCopy = async () => {
     try {
@@ -101,7 +117,7 @@ export function ShareAchievementButton({
             onClick={(e) => e.stopPropagation()}
           >
             <Share2 className="w-4 h-4" />
-            Share Achievement
+            {label ?? "Share Achievement"}
           </Button>
         ) : (
           <button
