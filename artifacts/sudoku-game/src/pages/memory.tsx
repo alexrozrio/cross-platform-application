@@ -176,6 +176,7 @@ export default function MemoryMatchPage() {
   const [gridSize, setGridSize] = useState<GridSize>(2);
   const [infoModal, setInfoModal] = useState<InfoModal>(null);
   const [displayMode, setDisplayMode] = useState<DisplayMode>('image');
+  const [showNewGame, setShowNewGame] = useState(false);
 
   const { data: profile } = useGetProfile(profileId as number, {
     query: { enabled: !!profileId },
@@ -682,13 +683,31 @@ export default function MemoryMatchPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-3">
-          <Button variant="outline" className="gap-2" onClick={() => startGame(gridSize)}>
-            <RotateCcw className="w-4 h-4" /> Play again
+        <div className="space-y-3">
+          <Button variant="outline" className="w-full gap-2" onClick={() => startGame(gridSize)}>
+            <RotateCcw className="w-4 h-4" /> Play again ({GRID_OPTIONS.find(o => o.size === gridSize)?.desc})
           </Button>
-          <Button className="gap-2" onClick={() => setPhase('setup')}>
-            <Star className="w-4 h-4" /> New size
-          </Button>
+
+          <div className="space-y-2">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground text-center">Or start a new game</p>
+            <div className="grid grid-cols-2 gap-2">
+              {GRID_OPTIONS.map(opt => (
+                <button
+                  key={opt.size}
+                  onClick={() => startGame(opt.size)}
+                  className={[
+                    'flex flex-col items-center gap-1 rounded-xl border-2 py-3 px-2 text-center transition-all',
+                    opt.size === gridSize
+                      ? 'border-primary bg-primary/10 shadow-sm'
+                      : 'border-border hover:border-primary/40 hover:bg-muted/50',
+                  ].join(' ')}
+                >
+                  <span className="font-black text-base text-primary">{opt.label}</span>
+                  <span className="text-[10px] text-muted-foreground leading-tight">{opt.desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         <button
@@ -748,6 +767,16 @@ export default function MemoryMatchPage() {
           <RotateCcw className="w-3 h-3" /> Reset
         </button>
 
+        <button
+          onClick={() => setShowNewGame(v => !v)}
+          className={[
+            'flex items-center gap-1 text-xs transition-colors shrink-0 font-medium',
+            showNewGame ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
+          ].join(' ')}
+        >
+          <Star className="w-3 h-3" /> New
+        </button>
+
         {/* Mode toggle (cycle through modes during play) */}
         <div className="flex items-center gap-0.5 rounded-lg border border-border bg-muted/40 p-0.5 shrink-0">
           {([
@@ -772,6 +801,41 @@ export default function MemoryMatchPage() {
           ))}
         </div>
       </div>
+
+      {/* New game level picker */}
+      <AnimatePresence>
+        {showNewGame && (
+          <motion.div
+            key="new-game-panel"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="rounded-xl border-2 border-primary/20 bg-primary/4 p-3 space-y-2">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Start New Game</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {GRID_OPTIONS.map(opt => (
+                  <button
+                    key={opt.size}
+                    onClick={() => { startGame(opt.size); setShowNewGame(false); }}
+                    className={[
+                      'flex flex-col items-center gap-1 rounded-lg border-2 py-2.5 px-2 text-center transition-all',
+                      opt.size === gridSize
+                        ? 'border-primary bg-primary/10 shadow-sm'
+                        : 'border-border hover:border-primary/40 hover:bg-muted/50',
+                    ].join(' ')}
+                  >
+                    <span className="font-black text-sm text-primary">{opt.label}</span>
+                    <span className="text-[10px] text-muted-foreground leading-tight">{opt.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Card grid */}
       <div className={`grid ${colClass} gap-1.5 sm:gap-2`}>
