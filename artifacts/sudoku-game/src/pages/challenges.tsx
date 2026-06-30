@@ -37,6 +37,7 @@ import {
   Brain,
   Grid2x2,
   Zap,
+  RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { LevelBadge } from "@/components/level-badge";
@@ -210,6 +211,7 @@ function ChallengeCard({
   onAccept,
   onDecline,
   onPlay,
+  onRematch,
   isResponding,
 }: {
   challenge: ChallengeDetail;
@@ -217,6 +219,7 @@ function ChallengeCard({
   onAccept: (id: number) => void;
   onDecline: (id: number) => void;
   onPlay: (gameId: number) => void;
+  onRematch?: (c: ChallengeDetail) => void;
   isResponding: boolean;
 }) {
   const isChallenger = challenge.challengerId === myProfileId;
@@ -372,6 +375,7 @@ function MemoryDuelCard({
   onAccept,
   onDecline,
   onPlay,
+  onRematch,
   isResponding,
 }: {
   duel: MemoryDuelDetail;
@@ -379,6 +383,7 @@ function MemoryDuelCard({
   onAccept: (id: number) => void;
   onDecline: (id: number) => void;
   onPlay: (duel: MemoryDuelDetail) => void;
+  onRematch?: (d: MemoryDuelDetail) => void;
   isResponding: boolean;
 }) {
   const isChallenger = duel.challengerId === myProfileId;
@@ -522,14 +527,24 @@ function MemoryDuelCard({
 
 // ─── NewChallengeDialog ───────────────────────────────────────────────────────
 
+interface RematchData {
+  opponent: ProfileSummary;
+  gameType: GameType;
+  difficulty?: Difficulty;
+  sudokuGridSize?: SudokuGridSize;
+  memoryGridSize?: MemoryGridSize;
+}
+
 function NewChallengeDialog({
   open,
   onClose,
   myProfileId,
+  initialData,
 }: {
   open: boolean;
   onClose: () => void;
   myProfileId: number;
+  initialData?: RematchData;
 }) {
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
@@ -539,6 +554,21 @@ function NewChallengeDialog({
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
   const [sudokuGridSize, setSudokuGridSize] = useState<SudokuGridSize>(9);
   const [memoryGridSize, setMemoryGridSize] = useState<MemoryGridSize>(4);
+
+  React.useEffect(() => {
+    if (open && initialData) {
+      setSelected(initialData.opponent);
+      setGameType(initialData.gameType);
+      if (initialData.difficulty) setDifficulty(initialData.difficulty);
+      if (initialData.sudokuGridSize) setSudokuGridSize(initialData.sudokuGridSize);
+      if (initialData.memoryGridSize) setMemoryGridSize(initialData.memoryGridSize);
+    }
+    if (!open) {
+      setSearch("");
+      setSelected(null);
+      setGameType("sudoku");
+    }
+  }, [open]);
 
   const { data: results, isFetching } = useQuery<ProfileSummary[]>({
     queryKey: ["profile-search", search, myProfileId],
