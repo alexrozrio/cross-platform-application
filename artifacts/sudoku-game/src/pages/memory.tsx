@@ -29,6 +29,7 @@ interface WinResult {
   points: number;
   xpEarned: number;
   gemsEarned: number;
+  tipsUsed?: number;
 }
 
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -348,7 +349,7 @@ export default function MemoryMatchPage() {
       try {
         const result = await customFetch<WinResult>(`/api/memory-games/${gameId}/complete`, {
           method: 'POST',
-          body: JSON.stringify({ elapsedSeconds: currentElapsed, flips: currentFlips }),
+          body: JSON.stringify({ elapsedSeconds: currentElapsed, flips: currentFlips, tipsUsed }),
         });
         setWinResult(result);
         pts = result.points;
@@ -677,6 +678,16 @@ export default function MemoryMatchPage() {
               <Gem className="w-5 h-5 text-cyan-500" />
               <span className="font-black text-lg">+{winResult.gemsEarned} 💎</span>
             </div>
+          </div>
+        )}
+
+        {tipsUsed > 0 && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800/40 px-4 py-3 flex items-center gap-3">
+            <Lightbulb className="w-4 h-4 text-amber-500 shrink-0" />
+            <p className="text-sm text-amber-700 dark:text-amber-400">
+              <span className="font-semibold">{tipsUsed} tip{tipsUsed > 1 ? 's' : ''} used</span>
+              {' '}— {tipsUsed === 1 ? '−15%' : '−30%'} score penalty applied
+            </p>
           </div>
         )}
 

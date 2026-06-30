@@ -13,14 +13,15 @@ const PAR_SECONDS: Record<number, number> = { 2: 25, 4: 60, 6: 120, 8: 200 };
 const XP_PER_SIZE: Record<number, number> = { 2: 1, 4: 1, 6: 2, 8: 3 };
 const MIN_FLIPS: Record<number, number> = { 2: 8, 4: 16, 6: 32, 8: 64 };
 
-function calcMemoryPoints(gridSize: number, elapsedSeconds: number, flips: number): number {
+function calcMemoryPoints(gridSize: number, elapsedSeconds: number, flips: number, tipsUsed: number = 0): number {
   const base = BASE_POINTS[gridSize] ?? 500;
   const par = PAR_SECONDS[gridSize] ?? 60;
   const minFlips = MIN_FLIPS[gridSize] ?? 16;
   const timeBonus = Math.max(0, (par - elapsedSeconds) / par) * 0.5;
   const extraFlips = Math.max(0, flips - minFlips);
   const flipPenalty = Math.max(0.4, 1 - 0.02 * extraFlips);
-  return Math.max(10, Math.round(base * (1 + timeBonus) * flipPenalty));
+  const tipPenalty = Math.max(0.6, 1 - 0.15 * tipsUsed);
+  return Math.max(10, Math.round(base * (1 + timeBonus) * flipPenalty * tipPenalty));
 }
 
 function calcMemoryGems(points: number): number {
@@ -60,11 +61,12 @@ router.post("/memory-games/:id/complete", async (req, res): Promise<void> => {
     return;
   }
 
-  const { elapsedSeconds, flips } = req.body as { elapsedSeconds?: number; flips?: number };
+  const { elapsedSeconds, flips, tipsUsed } = req.body as { elapsedSeconds?: number; flips?: number; tipsUsed?: number };
   if (typeof elapsedSeconds !== "number" || typeof flips !== "number") {
     res.status(400).json({ error: "elapsedSeconds and flips are required numbers" });
     return;
   }
+  const tips = typeof tipsUsed === "number" ? Math.max(0, Math.min(tipsUsed, 2)) : 0;
 
   const [existing] = await db.select().from(memoryGamesTable).where(eq(memoryGamesTable.id, id));
   if (!existing) {
@@ -76,7 +78,7 @@ router.post("/memory-games/:id/complete", async (req, res): Promise<void> => {
     return;
   }
 
-  const points = calcMemoryPoints(existing.gridSize, elapsedSeconds, flips);
+  const points = calcMemoryPoints(existing.gridSize, elapsedSeconds, flips, tips);
   const xpEarned = XP_PER_SIZE[existing.gridSize] ?? 1;
   const gemsEarned = calcMemoryGems(points);
 
