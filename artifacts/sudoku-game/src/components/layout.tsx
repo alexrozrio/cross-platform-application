@@ -1,12 +1,11 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { useGetProfile, customFetch } from "@workspace/api-client-react";
-import { useQuery } from "@tanstack/react-query";
+import { useGetProfile } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Trophy, User, Home, BarChart2, Palette, LogIn, LogOut, Gem, Swords } from "lucide-react";
 import { useFontTheme } from "@/hooks/use-font-theme";
-import { useChallengeNotifications } from "@/hooks/use-challenge-notifications";
+import { useChallengeNotifications, usePendingChallengeCount } from "@/hooks/use-challenge-notifications";
 import { useLevelUpWatcher } from "@/hooks/use-level-up";
 import { useAchievementNotifier } from "@/hooks/use-achievement-notifier";
 import { useBadgeNotifier } from "@/hooks/use-badge-notifier";
@@ -21,23 +20,6 @@ export function applyAppTheme(theme: string) {
   }
 }
 
-interface ChallengeDetail {
-  id: number;
-  challengedId: number;
-  status: string;
-}
-
-function usePendingChallengeCount(profileId: number | null) {
-  const { data } = useQuery<ChallengeDetail[]>({
-    queryKey: ["challenges", profileId],
-    queryFn: () => customFetch<ChallengeDetail[]>(`/api/challenges/for/${profileId}`),
-    enabled: !!profileId,
-    refetchInterval: 15000,
-    staleTime: 10000,
-  });
-  if (!data || !profileId) return 0;
-  return data.filter((c) => c.status === "pending" && c.challengedId === profileId).length;
-}
 
 function NotifBadge({ count }: { count: number }) {
   if (count === 0) return null;
