@@ -52,7 +52,7 @@ export default function Portal() {
   return (
     <div className="space-y-10 animate-in fade-in duration-500 pb-8">
       <div className="text-center space-y-2 pt-4">
-        <h1 className="text-4xl font-serif font-bold tracking-tight">Game Hub</h1>
+        <h1 className="text-4xl font-serif font-bold tracking-tight">Brain Games 4 All</h1>
         <p className="text-muted-foreground text-lg">Choose your game and play</p>
         {!profileId && isReady && (
           <p className="text-sm text-muted-foreground">

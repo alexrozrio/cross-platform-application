@@ -96,7 +96,7 @@ export default function SudokuHome() {
       </button>
 
       <div>
-        <h1 className="text-3xl font-serif font-bold tracking-tight">Sudoku</h1>
+        <h1 className="text-3xl font-serif font-bold tracking-tight">Sudoku 4 All</h1>
         {profile && (
           <p className="text-muted-foreground mt-0.5">Welcome back, {profile.username}</p>
         )}

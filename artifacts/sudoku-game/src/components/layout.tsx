@@ -71,7 +71,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <AchievementUnlockModal achievements={newlyUnlocked} onDismiss={dismiss} profileId={profileId} />
       <header className="border-b bg-card py-4 px-6 flex items-center justify-between sticky top-0 z-10">
         <Link href="/" className="font-serif text-2xl font-bold tracking-tight text-primary">
-          Game Hub
+          Brain Games 4 All
         </Link>
 
         {/* Gems badge */}

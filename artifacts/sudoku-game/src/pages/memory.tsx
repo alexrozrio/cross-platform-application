@@ -433,7 +433,7 @@ export default function MemoryMatchPage() {
         </button>
 
         <div>
-          <h1 className="text-3xl font-serif font-bold tracking-tight">Memory Match</h1>
+          <h1 className="text-3xl font-serif font-bold tracking-tight">Memory Match 4 All</h1>
           {profile ? (
             <p className="text-muted-foreground mt-0.5">Welcome back, {profile.username}</p>
           ) : (
