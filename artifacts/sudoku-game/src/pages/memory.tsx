@@ -95,6 +95,7 @@ function MemoryCard({
   disabled,
   size,
   displayMode,
+  hinted,
 }: {
   card: Card;
   themeId: string;
@@ -102,6 +103,7 @@ function MemoryCard({
   disabled: boolean;
   size: GridSize;
   displayMode: DisplayMode;
+  hinted?: boolean;
 }) {
   const theme = getTheme(themeId as any);
   const symbol = theme.symbols[(card.value - 1) % theme.symbols.length];
@@ -146,10 +148,15 @@ function MemoryCard({
       >
         {/* Back face */}
         <div
-          className="absolute inset-0 rounded-xl flex items-center justify-center border-2 border-primary/20 bg-gradient-to-br from-primary/15 to-primary/8 hover:from-primary/25 hover:to-primary/15 transition-colors"
+          className={[
+            'absolute inset-0 rounded-xl flex items-center justify-center border-2 transition-all',
+            hinted
+              ? 'border-amber-400 bg-gradient-to-br from-amber-100/80 to-amber-50/60 shadow-[0_0_0_3px_rgba(251,191,36,0.4)] dark:from-amber-900/40 dark:to-amber-800/20 animate-pulse'
+              : 'border-primary/20 bg-gradient-to-br from-primary/15 to-primary/8 hover:from-primary/25 hover:to-primary/15',
+          ].join(' ')}
           style={{ backfaceVisibility: 'hidden' }}
         >
-          <span className="text-primary/40 text-2xl font-black">?</span>
+          <span className={`text-2xl font-black ${hinted ? 'text-amber-500' : 'text-primary/40'}`}>?</span>
         </div>
         {/* Front face */}
         <div
@@ -181,6 +188,7 @@ export default function MemoryMatchPage() {
   const [displayMode, setDisplayMode] = useState<DisplayMode>('image');
   const [showNewGame, setShowNewGame] = useState(false);
   const [tipsUsed, setTipsUsed] = useState(0);
+  const [hintedIds, setHintedIds] = useState<number[]>([]);
 
   const { data: profile } = useGetProfile(profileId as number, {
     query: { enabled: !!profileId },
@@ -232,6 +240,7 @@ export default function MemoryMatchPage() {
     setWinResult(null);
     setGameId(presetGameId ?? null);
     setTipsUsed(0);
+    setHintedIds([]);
     setPhase('playing');
 
     // If a duel game ID was pre-created by the server, skip creation
@@ -268,14 +277,32 @@ export default function MemoryMatchPage() {
 
   const handleTip = useCallback(() => {
     if (tipsUsed >= MAX_TIPS || lockBoard) return;
-    setTipsUsed(t => t + 1);
-    setLockBoard(true);
-    // Briefly reveal all unmatched face-down cards
-    setCards(prev => prev.map(c => c.matched ? c : { ...c, flipped: true }));
-    setTimeout(() => {
-      setCards(prev => prev.map(c => c.matched ? c : { ...c, flipped: false }));
-      setLockBoard(false);
-    }, 1500);
+
+    // Pick one unmatched, face-down pair to highlight
+    setCards(currentCards => {
+      const unmatched = currentCards.filter(c => !c.matched && !c.flipped);
+      if (unmatched.length < 2) return currentCards;
+
+      // Find any value that has 2+ unmatched face-down cards
+      const valueCounts = new Map<number, number[]>();
+      for (const c of unmatched) {
+        const ids = valueCounts.get(c.value) ?? [];
+        ids.push(c.id);
+        valueCounts.set(c.value, ids);
+      }
+      const pairEntry = Array.from(valueCounts.entries()).find(([, ids]) => ids.length >= 2);
+      if (!pairEntry) return currentCards;
+
+      const [, pairIds] = pairEntry;
+      const chosen = pairIds.slice(0, 2);
+      setHintedIds(chosen);
+      setTipsUsed(t => t + 1);
+
+      // Clear the highlight after 2 seconds
+      setTimeout(() => setHintedIds([]), 2000);
+
+      return currentCards; // no card state change — just highlighting
+    });
   }, [tipsUsed, lockBoard]);
 
   const handleCardClick = useCallback((cardId: number) => {
@@ -891,6 +918,7 @@ export default function MemoryMatchPage() {
             disabled={lockBoard}
             size={gridSize}
             displayMode={displayMode}
+            hinted={hintedIds.includes(card.id)}
           />
         ))}
       </div>
