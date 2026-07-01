@@ -9,6 +9,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ArrowLeft, Timer, Repeat2, Trophy, Gem, Star, RotateCcw, Zap, Brain, BarChart2, BookOpen, Keyboard, Scroll, Lightbulb, Volume2, VolumeX, Share2 } from 'lucide-react';
 import { useSound } from '@/hooks/use-sound';
@@ -195,6 +196,7 @@ export default function MemoryMatchPage() {
   const [infoModal, setInfoModal] = useState<InfoModal>(null);
   const [displayMode, setDisplayMode] = useState<DisplayMode>('image');
   const [showNewGame, setShowNewGame] = useState(false);
+  const [pendingAction, setPendingAction] = useState<{ type: 'reset' } | { type: 'new'; size: GridSize } | null>(null);
   const [tipsUsed, setTipsUsed] = useState(0);
   const [hintedIds, setHintedIds] = useState<number[]>([]);
 
@@ -932,7 +934,7 @@ export default function MemoryMatchPage() {
         </div>
 
         <button
-          onClick={() => startGame(gridSize)}
+          onClick={() => setPendingAction({ type: 'reset' })}
           className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
         >
           <RotateCcw className="w-3 h-3" /> Reset
@@ -1007,6 +1009,35 @@ export default function MemoryMatchPage() {
         </div>
       </div>
 
+      {/* Reset / new-game confirmation */}
+      <AlertDialog open={!!pendingAction} onOpenChange={(open) => { if (!open) setPendingAction(null); }}>
+        <AlertDialogContent className="max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {pendingAction?.type === 'reset' ? 'Reset this game?' : 'Start a new game?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingAction?.type === 'reset'
+                ? 'All cards will be reshuffled and your current progress will be lost.'
+                : `This will start a fresh ${GRID_OPTIONS.find(o => o.size === (pendingAction as any)?.size)?.desc ?? 'game'}. Your current progress will be lost.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep Playing</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (!pendingAction) return;
+                if (pendingAction.type === 'reset') startGame(gridSize);
+                else startGame(pendingAction.size);
+                setPendingAction(null);
+              }}
+            >
+              {pendingAction?.type === 'reset' ? 'Reset' : 'Start New Game'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* New game level picker */}
       <AnimatePresence>
         {showNewGame && (
@@ -1024,7 +1055,7 @@ export default function MemoryMatchPage() {
                 {GRID_OPTIONS.map(opt => (
                   <button
                     key={opt.size}
-                    onClick={() => { startGame(opt.size); setShowNewGame(false); }}
+                    onClick={() => { setPendingAction({ type: 'new', size: opt.size }); setShowNewGame(false); }}
                     className={[
                       'flex flex-col items-center gap-1 rounded-lg border-2 py-2.5 px-2 text-center transition-all',
                       opt.size === gridSize
