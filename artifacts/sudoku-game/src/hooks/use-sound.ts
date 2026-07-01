@@ -79,8 +79,9 @@ function soundGameOver() {
 
 // ── Hook ────────────────────────────────────────────────────────────────
 
-export function useSound() {
+export function useSound(profileEnabled?: boolean) {
   const [enabled, setEnabled] = useState<boolean>(() => {
+    if (profileEnabled !== undefined) return profileEnabled;
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       return stored === null ? true : stored === 'true';
@@ -91,6 +92,13 @@ export function useSound() {
 
   const enabledRef = useRef(enabled);
   useEffect(() => { enabledRef.current = enabled; }, [enabled]);
+
+  useEffect(() => {
+    if (profileEnabled !== undefined) {
+      setEnabled(profileEnabled);
+      try { localStorage.setItem(STORAGE_KEY, String(profileEnabled)); } catch {}
+    }
+  }, [profileEnabled]);
 
   const toggle = useCallback(() => {
     setEnabled(prev => {

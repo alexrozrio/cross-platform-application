@@ -189,7 +189,11 @@ export default function MemoryMatchPage() {
   const { themeId } = useImageTheme();
   const queryClient = useQueryClient();
 
-  const sounds = useSound();
+  const { data: profile } = useGetProfile(profileId as number, {
+    query: { enabled: !!profileId },
+  });
+
+  const sounds = useSound(profile?.soundEnabled);
 
   const [phase, setPhase] = useState<GamePhase>('setup');
   const [gridSize, setGridSize] = useState<GridSize>(2);
@@ -199,10 +203,6 @@ export default function MemoryMatchPage() {
   const [pendingAction, setPendingAction] = useState<{ type: 'reset' } | { type: 'new'; size: GridSize } | null>(null);
   const [tipsUsed, setTipsUsed] = useState(0);
   const [hintedIds, setHintedIds] = useState<number[]>([]);
-
-  const { data: profile } = useGetProfile(profileId as number, {
-    query: { enabled: !!profileId },
-  });
 
   const gameMode = (profile?.gameMode ?? '4all') as 'children' | 'adult' | '4all';
   const filteredGridOptions = GRID_OPTIONS.filter(o =>

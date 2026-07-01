@@ -219,7 +219,7 @@ export default function Game({ id }: { id: string }) {
     Array(totalCells).fill("0"),
   );
   const [selectedCell, setSelectedCell] = useState<number | null>(null);
-  const sounds = useSound();
+  const sounds = useSound(profile?.soundEnabled);
   const [notesMode, setNotesMode] = useState(false);
   const [notes, setNotes] = useState<Record<number, Set<string>>>({});
   const [mistakes, setMistakes] = useState(0);
