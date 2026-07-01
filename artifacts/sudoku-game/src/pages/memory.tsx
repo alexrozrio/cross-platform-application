@@ -9,6 +9,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ArrowLeft, Timer, Repeat2, Trophy, Gem, Star, RotateCcw, Zap, Brain, BarChart2, BookOpen, Keyboard, Scroll, Lightbulb, Volume2, VolumeX, Share2 } from 'lucide-react';
 import { useSound } from '@/hooks/use-sound';
 import { Confetti } from '@/components/confetti';
@@ -937,15 +938,22 @@ export default function MemoryMatchPage() {
           <RotateCcw className="w-3 h-3" /> Reset
         </button>
 
-        <button
-          onClick={() => setShowNewGame(v => !v)}
-          className={[
-            'flex items-center gap-1 text-xs transition-colors shrink-0 font-medium',
-            showNewGame ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
-          ].join(' ')}
-        >
-          <Star className="w-3 h-3" /> New
-        </button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setShowNewGame(v => !v)}
+                className={[
+                  'flex items-center gap-1 text-xs transition-colors shrink-0 font-medium',
+                  showNewGame ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
+                ].join(' ')}
+              >
+                <Star className="w-3 h-3" /> New
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Start new game</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
         <button
           onClick={handleTip}
