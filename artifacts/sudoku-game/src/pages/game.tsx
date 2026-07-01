@@ -17,6 +17,7 @@ import { ThemeIcon } from "@/components/theme-icons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import {
   ArrowLeft,
   Clock,
@@ -168,6 +169,8 @@ function CellContent({
 
 export default function Game({ id }: { id: string }) {
   const gameId = parseInt(id, 10);
+  const storageKeyGrid = `sudoku-grid-${gameId}`;
+  const storageKeyNotes = `sudoku-notes-${gameId}`;
   const [, setLocation] = useLocation();
   const search = useSearch();
   const params = new URLSearchParams(search);
@@ -223,6 +226,7 @@ export default function Game({ id }: { id: string }) {
   const [isCompleted, setIsCompleted] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [showNewGameDialog, setShowNewGameDialog] = useState(false);
   const [wrongCells, setWrongCells] = useState<Set<number>>(new Set());
   const [highlightedNumber, setHighlightedNumber] = useState<string | null>(null);
   const [completionMessage, setCompletionMessage] = useState(() =>
@@ -293,15 +297,41 @@ export default function Game({ id }: { id: string }) {
 
   useEffect(() => {
     if (game && !isCompleted && !isGameOver) {
-      if (game.status === "completed") setIsCompleted(true);
-      const loadedGrid = game.currentGrid.split("");
+      if (game.status === "completed") {
+        setIsCompleted(true);
+        localStorage.removeItem(storageKeyGrid);
+        localStorage.removeItem(storageKeyNotes);
+        return;
+      }
+      const serverGrid = game.currentGrid.split("");
       const loadedInitial = game.puzzle?.grid.split("") || Array(totalCells).fill("0");
+
+      // Prefer localStorage grid if it has more filled cells (handles quick-refresh data loss)
+      const savedGrid = localStorage.getItem(storageKeyGrid);
+      const localGrid = savedGrid && savedGrid.length === serverGrid.length ? savedGrid.split("") : null;
+      const serverFilled = serverGrid.filter((c) => c !== "0").length;
+      const localFilled = localGrid ? localGrid.filter((c) => c !== "0").length : -1;
+      const loadedGrid = localFilled > serverFilled ? localGrid! : serverGrid;
+
       setGrid(loadedGrid);
       setInitialGrid(loadedInitial);
+
+      // Restore notes from localStorage
+      const savedNotes = localStorage.getItem(storageKeyNotes);
+      if (savedNotes) {
+        try {
+          const parsed = JSON.parse(savedNotes) as Record<string, string[]>;
+          const notesMap: Record<number, Set<string>> = {};
+          for (const [k, v] of Object.entries(parsed)) {
+            notesMap[Number(k)] = new Set(v);
+          }
+          setNotes(notesMap);
+        } catch { /* ignore corrupt data */ }
+      }
+
       const loadedMistakes = game.mistakeCount || 0;
       setMistakes(loadedMistakes);
       setHints(game.hintsUsed || 0);
-      // Derive wrong cells from current grid vs solution
       const solution = game.puzzle?.solution;
       if (solution) {
         const wrong = new Set<number>();
@@ -314,7 +344,23 @@ export default function Game({ id }: { id: string }) {
       }
       if (loadedMistakes >= MAX_MISTAKES) setIsGameOver(true);
     }
-  }, [game, isCompleted, isGameOver, totalCells]);
+  }, [game, isCompleted, isGameOver, totalCells, storageKeyGrid, storageKeyNotes]);
+
+  // Immediately persist grid to localStorage on every change (no debounce)
+  useEffect(() => {
+    if (!isCompleted && !isGameOver) {
+      localStorage.setItem(storageKeyGrid, grid.join(""));
+    }
+  }, [grid, isCompleted, isGameOver, storageKeyGrid]);
+
+  // Immediately persist notes to localStorage on every change
+  useEffect(() => {
+    const serialized: Record<string, string[]> = {};
+    for (const [k, v] of Object.entries(notes)) {
+      serialized[k] = Array.from(v);
+    }
+    localStorage.setItem(storageKeyNotes, JSON.stringify(serialized));
+  }, [notes, storageKeyNotes]);
 
   useEffect(() => {
     if (isCompleted || !game || grid.join("") === game.currentGrid) return;
@@ -354,7 +400,8 @@ export default function Game({ id }: { id: string }) {
           },
           {
             onSuccess: async (data) => {
-              // Trigger achievement detection
+              localStorage.removeItem(storageKeyGrid);
+              localStorage.removeItem(storageKeyNotes);
               if (profileId) {
                 queryClient.invalidateQueries({ queryKey: [`/api/achievements/${profileId}`] });
               }
@@ -670,6 +717,23 @@ export default function Game({ id }: { id: string }) {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* New-game confirmation dialog */}
+        <AlertDialog open={showNewGameDialog} onOpenChange={setShowNewGameDialog}>
+          <AlertDialogContent className="max-w-sm">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Start a new game?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Your current progress will be saved, but you'll leave this puzzle. Are you sure you want to start a new game?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Keep Playing</AlertDialogCancel>
+              <AlertDialogAction onClick={handleNewGame}>Start New Game</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground flex-wrap justify-center">
           <span>{GRID_LABELS[gridSize] ?? `${gridSize}×${gridSize}`}</span>
           <span>•</span>
@@ -771,7 +835,7 @@ export default function Game({ id }: { id: string }) {
             <Button
               size="sm"
               className="h-8 px-4 text-xs gap-1.5 shrink-0"
-              onClick={handleNewGame}
+              onClick={() => setShowNewGameDialog(true)}
               disabled={newGameLoading || !profileId}
             >
               {newGameLoading
@@ -950,7 +1014,7 @@ export default function Game({ id }: { id: string }) {
               <Button
                 size="sm"
                 className="h-8 px-4 text-xs gap-1.5 shrink-0"
-                onClick={handleNewGame}
+                onClick={() => setShowNewGameDialog(true)}
                 disabled={newGameLoading || !profileId}
               >
                 {newGameLoading
