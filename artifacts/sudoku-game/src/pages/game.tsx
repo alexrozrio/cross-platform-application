@@ -31,6 +31,7 @@ import {
   Flame,
   Loader2,
   RefreshCw,
+  RotateCcw,
   Pause,
   Play,
   Volume2,
@@ -227,6 +228,7 @@ export default function Game({ id }: { id: string }) {
   const [isGameOver, setIsGameOver] = useState(false);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showNewGameDialog, setShowNewGameDialog] = useState(false);
+  const [showResetDialog, setShowResetDialog] = useState(false);
   const [wrongCells, setWrongCells] = useState<Set<number>>(new Set());
   const [highlightedNumber, setHighlightedNumber] = useState<string | null>(null);
   const [completionMessage, setCompletionMessage] = useState(() =>
@@ -544,6 +546,18 @@ export default function Game({ id }: { id: string }) {
     });
   }, [selectedCell, isCompleted, isGameOver, initialGrid, grid, sounds]);
 
+  const handleReset = useCallback(() => {
+    setGrid([...initialGrid]);
+    setNotes({});
+    setMistakes(0);
+    setHints(0);
+    setWrongCells(new Set());
+    setSelectedCell(null);
+    setHighlightedNumber(null);
+    localStorage.removeItem(storageKeyGrid);
+    localStorage.removeItem(storageKeyNotes);
+  }, [initialGrid, storageKeyGrid, storageKeyNotes]);
+
   const handleHint = () => {
     if (
       selectedCell === null ||
@@ -720,6 +734,22 @@ export default function Game({ id }: { id: string }) {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Reset confirmation dialog */}
+        <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+          <AlertDialogContent className="max-w-sm">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Reset this puzzle?</AlertDialogTitle>
+              <AlertDialogDescription>
+                All your filled numbers and notes will be cleared. The puzzle will restart from scratch.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Keep Playing</AlertDialogCancel>
+              <AlertDialogAction onClick={handleReset}>Reset</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* New-game confirmation dialog */}
         <AlertDialog open={showNewGameDialog} onOpenChange={setShowNewGameDialog}>
@@ -1095,7 +1125,7 @@ export default function Game({ id }: { id: string }) {
 
           {/* Controls */}
           {!isCompleted && (
-            <div className="grid grid-cols-4 gap-1.5 w-full">
+            <div className="grid grid-cols-5 gap-1.5 w-full">
               <Button
                 variant={notesMode ? "default" : "secondary"}
                 className="flex-col h-12 gap-0.5"
@@ -1138,6 +1168,16 @@ export default function Game({ id }: { id: string }) {
               >
                 <Eraser className="h-4 w-4" />
                 <span className="text-[11px]">Erase</span>
+              </Button>
+
+              <Button
+                variant="secondary"
+                className="flex-col h-12 gap-0.5"
+                onClick={() => setShowResetDialog(true)}
+                disabled={isGameOver}
+              >
+                <RotateCcw className="h-4 w-4" />
+                <span className="text-[11px]">Reset</span>
               </Button>
             </div>
           )}
