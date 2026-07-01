@@ -55,7 +55,7 @@ type InfoModal = 'rules' | 'controls' | 'backstory' | null;
 
 export default function SudokuHome() {
   const { profileId, isReady } = useAuth();
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const search = useSearch();
   const sizeParam = new URLSearchParams(search).get('size');
   const initialSize = ([3, 4, 9, 16].includes(Number(sizeParam)) ? Number(sizeParam) : 9) as GridSize;
@@ -96,7 +96,7 @@ export default function SudokuHome() {
     customFetch<ActiveGame>(`/api/games/active/${profileId}`)
       .then(g => setActiveGame(g))
       .catch(() => setActiveGame(null));
-  }, [profileId, isReady]);
+  }, [profileId, isReady, location]);
 
   const doStart = async (mode: 'number' | 'alpha' | 'image') => {
     if (!profileId) return;

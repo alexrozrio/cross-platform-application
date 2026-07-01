@@ -36,7 +36,7 @@ const GRID_QUICK_START = [
 ];
 
 export default function Portal() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { profileId, isReady } = useAuth();
   const { themeId } = useImageTheme();
   const [loadingSize, setLoadingSize] = useState<number | null>(null);
@@ -54,23 +54,24 @@ export default function Portal() {
     customFetch<ActiveGame>(`/api/games/active/${profileId}`)
       .then(g => setActiveGame(g))
       .catch(() => setActiveGame(null));
-  }, [profileId, isReady]);
+  }, [profileId, isReady, location]);
 
   // Read Memory Match localStorage session
   useEffect(() => {
     try {
       const raw = localStorage.getItem('brain-games-memory-session');
-      if (!raw) return;
+      if (!raw) { setMemorySession(null); return; }
       const s: MemorySession = JSON.parse(raw);
       if (!s.savedAt || Date.now() - s.savedAt > 12 * 60 * 60 * 1000) {
         localStorage.removeItem('brain-games-memory-session');
+        setMemorySession(null);
         return;
       }
       setMemorySession(s);
     } catch {
       setMemorySession(null);
     }
-  }, []);
+  }, [location]);
 
   const handleQuickStart = async (size: number) => {
     if (!isReady || !profileId || loadingSize !== null) return;
