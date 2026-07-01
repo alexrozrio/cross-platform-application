@@ -8,7 +8,7 @@ import { customFetch, useGetProfile } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { ArrowLeft, Timer, Repeat2, Trophy, Gem, Star, RotateCcw, Zap, Brain, BarChart2, BookOpen, Keyboard, Scroll, Lightbulb, Volume2, VolumeX, Share2 } from 'lucide-react';
 import { useSound } from '@/hooks/use-sound';
 import { Confetti } from '@/components/confetti';
@@ -226,6 +226,49 @@ export default function MemoryMatchPage() {
   })();
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [showAbandonConfirm, setShowAbandonConfirm] = useState(false);
+  const restoredRef = useRef(false);
+
+  const STORAGE_KEY = 'brain-games-memory-session';
+
+  // Restore from localStorage on mount (before URL auto-start)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const s = JSON.parse(raw);
+      if (!s.savedAt || Date.now() - s.savedAt > 12 * 60 * 60 * 1000) {
+        localStorage.removeItem(STORAGE_KEY);
+        return;
+      }
+      restoredRef.current = true;
+      setGridSize(s.gridSize);
+      setCards((s.cards as Card[]).map((c) => ({ ...c, flipped: c.matched })));
+      setFlippedIds([]);
+      setLockBoard(false);
+      setFlips(s.flips ?? 0);
+      setElapsed(s.elapsed ?? 0);
+      setGameId(s.gameId ?? null);
+      setTipsUsed(s.tipsUsed ?? 0);
+      setHintedIds(s.hintedIds ?? []);
+      setMatchedCount((s.cards as Card[]).filter((c) => c.matched).length);
+      setPhase('playing');
+      toast.info('Resuming your last game…', { duration: 2500 });
+    } catch {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Save to localStorage on every move during playing phase
+  useEffect(() => {
+    if (phase !== 'playing' || cards.length === 0) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        gridSize, cards, flips, elapsed, gameId, tipsUsed, hintedIds, savedAt: Date.now(),
+      }));
+    } catch { /* quota exceeded — ignore */ }
+  }, [phase, gridSize, cards, flips, elapsed, gameId, tipsUsed, hintedIds]);
 
   // Timer
   useEffect(() => {
@@ -266,10 +309,11 @@ export default function MemoryMatchPage() {
     }
   }, [profileId]);
 
-  // Auto-start when ?size= or ?duelGameId= is in the URL
+  // Auto-start when ?size= or ?duelGameId= is in the URL (skip if restored from localStorage)
   const startGameRef = useRef(startGame);
   useEffect(() => { startGameRef.current = startGame; }, [startGame]);
   useEffect(() => {
+    if (restoredRef.current) return;
     const params = new URLSearchParams(search);
     const duelId = parseInt(params.get('duelGameId') ?? '', 10);
     const gs = parseInt(params.get('gridSize') ?? params.get('size') ?? '', 10);
@@ -380,6 +424,7 @@ export default function MemoryMatchPage() {
     setPhase('won');
     sounds.complete();
     if (timerRef.current) clearInterval(timerRef.current);
+    localStorage.removeItem('brain-games-memory-session');
 
     // Pick a congratulation message based on grid difficulty
     const diffBySize: Record<GridSize, string> = { 2: 'easy', 4: 'medium', 6: 'hard', 8: 'expert' };
@@ -829,11 +874,35 @@ export default function MemoryMatchPage() {
       {/* Header bar */}
       <div className="flex items-center gap-3 flex-wrap">
         <button
-          onClick={() => setPhase('setup')}
+          onClick={() => setShowAbandonConfirm(true)}
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
+
+        {/* Abandon game confirmation */}
+        <Dialog open={showAbandonConfirm} onOpenChange={setShowAbandonConfirm}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Abandon this game?</DialogTitle>
+              <DialogDescription>
+                You have {matchedCount} of {totalPairs} pairs matched. Your progress will be lost if you go back to setup.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
+              <Button variant="outline" className="flex-1" onClick={() => setShowAbandonConfirm(false)}>
+                Keep Playing
+              </Button>
+              <Button variant="destructive" className="flex-1" onClick={() => {
+                localStorage.removeItem('brain-games-memory-session');
+                setShowAbandonConfirm(false);
+                setPhase('setup');
+              }}>
+                Abandon Game
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <div className="flex items-center gap-1.5 text-sm font-mono tabular-nums shrink-0">
           <Timer className="w-3.5 h-3.5 text-muted-foreground" />

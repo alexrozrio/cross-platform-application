@@ -16,6 +16,7 @@ import { useImageTheme } from "@/hooks/use-image-theme";
 import { ThemeIcon } from "@/components/theme-icons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import {
   ArrowLeft,
   Clock,
@@ -221,6 +222,7 @@ export default function Game({ id }: { id: string }) {
   const [hints, setHints] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [wrongCells, setWrongCells] = useState<Set<number>>(new Set());
   const [highlightedNumber, setHighlightedNumber] = useState<string | null>(null);
   const [completionMessage, setCompletionMessage] = useState(() =>
@@ -638,10 +640,36 @@ export default function Game({ id }: { id: string }) {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setLocation("/sudoku")}
+          onClick={() => {
+            if (!isCompleted && !isGameOver) {
+              setShowLeaveDialog(true);
+            } else {
+              setLocation("/sudoku");
+            }
+          }}
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
+
+        {/* Leave-game confirmation dialog */}
+        <Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Leave this game?</DialogTitle>
+              <DialogDescription>
+                Your progress is saved automatically. You can resume it from the Sudoku home screen.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
+              <Button variant="outline" className="flex-1" onClick={() => setShowLeaveDialog(false)}>
+                Keep Playing
+              </Button>
+              <Button className="flex-1" onClick={() => setLocation("/sudoku")}>
+                Leave Game
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground flex-wrap justify-center">
           <span>{GRID_LABELS[gridSize] ?? `${gridSize}×${gridSize}`}</span>
           <span>•</span>

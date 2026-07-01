@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useSearch } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { useImageTheme } from '@/hooks/use-image-theme';
-import { useGeneratePuzzle, useCreateGame, useGetProfile } from '@workspace/api-client-react';
+import { useGeneratePuzzle, useCreateGame, useGetProfile, customFetch } from '@workspace/api-client-react';
 import { ThemeIcon } from '@/components/theme-icons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -10,10 +10,17 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
-import { Play, BarChart2, Trophy, ArrowLeft, Hash, Type, Palette, Flame, BookOpen, Keyboard, Scroll } from 'lucide-react';
+import { Play, BarChart2, Trophy, ArrowLeft, Hash, Type, Palette, Flame, BookOpen, Keyboard, Scroll, RotateCcw } from 'lucide-react';
 import { IMAGE_THEMES } from '@/lib/themes';
+
+interface ActiveGame {
+  id: number;
+  puzzle?: { difficulty: string; gridSize: number };
+  elapsedSeconds: number;
+  mistakeCount: number;
+}
 
 type Difficulty = 'easy' | 'medium' | 'hard' | 'expert';
 type GridSize = 3 | 4 | 9 | 16;
@@ -68,8 +75,19 @@ export default function SudokuHome() {
   const createGame = useCreateGame();
   const isLoading = !isReady || generatePuzzle.isFetching || createGame.isPending;
 
-  const handleStart = async (mode: 'number' | 'alpha' | 'image') => {
-    if (!profileId) return; // still syncing — button is disabled anyway
+  const [activeGame, setActiveGame] = useState<ActiveGame | null>(null);
+  const [pendingMode, setPendingMode] = useState<'number' | 'alpha' | 'image' | null>(null);
+
+  useEffect(() => {
+    if (!profileId || !isReady) return;
+    customFetch<ActiveGame>(`/api/games/active/${profileId}`)
+      .then(g => setActiveGame(g))
+      .catch(() => setActiveGame(null));
+  }, [profileId, isReady]);
+
+  const doStart = async (mode: 'number' | 'alpha' | 'image') => {
+    if (!profileId) return;
+    setPendingMode(null);
     try {
       const res = await generatePuzzle.refetch();
       const puzzle = res.data;
@@ -77,10 +95,19 @@ export default function SudokuHome() {
       const game = await createGame.mutateAsync({
         data: { profileId, puzzleId: puzzle.id, difficulty },
       });
+      setActiveGame(null);
       const modeQuery = mode !== 'number' ? `?mode=${mode}` : '';
       setLocation(`/game/${game.id}${modeQuery}`);
     } catch (err) {
       console.error('Error starting game:', err);
+    }
+  };
+
+  const handleStart = (mode: 'number' | 'alpha' | 'image') => {
+    if (activeGame) {
+      setPendingMode(mode);
+    } else {
+      doStart(mode);
     }
   };
 
@@ -101,6 +128,26 @@ export default function SudokuHome() {
           <p className="text-muted-foreground mt-0.5">Welcome back, {profile.username}</p>
         )}
       </div>
+
+      {/* Resume active game card */}
+      {activeGame && (
+        <button
+          onClick={() => setLocation(`/game/${activeGame.id}`)}
+          className="w-full flex items-center gap-4 rounded-xl border-2 border-primary/40 bg-primary/5 p-4 hover:bg-primary/10 hover:border-primary/60 transition-all text-left"
+        >
+          <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+            <RotateCcw className="w-5 h-5 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-sm text-primary">Resume Last Game</p>
+            <p className="text-xs text-muted-foreground capitalize">
+              {activeGame.puzzle ? `${activeGame.puzzle.gridSize}×${activeGame.puzzle.gridSize} · ${activeGame.puzzle.difficulty}` : 'In progress'}
+              {activeGame.mistakeCount > 0 && ` · ${activeGame.mistakeCount} mistake${activeGame.mistakeCount !== 1 ? 's' : ''}`}
+            </p>
+          </div>
+          <div className="text-primary text-lg shrink-0">→</div>
+        </button>
+      )}
 
       <Card className="shadow-md border-primary/15">
         <CardHeader className="pb-4">
@@ -354,6 +401,33 @@ export default function SudokuHome() {
               </div>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* New game confirmation when one is in progress */}
+      <Dialog open={pendingMode !== null} onOpenChange={o => !o && setPendingMode(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Start a new game?</DialogTitle>
+            <DialogDescription>
+              You have an unfinished{' '}
+              {activeGame?.puzzle
+                ? `${activeGame.puzzle.gridSize}×${activeGame.puzzle.gridSize} ${activeGame.puzzle.difficulty}`
+                : ''}{' '}
+              Sudoku in progress. Starting a new game will abandon it.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
+            <Button variant="outline" className="flex-1" onClick={() => {
+              setPendingMode(null);
+              if (activeGame) setLocation(`/game/${activeGame.id}`);
+            }}>
+              Resume Last Game
+            </Button>
+            <Button className="flex-1" onClick={() => pendingMode && doStart(pendingMode)}>
+              Start New Game
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

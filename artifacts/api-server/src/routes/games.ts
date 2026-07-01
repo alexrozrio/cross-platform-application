@@ -95,6 +95,26 @@ router.post("/games", async (req, res): Promise<void> => {
   res.status(201).json(GetGameResponse.parse(formatGame(game, puzzle)));
 });
 
+router.get("/games/active/:profileId", async (req, res): Promise<void> => {
+  const profileId = parseInt(req.params.profileId, 10);
+  if (isNaN(profileId)) {
+    res.status(400).json({ error: "Invalid profileId" });
+    return;
+  }
+  const [game] = await db
+    .select()
+    .from(gamesTable)
+    .where(and(eq(gamesTable.profileId, profileId), eq(gamesTable.status, "active")))
+    .orderBy(desc(gamesTable.createdAt))
+    .limit(1);
+  if (!game) {
+    res.status(404).json({ error: "No active game" });
+    return;
+  }
+  const [puzzle] = await db.select().from(puzzlesTable).where(eq(puzzlesTable.id, game.puzzleId));
+  res.json(formatGame(game, puzzle ?? undefined));
+});
+
 router.get("/games/:id", async (req, res): Promise<void> => {
   const params = GetGameParams.safeParse(req.params);
   if (!params.success) {
