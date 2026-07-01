@@ -36,6 +36,7 @@ import {
   Share2,
 } from "lucide-react";
 import { useSound } from "@/hooks/use-sound";
+import { Confetti } from "@/components/confetti";
 import {
   Select,
   SelectContent,
@@ -952,6 +953,9 @@ export default function Game({ id }: { id: string }) {
               </CardContent>
             </Card>
           )}
+
+          {/* Confetti on completion */}
+          {isCompleted && <Confetti />}
 
           {/* Completed banner */}
           {isCompleted && (

@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ArrowLeft, Timer, Repeat2, Trophy, Gem, Star, RotateCcw, Zap, Brain, BarChart2, BookOpen, Keyboard, Scroll, Lightbulb, Volume2, VolumeX } from 'lucide-react';
 import { useSound } from '@/hooks/use-sound';
+import { Confetti } from '@/components/confetti';
+import { pickCompletionMessage, type CompletionMessage } from '@/lib/completion-messages';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -203,6 +205,7 @@ export default function MemoryMatchPage() {
   const [elapsed, setElapsed] = useState(0);
   const [lockBoard, setLockBoard] = useState(false);
   const [winResult, setWinResult] = useState<WinResult | null>(null);
+  const [winMessage, setWinMessage] = useState<CompletionMessage | null>(null);
   const [gameId, setGameId] = useState<number | null>(null);
   const [challengeBonus, setChallengeBonus] = useState<{ bonusXp: number; bonusGems: number } | null>(null);
 
@@ -375,6 +378,10 @@ export default function MemoryMatchPage() {
     setPhase('won');
     sounds.complete();
     if (timerRef.current) clearInterval(timerRef.current);
+
+    // Pick a congratulation message based on grid difficulty
+    const diffBySize: Record<GridSize, string> = { 2: 'easy', 4: 'medium', 6: 'hard', 8: 'expert' };
+    setWinMessage(pickCompletionMessage(diffBySize[gridSize]));
 
     const currentElapsed = elapsed;
     const currentFlips = flips + 1;
@@ -683,10 +690,11 @@ export default function MemoryMatchPage() {
   if (phase === 'won') {
     return (
       <div className="max-w-lg mx-auto w-full space-y-6 animate-in fade-in duration-500 pt-4">
-        <div className="text-center space-y-2">
-          <div className="text-6xl mb-2">🎉</div>
-          <h1 className="text-3xl font-serif font-bold">You won!</h1>
-          <p className="text-muted-foreground">All {totalPairs} pairs matched</p>
+        <Confetti />
+        <div className="rounded-2xl bg-primary text-primary-foreground p-6 text-center space-y-2 shadow-lg">
+          <div className="text-5xl mb-1">{winMessage?.emoji ?? '🎉'}</div>
+          <h1 className="text-3xl font-serif font-bold">{winMessage?.headline ?? 'You won!'}</h1>
+          <p className="opacity-80 text-sm">All {totalPairs} pairs matched</p>
         </div>
 
         <div className="grid grid-cols-3 gap-3">
