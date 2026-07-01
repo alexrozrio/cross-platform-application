@@ -1,13 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { useImageTheme } from '@/hooks/use-image-theme';
 import { ThemeIcon } from '@/components/theme-icons';
 import { Badge } from '@/components/ui/badge';
-import { Grid3X3, Sparkles, Loader2 } from 'lucide-react';
+import { Grid3X3, Sparkles, Loader2, RotateCcw } from 'lucide-react';
 import { customFetch, useGetProfile } from '@workspace/api-client-react';
 import { getLevelFromXp } from '@/lib/levels';
 import { getTheme } from '@/lib/themes';
+
+interface ActiveGame {
+  id: number;
+  puzzle?: { gridSize: number; difficulty: string };
+  mistakeCount: number;
+}
+
+interface MemorySession {
+  gridSize: number;
+  flips: number;
+  elapsed: number;
+  savedAt: number;
+  cards: { matched: boolean }[];
+}
 
 const COMING_SOON = [
   { title: 'Word Search', description: 'Find hidden words in a letter grid', icon: '🔤', color: 'from-emerald-500/20 to-teal-500/20 border-emerald-200/60' },
@@ -30,6 +44,33 @@ export default function Portal() {
   const { data: profile } = useGetProfile(profileId as number, {
     query: { enabled: !!profileId },
   });
+
+  const [activeGame, setActiveGame] = useState<ActiveGame | null>(null);
+  const [memorySession, setMemorySession] = useState<MemorySession | null>(null);
+
+  // Fetch active Sudoku game
+  useEffect(() => {
+    if (!profileId || !isReady) return;
+    customFetch<ActiveGame>(`/api/games/active/${profileId}`)
+      .then(g => setActiveGame(g))
+      .catch(() => setActiveGame(null));
+  }, [profileId, isReady]);
+
+  // Read Memory Match localStorage session
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('brain-games-memory-session');
+      if (!raw) return;
+      const s: MemorySession = JSON.parse(raw);
+      if (!s.savedAt || Date.now() - s.savedAt > 12 * 60 * 60 * 1000) {
+        localStorage.removeItem('brain-games-memory-session');
+        return;
+      }
+      setMemorySession(s);
+    } catch {
+      setMemorySession(null);
+    }
+  }, []);
 
   const handleQuickStart = async (size: number) => {
     if (!isReady || !profileId || loadingSize !== null) return;
@@ -139,6 +180,22 @@ export default function Portal() {
               </div>
             </button>
 
+            {/* Resume strip */}
+            {activeGame && (
+              <button
+                onClick={() => setLocation(`/game/${activeGame.id}`)}
+                className="mx-6 mb-3 flex items-center gap-2 rounded-lg bg-primary/10 border border-primary/25 px-3 py-2 text-left hover:bg-primary/20 transition-colors w-[calc(100%-3rem)]"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-primary shrink-0" />
+                <span className="text-xs font-semibold text-primary">Resume in progress</span>
+                {activeGame.puzzle && (
+                  <span className="text-[10px] text-muted-foreground capitalize ml-auto">
+                    {activeGame.puzzle.gridSize}×{activeGame.puzzle.gridSize} · {activeGame.puzzle.difficulty}
+                  </span>
+                )}
+              </button>
+            )}
+
             {/* Quick-start grid: each badge directly starts a game */}
             <div className="px-6 pb-2">
               <p className="text-[10px] text-muted-foreground mb-2">Tap a size to jump right in</p>
@@ -203,6 +260,26 @@ export default function Portal() {
                     <span className="text-muted-foreground/60 text-xs self-end pb-0.5 ml-1">…</span>
                   </div>
                 </button>
+                {/* Memory resume strip */}
+                {memorySession && (() => {
+                  const matched = memorySession.cards.filter(c => c.matched).length;
+                  const total = memorySession.cards.length / 2;
+                  const gs = memorySession.gridSize;
+                  const sizeLabel = gs === 2 ? '2×4' : gs === 4 ? '4×4' : gs === 6 ? '4×8' : '8×8';
+                  return (
+                    <button
+                      onClick={() => setLocation('/memory')}
+                      className="mx-6 mb-3 flex items-center gap-2 rounded-lg bg-violet-500/10 border border-violet-400/25 px-3 py-2 text-left hover:bg-violet-500/20 transition-colors w-[calc(100%-3rem)]"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5 text-violet-600 shrink-0" />
+                      <span className="text-xs font-semibold text-violet-700 dark:text-violet-400">Resume in progress</span>
+                      <span className="text-[10px] text-muted-foreground ml-auto">
+                        {sizeLabel} · {matched}/{total} pairs
+                      </span>
+                    </button>
+                  );
+                })()}
+
                 <div className="px-6 pb-5 pt-1">
                   <div className="grid grid-cols-4 gap-1.5">
                     {[{size:2,label:'2×4',sub:'4 pairs'},{size:4,label:'4×4',sub:'8 pairs'},{size:6,label:'4×8',sub:'16 pairs'},{size:8,label:'8×8',sub:'32 pairs'}].map(opt => (
