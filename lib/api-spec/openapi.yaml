@@ -523,6 +523,11 @@ components:
           type: boolean
         showTimer:
           type: boolean
+        soundEnabled:
+          type: boolean
+        gameMode:
+          type: string
+          enum: ["children", "adult", "4all"]
         gems:
           type: integer
           description: "Accumulated gem balance usable for future in-game features"
@@ -563,6 +568,11 @@ components:
           type: boolean
         showTimer:
           type: boolean
+        soundEnabled:
+          type: boolean
+        gameMode:
+          type: string
+          enum: ["children", "adult", "4all"]
 
     ProfileSync:
       type: object

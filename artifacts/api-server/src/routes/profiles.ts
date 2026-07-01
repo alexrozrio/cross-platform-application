@@ -159,6 +159,8 @@ router.patch("/profiles/:id", async (req, res): Promise<void> => {
   if (parsed.data.theme !== undefined) updateData.theme = parsed.data.theme;
   if (parsed.data.highlightErrors !== undefined) updateData.highlightErrors = parsed.data.highlightErrors;
   if (parsed.data.showTimer !== undefined) updateData.showTimer = parsed.data.showTimer;
+  if (parsed.data.soundEnabled !== undefined) updateData.soundEnabled = parsed.data.soundEnabled;
+  if (parsed.data.gameMode !== undefined) updateData.gameMode = parsed.data.gameMode;
 
   const [profile] = await db.update(profilesTable).set(updateData).where(eq(profilesTable.id, params.data.id)).returning();
   if (!profile) {

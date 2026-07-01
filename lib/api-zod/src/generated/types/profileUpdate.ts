@@ -5,6 +5,7 @@
  * Sudoku Game API
  * OpenAPI spec version: 0.1.0
  */
+import type { ProfileUpdateGameMode } from './profileUpdateGameMode';
 import type { ProfileUpdateTheme } from './profileUpdateTheme';
 
 export interface ProfileUpdate {
@@ -17,4 +18,6 @@ export interface ProfileUpdate {
   theme?: ProfileUpdateTheme;
   highlightErrors?: boolean;
   showTimer?: boolean;
+  soundEnabled?: boolean;
+  gameMode?: ProfileUpdateGameMode;
 }

@@ -9,6 +9,8 @@ export const profilesTable = pgTable("profiles", {
   theme: text("theme").notNull().default("light"),
   highlightErrors: boolean("highlight_errors").notNull().default(true),
   showTimer: boolean("show_timer").notNull().default(true),
+  soundEnabled: boolean("sound_enabled").notNull().default(true),
+  gameMode: text("game_mode").notNull().default("4all"),
   gems: integer("gems").notNull().default(0),
   clerkUserId: text("clerk_user_id").unique(),
   replitUserId: text("replit_user_id").unique(),

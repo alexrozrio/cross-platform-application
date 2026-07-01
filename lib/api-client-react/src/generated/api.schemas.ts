@@ -17,6 +17,15 @@ export const ProfileTheme = {
   dark: 'dark',
 } as const;
 
+export type ProfileGameMode = typeof ProfileGameMode[keyof typeof ProfileGameMode];
+
+
+export const ProfileGameMode = {
+  children: 'children',
+  adult: 'adult',
+  '4all': '4all',
+} as const;
+
 export interface Profile {
   id: number;
   username: string;
@@ -25,6 +34,8 @@ export interface Profile {
   theme: ProfileTheme;
   highlightErrors?: boolean;
   showTimer?: boolean;
+  soundEnabled?: boolean;
+  gameMode?: ProfileGameMode;
   /** Accumulated gem balance usable for future in-game features */
   gems?: number;
   createdAt: string;
@@ -58,6 +69,15 @@ export const ProfileUpdateTheme = {
   dark: 'dark',
 } as const;
 
+export type ProfileUpdateGameMode = typeof ProfileUpdateGameMode[keyof typeof ProfileUpdateGameMode];
+
+
+export const ProfileUpdateGameMode = {
+  children: 'children',
+  adult: 'adult',
+  '4all': '4all',
+} as const;
+
 export interface ProfileUpdate {
   /**
      * @minLength 1
@@ -68,6 +88,8 @@ export interface ProfileUpdate {
   theme?: ProfileUpdateTheme;
   highlightErrors?: boolean;
   showTimer?: boolean;
+  soundEnabled?: boolean;
+  gameMode?: ProfileUpdateGameMode;
 }
 
 export interface ProfileSync {
@@ -217,18 +239,6 @@ export interface PlayerStats {
   averageTime?: number | null;
   totalMistakes?: number;
   currentStreak?: number;
-  memory?: {
-    totalGames: number;
-    totalWins: number;
-    winRate?: number;
-    bestTimes: Record<string, number | null>;
-    /** @nullable */
-    averageTime?: number | null;
-    /** @nullable */
-    averageFlips?: number | null;
-    currentStreak?: number;
-    longestStreak?: number;
-  };
 }
 
 export interface TournamentEntry {

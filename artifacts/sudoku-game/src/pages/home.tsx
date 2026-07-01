@@ -68,6 +68,13 @@ export default function SudokuHome() {
     query: { enabled: !!profileId },
   });
 
+  const gameMode = (profile?.gameMode ?? '4all') as 'children' | 'adult' | '4all';
+  const allDifficulties: Difficulty[] = ['easy', 'medium', 'hard', 'expert'];
+  const filteredDifficulties: Difficulty[] =
+    gameMode === 'children' ? ['easy', 'medium'] :
+    gameMode === 'adult'    ? ['hard', 'expert'] :
+    allDifficulties;
+
   const generatePuzzle = useGeneratePuzzle(
     { difficulty, gridSize: gridSize as any },
     { query: { enabled: false } }
@@ -77,6 +84,12 @@ export default function SudokuHome() {
 
   const [activeGame, setActiveGame] = useState<ActiveGame | null>(null);
   const [pendingMode, setPendingMode] = useState<'number' | 'alpha' | 'image' | null>(null);
+
+  useEffect(() => {
+    if (!filteredDifficulties.includes(difficulty)) {
+      setDifficulty(filteredDifficulties[0]);
+    }
+  }, [gameMode]);
 
   useEffect(() => {
     if (!profileId || !isReady) return;
@@ -188,10 +201,9 @@ export default function SudokuHome() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="easy">Easy</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="hard">Hard</SelectItem>
-                <SelectItem value="expert">Expert</SelectItem>
+                {filteredDifficulties.map(d => (
+                  <SelectItem key={d} value={d} className="capitalize">{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

@@ -203,6 +203,20 @@ export default function MemoryMatchPage() {
   const { data: profile } = useGetProfile(profileId as number, {
     query: { enabled: !!profileId },
   });
+
+  const gameMode = (profile?.gameMode ?? '4all') as 'children' | 'adult' | '4all';
+  const filteredGridOptions = GRID_OPTIONS.filter(o =>
+    gameMode === 'children' ? o.size <= 4 :
+    gameMode === 'adult'    ? o.size >= 6 :
+    true
+  );
+
+  useEffect(() => {
+    if (filteredGridOptions.length > 0 && !filteredGridOptions.find(o => o.size === gridSize)) {
+      setGridSize(filteredGridOptions[0].size);
+    }
+  }, [gameMode]);
+
   const [cards, setCards] = useState<Card[]>([]);
   const [flippedIds, setFlippedIds] = useState<number[]>([]);
   const [matchedCount, setMatchedCount] = useState(0);
@@ -567,7 +581,7 @@ export default function MemoryMatchPage() {
 
         <div className="space-y-3">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Choose Grid Size</p>
-          {GRID_OPTIONS.map(opt => (
+          {filteredGridOptions.map(opt => (
             <button
               key={opt.size}
               onClick={() => startGame(opt.size)}
@@ -840,7 +854,7 @@ export default function MemoryMatchPage() {
           <div className="space-y-2">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground text-center">Or start a new game</p>
             <div className="grid grid-cols-2 gap-2">
-              {GRID_OPTIONS.map(opt => (
+              {filteredGridOptions.map(opt => (
                 <button
                   key={opt.size}
                   onClick={() => startGame(opt.size)}
@@ -1052,7 +1066,7 @@ export default function MemoryMatchPage() {
             <div className="rounded-xl border-2 border-primary/20 bg-primary/4 p-3 space-y-2">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Start New Game</p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {GRID_OPTIONS.map(opt => (
+                {filteredGridOptions.map(opt => (
                   <button
                     key={opt.size}
                     onClick={() => { setPendingAction({ type: 'new', size: opt.size }); setShowNewGame(false); }}

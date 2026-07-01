@@ -41,7 +41,12 @@ import {
   Info,
   ShieldCheck,
   FileText,
+  Volume2,
+  Baby,
+  Dumbbell,
+  Globe,
 } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { BADGE_META, formatPeriodLabel } from "@/lib/badge-utils";
 import { BadgeShareSheet } from "@/components/badge-share-sheet";
 import { LevelCard, RankGuide } from "@/components/level-badge";
@@ -71,8 +76,9 @@ interface TournamentStreakData {
 
 const profileSchema = z.object({
   username: z.string().min(2, "At least 2 characters").max(30),
-  highlightErrors: z.boolean().default(true),
+  soundEnabled: z.boolean().default(true),
   showTimer: z.boolean().default(true),
+  gameMode: z.enum(["children", "adult", "4all"]).default("4all"),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -89,14 +95,16 @@ export default function Profile() {
     resolver: zodResolver(profileSchema),
     defaultValues: {
       username: "",
-      highlightErrors: true,
+      soundEnabled: true,
       showTimer: true,
+      gameMode: "4all" as const,
     },
     values: profile
       ? {
           username: profile.username,
-          highlightErrors: profile.highlightErrors ?? true,
+          soundEnabled: profile.soundEnabled ?? true,
           showTimer: profile.showTimer ?? true,
+          gameMode: (profile.gameMode ?? "4all") as "children" | "adult" | "4all",
         }
       : undefined,
   });
@@ -447,12 +455,15 @@ export default function Profile() {
                 />
                 <FormField
                   control={form.control}
-                  name="highlightErrors"
+                  name="soundEnabled"
                   render={({ field }) => (
                     <FormItem className="flex items-center justify-between rounded-lg border p-4">
-                      <div>
-                        <FormLabel className="text-base">Highlight Errors</FormLabel>
-                        <FormDescription>Show feedback on incorrect placement.</FormDescription>
+                      <div className="flex items-center gap-3">
+                        <Volume2 className="w-4 h-4 text-muted-foreground" />
+                        <div>
+                          <FormLabel className="text-base">Sound Effects</FormLabel>
+                          <FormDescription>Play sounds during gameplay.</FormDescription>
+                        </div>
                       </div>
                       <FormControl>
                         <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -471,6 +482,53 @@ export default function Profile() {
                       </div>
                       <FormControl>
                         <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="gameMode"
+                  render={({ field }) => (
+                    <FormItem className="rounded-lg border p-4 space-y-3">
+                      <div>
+                        <FormLabel className="text-base">Game Mode</FormLabel>
+                        <FormDescription>
+                          Controls which difficulty levels appear in both games.
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <ToggleGroup
+                          type="single"
+                          value={field.value}
+                          onValueChange={v => v && field.onChange(v)}
+                          className="grid grid-cols-3 gap-2"
+                        >
+                          <ToggleGroupItem
+                            value="children"
+                            className="flex-col h-16 gap-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                          >
+                            <Baby className="w-4 h-4" />
+                            <span className="text-xs font-semibold">Kids</span>
+                            <span className="text-[10px] opacity-70 leading-none">Easy · Medium</span>
+                          </ToggleGroupItem>
+                          <ToggleGroupItem
+                            value="4all"
+                            className="flex-col h-16 gap-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                          >
+                            <Globe className="w-4 h-4" />
+                            <span className="text-xs font-semibold">4 All</span>
+                            <span className="text-[10px] opacity-70 leading-none">All levels</span>
+                          </ToggleGroupItem>
+                          <ToggleGroupItem
+                            value="adult"
+                            className="flex-col h-16 gap-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                          >
+                            <Dumbbell className="w-4 h-4" />
+                            <span className="text-xs font-semibold">Adult</span>
+                            <span className="text-[10px] opacity-70 leading-none">Hard · Expert</span>
+                          </ToggleGroupItem>
+                        </ToggleGroup>
                       </FormControl>
                     </FormItem>
                   )}

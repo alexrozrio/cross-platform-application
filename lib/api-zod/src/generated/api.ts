@@ -51,6 +51,8 @@ export const SyncProfileResponse = zod.object({
   "theme": zod.enum(['light', 'dark']),
   "highlightErrors": zod.boolean().optional(),
   "showTimer": zod.boolean().optional(),
+  "soundEnabled": zod.boolean().optional(),
+  "gameMode": zod.enum(['children', 'adult', '4all']).optional(),
   "gems": zod.number().optional().describe('Accumulated gem balance usable for future in-game features'),
   "createdAt": zod.string()
 })
@@ -70,8 +72,9 @@ export const GetProfileResponse = zod.object({
   "theme": zod.enum(['light', 'dark']),
   "highlightErrors": zod.boolean().optional(),
   "showTimer": zod.boolean().optional(),
+  "soundEnabled": zod.boolean().optional(),
+  "gameMode": zod.enum(['children', 'adult', '4all']).optional(),
   "gems": zod.number().optional().describe('Accumulated gem balance usable for future in-game features'),
-  "xp": zod.number().optional().describe('Experience points for level progression'),
   "createdAt": zod.string()
 })
 
@@ -92,7 +95,9 @@ export const UpdateProfileBody = zod.object({
   "avatar": zod.string().optional(),
   "theme": zod.enum(['light', 'dark']).optional(),
   "highlightErrors": zod.boolean().optional(),
-  "showTimer": zod.boolean().optional()
+  "showTimer": zod.boolean().optional(),
+  "soundEnabled": zod.boolean().optional(),
+  "gameMode": zod.enum(['children', 'adult', '4all']).optional()
 })
 
 export const UpdateProfileResponse = zod.object({
@@ -102,8 +107,9 @@ export const UpdateProfileResponse = zod.object({
   "theme": zod.enum(['light', 'dark']),
   "highlightErrors": zod.boolean().optional(),
   "showTimer": zod.boolean().optional(),
+  "soundEnabled": zod.boolean().optional(),
+  "gameMode": zod.enum(['children', 'adult', '4all']).optional(),
   "gems": zod.number().optional().describe('Accumulated gem balance usable for future in-game features'),
-  "xp": zod.number().optional().describe('Experience points for level progression'),
   "createdAt": zod.string()
 })
 
@@ -277,7 +283,6 @@ export const GetLeaderboardResponseItem = zod.object({
   "profileId": zod.number(),
   "username": zod.string(),
   "avatar": zod.string().nullish(),
-  "xp": zod.number().optional(),
   "difficulty": zod.enum(['easy', 'medium', 'hard', 'expert']).optional(),
   "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(9),zod.literal(16)]).optional(),
   "elapsedSeconds": zod.number(),
@@ -307,17 +312,7 @@ export const GetPlayerStatsResponse = zod.object({
 }),
   "averageTime": zod.number().nullish(),
   "totalMistakes": zod.number().optional(),
-  "currentStreak": zod.number().optional(),
-  "memory": zod.object({
-    "totalGames": zod.number(),
-    "totalWins": zod.number(),
-    "winRate": zod.number().optional(),
-    "bestTimes": zod.record(zod.string(), zod.number().nullable()),
-    "averageTime": zod.number().nullish(),
-    "averageFlips": zod.number().nullish(),
-    "currentStreak": zod.number().optional(),
-    "longestStreak": zod.number().optional(),
-  }).optional()
+  "currentStreak": zod.number().optional()
 })
 
 

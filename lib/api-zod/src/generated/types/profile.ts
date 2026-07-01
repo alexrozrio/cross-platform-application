@@ -5,6 +5,7 @@
  * Sudoku Game API
  * OpenAPI spec version: 0.1.0
  */
+import type { ProfileGameMode } from './profileGameMode';
 import type { ProfileTheme } from './profileTheme';
 
 export interface Profile {
@@ -15,6 +16,8 @@ export interface Profile {
   theme: ProfileTheme;
   highlightErrors?: boolean;
   showTimer?: boolean;
+  soundEnabled?: boolean;
+  gameMode?: ProfileGameMode;
   /** Accumulated gem balance usable for future in-game features */
   gems?: number;
   createdAt: string;
