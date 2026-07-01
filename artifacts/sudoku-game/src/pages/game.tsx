@@ -287,6 +287,7 @@ export default function Game({ id }: { id: string }) {
     !isCompleted && !isGameOver && !isPaused && game?.status === "active",
   );
   const saveTimeoutRef = useRef<number | null>(null);
+  const gameLoadedRef = useRef(false);
 
   // Sync new-game size pill to the current game's grid size
   useEffect(() => {
@@ -315,6 +316,7 @@ export default function Game({ id }: { id: string }) {
 
       setGrid(loadedGrid);
       setInitialGrid(loadedInitial);
+      gameLoadedRef.current = true;
 
       // Restore notes from localStorage
       const savedNotes = localStorage.getItem(storageKeyNotes);
@@ -346,15 +348,16 @@ export default function Game({ id }: { id: string }) {
     }
   }, [game, isCompleted, isGameOver, totalCells, storageKeyGrid, storageKeyNotes]);
 
-  // Immediately persist grid to localStorage on every change (no debounce)
+  // Immediately persist grid to localStorage on every change (no debounce).
+  // Guard with gameLoadedRef so the initial empty-grid render does NOT overwrite saved data.
   useEffect(() => {
-    if (!isCompleted && !isGameOver) {
-      localStorage.setItem(storageKeyGrid, grid.join(""));
-    }
+    if (!gameLoadedRef.current || isCompleted || isGameOver) return;
+    localStorage.setItem(storageKeyGrid, grid.join(""));
   }, [grid, isCompleted, isGameOver, storageKeyGrid]);
 
-  // Immediately persist notes to localStorage on every change
+  // Immediately persist notes to localStorage on every change.
   useEffect(() => {
+    if (!gameLoadedRef.current) return;
     const serialized: Record<string, string[]> = {};
     for (const [k, v] of Object.entries(notes)) {
       serialized[k] = Array.from(v);
