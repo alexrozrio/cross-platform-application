@@ -9,10 +9,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ArrowLeft, Timer, Repeat2, Trophy, Gem, Star, RotateCcw, Zap, Brain, BarChart2, BookOpen, Keyboard, Scroll, Lightbulb, Volume2, VolumeX } from 'lucide-react';
+import { ArrowLeft, Timer, Repeat2, Trophy, Gem, Star, RotateCcw, Zap, Brain, BarChart2, BookOpen, Keyboard, Scroll, Lightbulb, Volume2, VolumeX, Share2 } from 'lucide-react';
 import { useSound } from '@/hooks/use-sound';
 import { Confetti } from '@/components/confetti';
 import { pickCompletionMessage, type CompletionMessage } from '@/lib/completion-messages';
+import { getLevelFromXp } from '@/lib/levels';
+import { toast } from 'sonner';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -425,6 +427,28 @@ export default function MemoryMatchPage() {
   const completeGameRef = useRef(completeGame);
   useEffect(() => { completeGameRef.current = completeGame; }, [completeGame]);
 
+  const handleShare = useCallback(async () => {
+    const sizeLabel = GRID_OPTIONS.find(o => o.size === gridSize)?.label ?? `${gridSize}×${gridSize}`;
+    const diffLabel = GRID_OPTIONS.find(o => o.size === gridSize)?.desc.split(' · ')[0] ?? '';
+    const rank = profile ? getLevelFromXp(profile.xp ?? 0).name : null;
+    const lines = [
+      `${winMessage?.emoji ?? '🎉'} Matched all ${getPairs(gridSize)} pairs (${sizeLabel} ${diffLabel}) in ${formatTime(elapsed)}!`,
+      `🔄 ${flips} flip${flips !== 1 ? 's' : ''}`,
+      winResult && winResult.points > 0 ? `+${winResult.points.toLocaleString()} pts` : null,
+      rank ? `🏅 ${rank} · Brain Games 4 All` : '🧠 Brain Games 4 All',
+    ].filter(Boolean).join('\n');
+    try {
+      if (navigator.share) {
+        await navigator.share({ text: lines });
+      } else {
+        await navigator.clipboard.writeText(lines);
+        toast.success('Result copied to clipboard!', { duration: 2500 });
+      }
+    } catch {
+      // user cancelled or clipboard blocked — silent
+    }
+  }, [gridSize, profile, winMessage, elapsed, flips, winResult]);
+
   const totalPairs = getPairs(gridSize);
   const theme = getTheme(themeId as any);
 
@@ -691,10 +715,17 @@ export default function MemoryMatchPage() {
     return (
       <div className="max-w-lg mx-auto w-full space-y-6 animate-in fade-in duration-500 pt-4">
         <Confetti />
-        <div className="rounded-2xl bg-primary text-primary-foreground p-6 text-center space-y-2 shadow-lg">
+        <div className="rounded-2xl bg-primary text-primary-foreground p-6 text-center space-y-3 shadow-lg">
           <div className="text-5xl mb-1">{winMessage?.emoji ?? '🎉'}</div>
           <h1 className="text-3xl font-serif font-bold">{winMessage?.headline ?? 'You won!'}</h1>
           <p className="opacity-80 text-sm">All {totalPairs} pairs matched</p>
+          <button
+            onClick={handleShare}
+            className="inline-flex items-center gap-2 mt-1 text-sm opacity-80 hover:opacity-100 transition-opacity bg-white/15 hover:bg-white/25 rounded-lg px-4 py-1.5"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            Share your result
+          </button>
         </div>
 
         <div className="grid grid-cols-3 gap-3">
