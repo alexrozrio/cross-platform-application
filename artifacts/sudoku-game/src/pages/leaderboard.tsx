@@ -979,6 +979,38 @@ function MemoryScoringGuide() {
             Daily &amp; weekly challenge bonuses award extra XP and gems on top
             of the base XP above.
           </p>
+
+          {/* Game Modes */}
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              🎮 Game Modes
+            </p>
+            <p className="text-xs text-muted-foreground mb-3">
+              Your Game Mode (set in Profile) controls which grid sizes are available for Memory Match.
+            </p>
+            <div className="rounded-xl border overflow-hidden text-xs">
+              <div className="grid grid-cols-2 bg-muted/50 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+                <span>Mode</span>
+                <span className="text-center">Unlocked sizes</span>
+              </div>
+              {[
+                { mode: "👶 Kids",  sizes: "4 pairs (2×4) · 8 pairs (4×4)",   cls: "text-green-700" },
+                { mode: "🧑 Adult", sizes: "16 pairs (4×8) · 32 pairs (8×8)", cls: "text-blue-700"  },
+                { mode: "🌍 4 All", sizes: "All four sizes",                   cls: "text-violet-700" },
+              ].map((row, i) => (
+                <div
+                  key={row.mode}
+                  className={`grid grid-cols-2 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}
+                >
+                  <span className={`font-semibold ${row.cls}`}>{row.mode}</span>
+                  <span className="text-center text-muted-foreground">{row.sizes}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2 italic">
+              All modes compete on the same leaderboard. Change your mode anytime under Profile → Game Mode.
+            </p>
+          </div>
         </div>
       )}
     </div>
