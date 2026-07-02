@@ -725,6 +725,27 @@ components:
           type: integer
         currentStreak:
           type: integer
+        memory:
+          type: object
+          properties:
+            totalGames:
+              type: integer
+            totalWins:
+              type: integer
+            winRate:
+              type: number
+            bestTimes:
+              type: object
+              additionalProperties:
+                type: ["integer", "null"]
+            averageTime:
+              type: ["integer", "null"]
+            averageFlips:
+              type: ["integer", "null"]
+            currentStreak:
+              type: integer
+            longestStreak:
+              type: integer
 
     TournamentEntry:
       type: object

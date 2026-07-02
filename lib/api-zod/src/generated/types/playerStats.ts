@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { PlayerStatsBestTimes } from './playerStatsBestTimes';
+import type { PlayerStatsMemory } from './playerStatsMemory';
 
 export interface PlayerStats {
   profileId: number;
@@ -17,4 +18,5 @@ export interface PlayerStats {
   averageTime?: number | null;
   totalMistakes?: number;
   currentStreak?: number;
+  memory?: PlayerStatsMemory;
 }

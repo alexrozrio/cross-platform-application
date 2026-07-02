@@ -37,6 +37,8 @@ export * from './leaderboardEntryDifficulty';
 export * from './leaderboardEntryGridSize';
 export * from './playerStats';
 export * from './playerStatsBestTimes';
+export * from './playerStatsMemory';
+export * from './playerStatsMemoryBestTimes';
 export * from './profile';
 export * from './profileGameMode';
 export * from './profileInput';

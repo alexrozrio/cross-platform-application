@@ -229,6 +229,21 @@ export type PlayerStatsBestTimes = {
   expert?: number | null;
 };
 
+export type PlayerStatsMemoryBestTimes = {[key: string]: number | null};
+
+export type PlayerStatsMemory = {
+  totalGames?: number;
+  totalWins?: number;
+  winRate?: number;
+  bestTimes?: PlayerStatsMemoryBestTimes;
+  /** @nullable */
+  averageTime?: number | null;
+  /** @nullable */
+  averageFlips?: number | null;
+  currentStreak?: number;
+  longestStreak?: number;
+};
+
 export interface PlayerStats {
   profileId: number;
   totalGames: number;
@@ -239,6 +254,7 @@ export interface PlayerStats {
   averageTime?: number | null;
   totalMistakes?: number;
   currentStreak?: number;
+  memory?: PlayerStatsMemory;
 }
 
 export interface TournamentEntry {
