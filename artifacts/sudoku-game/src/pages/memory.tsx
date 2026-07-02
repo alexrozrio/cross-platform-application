@@ -470,6 +470,7 @@ export default function MemoryMatchPage() {
     // Trigger achievement detection
     if (profileId) {
       queryClient.invalidateQueries({ queryKey: [`/api/achievements/${profileId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/stats/${profileId}`] });
     }
 
     // Claim challenge bonus if this game was started from a challenge
