@@ -201,8 +201,15 @@ export default function Portal() {
               </div>
             </button>
 
-            {/* Resume strip */}
-            {activeGame && (
+            {/* Resume strip — only show if the game's grid size is valid for the current mode */}
+            {activeGame && (() => {
+              const gs = activeGame.puzzle?.gridSize;
+              const validForMode =
+                gameMode === 'children' ? [3, 4].includes(gs!) :
+                gameMode === 'adult'    ? [9, 16].includes(gs!) :
+                true;
+              return validForMode;
+            })() && (
               <button
                 onClick={() => setLocation(`/game/${activeGame.id}`)}
                 className="mx-6 mb-3 flex items-center gap-2 rounded-lg bg-primary/10 border border-primary/25 px-3 py-2 text-left hover:bg-primary/20 transition-colors w-[calc(100%-3rem)]"
@@ -281,11 +288,16 @@ export default function Portal() {
                     <span className="text-muted-foreground/60 text-xs self-end pb-0.5 ml-1">…</span>
                   </div>
                 </button>
-                {/* Memory resume strip */}
+                {/* Memory resume strip — only show if session grid size is valid for the current mode */}
                 {memorySession && (() => {
+                  const gs = memorySession.gridSize;
+                  const validForMode =
+                    gameMode === 'children' ? [2, 4].includes(gs) :
+                    gameMode === 'adult'    ? [6, 8].includes(gs) :
+                    true;
+                  if (!validForMode) return null;
                   const matched = memorySession.cards.filter(c => c.matched).length;
                   const total = memorySession.cards.length / 2;
-                  const gs = memorySession.gridSize;
                   const sizeLabel = gs === 2 ? '2×4' : gs === 4 ? '4×4' : gs === 6 ? '4×8' : '8×8';
                   return (
                     <button

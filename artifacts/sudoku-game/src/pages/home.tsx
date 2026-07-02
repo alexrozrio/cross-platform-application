@@ -150,8 +150,15 @@ export default function SudokuHome() {
         )}
       </div>
 
-      {/* Resume active game card */}
-      {activeGame && (
+      {/* Resume active game card — hide if the game's grid size is outside current mode */}
+      {activeGame && (() => {
+        const gs = activeGame.puzzle?.gridSize;
+        const validForMode =
+          gameMode === 'children' ? [3, 4].includes(gs!) :
+          gameMode === 'adult'    ? [9, 16].includes(gs!) :
+          true;
+        return validForMode;
+      })() && (
         <button
           onClick={() => setLocation(`/game/${activeGame.id}`)}
           className="w-full flex items-center gap-4 rounded-xl border-2 border-primary/40 bg-primary/5 p-4 hover:bg-primary/10 hover:border-primary/60 transition-all text-left"
