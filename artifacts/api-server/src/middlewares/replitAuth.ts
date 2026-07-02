@@ -194,7 +194,7 @@ export async function setupAuth(app: Express) {
     if (!req.isAuthenticated() || !req.user?.userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
-    db.select()
+    return db.select()
       .from(users)
       .where(eq(users.id, req.user.userId))
       .then(([user]) => res.json(user ?? null))

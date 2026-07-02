@@ -1,15 +1,17 @@
-# [Project name]
+# Brain Games 4 All
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A multiplayer browser game platform featuring Sudoku and memory games, with leaderboards, daily challenges, login-streak rewards, and Google OAuth sign-in.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- **API Server** (port 8080): `PORT=8080 pnpm --filter @workspace/api-server run dev`
+- **Frontend** (port 19093): `PORT=19093 BASE_PATH=/ pnpm --filter @workspace/sudoku-game run dev`
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Required env: `DATABASE_URL` — auto-provided by Replit; `SESSION_SECRET` — set as a Replit Secret
+- Optional env: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` — enables Google sign-in; without them the app runs in guest-only mode
 
 ## Stack
 
