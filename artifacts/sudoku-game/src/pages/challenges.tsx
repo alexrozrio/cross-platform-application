@@ -551,6 +551,13 @@ const MEMORY_SIZE_OPTIONS: { value: MemoryGridSize; label: string }[] = [
   { value: 8, label: '8×8 Hard · 32 pairs' },
 ];
 
+const DIFFICULTY_OPTIONS: { value: Difficulty; label: string }[] = [
+  { value: 'easy',   label: 'Easy' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'hard',   label: 'Hard' },
+  { value: 'expert', label: 'Expert' },
+];
+
 function filteredSudokuSizes(gameMode: GameMode) {
   return SUDOKU_SIZE_OPTIONS.filter(o =>
     gameMode === 'children' ? [3, 4].includes(o.value) :
@@ -563,6 +570,14 @@ function filteredMemorySizes(gameMode: GameMode) {
   return MEMORY_SIZE_OPTIONS.filter(o =>
     gameMode === 'children' ? [2, 4].includes(o.value) :
     gameMode === 'adult'    ? [6, 8].includes(o.value) :
+    true
+  );
+}
+
+function filteredDifficulties(gameMode: GameMode) {
+  return DIFFICULTY_OPTIONS.filter(o =>
+    gameMode === 'children' ? ['easy', 'medium'].includes(o.value) :
+    gameMode === 'adult'    ? ['hard', 'expert'].includes(o.value) :
     true
   );
 }
@@ -585,15 +600,17 @@ function NewChallengeDialog({
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<ProfileSummary | null>(null);
   const [gameType, setGameType] = useState<GameType>("sudoku");
-  const [difficulty, setDifficulty] = useState<Difficulty>("medium");
   const sudokuSizes = filteredSudokuSizes(gameMode);
   const memorySizes = filteredMemorySizes(gameMode);
+  const diffs = filteredDifficulties(gameMode);
   const defaultSudokuSize = sudokuSizes[0]?.value ?? 9;
   const defaultMemorySize = memorySizes[0]?.value ?? 4;
+  const defaultDiff = diffs[0]?.value ?? 'medium';
+  const [difficulty, setDifficulty] = useState<Difficulty>(defaultDiff);
   const [sudokuGridSize, setSudokuGridSize] = useState<SudokuGridSize>(defaultSudokuSize);
   const [memoryGridSize, setMemoryGridSize] = useState<MemoryGridSize>(defaultMemorySize);
 
-  // Reset sizes to valid options whenever gameMode or dialog open state changes
+  // Reset sizes/difficulty to valid options whenever gameMode or dialog open state changes
   React.useEffect(() => {
     const validSudoku = sudokuSizes.map(o => o.value);
     if (!validSudoku.includes(sudokuGridSize)) {
@@ -602,6 +619,10 @@ function NewChallengeDialog({
     const validMemory = memorySizes.map(o => o.value);
     if (!validMemory.includes(memoryGridSize)) {
       setMemoryGridSize(memorySizes[0]?.value ?? 4);
+    }
+    const validDiffs = diffs.map(o => o.value);
+    if (!validDiffs.includes(difficulty)) {
+      setDifficulty(diffs[0]?.value ?? 'medium');
     }
   }, [gameMode, open]);
 
@@ -827,10 +848,9 @@ function NewChallengeDialog({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="easy">Easy</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="hard">Hard</SelectItem>
-                        <SelectItem value="expert">Expert</SelectItem>
+                        {diffs.map(o => (
+                          <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
