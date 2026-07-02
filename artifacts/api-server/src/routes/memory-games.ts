@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, desc, and, gte, lt } from "drizzle-orm";
+import { eq, desc, and, gte, lt, asc } from "drizzle-orm";
 import { db, memoryGamesTable, profilesTable } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { resolveDuelForMemoryGame } from "./memory-duels";
@@ -78,6 +78,22 @@ router.post("/memory-games/:id/complete", async (req, res): Promise<void> => {
     return;
   }
 
+  // Check for personal best (fastest prior completion for same profile+gridSize)
+  let isPersonalBest = false;
+  if (existing.profileId) {
+    const [prevBest] = await db
+      .select({ elapsedSeconds: memoryGamesTable.elapsedSeconds })
+      .from(memoryGamesTable)
+      .where(and(
+        eq(memoryGamesTable.profileId, existing.profileId),
+        eq(memoryGamesTable.status, "completed"),
+        eq(memoryGamesTable.gridSize, existing.gridSize),
+      ))
+      .orderBy(asc(memoryGamesTable.elapsedSeconds))
+      .limit(1);
+    isPersonalBest = !prevBest || elapsedSeconds < (prevBest.elapsedSeconds ?? Infinity);
+  }
+
   const points = calcMemoryPoints(existing.gridSize, elapsedSeconds, flips, tips);
   const xpEarned = XP_PER_SIZE[existing.gridSize] ?? 1;
   const gemsEarned = calcMemoryGems(points);
@@ -125,7 +141,7 @@ router.post("/memory-games/:id/complete", async (req, res): Promise<void> => {
   // Resolve any memory duel that references this game
   await resolveDuelForMemoryGame(id).catch(() => {});
 
-  res.json({ points, xpEarned, gemsEarned, completedAt: game.completedAt?.toISOString() });
+  res.json({ points, xpEarned, gemsEarned, completedAt: game.completedAt?.toISOString(), isPersonalBest });
 });
 
 // ─── GET /memory-games/leaderboard ───────────────────────────────────────────

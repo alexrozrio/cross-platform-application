@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, asc } from "drizzle-orm";
 import { db, gamesTable, puzzlesTable, profilesTable, dailyChallengesTable } from "@workspace/db";
 import {
   CreateGameBody,
@@ -184,6 +184,24 @@ router.post("/games/:id/complete", async (req, res): Promise<void> => {
 
   const [puzzle] = await db.select().from(puzzlesTable).where(eq(puzzlesTable.id, existing.puzzleId));
 
+  // Check for personal best (fastest prior completion for same profile+gridSize+difficulty)
+  let isPersonalBest = false;
+  if (existing.profileId && puzzle) {
+    const [prevBest] = await db
+      .select({ elapsedSeconds: gamesTable.elapsedSeconds })
+      .from(gamesTable)
+      .innerJoin(puzzlesTable, eq(gamesTable.puzzleId, puzzlesTable.id))
+      .where(and(
+        eq(gamesTable.profileId, existing.profileId),
+        eq(gamesTable.status, "completed"),
+        eq(puzzlesTable.gridSize, puzzle.gridSize),
+        eq(puzzlesTable.difficulty, puzzle.difficulty),
+      ))
+      .orderBy(asc(gamesTable.elapsedSeconds))
+      .limit(1);
+    isPersonalBest = !prevBest || parsed.data.elapsedSeconds < (prevBest.elapsedSeconds ?? Infinity);
+  }
+
   const mistakes = parsed.data.mistakeCount ?? 0;
   const hints = parsed.data.hintsUsed ?? 0;
   const elapsed = parsed.data.elapsedSeconds;
@@ -216,7 +234,7 @@ router.post("/games/:id/complete", async (req, res): Promise<void> => {
     updateStreakIfDailyChallenge(existing.profileId, existing.puzzleId).catch(() => {});
   }
 
-  res.json(CompleteGameResponse.parse(formatGame(game, puzzle)));
+  res.json({ ...CompleteGameResponse.parse(formatGame(game, puzzle)), isPersonalBest });
 
   awardPreviousPeriodBadges().catch(() => {});
   resolveChallengeForGame(params.data.id).catch(() => {});

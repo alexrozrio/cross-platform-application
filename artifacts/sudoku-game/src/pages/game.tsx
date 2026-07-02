@@ -387,6 +387,7 @@ export default function Game({ id }: { id: string }) {
   }, [grid, seconds, mistakes, hints, gameId, isCompleted, game]);
 
   const [pointsEarned, setPointsEarned] = useState<number | null>(null);
+  const [isPersonalBest, setIsPersonalBest] = useState(false);
 
   const checkCompletion = useCallback(
     (currentGrid: string[], solution?: string) => {
@@ -413,6 +414,7 @@ export default function Game({ id }: { id: string }) {
 
               const pts = data.points ?? null;
               setPointsEarned(pts);
+              setIsPersonalBest((data as any).isPersonalBest === true);
               const msg = pickCompletionMessage(game?.puzzle?.difficulty, game?.puzzle?.gridSize);
               setCompletionMessage(msg);
               toast.success(`${msg.headline} ${msg.emoji}`, {
@@ -1090,6 +1092,11 @@ export default function Game({ id }: { id: string }) {
                 <p className="opacity-90 text-sm">
                   {formattedTime} • {mistakes} mistake{mistakes !== 1 ? "s" : ""}
                 </p>
+                {isPersonalBest && (
+                  <div className="flex items-center gap-1.5 bg-yellow-400/20 border border-yellow-300/50 text-yellow-200 rounded-full px-3 py-1 text-xs font-bold tracking-wide">
+                    🏆 New Personal Best!
+                  </div>
+                )}
                 {pointsEarned !== null && (
                   <div className="flex gap-4 items-end justify-center">
                     <div className="flex flex-col items-center gap-0.5">

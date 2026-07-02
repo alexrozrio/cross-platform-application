@@ -35,6 +35,7 @@ interface Card {
 interface WinResult {
   points: number;
   xpEarned: number;
+  isPersonalBest?: boolean;
   gemsEarned: number;
   tipsUsed?: number;
 }
@@ -789,6 +790,13 @@ export default function MemoryMatchPage() {
             Share your result
           </button>
         </div>
+
+        {winResult?.isPersonalBest && (
+          <div className="flex items-center justify-center gap-2 rounded-xl border border-yellow-300/60 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/20 dark:border-yellow-700/40 px-4 py-2.5">
+            <span className="text-lg">🏆</span>
+            <span className="font-bold text-yellow-700 dark:text-yellow-400 text-sm">New Personal Best!</span>
+          </div>
+        )}
 
         <div className="grid grid-cols-3 gap-3">
           {[
