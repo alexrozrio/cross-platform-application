@@ -257,6 +257,19 @@ export default function Game({ id }: { id: string }) {
   }, [numberCounts, gridSize]);
   const [isPaused, setIsPaused] = useState(false);
 
+  // Derive game mode from profile
+  const rawGameMode = (profile?.gameMode ?? '4all') as 'children' | 'adult' | '4all';
+  const visibleSizes = ([3, 4, 9, 16] as const).filter(s =>
+    rawGameMode === 'children' ? [3, 4].includes(s) :
+    rawGameMode === 'adult'    ? [9, 16].includes(s) :
+    true
+  );
+  const visibleDiffs = (['easy', 'medium', 'hard', 'expert'] as const).filter(d =>
+    rawGameMode === 'children' ? ['easy', 'medium'].includes(d) :
+    rawGameMode === 'adult'    ? ['hard', 'expert'].includes(d) :
+    true
+  );
+
   // New-game switcher state — initialise to current game's grid size
   const [newSize, setNewSize] = useState<3 | 4 | 9 | 16>(9);
   const [newDiff, setNewDiff] = useState<"easy" | "medium" | "hard" | "expert">("easy");
@@ -291,12 +304,24 @@ export default function Game({ id }: { id: string }) {
   const saveTimeoutRef = useRef<number | null>(null);
   const gameLoadedRef = useRef(false);
 
-  // Sync new-game size pill to the current game's grid size
+  // Sync new-game size pill to the current game's grid size (only if valid for current mode)
   useEffect(() => {
-    if (gridSize && [3, 4, 9, 16].includes(gridSize)) {
+    if (gridSize && visibleSizes.includes(gridSize as any)) {
       setNewSize(gridSize as 3 | 4 | 9 | 16);
+    } else if (visibleSizes.length > 0) {
+      setNewSize(visibleSizes[0]);
     }
   }, [gridSize]);
+
+  // Clamp size + diff when game mode changes
+  useEffect(() => {
+    if (!visibleSizes.includes(newSize)) {
+      setNewSize(visibleSizes[0] ?? 9);
+    }
+    if (!visibleDiffs.includes(newDiff)) {
+      setNewDiff(visibleDiffs[0] ?? 'easy');
+    }
+  }, [rawGameMode]);
 
   useEffect(() => {
     if (game && !isCompleted && !isGameOver) {
@@ -840,8 +865,8 @@ export default function Game({ id }: { id: string }) {
         )}
         <div className="w-full rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 flex flex-col gap-2">
           <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">New Game</span>
-          <div className="grid grid-cols-4 gap-1.5">
-            {([3, 4, 9, 16] as const).map((s) => (
+          <div className={`grid gap-1.5 ${visibleSizes.length === 2 ? 'grid-cols-2' : 'grid-cols-4'}`}>
+            {visibleSizes.map((s) => (
               <button
                 key={s}
                 onClick={() => setNewSize(s)}
@@ -862,10 +887,9 @@ export default function Game({ id }: { id: string }) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="easy">Easy</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="hard">Hard</SelectItem>
-                <SelectItem value="expert">Expert</SelectItem>
+                {visibleDiffs.map(d => (
+                  <SelectItem key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Button
@@ -1019,8 +1043,8 @@ export default function Game({ id }: { id: string }) {
           <div className="hidden md:block">
           <div className="w-full rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 flex flex-col gap-2">
             <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">New Game</span>
-            <div className="grid grid-cols-4 gap-1.5">
-              {([3, 4, 9, 16] as const).map((s) => (
+            <div className={`grid gap-1.5 ${visibleSizes.length === 2 ? 'grid-cols-2' : 'grid-cols-4'}`}>
+              {visibleSizes.map((s) => (
                 <button
                   key={s}
                   onClick={() => setNewSize(s)}
@@ -1041,10 +1065,9 @@ export default function Game({ id }: { id: string }) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="easy">Easy</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="hard">Hard</SelectItem>
-                  <SelectItem value="expert">Expert</SelectItem>
+                  {visibleDiffs.map(d => (
+                    <SelectItem key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <Button
