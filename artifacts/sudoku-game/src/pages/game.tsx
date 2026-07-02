@@ -264,11 +264,7 @@ export default function Game({ id }: { id: string }) {
     rawGameMode === 'adult'    ? [9, 16].includes(s) :
     true
   );
-  const visibleDiffs = (['easy', 'medium', 'hard', 'expert'] as const).filter(d =>
-    rawGameMode === 'children' ? ['easy', 'medium'].includes(d) :
-    rawGameMode === 'adult'    ? ['hard', 'expert'].includes(d) :
-    true
-  );
+  const visibleDiffs = ['easy', 'medium', 'hard', 'expert'] as const;
 
   // New-game switcher state — initialise to current game's grid size
   const [newSize, setNewSize] = useState<3 | 4 | 9 | 16>(9);
@@ -313,13 +309,10 @@ export default function Game({ id }: { id: string }) {
     }
   }, [gridSize]);
 
-  // Clamp size + diff when game mode changes
+  // Clamp size when game mode changes
   useEffect(() => {
     if (!visibleSizes.includes(newSize)) {
       setNewSize(visibleSizes[0] ?? 9);
-    }
-    if (!visibleDiffs.includes(newDiff)) {
-      setNewDiff(visibleDiffs[0] ?? 'easy');
     }
   }, [rawGameMode]);
 

@@ -574,12 +574,8 @@ function filteredMemorySizes(gameMode: GameMode) {
   );
 }
 
-function filteredDifficulties(gameMode: GameMode) {
-  return DIFFICULTY_OPTIONS.filter(o =>
-    gameMode === 'children' ? ['easy', 'medium'].includes(o.value) :
-    gameMode === 'adult'    ? ['hard', 'expert'].includes(o.value) :
-    true
-  );
+function filteredDifficulties(_gameMode: GameMode) {
+  return DIFFICULTY_OPTIONS;
 }
 
 function NewChallengeDialog({
@@ -619,10 +615,6 @@ function NewChallengeDialog({
     const validMemory = memorySizes.map(o => o.value);
     if (!validMemory.includes(memoryGridSize)) {
       setMemoryGridSize(memorySizes[0]?.value ?? 4);
-    }
-    const validDiffs = diffs.map(o => o.value);
-    if (!validDiffs.includes(difficulty)) {
-      setDifficulty(diffs[0]?.value ?? 'medium');
     }
   }, [gameMode, open]);
 
