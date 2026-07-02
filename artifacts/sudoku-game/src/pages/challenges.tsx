@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { useLocation, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { customFetch } from "@workspace/api-client-react";
+import { customFetch, useGetProfile } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -535,15 +535,49 @@ interface RematchData {
   memoryGridSize?: MemoryGridSize;
 }
 
+type GameMode = 'children' | 'adult' | '4all';
+
+const SUDOKU_SIZE_OPTIONS: { value: SudokuGridSize; label: string }[] = [
+  { value: 3,  label: '3×3 Baby' },
+  { value: 4,  label: '4×4 Mini' },
+  { value: 9,  label: '9×9 Classic' },
+  { value: 16, label: '16×16 Pro' },
+];
+
+const MEMORY_SIZE_OPTIONS: { value: MemoryGridSize; label: string }[] = [
+  { value: 2, label: '2×4 Beginner · 4 pairs' },
+  { value: 4, label: '4×4 Easy · 8 pairs' },
+  { value: 6, label: '4×8 Medium · 16 pairs' },
+  { value: 8, label: '8×8 Hard · 32 pairs' },
+];
+
+function filteredSudokuSizes(gameMode: GameMode) {
+  return SUDOKU_SIZE_OPTIONS.filter(o =>
+    gameMode === 'children' ? [3, 4].includes(o.value) :
+    gameMode === 'adult'    ? [9, 16].includes(o.value) :
+    true
+  );
+}
+
+function filteredMemorySizes(gameMode: GameMode) {
+  return MEMORY_SIZE_OPTIONS.filter(o =>
+    gameMode === 'children' ? [2, 4].includes(o.value) :
+    gameMode === 'adult'    ? [6, 8].includes(o.value) :
+    true
+  );
+}
+
 function NewChallengeDialog({
   open,
   onClose,
   myProfileId,
+  gameMode,
   initialData,
 }: {
   open: boolean;
   onClose: () => void;
   myProfileId: number;
+  gameMode: GameMode;
   initialData?: RematchData;
 }) {
   const queryClient = useQueryClient();
@@ -552,16 +586,36 @@ function NewChallengeDialog({
   const [selected, setSelected] = useState<ProfileSummary | null>(null);
   const [gameType, setGameType] = useState<GameType>("sudoku");
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
-  const [sudokuGridSize, setSudokuGridSize] = useState<SudokuGridSize>(9);
-  const [memoryGridSize, setMemoryGridSize] = useState<MemoryGridSize>(4);
+  const sudokuSizes = filteredSudokuSizes(gameMode);
+  const memorySizes = filteredMemorySizes(gameMode);
+  const defaultSudokuSize = sudokuSizes[0]?.value ?? 9;
+  const defaultMemorySize = memorySizes[0]?.value ?? 4;
+  const [sudokuGridSize, setSudokuGridSize] = useState<SudokuGridSize>(defaultSudokuSize);
+  const [memoryGridSize, setMemoryGridSize] = useState<MemoryGridSize>(defaultMemorySize);
+
+  // Reset sizes to valid options whenever gameMode or dialog open state changes
+  React.useEffect(() => {
+    const validSudoku = sudokuSizes.map(o => o.value);
+    if (!validSudoku.includes(sudokuGridSize)) {
+      setSudokuGridSize(sudokuSizes[0]?.value ?? 9);
+    }
+    const validMemory = memorySizes.map(o => o.value);
+    if (!validMemory.includes(memoryGridSize)) {
+      setMemoryGridSize(memorySizes[0]?.value ?? 4);
+    }
+  }, [gameMode, open]);
 
   React.useEffect(() => {
     if (open && initialData) {
       setSelected(initialData.opponent);
       setGameType(initialData.gameType);
       if (initialData.difficulty) setDifficulty(initialData.difficulty);
-      if (initialData.sudokuGridSize) setSudokuGridSize(initialData.sudokuGridSize);
-      if (initialData.memoryGridSize) setMemoryGridSize(initialData.memoryGridSize);
+      if (initialData.sudokuGridSize && sudokuSizes.some(o => o.value === initialData.sudokuGridSize)) {
+        setSudokuGridSize(initialData.sudokuGridSize);
+      }
+      if (initialData.memoryGridSize && memorySizes.some(o => o.value === initialData.memoryGridSize)) {
+        setMemoryGridSize(initialData.memoryGridSize);
+      }
     }
     if (!open) {
       setSearch("");
@@ -631,17 +685,23 @@ function NewChallengeDialog({
   const handleSend = () => {
     if (!selected) return;
     if (gameType === "sudoku") {
+      const validSize = sudokuSizes.some(o => o.value === sudokuGridSize)
+        ? sudokuGridSize
+        : (sudokuSizes[0]?.value ?? 9);
       createSudokuMutation.mutate({
         challengerId: myProfileId,
         challengedId: selected.id,
         difficulty,
-        gridSize: sudokuGridSize,
+        gridSize: validSize,
       });
     } else {
+      const validSize = memorySizes.some(o => o.value === memoryGridSize)
+        ? memoryGridSize
+        : (memorySizes[0]?.value ?? 4);
       createMemoryMutation.mutate({
         challengerId: myProfileId,
         challengedId: selected.id,
-        gridSize: memoryGridSize,
+        gridSize: validSize,
       });
     }
   };
@@ -786,10 +846,9 @@ function NewChallengeDialog({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="3">3×3 Baby</SelectItem>
-                        <SelectItem value="4">4×4 Mini</SelectItem>
-                        <SelectItem value="9">9×9 Classic</SelectItem>
-                        <SelectItem value="16">16×16 Pro</SelectItem>
+                        {sudokuSizes.map(o => (
+                          <SelectItem key={o.value} value={String(o.value)}>{o.label}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -810,10 +869,9 @@ function NewChallengeDialog({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="2">2×4 Beginner · 4 pairs</SelectItem>
-                      <SelectItem value="4">4×4 Easy · 8 pairs</SelectItem>
-                      <SelectItem value="6">4×8 Medium · 16 pairs</SelectItem>
-                      <SelectItem value="8">8×8 Hard · 32 pairs</SelectItem>
+                      {memorySizes.map(o => (
+                        <SelectItem key={o.value} value={String(o.value)}>{o.label}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -864,6 +922,11 @@ export default function Challenges() {
   const [showNew, setShowNew] = useState(false);
   const [respondingId, setRespondingId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<GameType>("sudoku");
+
+  const { data: profile } = useGetProfile(profileId as number, {
+    query: { enabled: !!profileId },
+  });
+  const gameMode = (profile?.gameMode ?? '4all') as GameMode;
 
   // ── Sudoku challenges ────────────────────────────────────────────────────────
   const { data: challenges, isLoading: challengesLoading } = useQuery<
@@ -1336,6 +1399,7 @@ export default function Challenges() {
         open={showNew}
         onClose={() => setShowNew(false)}
         myProfileId={profileId}
+        gameMode={gameMode}
       />
     </div>
   );

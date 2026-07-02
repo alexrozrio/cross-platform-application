@@ -45,6 +45,26 @@ export default function Portal() {
     query: { enabled: !!profileId },
   });
 
+  const gameMode = (profile?.gameMode ?? '4all') as 'children' | 'adult' | '4all';
+
+  const visibleSudokuSizes = GRID_QUICK_START.filter(opt =>
+    gameMode === 'children' ? [3, 4].includes(opt.size) :
+    gameMode === 'adult'    ? [9, 16].includes(opt.size) :
+    true
+  );
+
+  const ALL_MEMORY_OPTIONS = [
+    { size: 2, label: '2×4', sub: '4 pairs' },
+    { size: 4, label: '4×4', sub: '8 pairs' },
+    { size: 6, label: '4×8', sub: '16 pairs' },
+    { size: 8, label: '8×8', sub: '32 pairs' },
+  ];
+  const visibleMemoryOptions = ALL_MEMORY_OPTIONS.filter(opt =>
+    gameMode === 'children' ? [2, 4].includes(opt.size) :
+    gameMode === 'adult'    ? [6, 8].includes(opt.size) :
+    true
+  );
+
   const [activeGame, setActiveGame] = useState<ActiveGame | null>(null);
   const [memorySession, setMemorySession] = useState<MemorySession | null>(null);
 
@@ -200,8 +220,8 @@ export default function Portal() {
             {/* Quick-start grid: each badge directly starts a game */}
             <div className="px-6 pb-2">
               <p className="text-[10px] text-muted-foreground mb-2">Tap a size to jump right in</p>
-              <div className="grid grid-cols-4 gap-1.5">
-                {GRID_QUICK_START.map(opt => (
+              <div className={`grid gap-1.5 ${visibleSudokuSizes.length === 2 ? 'grid-cols-2' : 'grid-cols-4'}`}>
+                {visibleSudokuSizes.map(opt => (
                   <button
                     key={opt.size}
                     onClick={() => handleQuickStart(opt.size)}
@@ -282,8 +302,8 @@ export default function Portal() {
                 })()}
 
                 <div className="px-6 pb-5 pt-1">
-                  <div className="grid grid-cols-4 gap-1.5">
-                    {[{size:2,label:'2×4',sub:'4 pairs'},{size:4,label:'4×4',sub:'8 pairs'},{size:6,label:'4×8',sub:'16 pairs'},{size:8,label:'8×8',sub:'32 pairs'}].map(opt => (
+                  <div className={`grid gap-1.5 ${visibleMemoryOptions.length === 2 ? 'grid-cols-2' : 'grid-cols-4'}`}>
+                    {visibleMemoryOptions.map(opt => (
                       <button
                         key={opt.size}
                         onClick={() => setLocation(`/memory?size=${opt.size}`)}

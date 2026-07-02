@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowLeft, Timer, Repeat2, Trophy, Gem, Star, RotateCcw, Zap, Brain, BarChart2, BookOpen, Keyboard, Scroll, Lightbulb, Volume2, VolumeX, Share2, Lock } from 'lucide-react';
+import { ArrowLeft, Timer, Repeat2, Trophy, Gem, Star, RotateCcw, Zap, Brain, BarChart2, BookOpen, Keyboard, Scroll, Lightbulb, Volume2, VolumeX, Share2 } from 'lucide-react';
 import { useSound } from '@/hooks/use-sound';
 import { Confetti } from '@/components/confetti';
 import { pickCompletionMessage, type CompletionMessage } from '@/lib/completion-messages';
@@ -206,16 +206,13 @@ export default function MemoryMatchPage() {
   const [hintedIds, setHintedIds] = useState<number[]>([]);
 
   const gameMode = (profile?.gameMode ?? '4all') as 'children' | 'adult' | '4all';
-  const isKidsMode = gameMode === 'children';
-  // Options the user can actually start (used for auto-reset)
-  const filteredGridOptions = GRID_OPTIONS.filter(o =>
-    isKidsMode          ? o.size <= 4 :
-    gameMode === 'adult' ? o.size >= 6 :
+  // Options the user can see and start — hidden entirely when out of their mode
+  const renderGridOptions = GRID_OPTIONS.filter(o =>
+    gameMode === 'children' ? o.size <= 4 :
+    gameMode === 'adult'    ? o.size >= 6 :
     true
   );
-  // Options shown in the UI (kids: all visible, some disabled; adult: filtered; 4all: all)
-  const renderGridOptions = gameMode === 'adult' ? GRID_OPTIONS.filter(o => o.size >= 6) : GRID_OPTIONS;
-  const isGridDisabled = (size: GridSize) => isKidsMode && (size === 6 || size === 8);
+  const filteredGridOptions = renderGridOptions;
 
   useEffect(() => {
     if (filteredGridOptions.length > 0 && !filteredGridOptions.find(o => o.size === gridSize)) {
@@ -588,35 +585,26 @@ export default function MemoryMatchPage() {
 
         <div className="space-y-3">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Choose Grid Size</p>
-          {renderGridOptions.map(opt => {
-            const disabled = isGridDisabled(opt.size);
-            return (
-              <button
-                key={opt.size}
-                onClick={() => !disabled && startGame(opt.size)}
-                disabled={disabled}
-                className={[
-                  "w-full flex items-center justify-between rounded-xl border-2 transition-all p-4 text-left group",
-                  disabled
-                    ? "border-border/40 bg-muted/30 opacity-50 cursor-not-allowed"
-                    : "border-primary/15 bg-gradient-to-r from-primary/5 to-primary/3 hover:border-primary/40 hover:from-primary/10 hover:to-primary/8",
-                ].join(' ')}
-              >
-                <div className="flex items-center gap-4">
-                  <div className={["w-12 h-12 rounded-lg flex items-center justify-center font-black text-lg transition-colors", disabled ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary group-hover:bg-primary/20"].join(' ')}>
-                    {disabled ? <Lock className="w-5 h-5" /> : opt.label}
-                  </div>
-                  <div>
-                    <p className="font-semibold">{opt.desc}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {disabled ? 'Not available in Kids Mode' : opt.size === 2 || opt.size === 4 ? '+1 XP · min 1 💎' : opt.size === 6 ? '+2 XP · min 1 💎' : '+3 XP · min 1 💎'}
-                    </p>
-                  </div>
+          {renderGridOptions.map(opt => (
+            <button
+              key={opt.size}
+              onClick={() => startGame(opt.size)}
+              className="w-full flex items-center justify-between rounded-xl border-2 transition-all p-4 text-left group border-primary/15 bg-gradient-to-r from-primary/5 to-primary/3 hover:border-primary/40 hover:from-primary/10 hover:to-primary/8"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center font-black text-lg transition-colors bg-primary/10 text-primary group-hover:bg-primary/20">
+                  {opt.label}
                 </div>
-                {!disabled && <span className="text-primary text-lg">→</span>}
-              </button>
-            );
-          })}
+                <div>
+                  <p className="font-semibold">{opt.desc}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {opt.size === 2 || opt.size === 4 ? '+1 XP · min 1 💎' : opt.size === 6 ? '+2 XP · min 1 💎' : '+3 XP · min 1 💎'}
+                  </p>
+                </div>
+              </div>
+              <span className="text-primary text-lg">→</span>
+            </button>
+          ))}
         </div>
 
         {/* Challenge banner */}

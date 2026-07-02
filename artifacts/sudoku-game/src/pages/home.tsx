@@ -74,6 +74,11 @@ export default function SudokuHome() {
     gameMode === 'children' ? ['easy', 'medium'] :
     gameMode === 'adult'    ? ['hard', 'expert'] :
     allDifficulties;
+  const filteredGridOptions = GRID_OPTIONS.filter(opt =>
+    gameMode === 'children' ? [3, 4].includes(opt.size) :
+    gameMode === 'adult'    ? [9, 16].includes(opt.size) :
+    true
+  );
 
   const generatePuzzle = useGeneratePuzzle(
     { difficulty, gridSize: gridSize as any },
@@ -88,6 +93,9 @@ export default function SudokuHome() {
   useEffect(() => {
     if (!filteredDifficulties.includes(difficulty)) {
       setDifficulty(filteredDifficulties[0]);
+    }
+    if (!filteredGridOptions.find(o => o.size === gridSize)) {
+      setGridSize(filteredGridOptions[0].size);
     }
   }, [gameMode]);
 
@@ -176,8 +184,8 @@ export default function SudokuHome() {
             <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               Grid Size
             </label>
-            <div className="grid grid-cols-4 gap-2">
-              {GRID_OPTIONS.map(opt => (
+            <div className={`grid gap-2 ${filteredGridOptions.length === 2 ? 'grid-cols-2' : 'grid-cols-4'}`}>
+              {filteredGridOptions.map(opt => (
                 <Button
                   key={opt.size}
                   variant={gridSize === opt.size ? 'default' : 'outline'}
