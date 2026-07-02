@@ -651,6 +651,14 @@ export default function Stats() {
                   </div>
                 ))}
               </div>
+              <p className="text-[11px] text-muted-foreground mt-3 flex items-start gap-1.5 leading-relaxed">
+                <span className="shrink-0 mt-px">ℹ️</span>
+                <span>
+                  Only difficulties available in your current <strong>Game Mode</strong> are unlocked for play.
+                  <em> Kids</em> mode shows Easy &amp; Medium; <em>Adult</em> shows Hard &amp; Expert; <em>4 All</em> shows everything.
+                  Times for locked difficulties are tracked but require switching your mode in Profile to play them.
+                </span>
+              </p>
               {stats.averageTime != null && (
                 <div className="mt-3 flex justify-between items-center p-4 rounded-lg bg-primary/5 border border-primary/10">
                   <span className="font-medium text-sm">
@@ -744,6 +752,14 @@ export default function Stats() {
                   </div>
                 ))}
               </div>
+              <p className="text-[11px] text-muted-foreground mt-3 flex items-start gap-1.5 leading-relaxed">
+                <span className="shrink-0 mt-px">ℹ️</span>
+                <span>
+                  Grid sizes available depend on your <strong>Game Mode</strong>.
+                  <em> Kids</em> unlocks 4 &amp; 8 pairs; <em>Adult</em> unlocks 16 &amp; 32 pairs; <em>4 All</em> unlocks every size.
+                  You can change your mode anytime in Profile.
+                </span>
+              </p>
               <div className="mt-3 grid grid-cols-2 gap-3">
                 {mem?.averageTime != null && (
                   <div className="flex justify-between items-center p-4 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30">

@@ -307,6 +307,56 @@ function PointsGuide() {
               bonus up to +50%, −2% per extra flip.
             </p>
           </div>
+
+          {/* Game Modes */}
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              🎮 Game Modes
+            </p>
+            <p className="text-xs text-muted-foreground mb-3">
+              Your Game Mode (set in Profile) controls which grid sizes and difficulties are available to you across all games and challenges.
+            </p>
+            <div className="rounded-xl border overflow-hidden text-xs">
+              <div className="grid grid-cols-3 bg-muted/50 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+                <span>Mode</span>
+                <span className="text-center">Sudoku</span>
+                <span className="text-center">Memory Match</span>
+              </div>
+              {[
+                {
+                  mode: "👶 Kids",
+                  sudoku: "3×3 Baby · 4×4 Mini",
+                  memory: "4 pairs · 8 pairs",
+                  cls: "text-green-700",
+                },
+                {
+                  mode: "🧑 Adult",
+                  sudoku: "9×9 Classic · 16×16 Pro",
+                  memory: "16 pairs · 32 pairs",
+                  cls: "text-blue-700",
+                },
+                {
+                  mode: "🌍 4 All",
+                  sudoku: "All four sizes",
+                  memory: "All four sizes",
+                  cls: "text-violet-700",
+                },
+              ].map((row, i) => (
+                <div
+                  key={row.mode}
+                  className={`grid grid-cols-3 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}
+                >
+                  <span className={`font-semibold ${row.cls}`}>{row.mode}</span>
+                  <span className="text-center text-muted-foreground">{row.sudoku}</span>
+                  <span className="text-center text-muted-foreground">{row.memory}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2 italic">
+              Leaderboard scores from all modes appear together — a Kids-mode player and an Adult-mode player can both rank on the same board.
+              Change your mode anytime under Profile → Game Mode.
+            </p>
+          </div>
         </div>
       )}
     </div>
