@@ -921,10 +921,12 @@ export default function MemoryMatchPage() {
           </DialogContent>
         </Dialog>
 
-        <div className="flex items-center gap-1.5 text-sm font-mono tabular-nums shrink-0">
-          <Timer className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-foreground font-semibold">{formatTime(elapsed)}</span>
-        </div>
+        {profile?.showTimer !== false && (
+          <div className="flex items-center gap-1.5 text-sm font-mono tabular-nums shrink-0">
+            <Timer className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="text-foreground font-semibold">{formatTime(elapsed)}</span>
+          </div>
+        )}
 
         <div className="flex items-center gap-1.5 text-sm shrink-0">
           <Repeat2 className="w-3.5 h-3.5 text-muted-foreground" />
