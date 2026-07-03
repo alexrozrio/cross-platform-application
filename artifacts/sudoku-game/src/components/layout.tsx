@@ -76,7 +76,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Gems badge */}
         {profileId && profile?.gems !== undefined && (
-          <div className="flex items-center gap-1.5 text-sm font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 px-3 py-1 rounded-full border border-cyan-200 dark:border-cyan-800 ml-2 mr-auto hidden sm:flex">
+          <div className="flex items-center gap-1.5 text-sm font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 px-3 py-1 rounded-full border border-cyan-200 dark:border-cyan-800 ml-2 mr-auto">
             <Gem className="w-3.5 h-3.5" />
             <span>{profile.gems.toLocaleString()}</span>
           </div>
