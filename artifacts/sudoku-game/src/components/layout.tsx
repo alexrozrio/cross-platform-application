@@ -47,12 +47,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, [profile?.theme]);
 
   const navItems = [
-    { href: "/", label: "Home", icon: Home, badge: 0 },
-    { href: "/leaderboard", label: "Leaderboard", icon: Trophy, badge: 0 },
-    { href: "/challenges", label: "Challenges", icon: Swords, badge: pendingCount },
-    { href: "/stats", label: "Stats", icon: BarChart2, badge: 0 },
-    { href: "/themes", label: "Themes", icon: Palette, badge: 0 },
-    { href: "/profile", label: isSignedIn ? (replitUser?.firstName || "Account") : "Profile", icon: User, badge: 0 },
+    { href: "/", label: "Home", shortLabel: "Home", icon: Home, badge: 0 },
+    { href: "/leaderboard", label: "Leaderboard", shortLabel: "Ranks", icon: Trophy, badge: 0 },
+    { href: "/challenges", label: "Challenges", shortLabel: "Duels", icon: Swords, badge: pendingCount },
+    { href: "/stats", label: "Stats", shortLabel: "Stats", icon: BarChart2, badge: 0 },
+    { href: "/themes", label: "Themes", shortLabel: "Themes", icon: Palette, badge: 0 },
+    { href: "/profile", label: isSignedIn ? (replitUser?.firstName || "Account") : "Profile", shortLabel: isSignedIn ? "Account" : "Profile", icon: User, badge: 0 },
   ];
 
   const isActive = (href: string) =>
@@ -140,7 +140,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <NotifBadge count={item.badge} />
             </div>
             <span className={`text-[10px] ${isActive(item.href) ? "font-semibold text-primary" : "text-muted-foreground"}`}>
-              {item.label === "Profile" ? (isSignedIn ? "Account" : "Profile") : item.label}
+              {item.shortLabel}
             </span>
           </Link>
         ))}
