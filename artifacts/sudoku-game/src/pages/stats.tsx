@@ -527,29 +527,31 @@ export default function Stats() {
 
   return (
     <div className="max-w-3xl mx-auto w-full space-y-6 animate-in fade-in duration-500">
-      <div className="space-y-1">
-        <h1 className="text-3xl font-serif font-bold tracking-tight">
-          Your Statistics
-        </h1>
-        <p className="text-muted-foreground">
-          Track your puzzle-solving journey.
-        </p>
-      </div>
-      <div className="flex gap-2">
-        <Link
-          href="/sudoku"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-muted transition-colors"
-        >
-          <Zap className="w-3.5 h-3.5 text-primary" />
-          Play Sudoku
-        </Link>
-        <Link
-          href="/memory"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-muted transition-colors"
-        >
-          <Brain className="w-3.5 h-3.5 text-primary" />
-          Play Memory
-        </Link>
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-0.5 min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight leading-tight">
+            Your Statistics
+          </h1>
+          <p className="text-sm text-muted-foreground hidden sm:block">
+            Track your puzzle-solving journey.
+          </p>
+        </div>
+        <div className="flex gap-1.5 shrink-0">
+          <Link
+            href="/sudoku"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-card text-xs sm:text-sm font-medium text-foreground hover:bg-muted transition-colors"
+          >
+            <Zap className="w-3.5 h-3.5 text-primary" />
+            <span className="hidden sm:inline">Play </span>Sudoku
+          </Link>
+          <Link
+            href="/memory"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-card text-xs sm:text-sm font-medium text-foreground hover:bg-muted transition-colors"
+          >
+            <Brain className="w-3.5 h-3.5 text-primary" />
+            <span className="hidden sm:inline">Play </span>Memory
+          </Link>
+        </div>
       </div>
 
       {profile && <LevelCard xp={profile.xp ?? 0} />}
