@@ -252,11 +252,12 @@ function PointsGuide() {
             <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
               🔢 Sudoku — base points × difficulty
             </p>
-            <div className="rounded-xl border overflow-hidden text-xs">
+            <div className="rounded-xl border overflow-x-auto text-xs">
+              <div className="min-w-[280px]">
               <div className="grid grid-cols-5 bg-muted/50 text-[10px] font-semibold text-muted-foreground px-3 py-2">
                 <span>Grid</span>
                 <span className="text-center text-green-700">Easy</span>
-                <span className="text-center text-yellow-700">Medium</span>
+                <span className="text-center text-yellow-700">Med</span>
                 <span className="text-center text-orange-700">Hard</span>
                 <span className="text-center text-red-700">Expert</span>
               </div>
@@ -290,6 +291,7 @@ function PointsGuide() {
                   </span>
                 </div>
               ))}
+              </div>{/* close min-w-[280px] */}
             </div>
             <p className="text-[10px] text-muted-foreground mt-2">
               Final score = base × (1 + time bonus) × mistake factor × hint
@@ -632,7 +634,7 @@ function BreakdownPanel({
       </div>
 
       {bdTab === "sudoku" && (
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {(
             data?.sudoku ??
             [3, 4, 9, 16].map((gs) => ({ gridSize: gs, points: 0, games: 0 }))
