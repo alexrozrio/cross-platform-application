@@ -1209,12 +1209,15 @@ export default function Game({ id }: { id: string }) {
           {/* Input pad */}
           {!isCompleted && (
             <div
-              className={`grid w-full ${gridSize === 16 ? "gap-1" : "gap-1.5"}`}
-              style={{
-                gridTemplateColumns: `repeat(${
-                  gridSize <= 4 ? gridSize : gridSize === 16 ? 8 : 5
-                }, minmax(0, 1fr))`,
-              }}
+              className={`grid w-full ${
+                gridSize === 16
+                  ? "gap-0.5 grid-cols-6 sm:grid-cols-8"
+                  : gridSize === 4
+                  ? "gap-1.5 grid-cols-4"
+                  : gridSize === 3
+                  ? "gap-1.5 grid-cols-3"
+                  : "gap-1.5 grid-cols-5"
+              }`}
             >
               {Array.from({ length: gridSize }, (_, i) => i + 1).map((num) => {
                 const encoded = encodeForGrid(num);
