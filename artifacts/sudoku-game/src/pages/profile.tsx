@@ -47,6 +47,7 @@ import {
   Globe,
 } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { BADGE_META, formatPeriodLabel } from "@/lib/badge-utils";
 import { BadgeShareSheet } from "@/components/badge-share-sheet";
 import { LevelCard, RankGuide } from "@/components/level-badge";
@@ -257,11 +258,43 @@ export default function Profile() {
                 <Gem className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-cyan-800 dark:text-cyan-200">
-                  Gem Balance
-                </p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-sm font-semibold text-cyan-800 dark:text-cyan-200">
+                    Gem Balance
+                  </p>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button className="text-cyan-500 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors">
+                        <Info className="w-3.5 h-3.5" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-72 text-sm" side="bottom" align="start">
+                      <p className="font-semibold mb-2 flex items-center gap-1.5">
+                        <Gem className="w-4 h-4 text-cyan-500" /> How to earn gems
+                      </p>
+                      <ul className="space-y-2 text-muted-foreground">
+                        <li className="flex items-start gap-2">
+                          <span className="text-base leading-none mt-0.5">🧩</span>
+                          <span><span className="font-medium text-foreground">Complete a Sudoku or Memory puzzle</span> — 1💎 per 5,000 points scored (at least 1💎 per game).</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-base leading-none mt-0.5">🔥</span>
+                          <span><span className="font-medium text-foreground">Daily login streak</span> — log in every day: 1💎 on day 1, 2💎 on day 2 … up to 7💎 from day 7 onwards.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-base leading-none mt-0.5">⚔️</span>
+                          <span><span className="font-medium text-foreground">Win a challenge or duel</span> — beat your opponent's score to earn 10💎.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-base leading-none mt-0.5">📅</span>
+                          <span><span className="font-medium text-foreground">Daily Memory challenge</span> — 1💎 for completing it, 3💎 if you set a new record.</span>
+                        </li>
+                      </ul>
+                    </PopoverContent>
+                  </Popover>
+                </div>
                 <p className="text-xs text-cyan-600 dark:text-cyan-400 mt-0.5">
-                  Earned by completing puzzles. Earn 5000 points to get a Gem
+                  Tap <Info className="w-3 h-3 inline" /> to see all the ways to earn gems
                 </p>
               </div>
             </div>
