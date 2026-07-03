@@ -38,6 +38,58 @@ function formatTime(seconds: number) {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
+/** Derive the UTC end Date from a period string ("YYYY-WNN" or "YYYY-MM"). */
+function periodEndDate(period: string): Date {
+  if (period.includes("-W")) {
+    const [yearStr, weekStr] = period.split("-W");
+    const year = parseInt(yearStr);
+    const week = parseInt(weekStr);
+    const jan4 = new Date(Date.UTC(year, 0, 4));
+    const startOfWeek1 = new Date(jan4);
+    startOfWeek1.setUTCDate(jan4.getUTCDate() - ((jan4.getUTCDay() || 7) - 1));
+    const start = new Date(startOfWeek1);
+    start.setUTCDate(startOfWeek1.getUTCDate() + (week - 1) * 7);
+    const end = new Date(start);
+    end.setUTCDate(start.getUTCDate() + 7);
+    return end;
+  } else {
+    const [yearStr, monthStr] = period.split("-");
+    const year = parseInt(yearStr);
+    const month = parseInt(monthStr) - 1;
+    return new Date(Date.UTC(year, month + 1, 1));
+  }
+}
+
+/** Returns a live "Xd Yh Zm remaining" string, ticking every minute. */
+function usePeriodCountdown(period: string | undefined): string {
+  const [display, setDisplay] = useState("");
+
+  useEffect(() => {
+    if (!period) { setDisplay(""); return; }
+
+    const compute = () => {
+      const end = periodEndDate(period);
+      const diffMs = end.getTime() - Date.now();
+      if (diffMs <= 0) { setDisplay("Ended"); return; }
+      const totalSec = Math.floor(diffMs / 1000);
+      const days  = Math.floor(totalSec / 86400);
+      const hours = Math.floor((totalSec % 86400) / 3600);
+      const mins  = Math.floor((totalSec % 3600) / 60);
+      const parts: string[] = [];
+      if (days  > 0) parts.push(`${days}d`);
+      if (hours > 0) parts.push(`${hours}h`);
+      parts.push(`${mins}m`);
+      setDisplay(parts.join(" ") + " remaining");
+    };
+
+    compute();
+    const id = setInterval(compute, 60_000);
+    return () => clearInterval(id);
+  }, [period]);
+
+  return display;
+}
+
 const diffColor: Record<string, string> = {
   easy: "bg-green-100 text-green-700 border-green-200",
   medium: "bg-yellow-100 text-yellow-700 border-yellow-200",
@@ -699,6 +751,7 @@ function TournamentBoard({
 
   const Icon = type === "weekly" ? CalendarDays : Calendar;
   const label = type === "weekly" ? "Weekly Tournament" : "Monthly Tournament";
+  const countdown = usePeriodCountdown(data?.period);
 
   const toggleRow = (profileId: number) => {
     setExpandedId((prev) => (prev === profileId ? null : profileId));
@@ -706,16 +759,24 @@ function TournamentBoard({
 
   return (
     <div className="space-y-5">
-      {/* Period info */}
+      {/* Period info + countdown */}
       {data && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground px-1">
-          <Icon className="w-4 h-4" />
-          <span>
-            Current period:{" "}
-            <span className="font-semibold text-foreground">
-              {data.periodLabel}
+        <div className="flex items-center justify-between gap-2 px-1">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Icon className="w-4 h-4 shrink-0" />
+            <span>
+              Current period:{" "}
+              <span className="font-semibold text-foreground">
+                {data.periodLabel}
+              </span>
             </span>
-          </span>
+          </div>
+          {countdown && (
+            <div className="flex items-center gap-1.5 text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 shrink-0">
+              <Timer className="w-3 h-3" />
+              {countdown}
+            </div>
+          )}
         </div>
       )}
 
@@ -1221,30 +1282,32 @@ export default function Leaderboard() {
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-8 animate-in fade-in duration-500">
-      <div className="space-y-3">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-serif font-bold tracking-tight">
-            Leaderboard
-          </h1>
-          <p className="text-muted-foreground">
-            Compete in weekly and monthly tournaments.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Link
-            href="/sudoku"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-muted transition-colors"
-          >
-            <Zap className="w-3.5 h-3.5 text-primary" />
-            Play Sudoku
-          </Link>
-          <Link
-            href="/memory"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-muted transition-colors"
-          >
-            <Brain className="w-3.5 h-3.5 text-primary" />
-            Play Memory
-          </Link>
+      <div className="space-y-2">
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-0.5 min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight leading-tight">
+              Leaderboard
+            </h1>
+            <p className="text-sm text-muted-foreground hidden sm:block">
+              Compete in weekly and monthly tournaments.
+            </p>
+          </div>
+          <div className="flex gap-1.5 shrink-0">
+            <Link
+              href="/sudoku"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-card text-xs sm:text-sm font-medium text-foreground hover:bg-muted transition-colors"
+            >
+              <Zap className="w-3.5 h-3.5 text-primary" />
+              <span className="hidden sm:inline">Play </span>Sudoku
+            </Link>
+            <Link
+              href="/memory"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-card text-xs sm:text-sm font-medium text-foreground hover:bg-muted transition-colors"
+            >
+              <Brain className="w-3.5 h-3.5 text-primary" />
+              <span className="hidden sm:inline">Play </span>Memory
+            </Link>
+          </div>
         </div>
       </div>
 

@@ -1147,35 +1147,37 @@ export default function Challenges() {
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-6 animate-in fade-in duration-500">
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-serif font-bold tracking-tight">
+      <div className="flex items-center justify-between gap-3">
+        <div className="space-y-0.5 min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight leading-tight">
             Challenges
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm text-muted-foreground hidden sm:block">
             Beat your opponent's score to win 10 gems.
           </p>
         </div>
-        <Button className="gap-2 shrink-0" onClick={() => setShowNew(true)}>
-          <Swords className="w-4 h-4" />
-          Challenge
-        </Button>
-      </div>
-      <div className="flex gap-2">
-        <Link
-          href="/sudoku"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-muted transition-colors"
-        >
-          <Zap className="w-3.5 h-3.5 text-primary" />
-          Play Sudoku
-        </Link>
-        <Link
-          href="/memory"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-muted transition-colors"
-        >
-          <Brain className="w-3.5 h-3.5 text-primary" />
-          Play Memory
-        </Link>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <Link
+            href="/sudoku"
+            className="inline-flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg border border-border bg-card text-xs sm:text-sm font-medium text-foreground hover:bg-muted transition-colors"
+            title="Play Sudoku"
+          >
+            <Zap className="w-3.5 h-3.5 text-primary" />
+            <span className="hidden sm:inline">Sudoku</span>
+          </Link>
+          <Link
+            href="/memory"
+            className="inline-flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg border border-border bg-card text-xs sm:text-sm font-medium text-foreground hover:bg-muted transition-colors"
+            title="Play Memory"
+          >
+            <Brain className="w-3.5 h-3.5 text-primary" />
+            <span className="hidden sm:inline">Memory</span>
+          </Link>
+          <Button size="sm" className="gap-1.5" onClick={() => setShowNew(true)}>
+            <Swords className="w-4 h-4" />
+            Challenge
+          </Button>
+        </div>
       </div>
 
       {/* Game type tabs */}
@@ -1197,7 +1199,8 @@ export default function Challenges() {
           className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${activeTab === "memory" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
         >
           <Brain className="w-4 h-4" />
-          Memory Match
+          <span className="hidden sm:inline">Memory Match</span>
+          <span className="sm:hidden">Memory</span>
           {memoryAlert > 0 && (
             <span className="w-4 h-4 rounded-full bg-violet-500 text-white text-[10px] font-bold flex items-center justify-center">
               {memoryAlert}
