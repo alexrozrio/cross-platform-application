@@ -17,20 +17,15 @@ import { Confetti } from '@/components/confetti';
 import { pickCompletionMessage, type CompletionMessage } from '@/lib/completion-messages';
 import { getLevelFromXp } from '@/lib/levels';
 import { toast } from 'sonner';
+import {
+  type GridSize, type DisplayMode, type Card,
+  shuffle, getPairs, buildDeck, formatTime, ALPHA_LABELS, getCardLabel,
+} from '@/lib/memory-utils';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type GridSize = 2 | 4 | 6 | 8;
 type GamePhase = 'setup' | 'playing' | 'won';
 type InfoModal = 'rules' | 'controls' | 'backstory' | null;
-type DisplayMode = 'image' | 'number' | 'alpha';
-
-interface Card {
-  id: number;
-  value: number;   // 1-based symbol index
-  flipped: boolean;
-  matched: boolean;
-}
 
 interface WinResult {
   points: number;
@@ -50,49 +45,6 @@ const GRID_OPTIONS: { size: GridSize; label: string; pairs: number; desc: string
   { size: 6, label: '4×8', pairs: 16, desc: 'Medium · 16 pairs' },
   { size: 8, label: '8×8', pairs: 32, desc: 'Hard · 32 pairs' },
 ];
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-function getPairs(gridSize: GridSize): number {
-  if (gridSize === 2) return 4;  // 2×4  = 8 cards  = 4 pairs
-  if (gridSize === 4) return 8;  // 4×4  = 16 cards = 8 pairs
-  if (gridSize === 6) return 16; // 4×8  = 32 cards = 16 pairs
-  return 32;                     // 8×8  = 64 cards = 32 pairs
-}
-
-function buildDeck(gridSize: GridSize): Card[] {
-  const pairs = getPairs(gridSize);
-  const values = Array.from({ length: pairs }, (_, i) => i + 1);
-  const doubled = [...values, ...values];
-  return shuffle(doubled).map((value, id) => ({ id, value, flipped: false, matched: false }));
-}
-
-function formatTime(s: number): string {
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${m}:${sec.toString().padStart(2, '0')}`;
-}
-
-const ALPHA_LABELS = [
-  'A','B','C','D','E','F','G','H','I','J','K','L','M',
-  'N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
-  'a','b','c','d','e','f',
-];
-
-function getCardLabel(value: number, mode: DisplayMode): string {
-  if (mode === 'number') return String(value);
-  if (mode === 'alpha') return ALPHA_LABELS[value - 1] ?? String(value);
-  return '';
-}
 
 // ─── Card component ───────────────────────────────────────────────────────────
 
