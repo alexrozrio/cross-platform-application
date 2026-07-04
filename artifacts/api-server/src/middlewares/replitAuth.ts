@@ -100,6 +100,51 @@ function frontendUrl(): string {
   return "http://localhost:19093";
 }
 
+// ─── Dev auto-login ───────────────────────────────────────────────────────────
+// When running locally (NODE_ENV=development, no REPL_ID) this middleware
+// signs the request in automatically so you can develop without going through
+// Google OAuth every time.  It is never active on Replit or in production.
+
+async function getOrCreateDevUser(): Promise<{
+  userId: string;
+  profileId: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  photo: string;
+}> {
+  const rawId = process.env.DEV_USER_ID ?? "dev_local_user";
+  const userId = rawId.startsWith("google_") ? rawId : `google_${rawId}`;
+  const email = process.env.DEV_USER_EMAIL ?? "dev@localhost";
+  const firstName = process.env.DEV_USER_NAME ?? "Dev";
+  const lastName = "User";
+  const photo = "";
+
+  await db
+    .insert(users)
+    .values({ id: userId, email, firstName, lastName, profileImageUrl: photo })
+    .onConflictDoNothing();
+
+  const [existing] = await db
+    .select()
+    .from(profilesTable)
+    .where(eq(profilesTable.replitUserId, userId));
+
+  const profile =
+    existing ??
+    (
+      await db
+        .insert(profilesTable)
+        .values({ username: firstName, avatar: null, replitUserId: userId })
+        .returning()
+    )[0];
+
+  return { userId, profileId: profile.id, email, firstName, lastName, photo };
+}
+
+const isDevAutoLogin =
+  process.env.NODE_ENV === "development" && !process.env.REPL_ID;
+
 // ─── setupAuth ────────────────────────────────────────────────────────────────
 
 export async function setupAuth(app: Express) {
@@ -107,6 +152,16 @@ export async function setupAuth(app: Express) {
   app.use(getSession());
   app.use(passport.initialize());
   app.use(passport.session());
+
+  // Dev auto-login: runs after session is restored; skips if already authed
+  if (isDevAutoLogin) {
+    app.use((req, _res, next) => {
+      if (req.isAuthenticated()) return next();
+      getOrCreateDevUser()
+        .then((devUser) => req.login(devUser, (err) => (err ? next(err) : next())))
+        .catch(next);
+    });
+  }
 
   passport.serializeUser((user: any, cb) => cb(null, user));
   passport.deserializeUser((user: any, cb) => cb(null, user));
