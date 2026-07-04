@@ -85,7 +85,7 @@ function formatTime(s: number): string {
 const ALPHA_LABELS = [
   'A','B','C','D','E','F','G','H','I','J','K','L','M',
   'N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
-  'α','β','γ','δ','ε','ζ',
+  'a','b','c','d','e','f',
 ];
 
 function getCardLabel(value: number, mode: DisplayMode): string {
@@ -127,14 +127,13 @@ function MemoryCard({
     frontContent = <span className={`${fontSize} leading-none`}>{symbol}</span>;
   } else {
     const label = getCardLabel(card.value, displayMode);
-    const isGreek = displayMode === 'alpha' && card.value > 26;
     const fontSize = isSmall
       ? (label.length > 1 ? 'text-sm' : 'text-base')
       : isMedium
         ? (label.length > 1 ? 'text-lg' : 'text-xl')
         : (label.length > 1 ? 'text-2xl' : 'text-3xl');
     frontContent = (
-      <span className={`${fontSize} font-black leading-none tabular-nums ${isGreek ? 'italic' : ''}`}>
+      <span className={`${fontSize} font-black leading-none tabular-nums`}>
         {label}
       </span>
     );
@@ -552,7 +551,7 @@ export default function MemoryMatchPage() {
               ))
           }
           <span className="text-muted-foreground text-sm">
-            {displayMode === 'image' ? `… using ${theme.name} theme` : displayMode === 'number' ? '… 1 – 32' : '… A – Z + α β γ δ ε ζ'}
+            {displayMode === 'image' ? `… using ${theme.name} theme` : displayMode === 'number' ? '… 1 – 32' : '… A – Z + a – f'}
           </span>
         </div>
 
@@ -563,7 +562,7 @@ export default function MemoryMatchPage() {
             {([
               { id: 'image'  as DisplayMode, label: '🎴 Image',  sub: 'Theme symbols' },
               { id: 'number' as DisplayMode, label: '1 2 3 Numbers', sub: '1 – 32' },
-              { id: 'alpha'  as DisplayMode, label: 'A B C Alpha',   sub: 'A–Z + α β γ' },
+              { id: 'alpha'  as DisplayMode, label: 'A B C Alpha',   sub: 'A–Z + a–f' },
             ] as const).map(m => (
               <button
                 key={m.id}
@@ -1121,7 +1120,7 @@ export default function MemoryMatchPage() {
           ? <>Theme: {theme.name} · <button onClick={() => setLocation('/themes')} className="underline underline-offset-2 hover:text-foreground transition-colors">Change</button></>
           : displayMode === 'number'
             ? 'Number mode · 1 – 32'
-            : 'Alpha mode · A–Z + α β γ δ ε ζ'
+            : 'Alpha mode · A–Z + a–f'
         }
       </p>
     </div>
