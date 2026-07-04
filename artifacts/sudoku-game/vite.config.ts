@@ -68,7 +68,10 @@ export default defineConfig({
     },
     proxy: {
       "/api": {
-        target: "http://localhost:8080",
+        // On Replit the API workflow binds to 8080.
+        // Locally (no REPL_ID) it reads PORT from artifacts/api-server/.env → 5000.
+        // Override either by setting API_PORT in the environment.
+        target: `http://localhost:${process.env.API_PORT ?? (process.env.REPL_ID ? "8080" : "5000")}`,
         changeOrigin: true,
       },
     },
