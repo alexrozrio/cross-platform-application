@@ -1211,7 +1211,7 @@ export default function Game({ id }: { id: string }) {
             <div
               className={`grid w-full ${
                 gridSize === 16
-                  ? "gap-0.5 grid-cols-6 sm:grid-cols-8"
+                  ? "gap-1 grid-cols-6"
                   : gridSize === 4
                   ? "gap-1.5 grid-cols-4"
                   : gridSize === 3
