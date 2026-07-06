@@ -68,10 +68,10 @@ export default defineConfig({
     },
     proxy: {
       "/api": {
-        // On Replit the API workflow binds to 8080.
-        // Locally (no REPL_ID) it reads PORT from artifacts/api-server/.env → 5000.
-        // Override either by setting API_PORT in the environment.
-        target: `http://localhost:${process.env.API_PORT ?? (process.env.REPL_ID ? "8080" : "5000")}`,
+        // API server runs on 8080 in all environments (Replit workflow sets PORT=8080;
+        // locally .env should also use PORT=8080 to match Google Cloud Console).
+        // Override by setting API_PORT in the environment.
+        target: `http://localhost:${process.env.API_PORT ?? "8080"}`,
         changeOrigin: true,
       },
     },

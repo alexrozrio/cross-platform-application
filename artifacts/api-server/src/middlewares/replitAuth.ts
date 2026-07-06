@@ -89,6 +89,8 @@ function googleCallbackUrl(): string {
   if (process.env.REPLIT_DEV_DOMAIN) {
     return `https://${process.env.REPLIT_DEV_DOMAIN}/api/callback/google`;
   }
+  // Locally the API should run on 8080 to match Google Cloud Console registration.
+  // Override with GOOGLE_CALLBACK_URL in .env if you use a different port.
   return "http://localhost:8080/api/callback/google";
 }
 
@@ -142,8 +144,12 @@ async function getOrCreateDevUser(): Promise<{
   return { userId, profileId: profile.id, email, firstName, lastName, photo };
 }
 
+// Dev auto-login is only useful when there are no Google credentials.
+// If GOOGLE_CLIENT_ID is set the user can sign in through the real OAuth flow.
 const isDevAutoLogin =
-  process.env.NODE_ENV === "development" && !process.env.REPL_ID;
+  process.env.NODE_ENV === "development" &&
+  !process.env.REPL_ID &&
+  !process.env.GOOGLE_CLIENT_ID;
 
 // ─── setupAuth ────────────────────────────────────────────────────────────────
 
