@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 
 interface BadgeShareSheetProps {
@@ -121,6 +122,9 @@ export function BadgeShareSheet({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Share your badge</DialogTitle>
+          <DialogDescription className="sr-only">
+            Share your tournament badge with friends on social media or copy the link.
+          </DialogDescription>
         </DialogHeader>
 
         {/* Preview blurb */}
@@ -135,7 +139,7 @@ export function BadgeShareSheet({
               key={p.id}
               type="button"
               onClick={() => handleOpen(p.href)}
-              className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-white text-sm font-medium transition-colors active:scale-95 ${p.bg}`}
+              className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-white text-sm font-medium transition-colors active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-primary ${p.bg}`}
             >
               {p.icon}
               <span>{p.label}</span>
@@ -144,14 +148,17 @@ export function BadgeShareSheet({
         </div>
 
         {/* Copy link */}
-        <div className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2">
-          <span className="flex-1 min-w-0 text-xs truncate text-muted-foreground font-mono">
+        <div className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 overflow-hidden">
+          <span
+            className="block flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-xs text-muted-foreground font-mono"
+            title={shareUrl}
+          >
             {shareUrl}
           </span>
           <button
             type="button"
             onClick={handleCopy}
-            className="flex items-center gap-1.5 text-xs font-medium text-foreground/70 hover:text-foreground transition-colors shrink-0"
+            className="flex items-center gap-1.5 text-xs font-medium text-foreground/70 hover:text-foreground transition-colors shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-primary rounded"
           >
             <Copy className="w-3.5 h-3.5" />
             Copy
