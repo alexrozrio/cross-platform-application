@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { apiUrl } from '../lib/api-base-url';
 
 function getOrCreateDeviceId(): string {
   const KEY = 'sudoku-device-id';
@@ -66,7 +67,7 @@ export function AuthProvider({
   };
 
   useEffect(() => {
-    fetch('/api/auth/user', { credentials: 'include' })
+    fetch(apiUrl('/api/auth/user'), { credentials: 'include' })
       .then((res) => {
         if (res.status === 401) return null;
         if (!res.ok) return null;
@@ -112,7 +113,7 @@ export function AuthProvider({
         }
 
         const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
-        const res = await fetch(`${basePath}/api/profiles/sync`, {
+        const res = await fetch(apiUrl(`${basePath}/api/profiles/sync`), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),

@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { apiUrl } from "../lib/api-base-url";
 
 export interface LoginRewardResult {
   alreadyClaimed: boolean;
@@ -19,7 +20,7 @@ export function useLoginReward() {
   const claimReward = useCallback(async (profileId: number) => {
     try {
       const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
-      const res = await fetch(`${basePath}/api/profiles/${profileId}/claim-login-reward`, {
+      const res = await fetch(apiUrl(`${basePath}/api/profiles/${profileId}/claim-login-reward`), {
         method: "POST",
         credentials: "include",
       });
