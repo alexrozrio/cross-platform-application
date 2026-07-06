@@ -1,0 +1,13 @@
+{
+  "name": "brain-games-api-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Standalone build of the Brain Games 4 All API server. Fully self-contained — no monorepo or workspace packages required.",
+  "scripts": {
+    "start": "node --import ./env-setup.mjs --enable-source-maps ./dist/index.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
