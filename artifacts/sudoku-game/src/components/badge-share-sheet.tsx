@@ -18,7 +18,12 @@ interface BadgeShareSheetProps {
   period: string;
 }
 
-function buildText(badgeTitle: string, username: string, points: number, period: string) {
+function buildText(
+  badgeTitle: string,
+  username: string,
+  points: number,
+  period: string
+) {
   return `🏆 ${username} earned the "${badgeTitle}" badge in Brain Games 4 All!\n${period} · ${points.toLocaleString()} pts\nThink you can beat that?`;
 }
 
@@ -112,59 +117,58 @@ export function BadgeShareSheet({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent className="max-w-xs sm:max-w-sm p-0 overflow-hidden gap-0">
-        {/* Header */}
-        <DialogHeader className="px-5 pt-5 pb-3">
-          <DialogTitle className="text-base font-semibold">Share your badge</DialogTitle>
+      {/* Use Dialog's natural p-6 gap-4 — do NOT override with p-0/overflow-hidden */}
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Share your badge</DialogTitle>
         </DialogHeader>
 
-        <div className="px-5 pb-5 flex flex-col gap-4">
-          {/* Preview blurb */}
-          <div className="rounded-xl bg-muted/60 border border-border/50 px-4 py-3 text-sm leading-relaxed whitespace-pre-line text-foreground/80">
-            {text}
-          </div>
-
-          {/* Platform buttons — 2 per row, equal width, compact */}
-          <div className="grid grid-cols-2 gap-2">
-            {platforms.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => handleOpen(p.href)}
-                className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-white text-sm font-medium transition-all active:scale-95 ${p.bg}`}
-              >
-                {p.icon}
-                <span>{p.label}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Copy link row */}
-          <div className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2">
-            <span className="flex-1 min-w-0 text-xs truncate text-muted-foreground font-mono select-all">
-              {shareUrl}
-            </span>
-            <button
-              type="button"
-              onClick={handleCopy}
-              className="flex items-center gap-1 text-xs font-medium text-foreground/70 hover:text-foreground transition-colors shrink-0"
-            >
-              <Copy className="w-3 h-3" />
-              Copy
-            </button>
-          </div>
-
-          {/* Native share — only on mobile/supported browsers */}
-          {hasNativeShare && (
-            <button
-              onClick={handleNativeShare}
-              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg border text-sm font-medium text-foreground/80 hover:bg-muted/60 transition-colors"
-            >
-              <Share2 className="w-4 h-4" />
-              Share via device
-            </button>
-          )}
+        {/* Preview blurb */}
+        <div className="rounded-lg bg-muted/60 border border-border/40 px-4 py-3 text-sm leading-relaxed whitespace-pre-line text-foreground/80">
+          {text}
         </div>
+
+        {/* Platform grid — 2 columns, each button full-width within its cell */}
+        <div className="grid grid-cols-2 gap-2">
+          {platforms.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => handleOpen(p.href)}
+              className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-white text-sm font-medium transition-colors active:scale-95 ${p.bg}`}
+            >
+              {p.icon}
+              <span>{p.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Copy link */}
+        <div className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2">
+          <span className="flex-1 min-w-0 text-xs truncate text-muted-foreground font-mono">
+            {shareUrl}
+          </span>
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="flex items-center gap-1.5 text-xs font-medium text-foreground/70 hover:text-foreground transition-colors shrink-0"
+          >
+            <Copy className="w-3.5 h-3.5" />
+            Copy
+          </button>
+        </div>
+
+        {/* Native share — mobile/supported browsers only */}
+        {hasNativeShare && (
+          <button
+            type="button"
+            onClick={handleNativeShare}
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg border text-sm font-medium text-foreground/80 hover:bg-muted/60 transition-colors"
+          >
+            <Share2 className="w-4 h-4" />
+            Share via device
+          </button>
+        )}
       </DialogContent>
     </Dialog>
   );
