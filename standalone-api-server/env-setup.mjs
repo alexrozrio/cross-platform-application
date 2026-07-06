@@ -1,4 +1,5 @@
-import { createRequire as __cr } from 'node:module'; globalThis.require = __cr(import.meta.url);
+import { createRequire as __cr } from 'node:module';
+globalThis.require = __cr(import.meta.url);
 var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -389,16 +390,17 @@ var require_main = __commonJS({
   }
 });
 
-// ../../../../../tmp/env-setup-standalone-src.mjs
+// .env-setup-standalone-tmp-1783337470845.mjs
 var import_dotenv = __toESM(require_main(), 1);
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 var __dirname = dirname(fileURLToPath(import.meta.url));
+var onReplit = Boolean(process.env.REPL_ID);
 var portBefore = process.env.PORT;
 var nodeEnvBefore = process.env.NODE_ENV;
 var parsed = (0, import_dotenv.configDotenv)({
   path: resolve(__dirname, ".env"),
-  override: true
+  override: !onReplit
 });
 if (parsed?.parsed?.DATABASE_URL) {
   process.env.DATABASE_URL = parsed.parsed.DATABASE_URL;

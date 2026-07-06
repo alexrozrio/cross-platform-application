@@ -41,13 +41,21 @@ PORT=8080 npm run start
 ## Updating this build
 
 This folder is a snapshot. If you change the app's source code (routes,
-schema, etc.) in the main project, you need to rebuild and re-copy:
+schema, etc.) in the main project, refresh it with a single command — no
+manual copying needed:
 
-1. In the main project: `cd artifacts/api-server && pnpm run build`
-2. Copy the refreshed `dist/` folder into this standalone folder, replacing
-   the old one.
-3. If you change `DATABASE_URL` or other env values, just edit `.env` here —
-   no rebuild needed for that.
+```bash
+cd artifacts/api-server
+pnpm run build:standalone
+```
+
+This builds the server AND automatically copies the new `dist/` folder plus
+a freshly bundled `env-setup.mjs` into `standalone-api-server/`. Your `.env`
+and `package.json` here are left untouched. After running it, just
+re-download/re-copy this folder to wherever you run it locally.
+
+If you only change `DATABASE_URL` or other env values, just edit `.env`
+here directly — no rebuild needed for that.
 
 ## Requirements
 
