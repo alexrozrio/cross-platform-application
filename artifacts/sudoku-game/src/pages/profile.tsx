@@ -156,7 +156,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="max-w-md mx-auto w-full space-y-8 animate-in fade-in duration-500">
+    <div className="max-w-md mx-auto w-full space-y-8">
       <div className="space-y-1">
         <h1 className="text-3xl font-serif font-bold tracking-tight">
           Account
