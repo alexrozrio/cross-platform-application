@@ -143,6 +143,7 @@ export default function Profile() {
   });
 
   const [shareSheetToken, setShareSheetToken] = React.useState<string | null>(null);
+  const [testShareOpen, setTestShareOpen] = React.useState(false);
   const shareSheetBadge = badges?.find((b) => b.shareToken === shareSheetToken);
   const shareSheetMeta = shareSheetBadge ? (BADGE_META[shareSheetBadge.badgeType] ?? BADGE_META["weekly_1st"]) : null;
   const shareSheetUrl = shareSheetToken
@@ -157,6 +158,24 @@ export default function Profile() {
 
   return (
     <div className="max-w-md mx-auto w-full space-y-8">
+      {/* TEMP TEST — remove after verifying */}
+      <button
+        style={{ position: "fixed", bottom: 16, right: 16, zIndex: 9999, background: "#6366f1", color: "#fff", padding: "8px 16px", borderRadius: 8, fontSize: 13 }}
+        onClick={() => setTestShareOpen(true)}
+      >
+        🧪 Open Share Modal
+      </button>
+      {testShareOpen && (
+        <BadgeShareSheet
+          open
+          onClose={() => setTestShareOpen(false)}
+          shareUrl="http://localhost:19093/badges/d7fa6e45-22e5-40a9-b401-d28e3062f1b2"
+          badgeTitle="Weekly Champion"
+          username="alex"
+          points={1997}
+          period="Week 27, 2026"
+        />
+      )}
       <div className="space-y-1">
         <h1 className="text-3xl font-serif font-bold tracking-tight">
           Account
