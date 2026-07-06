@@ -16,14 +16,14 @@ export default function TermsOfService() {
 
       <div>
         <h1 className="text-3xl font-serif font-bold tracking-tight">Terms of Service</h1>
-        <p className="text-muted-foreground mt-1 text-sm">Last updated: June 2025</p>
+        <p className="text-muted-foreground mt-1 text-sm">Last updated: July 2026</p>
       </div>
 
       <div className="prose prose-sm max-w-none space-y-6 text-muted-foreground leading-relaxed">
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">1. Acceptance</h2>
           <p>
-            By accessing or using this Sudoku game ("Service") you agree to be bound by these Terms. If you do not agree, please stop using the Service immediately.
+            By accessing or using Brain Games 4 All, including the Sudoku and Memory Match games ("Service"), you agree to be bound by these Terms. If you do not agree, please stop using the Service immediately.
           </p>
         </section>
 
@@ -63,7 +63,7 @@ export default function TermsOfService() {
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">6. Intellectual Property</h2>
           <p>
-            All content in the Service — including puzzles, graphics, themes, and code — is owned by or licensed to us. You may not reproduce or distribute it without our written permission.
+            All content in the Service — including Sudoku puzzles, Memory Match boards, graphics, themes, and code — is owned by or licensed to us. You may not reproduce or distribute it without our written permission.
           </p>
         </section>
 

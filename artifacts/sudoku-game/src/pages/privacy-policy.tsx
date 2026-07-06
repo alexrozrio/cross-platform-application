@@ -16,17 +16,17 @@ export default function PrivacyPolicy() {
 
       <div>
         <h1 className="text-3xl font-serif font-bold tracking-tight">Privacy Policy</h1>
-        <p className="text-muted-foreground mt-1 text-sm">Last updated: June 2025</p>
+        <p className="text-muted-foreground mt-1 text-sm">Last updated: July 2026</p>
       </div>
 
       <div className="prose prose-sm max-w-none space-y-6 text-muted-foreground leading-relaxed">
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">1. Information We Collect</h2>
           <p>
-            When you play as a guest we assign your device a random identifier stored only in your browser. When you sign in with a third-party account (Google, GitHub, etc.) we receive your name, profile photo, and email address from that provider and store them to personalise your experience.
+            When you play as a guest we assign your device a random identifier stored only in your browser. When you sign in with Google we receive your name, profile photo, and email address from your Google account and store them to personalise your experience.
           </p>
           <p>
-            We also store game-related data you create: puzzle attempts, completion times, scores, settings, and earned badges.
+            We also store game-related data you create across both Sudoku and Memory Match: puzzle and game attempts, completion times, scores, settings, and earned badges.
           </p>
         </section>
 
@@ -34,7 +34,8 @@ export default function PrivacyPolicy() {
           <h2 className="text-base font-semibold text-foreground">2. How We Use Your Information</h2>
           <ul className="list-disc list-inside space-y-1">
             <li>To identify you across sessions and devices.</li>
-            <li>To display your stats, rank, and leaderboard position.</li>
+            <li>To display your stats, rank, and leaderboard position for Sudoku and Memory Match.</li>
+            <li>To show your username, avatar, and badges on public profiles and leaderboards.</li>
             <li>To send login-streak and reward notifications within the app.</li>
             <li>To improve game balance and fix bugs.</li>
           </ul>
@@ -44,21 +45,21 @@ export default function PrivacyPolicy() {
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">3. Authentication</h2>
           <p>
-            Sign-in is handled by Clerk. We never see or store your password. When you authenticate via Google or another provider, that provider shares only the data you authorise. Please review their privacy policies for details on how they handle your data.
+            Sign-in is handled via Google OAuth. We never see or store your password. Google shares only the data you authorise (name, email, profile photo) with us. Please review Google's privacy policy for details on how they handle your data.
           </p>
         </section>
 
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">4. Cookies & Local Storage</h2>
           <p>
-            We use browser local storage to cache your profile ID and device identifier between visits. Authentication sessions are managed by Clerk using secure cookies. We do not use advertising or tracking cookies.
+            We use browser local storage to cache your profile ID and device identifier between visits. Authentication sessions are managed using secure, server-side session cookies. We do not use advertising or tracking cookies.
           </p>
         </section>
 
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">5. Data Retention</h2>
           <p>
-            Your profile and game history are retained as long as your account is active. You can delete your data at any time by contacting us — see Section 8.
+            Your profile and game history — including both Sudoku and Memory Match activity — are retained as long as your account is active. You can delete your data at any time by contacting us — see Section 8.
           </p>
         </section>
 
