@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useGetProfile } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Trophy, User, Home, BarChart2, Palette, LogIn, LogOut, Gem, Swords } from "lucide-react";
 import { useFontTheme } from "@/hooks/use-font-theme";
 import { useChallengeNotifications, usePendingChallengeCount } from "@/hooks/use-challenge-notifications";
@@ -47,12 +48,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, [profile?.theme]);
 
   const navItems = [
-    { href: "/", label: "Home", shortLabel: "Home", icon: Home, badge: 0 },
-    { href: "/leaderboard", label: "Leaderboard", shortLabel: "Ranks", icon: Trophy, badge: 0 },
-    { href: "/challenges", label: "Challenges", shortLabel: "Duels", icon: Swords, badge: pendingCount },
-    { href: "/stats", label: "Stats", shortLabel: "Stats", icon: BarChart2, badge: 0 },
-    { href: "/themes", label: "Themes", shortLabel: "Themes", icon: Palette, badge: 0 },
-    { href: "/profile", label: isSignedIn ? (replitUser?.firstName || "Account") : "Profile", shortLabel: isSignedIn ? "Account" : "Profile", icon: User, badge: 0 },
+    { href: "/", label: "Home", shortLabel: "Home", icon: Home, badge: 0, tooltip: "Play Sudoku & Memory Match — earn XP and climb the ranks" },
+    { href: "/leaderboard", label: "Leaderboard", shortLabel: "Ranks", icon: Trophy, badge: 0, tooltip: "See the top players — complete games to rise up the rankings" },
+    { href: "/challenges", label: "Challenges", shortLabel: "Duels", icon: Swords, badge: pendingCount, tooltip: "Challenge others to a duel — win to earn 10 💎 gems" },
+    { href: "/stats", label: "Stats", shortLabel: "Stats", icon: BarChart2, badge: 0, tooltip: "Your game history, win streaks, and personal bests" },
+    { href: "/themes", label: "Themes", shortLabel: "Themes", icon: Palette, badge: 0, tooltip: "Unlock new board themes and fonts with your gems" },
+    { href: "/profile", label: isSignedIn ? (replitUser?.firstName || "Account") : "Profile", shortLabel: isSignedIn ? "Account" : "Profile", icon: User, badge: 0, tooltip: "Your profile, XP rank, badges, and game settings" },
   ];
 
   const isActive = (href: string) =>
@@ -83,40 +84,56 @@ export function Layout({ children }: { children: React.ReactNode }) {
         )}
 
         <div className="hidden md:flex items-center gap-1">
-          <nav className="flex items-center gap-1">
-            {navItems.map((item) => (
-              <Link key={item.href} href={item.href}>
-                <Button
-                  variant={isActive(item.href) ? "secondary" : "ghost"}
-                  size="sm"
-                  className="gap-2 relative"
-                >
-                  <span className="relative inline-flex">
-                    {isSignedIn && item.href === "/profile" && replitUser?.profileImageUrl ? (
-                      <img src={replitUser.profileImageUrl} alt="" className="h-4 w-4 rounded-full object-cover" />
-                    ) : (
-                      <item.icon className="h-4 w-4" />
-                    )}
-                    <NotifBadge count={item.badge} />
-                  </span>
-                  {item.label}
-                  {item.badge > 0 && (
-                    <span className="sr-only">{item.badge} pending</span>
-                  )}
-                </Button>
-              </Link>
-            ))}
-          </nav>
+          <TooltipProvider delayDuration={400}>
+            <nav className="flex items-center gap-1">
+              {navItems.map((item) => (
+                <Tooltip key={item.href}>
+                  <TooltipTrigger asChild>
+                    <Link href={item.href}>
+                      <Button
+                        variant={isActive(item.href) ? "secondary" : "ghost"}
+                        size="sm"
+                        className="gap-2 relative"
+                      >
+                        <span className="relative inline-flex">
+                          {isSignedIn && item.href === "/profile" && replitUser?.profileImageUrl ? (
+                            <img src={replitUser.profileImageUrl} alt="" className="h-4 w-4 rounded-full object-cover" />
+                          ) : (
+                            <item.icon className="h-4 w-4" />
+                          )}
+                          <NotifBadge count={item.badge} />
+                        </span>
+                        {item.label}
+                        {item.badge > 0 && (
+                          <span className="sr-only">{item.badge} pending</span>
+                        )}
+                      </Button>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    {item.tooltip}
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </nav>
 
-          <Button
-            variant={isSignedIn ? "ghost" : "outline"}
-            size="sm"
-            className="gap-2 ml-1 text-muted-foreground"
-            onClick={handleSignInOut}
-          >
-            {isSignedIn ? <LogOut className="h-4 w-4" /> : <LogIn className="h-4 w-4" />}
-            {isSignedIn ? "Sign out" : "Sign in"}
-          </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={isSignedIn ? "ghost" : "outline"}
+                  size="sm"
+                  className="gap-2 ml-1 text-muted-foreground"
+                  onClick={handleSignInOut}
+                >
+                  {isSignedIn ? <LogOut className="h-4 w-4" /> : <LogIn className="h-4 w-4" />}
+                  {isSignedIn ? "Sign out" : "Sign in"}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                {isSignedIn ? "Sign out of your account" : "Sign in to save progress and earn rewards"}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </header>
 
@@ -129,6 +146,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <Link
             key={item.href}
             href={item.href}
+            title={item.tooltip}
             className="flex flex-col items-center gap-0.5 text-xs min-w-[48px] py-1"
           >
             <div className={`relative p-1.5 rounded-xl ${isActive(item.href) ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}>
