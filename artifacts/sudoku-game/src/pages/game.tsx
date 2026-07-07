@@ -427,6 +427,7 @@ export default function Game({ id }: { id: string }) {
               localStorage.removeItem(storageKeyGrid);
               localStorage.removeItem(storageKeyNotes);
               if (profileId) {
+                queryClient.invalidateQueries({ queryKey: [`/api/profiles/${profileId}`] });
                 queryClient.invalidateQueries({ queryKey: [`/api/achievements/${profileId}`] });
                 queryClient.invalidateQueries({ queryKey: [`/api/stats/${profileId}`] });
               }
