@@ -66,15 +66,17 @@ export default defineConfig({
     fs: {
       strict: true,
     },
-    proxy: {
-      "/api": {
-        // API server runs on 8080 in all environments (Replit workflow sets PORT=8080;
-        // locally .env should also use PORT=8080 to match Google Cloud Console).
-        // Override by setting API_PORT in the environment.
-        target: `http://localhost:${process.env.API_PORT ?? "8080"}`,
-        changeOrigin: true,
+    // When VITE_API_BASE_URL is set the browser sends requests directly to
+    // that host, so the dev proxy is not needed. Without it, /api requests
+    // are proxied to the local API server running on API_PORT (default 8080).
+    ...(!process.env.VITE_API_BASE_URL && {
+      proxy: {
+        "/api": {
+          target: `http://localhost:${process.env.API_PORT ?? "8080"}`,
+          changeOrigin: true,
+        },
       },
-    },
+    }),
   },
   preview: {
     port,
