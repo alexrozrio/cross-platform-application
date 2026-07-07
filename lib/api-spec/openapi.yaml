@@ -531,6 +531,9 @@ components:
         gems:
           type: integer
           description: "Accumulated gem balance usable for future in-game features"
+        xp:
+          type: integer
+          description: "Experience points accumulated from completing games"
         createdAt:
           type: string
 
@@ -695,6 +698,9 @@ components:
           type: integer
         completedAt:
           type: string
+        xp:
+          type: integer
+          description: "Experience points of the player at the time of the entry"
 
     PlayerStats:
       type: object

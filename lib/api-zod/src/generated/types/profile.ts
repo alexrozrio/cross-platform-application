@@ -20,5 +20,7 @@ export interface Profile {
   gameMode?: ProfileGameMode;
   /** Accumulated gem balance usable for future in-game features */
   gems?: number;
+  /** Experience points accumulated from completing games */
+  xp?: number;
   createdAt: string;
 }

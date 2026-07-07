@@ -19,4 +19,6 @@ export interface LeaderboardEntry {
   elapsedSeconds: number;
   mistakeCount?: number;
   completedAt: string;
+  /** Experience points of the player at the time of the entry */
+  xp?: number;
 }

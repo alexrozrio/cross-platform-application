@@ -611,7 +611,7 @@ export default function Game({ id }: { id: string }) {
     const size = game?.puzzle?.gridSize ?? 9;
     const diffLabel = diff.charAt(0).toUpperCase() + diff.slice(1);
     const sizeLabel = `${size}×${size}`;
-    const xpGain = { easy: 1, medium: 2, hard: 3, expert: 5 }[diff] ?? 1;
+    const xpGain = ({ easy: 1, medium: 2, hard: 3, expert: 5 } as Record<string, number>)[diff] ?? 1;
     const rank = profile ? getLevelFromXp(profile.xp ?? 0).name : null;
     const lines = [
       `${completionMessage.emoji} Solved a ${sizeLabel} ${diffLabel} Sudoku in ${formattedTime}!`,

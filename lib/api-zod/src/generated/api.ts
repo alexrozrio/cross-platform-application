@@ -54,6 +54,7 @@ export const SyncProfileResponse = zod.object({
   "soundEnabled": zod.boolean().optional(),
   "gameMode": zod.enum(['children', 'adult', '4all']).optional(),
   "gems": zod.number().optional().describe('Accumulated gem balance usable for future in-game features'),
+  "xp": zod.number().optional().describe('Experience points accumulated from completing games'),
   "createdAt": zod.string()
 })
 
@@ -75,6 +76,7 @@ export const GetProfileResponse = zod.object({
   "soundEnabled": zod.boolean().optional(),
   "gameMode": zod.enum(['children', 'adult', '4all']).optional(),
   "gems": zod.number().optional().describe('Accumulated gem balance usable for future in-game features'),
+  "xp": zod.number().optional().describe('Experience points accumulated from completing games'),
   "createdAt": zod.string()
 })
 
@@ -110,6 +112,7 @@ export const UpdateProfileResponse = zod.object({
   "soundEnabled": zod.boolean().optional(),
   "gameMode": zod.enum(['children', 'adult', '4all']).optional(),
   "gems": zod.number().optional().describe('Accumulated gem balance usable for future in-game features'),
+  "xp": zod.number().optional().describe('Experience points accumulated from completing games'),
   "createdAt": zod.string()
 })
 
@@ -287,7 +290,8 @@ export const GetLeaderboardResponseItem = zod.object({
   "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(9),zod.literal(16)]).optional(),
   "elapsedSeconds": zod.number(),
   "mistakeCount": zod.number().optional(),
-  "completedAt": zod.string()
+  "completedAt": zod.string(),
+  "xp": zod.number().optional().describe('Experience points of the player at the time of the entry')
 })
 export const GetLeaderboardResponse = zod.array(GetLeaderboardResponseItem)
 

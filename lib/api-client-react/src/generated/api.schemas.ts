@@ -38,6 +38,8 @@ export interface Profile {
   gameMode?: ProfileGameMode;
   /** Accumulated gem balance usable for future in-game features */
   gems?: number;
+  /** Experience points accumulated from completing games */
+  xp?: number;
   createdAt: string;
 }
 
@@ -216,6 +218,8 @@ export interface LeaderboardEntry {
   elapsedSeconds: number;
   mistakeCount?: number;
   completedAt: string;
+  /** Experience points of the player at the time of the entry */
+  xp?: number;
 }
 
 export type PlayerStatsBestTimes = {
