@@ -298,7 +298,8 @@ function ChallengeCard({
               </div>
 
               {(challenge.status === "accepted" ||
-                challenge.status === "completed") && (
+                challenge.status === "completed" ||
+                (challenge.status === "pending" && myPoints != null)) && (
                 <div className="flex items-center gap-3 mt-2 text-xs">
                   <span className="text-muted-foreground">
                     You:{" "}
@@ -351,14 +352,28 @@ function ChallengeCard({
               </Button>
             )}
             {challenge.status === "pending" && isChallenger && myGameId && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 text-xs gap-1"
-                onClick={() => onPlay(myGameId)}
-              >
-                Play now <ChevronRight className="w-3 h-3" />
-              </Button>
+              myPoints != null ? (
+                <div className="flex flex-col items-end gap-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs gap-1"
+                    onClick={() => onPlay(myGameId)}
+                  >
+                    View <ChevronRight className="w-3 h-3" />
+                  </Button>
+                  <span className="text-[10px] text-muted-foreground italic">Waiting for opponent</span>
+                </div>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs gap-1"
+                  onClick={() => onPlay(myGameId)}
+                >
+                  Play now <ChevronRight className="w-3 h-3" />
+                </Button>
+              )
             )}
           </div>
         </div>
@@ -456,7 +471,9 @@ function MemoryDuelCard({
                 )}
               </div>
 
-              {(duel.status === "accepted" || duel.status === "completed") && (
+              {(duel.status === "accepted" ||
+                duel.status === "completed" ||
+                (duel.status === "pending" && myPoints != null)) && (
                 <div className="flex items-center gap-3 mt-2 text-xs">
                   <span className="text-muted-foreground">
                     You:{" "}
@@ -509,14 +526,28 @@ function MemoryDuelCard({
               </Button>
             )}
             {duel.status === "pending" && isChallenger && myGameId && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 text-xs gap-1"
-                onClick={() => onPlay(duel)}
-              >
-                Play now <ChevronRight className="w-3 h-3" />
-              </Button>
+              hasPlayed ? (
+                <div className="flex flex-col items-end gap-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs gap-1"
+                    onClick={() => onPlay(duel)}
+                  >
+                    View <ChevronRight className="w-3 h-3" />
+                  </Button>
+                  <span className="text-[10px] text-muted-foreground italic">Waiting for opponent</span>
+                </div>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs gap-1"
+                  onClick={() => onPlay(duel)}
+                >
+                  Play now <ChevronRight className="w-3 h-3" />
+                </Button>
+              )
             )}
           </div>
         </div>
