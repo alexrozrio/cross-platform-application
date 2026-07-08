@@ -3,6 +3,7 @@ import { eq, or, and } from "drizzle-orm";
 import { db, challengesTable, profilesTable, puzzlesTable, gamesTable } from "@workspace/db";
 import { generatePuzzle } from "../lib/sudoku";
 import { sql } from "drizzle-orm";
+import { sendChallengeNotification } from "../lib/email";
 
 const router: IRouter = Router();
 
@@ -124,6 +125,15 @@ router.post("/challenges", async (req, res): Promise<void> => {
 
   const detail = await formatChallenge(challenge);
   res.status(201).json(detail);
+
+  // Fire-and-forget — email errors must never block the response
+  sendChallengeNotification({
+    challengedProfileId: challengedId,
+    challengerUsername: challenger.username,
+    difficulty,
+    gridSize,
+    challengeId: challenge.id,
+  }).catch(() => {});
 });
 
 router.get("/challenges/for/:profileId", async (req, res): Promise<void> => {

@@ -1,2 +1,3 @@
 - [Daily login rewards](login-rewards.md) — login streak + gem rewards claimed on profile sync; server-side dedup by lastLoginDate.
 - [Clerk JS CDN fix](clerk-cdn-fix.md) — must set clerkJSUrl to jsdelivr CDN in ClerkProvider or Clerk fails to load on Replit dev domains.
+- [OAuth dynamic return URL](oauth-dynamic-return-url.md) — pass `window.location.origin` as base64url OAuth state so any frontend origin gets the post-login redirect; also covers SameSite=None cookie fix and session-save race condition.
