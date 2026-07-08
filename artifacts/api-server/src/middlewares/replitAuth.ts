@@ -244,11 +244,21 @@ export async function setupAuth(app: Express) {
   app.get(
     "/api/callback/google",
     passport.authenticate("google", { failureRedirect: redirectTo }),
-    (_req, res) => res.redirect(redirectTo),
+    (req, res) => {
+      // Explicitly save the session to the store before redirecting.
+      // Without this, the redirect can race ahead of the async DB write,
+      // causing the very next /api/auth/user request to see no session.
+      req.session.save((err) => {
+        if (err) console.error("Session save error after OAuth:", err);
+        res.redirect(redirectTo);
+      });
+    },
   );
 
   app.get("/api/logout", (req, res) => {
-    req.logout(() => res.redirect(redirectTo));
+    req.logout(() => {
+      req.session.destroy(() => res.redirect(redirectTo));
+    });
   });
 
   app.get("/api/auth/user", (req: any, res) => {
