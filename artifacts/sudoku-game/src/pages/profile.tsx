@@ -225,7 +225,7 @@ export default function Profile() {
             <Button
               variant="outline"
               className="w-full gap-2 text-destructive hover:text-destructive"
-              onClick={() => { window.location.href = apiUrl("/api/logout"); }}
+              onClick={() => { const from = encodeURIComponent(window.location.origin); window.location.href = apiUrl(`/api/logout?from=${from}`); }}
             >
               <LogOut className="w-4 h-4" />
               Sign out
@@ -233,7 +233,7 @@ export default function Profile() {
           ) : (
             <Button
               className="w-full gap-2"
-              onClick={() => { window.location.href = apiUrl("/api/login"); }}
+              onClick={() => { const from = encodeURIComponent(window.location.origin); window.location.href = apiUrl(`/api/login?from=${from}`); }}
             >
               <LogIn className="w-4 h-4" />
               Sign in

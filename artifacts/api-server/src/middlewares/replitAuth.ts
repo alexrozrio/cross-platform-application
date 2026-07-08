@@ -30,6 +30,10 @@ export function getSession() {
     cookie: {
       httpOnly: true,
       secure: isSecure,
+      // SameSite=None is required for cross-origin requests (e.g. frontend on
+      // localhost:19093 calling API on onrender.com). It MUST pair with Secure.
+      // Locally over plain HTTP we fall back to Lax (same-site is fine there).
+      sameSite: isSecure ? "none" : "lax",
       maxAge: sessionTtl,
     },
   });
@@ -100,6 +104,20 @@ function frontendUrl(): string {
     return `https://${process.env.REPLIT_DEV_DOMAIN}`;
   }
   return "http://localhost:19093";
+}
+
+// Decode the frontend origin passed via OAuth state and validate it is safe.
+// We only allow http(s) origins so an attacker cannot inject javascript: URLs.
+function safeReturnUrl(raw: string | undefined, fallback: string): string {
+  if (!raw) return fallback;
+  try {
+    const decoded = Buffer.from(raw, "base64url").toString("utf8");
+    const url = new URL(decoded);
+    if (url.protocol === "http:" || url.protocol === "https:") return decoded;
+  } catch {
+    // invalid base64 or URL — fall through to fallback
+  }
+  return fallback;
 }
 
 // ─── Dev auto-login ───────────────────────────────────────────────────────────
@@ -234,28 +252,45 @@ export async function setupAuth(app: Express) {
     ),
   );
 
-  const redirectTo = frontendUrl();
+  const defaultRedirectTo = frontendUrl();
 
-  app.get(
-    "/api/login",
-    passport.authenticate("google", { scope: ["openid", "email", "profile"] }),
-  );
+  // The frontend passes its own origin as a base64url-encoded "from" query
+  // param so the server can redirect back to whichever host initiated login
+  // (localhost:19093, Replit dev domain, production URL, etc.) without needing
+  // a separate FRONTEND_URL env var per environment.
+  app.get("/api/login", (req, res, next) => {
+    const from = req.query.from as string | undefined;
+    const state = from ? Buffer.from(from).toString("base64url") : undefined;
+    passport.authenticate("google", {
+      scope: ["openid", "email", "profile"],
+      ...(state ? { state } : {}),
+    })(req, res, next);
+  });
 
   app.get(
     "/api/callback/google",
-    passport.authenticate("google", { failureRedirect: redirectTo }),
-    (req, res) => {
+    passport.authenticate("google", { failureRedirect: defaultRedirectTo }),
+    (req: any, res) => {
+      // Decode the frontend origin from the OAuth state parameter so we
+      // redirect back to wherever the user originally came from.
+      const redirectTo = safeReturnUrl(req.query.state as string | undefined, defaultRedirectTo);
+
       // Explicitly save the session to the store before redirecting.
       // Without this, the redirect can race ahead of the async DB write,
       // causing the very next /api/auth/user request to see no session.
-      req.session.save((err) => {
+      req.session.save((err: Error | null) => {
         if (err) console.error("Session save error after OAuth:", err);
         res.redirect(redirectTo);
       });
     },
   );
 
-  app.get("/api/logout", (req, res) => {
+  app.get("/api/logout", (req: any, res) => {
+    const from = req.query.from as string | undefined;
+    const redirectTo = safeReturnUrl(
+      from ? Buffer.from(from).toString("base64url") : undefined,
+      defaultRedirectTo,
+    );
     req.logout(() => {
       req.session.destroy(() => res.redirect(redirectTo));
     });

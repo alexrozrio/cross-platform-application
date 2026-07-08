@@ -61,10 +61,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
     href === "/" ? location === "/" : location.startsWith(href);
 
   const handleSignInOut = () => {
+    const from = encodeURIComponent(window.location.origin);
     if (isSignedIn) {
-      window.location.href = apiUrl("/api/logout");
+      window.location.href = apiUrl(`/api/logout?from=${from}`);
     } else {
-      window.location.href = apiUrl("/api/login");
+      window.location.href = apiUrl(`/api/login?from=${from}`);
     }
   };
 
