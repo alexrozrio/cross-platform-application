@@ -57,7 +57,7 @@ export async function sendChallengeNotification({
 
   try {
     await client.emails.send({
-      from: "Brain Games 4 All <notifications@braingames4all.com>",
+      from: process.env.EMAIL_FROM ?? "Brain Games 4 All <onboarding@resend.dev>",
       to: recipient.email,
       subject: `⚔️ ${challengerUsername} challenged you to a Sudoku duel!`,
       html: `
