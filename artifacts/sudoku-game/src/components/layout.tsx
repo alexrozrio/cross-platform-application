@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useGetProfile } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
+import { apiUrl } from "@/lib/api-base-url";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Trophy, User, Home, BarChart2, Palette, LogIn, LogOut, Gem, Swords } from "lucide-react";
 import { useFontTheme } from "@/hooks/use-font-theme";
@@ -61,9 +62,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const handleSignInOut = () => {
     if (isSignedIn) {
-      window.location.href = "/api/logout";
+      window.location.href = apiUrl("/api/logout");
     } else {
-      window.location.href = "/api/login";
+      window.location.href = apiUrl("/api/login");
     }
   };
 
