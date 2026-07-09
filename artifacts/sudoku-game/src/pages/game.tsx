@@ -37,6 +37,7 @@ import {
   Volume2,
   VolumeX,
   Share2,
+  ChevronDown,
 } from "lucide-react";
 import { useSound } from "@/hooks/use-sound";
 import { Confetti } from "@/components/confetti";
@@ -406,6 +407,7 @@ export default function Game({ id }: { id: string }) {
 
   const [pointsEarned, setPointsEarned] = useState<number | null>(null);
   const [isPersonalBest, setIsPersonalBest] = useState(false);
+  const [showMobileControls, setShowMobileControls] = useState(false);
 
   const checkCompletion = useCallback(
     (currentGrid: string[], solution?: string) => {
@@ -830,10 +832,19 @@ export default function Game({ id }: { id: string }) {
               {isPaused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
             </Button>
           )}
+          {/* Mobile controls toggle */}
+          <button
+            className="md:hidden flex items-center justify-center h-7 w-7 text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => setShowMobileControls(v => !v)}
+            title={showMobileControls ? "Hide controls" : "Show controls"}
+          >
+            <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${showMobileControls ? 'rotate-180' : ''}`} />
+          </button>
         </div>
       </div>
 
       {/* ── Mobile-only: Style + New Game above the board ── */}
+      {showMobileControls && (
       <div className="md:hidden flex flex-col gap-1 w-full">
         {/* Style + New Game controls in one compact row */}
         <div className="flex items-center gap-1.5 w-full">
@@ -907,6 +918,7 @@ export default function Game({ id }: { id: string }) {
           </Button>
         </div>
       </div>
+      )}
 
       {/* ── Two-column layout: board left, controls right on desktop ── */}
       <div className="flex flex-col md:flex-row md:items-start gap-3 w-full">
