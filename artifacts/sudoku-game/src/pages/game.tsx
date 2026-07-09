@@ -268,7 +268,7 @@ export default function Game({ id }: { id: string }) {
   const visibleDiffs = ['easy', 'medium', 'hard', 'expert'] as const;
 
   // New-game switcher state — initialise to current game's grid size
-  const [newSize, setNewSize] = useState<3 | 4 | 9 | 16>(9);
+  const [newSize, setNewSize] = useState<3 | 4 | 9 | 16>(3);
   const [newDiff, setNewDiff] = useState<"easy" | "medium" | "hard" | "expert">("easy");
 
   const generateNew = useGeneratePuzzle(
@@ -793,16 +793,31 @@ export default function Game({ id }: { id: string }) {
           </AlertDialogContent>
         </AlertDialog>
 
-        <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground flex-wrap justify-center">
-          <span>{GRID_LABELS[gridSize] ?? `${gridSize}×${gridSize}`}</span>
-          <span>•</span>
-          <span className="capitalize">{game.puzzle?.difficulty}</span>
-        </div>
         <div className="flex items-center gap-1 sm:gap-2 text-sm font-medium">
           {profile?.showTimer !== false && (
             <div className="flex items-center gap-1 text-muted-foreground">
               <Clock className="h-3.5 w-3.5 hidden xs:block" />
               <span className="font-mono text-xs sm:text-sm">{formattedTime}</span>
+            </div>
+          )}
+          {/* Style toggle — after timer, mobile only */}
+          {!isCompleted && !isGameOver && (
+            <div className="md:hidden flex gap-0.5 shrink-0">
+              {(["number", "alpha", "image"] as GameMode[]).map((m) => (
+                <button
+                  key={m}
+                  onClick={() => switchMode(m)}
+                  className={[
+                    "flex items-center justify-center w-7 h-6 rounded text-[10px] font-bold transition-all",
+                    mode === m
+                      ? "bg-muted text-foreground shadow-sm border border-border"
+                      : "text-muted-foreground hover:text-foreground",
+                  ].join(" ")}
+                  title={m === "number" ? "Numbers" : m === "alpha" ? "Letters" : "Images"}
+                >
+                  {m === "number" ? "123" : m === "alpha" ? "ABC" : "🖼"}
+                </button>
+              ))}
             </div>
           )}
           <div className={`flex items-center gap-1 font-semibold ${
@@ -850,72 +865,61 @@ export default function Game({ id }: { id: string }) {
 
       {/* ── Mobile-only: New Game panel (shown when "New" is tapped) ── */}
       {showMobileControls && (
-        <div className="md:hidden w-full rounded-lg border border-border/60 bg-muted/30 px-2 py-1.5 flex items-center gap-1.5">
+        <div className="md:hidden w-full rounded-lg border border-border/60 bg-muted/30 px-2 py-1.5 flex flex-col gap-1">
 
-          {/* Style toggle — only while game is active */}
-          {!isCompleted && !isGameOver && (<>
-            <div className="flex gap-0.5 shrink-0">
-              {(["number", "alpha", "image"] as GameMode[]).map((m) => (
+          {/* Current game label */}
+          <div className="flex items-center gap-1 text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
+            <span>Now playing:</span>
+            <span className="text-foreground">{GRID_LABELS[gridSize] ?? `${gridSize}×${gridSize}`}</span>
+            <span>·</span>
+            <span className="capitalize text-foreground">{game.puzzle?.difficulty}</span>
+          </div>
+
+          {/* Size chips + difficulty + start in one row */}
+          <div className="flex items-center gap-1">
+            {/* All sizes including 3×3 */}
+            <div className="flex gap-0.5 flex-1">
+              {visibleSizes.map((s) => (
                 <button
-                  key={m}
-                  onClick={() => switchMode(m)}
+                  key={s}
+                  onClick={() => setNewSize(s)}
                   className={[
-                    "flex items-center justify-center w-7 h-6 rounded text-[10px] font-bold transition-all",
-                    mode === m
-                      ? "bg-background text-foreground shadow-sm border border-border"
-                      : "text-muted-foreground hover:text-foreground",
+                    "flex-1 rounded py-0.5 text-[10px] font-bold transition-all leading-none",
+                    newSize === s
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "bg-background text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
                   ].join(" ")}
-                  title={m === "number" ? "Numbers" : m === "alpha" ? "Letters" : "Images"}
                 >
-                  {m === "number" ? "123" : m === "alpha" ? "ABC" : "🖼"}
+                  {s}×{s}
                 </button>
               ))}
             </div>
-            <div className="w-px h-4 bg-border shrink-0" />
-          </>)}
 
-          {/* Size chips — 3×3 hidden (child mode only shows it when profile is children) */}
-          <div className="flex gap-0.5 flex-1">
-            {visibleSizes.filter(s => s !== 3 || rawGameMode === 'children').map((s) => (
-              <button
-                key={s}
-                onClick={() => setNewSize(s)}
-                className={[
-                  "flex-1 rounded py-0.5 text-[10px] font-bold transition-all leading-none",
-                  newSize === s
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-background text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
-                ].join(" ")}
-              >
-                {s}×{s}
-              </button>
-            ))}
+            {/* Difficulty */}
+            <Select value={newDiff} onValueChange={(v) => setNewDiff(v as typeof newDiff)}>
+              <SelectTrigger className="h-6 text-[10px] w-[4.5rem] shrink-0 px-1.5">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {visibleDiffs.map(d => (
+                  <SelectItem key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Start */}
+            <Button
+              size="sm"
+              className="h-6 px-2 text-[10px] gap-1 shrink-0"
+              onClick={() => setShowNewGameDialog(true)}
+              disabled={newGameLoading || !profileId}
+            >
+              {newGameLoading
+                ? <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                : <RefreshCw className="w-2.5 h-2.5" />}
+              Start
+            </Button>
           </div>
-
-          {/* Difficulty */}
-          <Select value={newDiff} onValueChange={(v) => setNewDiff(v as typeof newDiff)}>
-            <SelectTrigger className="h-6 text-[10px] w-[4.5rem] shrink-0 px-1.5">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {visibleDiffs.map(d => (
-                <SelectItem key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Start */}
-          <Button
-            size="sm"
-            className="h-6 px-2 text-[10px] gap-1 shrink-0"
-            onClick={() => setShowNewGameDialog(true)}
-            disabled={newGameLoading || !profileId}
-          >
-            {newGameLoading
-              ? <Loader2 className="w-2.5 h-2.5 animate-spin" />
-              : <RefreshCw className="w-2.5 h-2.5" />}
-            Start
-          </Button>
         </div>
       )}
 
