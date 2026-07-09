@@ -1239,7 +1239,7 @@ export default function Game({ id }: { id: string }) {
                   ? "gap-1.5 grid-cols-4"
                   : gridSize === 3
                   ? "gap-1.5 grid-cols-3"
-                  : "gap-1.5 grid-cols-5"
+                  : "gap-1 grid-cols-9 md:gap-1.5 md:grid-cols-5"
               }`}
             >
               {Array.from({ length: gridSize }, (_, i) => i + 1).map((num) => {
@@ -1253,16 +1253,20 @@ export default function Game({ id }: { id: string }) {
                     disabled={done || isGameOver}
                     className={[
                       "flex flex-col items-center justify-center relative gap-0",
-                      mode !== "number" ? "h-12 p-0.5" : gridSize === 16 ? "h-10" : "h-12",
+                      mode !== "number"
+                        ? gridSize === 9 ? "h-10 md:h-12 p-0.5" : "h-12 p-0.5"
+                        : gridSize === 16 ? "h-10"
+                        : gridSize === 9 ? "h-10 md:h-12"
+                        : "h-12",
                       done ? "opacity-30" : "",
                       highlightedNumber === encoded && !done ? "ring-2 ring-primary" : "",
                     ].join(" ")}
                     onClick={() => { setHighlightedNumber(encoded); handleNumberInput(encoded); }}
                   >
                     {mode === "image" ? (
-                      <ThemeIcon themeId={themeId} value={num} size={gridSize <= 4 ? 28 : gridSize === 16 ? 12 : 20} />
+                      <ThemeIcon themeId={themeId} value={num} size={gridSize <= 4 ? 28 : gridSize === 16 ? 12 : gridSize === 9 ? 16 : 20} />
                     ) : mode === "alpha" ? (
-                      <AlphaLetter value={num} size={gridSize === 3 ? 26 : gridSize === 4 ? 20 : gridSize === 16 ? 10 : 16} />
+                      <AlphaLetter value={num} size={gridSize === 3 ? 26 : gridSize === 4 ? 20 : gridSize === 16 ? 10 : 14} />
                     ) : (
                       <span className={gridSize === 16 ? "text-xs font-semibold leading-none" : "text-base font-medium leading-none"}>{num}</span>
                     )}
