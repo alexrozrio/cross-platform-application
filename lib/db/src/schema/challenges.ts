@@ -15,6 +15,7 @@ export const challengesTable = pgTable("challenges", {
   challengedGameId: integer("challenged_game_id").references(() => gamesTable.id),
   winnerId: integer("winner_id").references(() => profilesTable.id),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  notifiedAt: timestamp("notified_at", { withTimezone: true }),
 });
 
 export const insertChallengeSchema = createInsertSchema(challengesTable).omit({ id: true, createdAt: true });
