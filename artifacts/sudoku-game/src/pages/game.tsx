@@ -832,34 +832,38 @@ export default function Game({ id }: { id: string }) {
               {isPaused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
             </Button>
           )}
-          {/* Mobile controls toggle */}
+          {/* Mobile — New Game toggle */}
           <button
-            className="md:hidden flex items-center justify-center h-7 w-7 text-muted-foreground hover:text-foreground transition-colors"
+            className={[
+              'md:hidden flex items-center gap-0.5 px-1.5 h-7 rounded text-[10px] font-semibold transition-colors shrink-0',
+              showMobileControls
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:text-foreground',
+            ].join(' ')}
             onClick={() => setShowMobileControls(v => !v)}
-            title={showMobileControls ? "Hide controls" : "Show controls"}
           >
-            <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${showMobileControls ? 'rotate-180' : ''}`} />
+            <RefreshCw className="h-3 w-3" />
+            <span>New</span>
           </button>
         </div>
       </div>
 
-      {/* ── Mobile-only: Style + New Game above the board ── */}
+      {/* ── Mobile-only: New Game panel (shown when "New" is tapped) ── */}
       {showMobileControls && (
-      <div className="md:hidden flex flex-col gap-1 w-full">
-        {/* Style + New Game controls in one compact row */}
-        <div className="flex items-center gap-1.5 w-full">
-          {/* Style toggle — only when game is active */}
-          {!isCompleted && !isGameOver && (
-            <div className="flex gap-1 shrink-0">
+        <div className="md:hidden w-full rounded-lg border border-border/60 bg-muted/30 px-2 py-1.5 flex items-center gap-1.5">
+
+          {/* Style toggle — only while game is active */}
+          {!isCompleted && !isGameOver && (<>
+            <div className="flex gap-0.5 shrink-0">
               {(["number", "alpha", "image"] as GameMode[]).map((m) => (
                 <button
                   key={m}
                   onClick={() => switchMode(m)}
                   className={[
-                    "flex items-center justify-center w-8 h-6 rounded text-[10px] font-bold transition-all",
+                    "flex items-center justify-center w-7 h-6 rounded text-[10px] font-bold transition-all",
                     mode === m
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground",
+                      ? "bg-background text-foreground shadow-sm border border-border"
+                      : "text-muted-foreground hover:text-foreground",
                   ].join(" ")}
                   title={m === "number" ? "Numbers" : m === "alpha" ? "Letters" : "Images"}
                 >
@@ -867,16 +871,12 @@ export default function Game({ id }: { id: string }) {
                 </button>
               ))}
             </div>
-          )}
-
-          {/* Divider */}
-          {!isCompleted && !isGameOver && (
             <div className="w-px h-4 bg-border shrink-0" />
-          )}
+          </>)}
 
-          {/* Size chips */}
-          <div className="flex gap-1 flex-1">
-            {visibleSizes.map((s) => (
+          {/* Size chips — 3×3 hidden (child mode only shows it when profile is children) */}
+          <div className="flex gap-0.5 flex-1">
+            {visibleSizes.filter(s => s !== 3 || rawGameMode === 'children').map((s) => (
               <button
                 key={s}
                 onClick={() => setNewSize(s)}
@@ -884,7 +884,7 @@ export default function Game({ id }: { id: string }) {
                   "flex-1 rounded py-0.5 text-[10px] font-bold transition-all leading-none",
                   newSize === s
                     ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-muted text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
+                    : "bg-background text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
                 ].join(" ")}
               >
                 {s}×{s}
@@ -892,9 +892,9 @@ export default function Game({ id }: { id: string }) {
             ))}
           </div>
 
-          {/* Difficulty select */}
+          {/* Difficulty */}
           <Select value={newDiff} onValueChange={(v) => setNewDiff(v as typeof newDiff)}>
-            <SelectTrigger className="h-6 text-[10px] w-20 shrink-0 px-1.5">
+            <SelectTrigger className="h-6 text-[10px] w-[4.5rem] shrink-0 px-1.5">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -904,7 +904,7 @@ export default function Game({ id }: { id: string }) {
             </SelectContent>
           </Select>
 
-          {/* Start button */}
+          {/* Start */}
           <Button
             size="sm"
             className="h-6 px-2 text-[10px] gap-1 shrink-0"
@@ -917,7 +917,6 @@ export default function Game({ id }: { id: string }) {
             Start
           </Button>
         </div>
-      </div>
       )}
 
       {/* ── Two-column layout: board left, controls right on desktop ── */}
