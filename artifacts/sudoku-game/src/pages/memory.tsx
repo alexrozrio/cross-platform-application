@@ -56,6 +56,7 @@ function MemoryCard({
   size,
   displayMode,
   hinted,
+  fillHeight,
 }: {
   card: Card;
   themeId: string;
@@ -64,6 +65,7 @@ function MemoryCard({
   size: GridSize;
   displayMode: DisplayMode;
   hinted?: boolean;
+  fillHeight?: boolean;
 }) {
   const theme = getTheme(themeId as any);
   const symbol = theme.symbols[(card.value - 1) % theme.symbols.length];
@@ -90,7 +92,7 @@ function MemoryCard({
     <motion.button
       onClick={onClick}
       disabled={disabled || card.flipped || card.matched}
-      className="relative w-full aspect-square rounded-xl cursor-pointer select-none focus:outline-none"
+      className={`relative w-full ${fillHeight ? 'h-full' : 'aspect-square'} rounded-xl cursor-pointer select-none focus:outline-none`}
       style={{ perspective: 600 }}
       whileTap={!disabled && !card.flipped && !card.matched ? { scale: 0.93 } : {}}
     >
@@ -1048,7 +1050,14 @@ export default function MemoryMatchPage() {
       </AnimatePresence>
 
       {/* Card grid */}
-      <div className={`grid ${colClass} gap-1 sm:gap-2`}>
+      {/* For 8×4: fix grid height to viewport so 8 rows fit without scrolling */}
+      <div
+        className={`grid ${colClass} gap-1 sm:gap-2`}
+        style={gridSize === 6 ? {
+          height: 'calc(100dvh - 252px)',
+          gridTemplateRows: 'repeat(8, 1fr)',
+        } : undefined}
+      >
         {cards.map(card => (
           <MemoryCard
             key={card.id}
@@ -1059,6 +1068,7 @@ export default function MemoryMatchPage() {
             size={gridSize}
             displayMode={displayMode}
             hinted={hintedIds.includes(card.id)}
+            fillHeight={gridSize === 6}
           />
         ))}
       </div>
