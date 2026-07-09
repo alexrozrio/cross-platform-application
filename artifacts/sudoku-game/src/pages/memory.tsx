@@ -1061,9 +1061,9 @@ export default function MemoryMatchPage() {
       {/* For 8×4: fix grid height to viewport so 8 rows fit without scrolling */}
       <div
         className={`grid ${colClass} gap-1 sm:gap-2`}
-        style={(gridSize === 6 || gridSize === 8) ? {
+        style={(gridSize === 4 || gridSize === 6 || gridSize === 8) ? {
           height: 'calc(100dvh - 280px)',
-          gridTemplateRows: gridSize === 6 ? 'repeat(8, 1fr)' : 'repeat(8, 1fr)',
+          gridTemplateRows: gridSize === 4 ? 'repeat(4, 1fr)' : 'repeat(8, 1fr)',
         } : undefined}
       >
         {cards.map(card => (
@@ -1076,7 +1076,7 @@ export default function MemoryMatchPage() {
             size={gridSize}
             displayMode={displayMode}
             hinted={hintedIds.includes(card.id)}
-            fillHeight={gridSize === 6 || gridSize === 8}
+            fillHeight={gridSize === 4 || gridSize === 6 || gridSize === 8}
           />
         ))}
       </div>
