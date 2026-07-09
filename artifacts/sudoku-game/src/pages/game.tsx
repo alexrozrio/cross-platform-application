@@ -614,11 +614,13 @@ export default function Game({ id }: { id: string }) {
     const sizeLabel = `${size}×${size}`;
     const xpGain = ({ easy: 1, medium: 2, hard: 3, expert: 5 } as Record<string, number>)[diff] ?? 1;
     const rank = profile ? getLevelFromXp(profile.xp ?? 0).name : null;
+    const appUrl = `${window.location.origin}/`;
     const lines = [
       `${completionMessage.emoji} Solved a ${sizeLabel} ${diffLabel} Sudoku in ${formattedTime}!`,
       `❌ ${mistakes} mistake${mistakes !== 1 ? "s" : ""} · 💡 ${hints} hint${hints !== 1 ? "s" : ""}`,
       pointsEarned !== null ? `+${pointsEarned.toLocaleString()} pts · +${xpGain} XP` : `+${xpGain} XP`,
       rank ? `🏅 ${rank} · Brain Games 4 All` : "🧠 Brain Games 4 All",
+      `🔗 ${appUrl}`,
     ];
     const text = lines.join("\n");
 

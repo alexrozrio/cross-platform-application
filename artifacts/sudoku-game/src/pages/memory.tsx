@@ -446,11 +446,13 @@ export default function MemoryMatchPage() {
     const sizeLabel = GRID_OPTIONS.find(o => o.size === gridSize)?.label ?? `${gridSize}×${gridSize}`;
     const diffLabel = GRID_OPTIONS.find(o => o.size === gridSize)?.desc.split(' · ')[0] ?? '';
     const rank = profile ? getLevelFromXp(profile.xp ?? 0).name : null;
+    const appUrl = `${window.location.origin}/memory`;
     const lines = [
       `${winMessage?.emoji ?? '🎉'} Matched all ${getPairs(gridSize)} pairs (${sizeLabel} ${diffLabel}) in ${formatTime(elapsed)}!`,
       `🔄 ${flips} flip${flips !== 1 ? 's' : ''}`,
       winResult && winResult.points > 0 ? `+${winResult.points.toLocaleString()} pts` : null,
       rank ? `🏅 ${rank} · Brain Games 4 All` : '🧠 Brain Games 4 All',
+      `🔗 ${appUrl}`,
     ].filter(Boolean).join('\n');
     try {
       if (navigator.share) {
