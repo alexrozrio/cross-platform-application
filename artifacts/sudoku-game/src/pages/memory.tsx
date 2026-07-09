@@ -68,24 +68,19 @@ function MemoryCard({
   const theme = getTheme(themeId as any);
   const symbol = theme.symbols[(card.value - 1) % theme.symbols.length];
 
-  const isSmall = size === 8 || size === 6;
-  const isMedium = size === 4;
-  const cardH = isSmall ? 'h-10 sm:h-12' : size === 2 ? 'h-20 sm:h-24' : 'h-16 sm:h-20';
+  // Font sizes scale with grid: 2×4 biggest, 8×8 smallest
+  const imgSize = size === 8 ? 'text-xl sm:text-2xl' : size === 6 ? 'text-2xl sm:text-3xl' : size === 4 ? 'text-3xl sm:text-4xl' : 'text-4xl sm:text-5xl';
+  const txtSizeSingle = size === 8 ? 'text-base sm:text-lg' : size === 6 ? 'text-xl sm:text-2xl' : size === 4 ? 'text-2xl sm:text-3xl' : 'text-3xl sm:text-4xl';
+  const txtSizeMulti  = size === 8 ? 'text-xs sm:text-sm'  : size === 6 ? 'text-sm sm:text-base'  : size === 4 ? 'text-base sm:text-lg'  : 'text-xl sm:text-2xl';
 
   // Front face content
   let frontContent: React.ReactNode;
   if (displayMode === 'image') {
-    const fontSize = isSmall ? 'text-xl' : isMedium ? 'text-2xl' : 'text-3xl';
-    frontContent = <span className={`${fontSize} leading-none`}>{symbol}</span>;
+    frontContent = <span className={`${imgSize} leading-none`}>{symbol}</span>;
   } else {
     const label = getCardLabel(card.value, displayMode);
-    const fontSize = isSmall
-      ? (label.length > 1 ? 'text-sm' : 'text-base')
-      : isMedium
-        ? (label.length > 1 ? 'text-lg' : 'text-xl')
-        : (label.length > 1 ? 'text-2xl' : 'text-3xl');
     frontContent = (
-      <span className={`${fontSize} font-black leading-none tabular-nums`}>
+      <span className={`${label.length > 1 ? txtSizeMulti : txtSizeSingle} font-black leading-none tabular-nums`}>
         {label}
       </span>
     );
@@ -95,7 +90,7 @@ function MemoryCard({
     <motion.button
       onClick={onClick}
       disabled={disabled || card.flipped || card.matched}
-      className={`relative w-full ${cardH} rounded-xl cursor-pointer select-none focus:outline-none`}
+      className="relative w-full aspect-square rounded-xl cursor-pointer select-none focus:outline-none"
       style={{ perspective: 600 }}
       whileTap={!disabled && !card.flipped && !card.matched ? { scale: 0.93 } : {}}
     >
@@ -850,7 +845,7 @@ export default function MemoryMatchPage() {
   const colClass = gridSize === 2 ? 'grid-cols-4' : gridSize === 4 ? 'grid-cols-4' : gridSize === 6 ? 'grid-cols-4' : 'grid-cols-8';
 
   return (
-    <div className="max-w-2xl mx-auto w-full space-y-4 animate-in fade-in duration-300">
+    <div className="max-w-2xl w-full space-y-4 animate-in fade-in duration-300 -mx-2 px-2 sm:mx-auto sm:px-0">
       {/* Header bar */}
       <div className="flex items-center gap-3 flex-wrap">
         <button
@@ -1053,7 +1048,7 @@ export default function MemoryMatchPage() {
       </AnimatePresence>
 
       {/* Card grid */}
-      <div className={`grid ${colClass} gap-1.5 sm:gap-2`}>
+      <div className={`grid ${colClass} gap-1 sm:gap-2`}>
         {cards.map(card => (
           <MemoryCard
             key={card.id}
