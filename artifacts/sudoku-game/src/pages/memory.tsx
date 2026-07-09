@@ -42,7 +42,7 @@ const MAX_TIPS = 2;
 const GRID_OPTIONS: { size: GridSize; label: string; pairs: number; desc: string }[] = [
   { size: 2, label: '2×4', pairs: 4,  desc: 'Beginner · 4 pairs' },
   { size: 4, label: '4×4', pairs: 8,  desc: 'Easy · 8 pairs' },
-  { size: 6, label: '4×8', pairs: 16, desc: 'Medium · 16 pairs' },
+  { size: 6, label: '8×4', pairs: 16, desc: 'Medium · 16 pairs' },
   { size: 8, label: '8×8', pairs: 32, desc: 'Hard · 32 pairs' },
 ];
 
@@ -847,7 +847,7 @@ export default function MemoryMatchPage() {
   }
 
   // ── Game board ───────────────────────────────────────────────────────────────
-  const colClass = gridSize === 2 ? 'grid-cols-4' : gridSize === 4 ? 'grid-cols-4' : 'grid-cols-8';
+  const colClass = gridSize === 2 ? 'grid-cols-4' : gridSize === 4 ? 'grid-cols-4' : gridSize === 6 ? 'grid-cols-4' : 'grid-cols-8';
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-4 animate-in fade-in duration-300">
