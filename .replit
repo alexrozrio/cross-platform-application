@@ -75,5 +75,6 @@ channel = "stable-25_05"
 [userenv]
 
 [userenv.shared]
+VITE_API_BASE_URL = "https://cross-platform-application.onrender.com"
 
 [userenv.development]
