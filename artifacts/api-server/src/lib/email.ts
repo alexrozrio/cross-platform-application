@@ -1,20 +1,14 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import { db, users, profilesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 
-let transporter: nodemailer.Transporter | null = null;
+let resend: Resend | null = null;
 
-function getTransporter(): nodemailer.Transporter | null {
-  const user = process.env.GMAIL_USER;
-  const pass = process.env.GMAIL_APP_PASSWORD;
-  if (!user || !pass) return null;
-  if (!transporter) {
-    transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: { user, pass },
-    });
-  }
-  return transporter;
+function getResend(): Resend | null {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return null;
+  if (!resend) resend = new Resend(apiKey);
+  return resend;
 }
 
 async function getEmailForProfile(profileId: number): Promise<{ email: string; firstName: string } | null> {
@@ -55,9 +49,9 @@ export async function sendChallengeNotification({
 }): Promise<void> {
   console.log(`[email] sendChallengeNotification called — challenge #${challengeId}, challenged profile #${challengedProfileId}`);
 
-  const transport = getTransporter();
-  if (!transport) {
-    console.log("[email] GMAIL_USER or GMAIL_APP_PASSWORD not set — skipping email");
+  const client = getResend();
+  if (!client) {
+    console.log("[email] RESEND_API_KEY not set — skipping email");
     return;
   }
 
@@ -78,11 +72,13 @@ export async function sendChallengeNotification({
   const diffLabel = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
   const sizeLabel = gridLabel[gridSize] ?? `${gridSize}×${gridSize}`;
 
-  const fromAddress = process.env.GMAIL_USER!;
+  // Resend requires a verified sender domain. RESEND_FROM_EMAIL defaults to
+  // the Resend sandbox address which works without domain verification.
+  const fromAddress = process.env.RESEND_FROM_EMAIL ?? "Brain Games 4 All <onboarding@resend.dev>";
 
   try {
-    const info = await transport.sendMail({
-      from: `"Brain Games 4 All" <${fromAddress}>`,
+    const { data, error } = await client.emails.send({
+      from: fromAddress,
       to: recipient.email,
       subject: `⚔️ ${challengerUsername} challenged you to a Sudoku duel!`,
       html: `
@@ -149,7 +145,12 @@ export async function sendChallengeNotification({
 </body>
 </html>`,
     });
-    console.log(`[email] ✅ sent successfully — messageId: ${info.messageId}`);
+
+    if (error) {
+      console.error("[email] ❌ Resend API error:", error);
+    } else {
+      console.log(`[email] ✅ sent successfully — id: ${data?.id}`);
+    }
   } catch (err) {
     console.error("[email] ❌ failed to send:", err);
   }

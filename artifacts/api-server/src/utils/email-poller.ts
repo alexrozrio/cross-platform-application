@@ -3,7 +3,7 @@
  *
  * Connects directly to the Neon DB (NEON_DATABASE_URL) that the Render API
  * also uses. Finds pending challenges with no notifiedAt, sends email
- * notifications via Gmail SMTP, then stamps notifiedAt so they're not
+ * notifications via Resend, then stamps notifiedAt so they're not
  * re-processed.
  *
  * This lets email work without deploying any new code to Render.
@@ -13,7 +13,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import pkg from "pg";
 const { Pool } = pkg;
 import { eq, isNull, and } from "drizzle-orm";
-import { challengesTable, profilesTable, users } from "@workspace/db";
+import { challengesTable, profilesTable } from "@workspace/db";
 import { sendChallengeNotification } from "../lib/email";
 
 const POLL_INTERVAL_MS = 30_000; // 30 seconds
@@ -54,26 +54,6 @@ async function pollAndNotify() {
 
       if (!challenger) continue;
 
-      // Get challenged user's email via replitUserId → users table
-      const [challengedProfile] = await neon
-        .select({ replitUserId: profilesTable.replitUserId })
-        .from(profilesTable)
-        .where(eq(profilesTable.id, challenge.challengedId));
-
-      let recipientEmail: string | null = null;
-      let recipientName: string = "Player";
-
-      if (challengedProfile?.replitUserId) {
-        const [user] = await neon
-          .select({ email: users.email, firstName: users.firstName })
-          .from(users)
-          .where(eq(users.id, challengedProfile.replitUserId));
-        if (user?.email) {
-          recipientEmail = user.email;
-          recipientName = user.firstName ?? recipientName;
-        }
-      }
-
       // Stamp notifiedAt immediately (before sending) to prevent duplicate sends
       // even if the email call fails
       await neon
@@ -81,23 +61,15 @@ async function pollAndNotify() {
         .set({ notifiedAt: new Date() })
         .where(eq(challengesTable.id, challenge.id));
 
-      if (!recipientEmail) {
-        console.log(
-          `[email-poller] challenge #${challenge.id} — challenged user has no email (guest), skipping`,
-        );
-        continue;
-      }
+      console.log(`[email-poller] challenge #${challenge.id} — triggering notification`);
 
-      console.log(`[email-poller] challenge #${challenge.id} — sending email to ${recipientEmail}`);
-
+      // sendChallengeNotification resolves the recipient from the app DB
       await sendChallengeNotification({
         challengedProfileId: challenge.challengedId,
         challengerUsername: challenger.username,
         difficulty: "medium", // puzzle difficulty not stored on challenge; use a generic label
         gridSize: 9,
         challengeId: challenge.id,
-        overrideEmail: recipientEmail,
-        overrideName: recipientName,
       });
     }
   } catch (err) {
