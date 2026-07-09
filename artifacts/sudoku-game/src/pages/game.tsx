@@ -722,7 +722,7 @@ export default function Game({ id }: { id: string }) {
       : "";
 
   return (
-    <div className="flex flex-col w-full gap-3 animate-in fade-in duration-300 pb-16 sm:pb-20 md:pb-4">
+    <div className="flex flex-col w-full gap-1.5 md:gap-3 animate-in fade-in duration-300 pb-16 sm:pb-20 md:pb-4">
       {/* Header */}
       <div className="flex items-center justify-between w-full">
         <Button
@@ -834,72 +834,77 @@ export default function Game({ id }: { id: string }) {
       </div>
 
       {/* ── Mobile-only: Style + New Game above the board ── */}
-      <div className="md:hidden flex flex-col gap-3 w-full">
-        {!isCompleted && !isGameOver && (
-          <div className="flex items-center gap-2 w-full">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground shrink-0">Style</span>
-            <div className="flex gap-1 flex-1">
+      <div className="md:hidden flex flex-col gap-1 w-full">
+        {/* Style + New Game controls in one compact row */}
+        <div className="flex items-center gap-1.5 w-full">
+          {/* Style toggle — only when game is active */}
+          {!isCompleted && !isGameOver && (
+            <div className="flex gap-1 shrink-0">
               {(["number", "alpha", "image"] as GameMode[]).map((m) => (
                 <button
                   key={m}
                   onClick={() => switchMode(m)}
                   className={[
-                    "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex-1 justify-center",
+                    "flex items-center justify-center w-8 h-6 rounded text-[10px] font-bold transition-all",
                     mode === m
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground",
                   ].join(" ")}
+                  title={m === "number" ? "Numbers" : m === "alpha" ? "Letters" : "Images"}
                 >
-                  {m === "number" && <Hash className="w-3 h-3" />}
-                  {m === "alpha" && <Type className="w-3 h-3" />}
-                  {m === "image" && <Image className="w-3 h-3" />}
-                  <span>{m === "number" ? "123" : m === "alpha" ? "ABC" : "🖼"}</span>
+                  {m === "number" ? "123" : m === "alpha" ? "ABC" : "🖼"}
                 </button>
               ))}
             </div>
-          </div>
-        )}
-        <div className="w-full rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 flex flex-col gap-2">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">New Game</span>
-          <div className={`grid gap-1.5 ${visibleSizes.length === 2 ? 'grid-cols-2' : 'grid-cols-4'}`}>
+          )}
+
+          {/* Divider */}
+          {!isCompleted && !isGameOver && (
+            <div className="w-px h-4 bg-border shrink-0" />
+          )}
+
+          {/* Size chips */}
+          <div className="flex gap-1 flex-1">
             {visibleSizes.map((s) => (
               <button
                 key={s}
                 onClick={() => setNewSize(s)}
                 className={[
-                  "rounded-md py-1.5 text-xs font-bold transition-all leading-none",
+                  "flex-1 rounded py-0.5 text-[10px] font-bold transition-all leading-none",
                   newSize === s
                     ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-background text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
+                    : "bg-muted text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
                 ].join(" ")}
               >
                 {s}×{s}
               </button>
             ))}
           </div>
-          <div className="flex gap-2">
-            <Select value={newDiff} onValueChange={(v) => setNewDiff(v as typeof newDiff)}>
-              <SelectTrigger className="h-8 text-xs flex-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {visibleDiffs.map(d => (
-                  <SelectItem key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              size="sm"
-              className="h-8 px-4 text-xs gap-1.5 shrink-0"
-              onClick={() => setShowNewGameDialog(true)}
-              disabled={newGameLoading || !profileId}
-            >
-              {newGameLoading
-                ? <Loader2 className="w-3 h-3 animate-spin" />
-                : <RefreshCw className="w-3 h-3" />}
-              Start
-            </Button>
-          </div>
+
+          {/* Difficulty select */}
+          <Select value={newDiff} onValueChange={(v) => setNewDiff(v as typeof newDiff)}>
+            <SelectTrigger className="h-6 text-[10px] w-20 shrink-0 px-1.5">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {visibleDiffs.map(d => (
+                <SelectItem key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Start button */}
+          <Button
+            size="sm"
+            className="h-6 px-2 text-[10px] gap-1 shrink-0"
+            onClick={() => setShowNewGameDialog(true)}
+            disabled={newGameLoading || !profileId}
+          >
+            {newGameLoading
+              ? <Loader2 className="w-2.5 h-2.5 animate-spin" />
+              : <RefreshCw className="w-2.5 h-2.5" />}
+            Start
+          </Button>
         </div>
       </div>
 
