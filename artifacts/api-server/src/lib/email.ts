@@ -19,10 +19,20 @@ function getTransporter(): nodemailer.Transporter | null {
 
 async function getEmailForProfile(profileId: number): Promise<{ email: string; firstName: string } | null> {
   const [profile] = await db.select().from(profilesTable).where(eq(profilesTable.id, profileId));
-  if (!profile?.replitUserId) return null;
+  if (!profile) {
+    console.log(`[email] profile ${profileId} not found`);
+    return null;
+  }
+  if (!profile.replitUserId) {
+    console.log(`[email] profile ${profileId} (${profile.username}) has no replitUserId — guest user, skipping`);
+    return null;
+  }
 
   const [user] = await db.select().from(users).where(eq(users.id, profile.replitUserId));
-  if (!user?.email) return null;
+  if (!user?.email) {
+    console.log(`[email] user ${profile.replitUserId} has no email on record — skipping`);
+    return null;
+  }
 
   return {
     email: user.email,
@@ -43,14 +53,20 @@ export async function sendChallengeNotification({
   gridSize: number;
   challengeId: number;
 }): Promise<void> {
+  console.log(`[email] sendChallengeNotification called — challenge #${challengeId}, challenged profile #${challengedProfileId}`);
+
   const transport = getTransporter();
   if (!transport) {
-    // No Gmail credentials configured — silently skip
+    console.log("[email] GMAIL_USER or GMAIL_APP_PASSWORD not set — skipping email");
     return;
   }
 
   const recipient = await getEmailForProfile(challengedProfileId);
-  if (!recipient) return;
+  if (!recipient) {
+    console.log("[email] no recipient email found — skipping");
+    return;
+  }
+  console.log(`[email] sending to ${recipient.email}`);
 
   const frontendUrl =
     process.env.FRONTEND_URL ??
@@ -65,7 +81,7 @@ export async function sendChallengeNotification({
   const fromAddress = process.env.GMAIL_USER!;
 
   try {
-    await transport.sendMail({
+    const info = await transport.sendMail({
       from: `"Brain Games 4 All" <${fromAddress}>`,
       to: recipient.email,
       subject: `⚔️ ${challengerUsername} challenged you to a Sudoku duel!`,
@@ -133,7 +149,8 @@ export async function sendChallengeNotification({
 </body>
 </html>`,
     });
+    console.log(`[email] ✅ sent successfully — messageId: ${info.messageId}`);
   } catch (err) {
-    console.error("Failed to send challenge notification email:", err);
+    console.error("[email] ❌ failed to send:", err);
   }
 }
