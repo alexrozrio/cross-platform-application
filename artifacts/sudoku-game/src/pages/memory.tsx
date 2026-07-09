@@ -848,142 +848,150 @@ export default function MemoryMatchPage() {
 
   return (
     <div className="max-w-2xl w-full space-y-4 animate-in fade-in duration-300 -mx-2 px-2 sm:mx-auto sm:px-0">
-      {/* Header bar */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <button
-          onClick={() => setShowAbandonConfirm(true)}
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </button>
+      {/* Header bar — two rows so nothing overflows on mobile */}
+      <div className="flex flex-col gap-1.5">
 
-        {/* Abandon game confirmation */}
-        <Dialog open={showAbandonConfirm} onOpenChange={setShowAbandonConfirm}>
-          <DialogContent className="max-w-sm">
-            <DialogHeader>
-              <DialogTitle>Abandon this game?</DialogTitle>
-              <DialogDescription>
-                You have {matchedCount} of {totalPairs} pairs matched. Your progress will be lost if you go back to setup.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
-              <Button variant="outline" className="flex-1" onClick={() => setShowAbandonConfirm(false)}>
-                Keep Playing
-              </Button>
-              <Button variant="destructive" className="flex-1" onClick={() => {
-                localStorage.removeItem('brain-games-memory-session');
-                setShowAbandonConfirm(false);
-                setPhase('setup');
-              }}>
-                Abandon Game
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        {/* Row 1: back · stats · progress bar */}
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setShowAbandonConfirm(true)}
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
 
-        {profile?.showTimer !== false && (
-          <div className="flex items-center gap-1.5 text-sm font-mono tabular-nums shrink-0">
-            <Timer className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-foreground font-semibold">{formatTime(elapsed)}</span>
+          {profile?.showTimer !== false && (
+            <div className="flex items-center gap-1.5 text-sm font-mono tabular-nums shrink-0">
+              <Timer className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="text-foreground font-semibold">{formatTime(elapsed)}</span>
+            </div>
+          )}
+
+          <div className="flex items-center gap-1.5 text-sm shrink-0">
+            <Repeat2 className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="font-semibold">{flips}</span>
+            <span className="text-muted-foreground text-xs">flips</span>
           </div>
-        )}
 
-        <div className="flex items-center gap-1.5 text-sm shrink-0">
-          <Repeat2 className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="font-semibold">{flips}</span>
-          <span className="text-muted-foreground text-xs">flips</span>
+          <div className="flex items-center gap-1.5 text-sm shrink-0">
+            <Trophy className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="font-semibold">{matchedCount}</span>
+            <span className="text-muted-foreground text-xs">/ {totalPairs}</span>
+          </div>
+
+          {/* Progress bar */}
+          <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+            <motion.div
+              className="h-full rounded-full bg-primary"
+              animate={{ width: `${(matchedCount / totalPairs) * 100}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
         </div>
 
-        <div className="flex items-center gap-1.5 text-sm shrink-0">
-          <Trophy className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="font-semibold">{matchedCount}</span>
-          <span className="text-muted-foreground text-xs">/ {totalPairs}</span>
-        </div>
+        {/* Row 2: actions */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setPendingAction({ type: 'reset' })}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
+          >
+            <RotateCcw className="w-3 h-3" /> Reset
+          </button>
 
-        {/* Progress bar */}
-        <div className="flex-1 min-w-24 h-2 rounded-full bg-muted overflow-hidden">
-          <motion.div
-            className="h-full rounded-full bg-primary"
-            animate={{ width: `${(matchedCount / totalPairs) * 100}%` }}
-            transition={{ duration: 0.3 }}
-          />
-        </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setShowNewGame(v => !v)}
+                  className={[
+                    'flex items-center gap-1 text-xs transition-colors shrink-0 font-medium',
+                    showNewGame ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
+                  ].join(' ')}
+                >
+                  <Star className="w-3 h-3" /> New
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>Start new game</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
-        <button
-          onClick={() => setPendingAction({ type: 'reset' })}
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
-        >
-          <RotateCcw className="w-3 h-3" /> Reset
-        </button>
+          <button
+            onClick={handleTip}
+            disabled={tipsUsed >= MAX_TIPS || lockBoard}
+            className={[
+              'flex items-center gap-1 text-xs transition-colors shrink-0 font-medium disabled:cursor-not-allowed',
+              tipsUsed >= MAX_TIPS ? 'text-muted-foreground/40' : 'text-amber-500 hover:text-amber-600',
+            ].join(' ')}
+            title="Tip: briefly reveals all cards"
+          >
+            <Lightbulb className={`w-3 h-3 ${tipsUsed >= MAX_TIPS ? 'opacity-40' : ''}`} />
+            <span>Tip</span>
+            <span className={`text-[9px] font-bold leading-none tabular-nums ${tipsUsed >= MAX_TIPS ? 'text-red-400' : 'text-amber-500'}`}>
+              {MAX_TIPS - tipsUsed}
+            </span>
+          </button>
 
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
+          <button
+            onClick={sounds.toggle}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
+            title={sounds.enabled ? 'Mute sounds' : 'Enable sounds'}
+          >
+            {sounds.enabled
+              ? <Volume2 className="w-3.5 h-3.5" />
+              : <VolumeX className="w-3.5 h-3.5" />
+            }
+          </button>
+
+          {/* Mode toggle */}
+          <div className="flex items-center gap-0.5 rounded-lg border border-border bg-muted/40 p-0.5 shrink-0">
+            {([
+              { id: 'image'  as DisplayMode, title: '🎴' },
+              { id: 'number' as DisplayMode, title: '123' },
+              { id: 'alpha'  as DisplayMode, title: 'ABC' },
+            ] as const).map(m => (
               <button
-                onClick={() => setShowNewGame(v => !v)}
+                key={m.id}
+                type="button"
+                onClick={() => setDisplayMode(m.id)}
                 className={[
-                  'flex items-center gap-1 text-xs transition-colors shrink-0 font-medium',
-                  showNewGame ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
+                  'px-1.5 py-0.5 rounded-md text-[10px] font-bold transition-all',
+                  displayMode === m.id
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground',
                 ].join(' ')}
+                title={m.id === 'image' ? 'Image mode' : m.id === 'number' ? 'Number mode' : 'Alpha mode'}
               >
-                <Star className="w-3 h-3" /> New
+                {m.title}
               </button>
-            </TooltipTrigger>
-            <TooltipContent>Start new game</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-
-        <button
-          onClick={handleTip}
-          disabled={tipsUsed >= MAX_TIPS || lockBoard}
-          className={[
-            'flex items-center gap-1 text-xs transition-colors shrink-0 font-medium disabled:cursor-not-allowed',
-            tipsUsed >= MAX_TIPS ? 'text-muted-foreground/40' : 'text-amber-500 hover:text-amber-600',
-          ].join(' ')}
-          title="Tip: briefly reveals all cards"
-        >
-          <Lightbulb className={`w-3 h-3 ${tipsUsed >= MAX_TIPS ? 'opacity-40' : ''}`} />
-          <span>Tip</span>
-          <span className={`text-[9px] font-bold leading-none tabular-nums ${tipsUsed >= MAX_TIPS ? 'text-red-400' : 'text-amber-500'}`}>
-            {MAX_TIPS - tipsUsed}
-          </span>
-        </button>
-
-        <button
-          onClick={sounds.toggle}
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
-          title={sounds.enabled ? 'Mute sounds' : 'Enable sounds'}
-        >
-          {sounds.enabled
-            ? <Volume2 className="w-3.5 h-3.5" />
-            : <VolumeX className="w-3.5 h-3.5" />
-          }
-        </button>
-
-        {/* Mode toggle (cycle through modes during play) */}
-        <div className="flex items-center gap-0.5 rounded-lg border border-border bg-muted/40 p-0.5 shrink-0">
-          {([
-            { id: 'image'  as DisplayMode, title: '🎴' },
-            { id: 'number' as DisplayMode, title: '123' },
-            { id: 'alpha'  as DisplayMode, title: 'ABC' },
-          ] as const).map(m => (
-            <button
-              key={m.id}
-              type="button"
-              onClick={() => setDisplayMode(m.id)}
-              className={[
-                'px-1.5 py-0.5 rounded-md text-[10px] font-bold transition-all',
-                displayMode === m.id
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground',
-              ].join(' ')}
-              title={m.id === 'image' ? 'Image mode' : m.id === 'number' ? 'Number mode' : 'Alpha mode'}
-            >
-              {m.title}
-            </button>
-          ))}
+            ))}
+          </div>
         </div>
+
       </div>
+
+      {/* Abandon game confirmation */}
+      <Dialog open={showAbandonConfirm} onOpenChange={setShowAbandonConfirm}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Abandon this game?</DialogTitle>
+            <DialogDescription>
+              You have {matchedCount} of {totalPairs} pairs matched. Your progress will be lost if you go back to setup.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
+            <Button variant="outline" className="flex-1" onClick={() => setShowAbandonConfirm(false)}>
+              Keep Playing
+            </Button>
+            <Button variant="destructive" className="flex-1" onClick={() => {
+              localStorage.removeItem('brain-games-memory-session');
+              setShowAbandonConfirm(false);
+              setPhase('setup');
+            }}>
+              Abandon Game
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Reset / new-game confirmation */}
       <AlertDialog open={!!pendingAction} onOpenChange={(open) => { if (!open) setPendingAction(null); }}>
