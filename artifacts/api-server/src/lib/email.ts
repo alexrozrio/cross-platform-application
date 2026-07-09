@@ -1,16 +1,22 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import { db, users, profilesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 
-let resend: Resend | null = null;
+let transporter: nodemailer.Transporter | null = null;
 
-function getResend(): Resend | null {
-  if (!process.env.RESEND_API_KEY) return null;
-  if (!resend) resend = new Resend(process.env.RESEND_API_KEY);
-  return resend;
+function getTransporter(): nodemailer.Transporter | null {
+  const user = process.env.GMAIL_USER;
+  const pass = process.env.GMAIL_APP_PASSWORD;
+  if (!user || !pass) return null;
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user, pass },
+    });
+  }
+  return transporter;
 }
 
-// Look up the email address for a profile (via replitUserId → users table).
 async function getEmailForProfile(profileId: number): Promise<{ email: string; firstName: string } | null> {
   const [profile] = await db.select().from(profilesTable).where(eq(profilesTable.id, profileId));
   if (!profile?.replitUserId) return null;
@@ -37,17 +43,18 @@ export async function sendChallengeNotification({
   gridSize: number;
   challengeId: number;
 }): Promise<void> {
-  const client = getResend();
-  if (!client) {
-    // No API key configured — silently skip (email is optional)
+  const transport = getTransporter();
+  if (!transport) {
+    // No Gmail credentials configured — silently skip
     return;
   }
 
   const recipient = await getEmailForProfile(challengedProfileId);
-  if (!recipient) return; // guest user or no email on record
+  if (!recipient) return;
 
-  const frontendUrl = process.env.FRONTEND_URL
-    ?? (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : "http://localhost:19093");
+  const frontendUrl =
+    process.env.FRONTEND_URL ??
+    (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : "http://localhost:19093");
 
   const challengeUrl = `${frontendUrl}/challenges`;
 
@@ -55,9 +62,11 @@ export async function sendChallengeNotification({
   const diffLabel = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
   const sizeLabel = gridLabel[gridSize] ?? `${gridSize}×${gridSize}`;
 
+  const fromAddress = process.env.GMAIL_USER!;
+
   try {
-    await client.emails.send({
-      from: process.env.EMAIL_FROM ?? "Brain Games 4 All <onboarding@resend.dev>",
+    await transport.sendMail({
+      from: `"Brain Games 4 All" <${fromAddress}>`,
       to: recipient.email,
       subject: `⚔️ ${challengerUsername} challenged you to a Sudoku duel!`,
       html: `
@@ -69,7 +78,6 @@ export async function sendChallengeNotification({
     <tr><td align="center">
       <table width="520" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
 
-        <!-- Header -->
         <tr>
           <td style="background:#3b5a8a;padding:28px 32px;text-align:center;">
             <p style="margin:0;font-size:28px;">⚔️</p>
@@ -77,7 +85,6 @@ export async function sendChallengeNotification({
           </td>
         </tr>
 
-        <!-- Body -->
         <tr>
           <td style="padding:32px;">
             <p style="margin:0 0 16px;font-size:16px;color:#374151;">Hi ${recipient.firstName},</p>
@@ -85,7 +92,6 @@ export async function sendChallengeNotification({
               <strong>${challengerUsername}</strong> has challenged you to a Sudoku duel on <strong>Brain Games 4 All</strong>. Think you can beat them?
             </p>
 
-            <!-- Challenge details -->
             <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f7f4;border-radius:8px;padding:20px;margin-bottom:28px;">
               <tr>
                 <td style="padding:6px 0;font-size:14px;color:#6b7280;">Grid size</td>
@@ -101,7 +107,6 @@ export async function sendChallengeNotification({
               </tr>
             </table>
 
-            <!-- CTA -->
             <table width="100%" cellpadding="0" cellspacing="0">
               <tr>
                 <td align="center">
@@ -116,7 +121,6 @@ export async function sendChallengeNotification({
           </td>
         </tr>
 
-        <!-- Footer -->
         <tr>
           <td style="background:#f8f7f4;padding:16px 32px;text-align:center;border-top:1px solid #e5e7eb;">
             <p style="margin:0;font-size:12px;color:#9ca3af;">Brain Games 4 All · You're receiving this because someone challenged you</p>
@@ -130,7 +134,6 @@ export async function sendChallengeNotification({
 </html>`,
     });
   } catch (err) {
-    // Email errors should never crash the challenge creation flow
     console.error("Failed to send challenge notification email:", err);
   }
 }
