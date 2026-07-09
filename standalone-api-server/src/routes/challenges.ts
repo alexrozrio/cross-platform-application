@@ -256,6 +256,16 @@ export async function resolveChallengeForGame(gameId: number): Promise<void> {
         .update(profilesTable)
         .set({ gems: sql`gems + 10` })
         .where(eq(profilesTable.id, winnerId));
+    } else {
+      // Tie — award 2 gems to both players
+      await db
+        .update(profilesTable)
+        .set({ gems: sql`gems + 2` })
+        .where(eq(profilesTable.id, challenge.challengerId));
+      await db
+        .update(profilesTable)
+        .set({ gems: sql`gems + 2` })
+        .where(eq(profilesTable.id, challenge.challengedId));
     }
   }
 }
