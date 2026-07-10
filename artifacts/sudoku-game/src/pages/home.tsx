@@ -85,7 +85,7 @@ export default function SudokuHome() {
   // Play style selected for the *next* game — grid-size buttons start the game immediately
   // using whichever style is currently selected.
   const [selectedMode, setSelectedMode] = useState<'number' | 'alpha' | 'image'>('number');
-  const [pendingStart, setPendingStart] = useState<{ size: GridSize; mode: 'number' | 'alpha' | 'image' } | null>(null);
+  const [pendingStart, setPendingStart] = useState<{ size: GridSize; mode: 'number' | 'alpha' | 'image'; difficulty?: Difficulty } | null>(null);
 
   useEffect(() => {
     if (!filteredGridOptions.find(o => o.size === gridSize)) {
@@ -111,18 +111,19 @@ export default function SudokuHome() {
 
   const startInFlightRef = useRef(false);
 
-  const doStart = async (size: GridSize, requestedMode: 'number' | 'alpha' | 'image') => {
+  const doStart = async (size: GridSize, requestedMode: 'number' | 'alpha' | 'image', difficultyOverride?: Difficulty) => {
     if (!profileId) return;
     if (startInFlightRef.current) return;
     startInFlightRef.current = true;
     const mode = modesForSize(size).includes(requestedMode) ? requestedMode : 'number';
+    const effectiveDifficulty = difficultyOverride ?? difficulty;
     setPendingStart(null);
     setIsGenerating(true);
     try {
-      const puzzle = await generatePuzzle({ difficulty, gridSize: size as any });
+      const puzzle = await generatePuzzle({ difficulty: effectiveDifficulty, gridSize: size as any });
       if (!puzzle) throw new Error('Failed to generate puzzle');
       const game = await createGame.mutateAsync({
-        data: { profileId, puzzleId: puzzle.id, difficulty },
+        data: { profileId, puzzleId: puzzle.id, difficulty: effectiveDifficulty },
       });
       setActiveGame(null);
       const modeQuery = mode !== 'number' ? `?mode=${mode}` : '';
@@ -143,6 +144,18 @@ export default function SudokuHome() {
       setPendingStart({ size, mode });
     } else {
       doStart(size, mode);
+    }
+  };
+
+  // On 9×9/16×16 (where Play Style is hidden), changing difficulty starts a new game
+  // immediately at the current grid size.
+  const handleDifficultyAutoStart = (value: Difficulty) => {
+    setDifficulty(value);
+    if (startInFlightRef.current) return;
+    if (activeGame) {
+      setPendingStart({ size: gridSize, mode: 'number', difficulty: value });
+    } else {
+      doStart(gridSize, 'number', value);
     }
   };
 
@@ -279,12 +292,35 @@ export default function SudokuHome() {
           </div>
           )}
 
-          {/* Difficulty dropdown */}
+          {/* On 9×9/16×16 (only Numbers available), the Play Style slot is replaced by a
+              Difficulty picker that starts a new game immediately on change. */}
+          {availableModes.length === 1 && (
           <div className="space-y-2">
             <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               Difficulty
             </label>
-            <Select value={difficulty} onValueChange={v => setDifficulty(v as Difficulty)}>
+            <Select value={difficulty} onValueChange={v => handleDifficultyAutoStart(v as Difficulty)} disabled={isLoading}>
+              <SelectTrigger className="h-11">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {allDifficulties.map(d => (
+                  <SelectItem key={d} value={d} className="capitalize">{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">Changing difficulty starts a new {gridSize}×{gridSize} game.</p>
+          </div>
+          )}
+
+          {/* Difficulty dropdown — 3×3/4×4 only; picking difficulty here doesn't start the game,
+              a grid-size tap does. */}
+          {availableModes.length > 1 && (
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Difficulty
+            </label>
+            <Select value={difficulty} onValueChange={v => setDifficulty(v as Difficulty)} disabled={isLoading}>
               <SelectTrigger className="h-11">
                 <SelectValue />
               </SelectTrigger>
@@ -295,6 +331,7 @@ export default function SudokuHome() {
               </SelectContent>
             </Select>
           </div>
+          )}
 
           {/* Grid size — tapping a size starts the game immediately with the selected style */}
           <div className="space-y-2">
@@ -479,7 +516,7 @@ export default function SudokuHome() {
             }}>
               Resume Last Game
             </Button>
-            <Button className="flex-1" disabled={isLoading} onClick={() => pendingStart && doStart(pendingStart.size, pendingStart.mode)}>
+            <Button className="flex-1" disabled={isLoading} onClick={() => pendingStart && doStart(pendingStart.size, pendingStart.mode, pendingStart.difficulty)}>
               Start New Game
             </Button>
           </DialogFooter>
