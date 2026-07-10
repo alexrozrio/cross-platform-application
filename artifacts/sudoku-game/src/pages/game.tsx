@@ -224,12 +224,11 @@ export default function Game({ id }: { id: string }) {
   const totalCells = gridSize * gridSize;
   const boxSize = gridSize === 9 ? 3 : gridSize === 4 ? 2 : gridSize === 16 ? 4 : 0;
 
-  // Alphabet mode is gated by a global config flag.
-  // Image mode is gated by that same kind of flag AND only available on 3×3 and 4×4 grids
-  // — 9×9 and 16×16 always use numbers (or letters, if enabled).
-  const alphaModeAllowed = gameFeatures.alphabetModeEnabled;
-  const imageModeAllowed =
-    gameFeatures.imageModeEnabled && (gridSize === 3 || gridSize === 4);
+  // 3×3 and 4×4 grids always offer all three play styles.
+  // On 9×9 and 16×16, alphabet/image availability is controlled by the global config flags.
+  const smallGrid = gridSize === 3 || gridSize === 4;
+  const alphaModeAllowed = smallGrid || gameFeatures.alphabetModeEnabled;
+  const imageModeAllowed = smallGrid || gameFeatures.imageModeEnabled;
   const availableModes: GameMode[] = (
     ["number", "alpha", "image"] as GameMode[]
   ).filter(

@@ -101,8 +101,9 @@ export default function SudokuHome() {
   }, [profileId, isReady, location]);
 
   const isModeAllowed = (mode: 'number' | 'alpha' | 'image') => {
-    if (mode === 'alpha') return gameFeatures.alphabetModeEnabled;
-    if (mode === 'image') return gameFeatures.imageModeEnabled && (gridSize === 3 || gridSize === 4);
+    const smallGrid = gridSize === 3 || gridSize === 4;
+    if (mode === 'alpha') return smallGrid || gameFeatures.alphabetModeEnabled;
+    if (mode === 'image') return smallGrid || gameFeatures.imageModeEnabled;
     return true;
   };
 
@@ -245,8 +246,8 @@ export default function SudokuHome() {
               </div>
             </Button>
 
-            {/* Alphabets */}
-            {gameFeatures.alphabetModeEnabled && (
+            {/* Alphabets — always shown for 3×3/4×4; gated by config for 9×9/16×16 */}
+            {(gridSize === 3 || gridSize === 4 || gameFeatures.alphabetModeEnabled) && (
             <Button
               size="lg"
               variant="secondary"
@@ -264,8 +265,8 @@ export default function SudokuHome() {
             </Button>
             )}
 
-            {/* Image theme — only available on 3×3 and 4×4 grids */}
-            {gameFeatures.imageModeEnabled && (gridSize === 3 || gridSize === 4) && (
+            {/* Image theme — always shown for 3×3/4×4; gated by config for 9×9/16×16 */}
+            {(gridSize === 3 || gridSize === 4 || gameFeatures.imageModeEnabled) && (
             <Button
               size="lg"
               variant="outline"
@@ -286,7 +287,7 @@ export default function SudokuHome() {
             </Button>
             )}
 
-            {gameFeatures.imageModeEnabled && (gridSize === 3 || gridSize === 4) && (
+            {(gridSize === 3 || gridSize === 4 || gameFeatures.imageModeEnabled) && (
             <button
               onClick={() => setLocation('/themes')}
               className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors pt-0.5 underline underline-offset-2"
