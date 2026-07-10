@@ -263,6 +263,20 @@ export default function Game({ id }: { id: string }) {
   }, [numberCounts, gridSize]);
   const [isPaused, setIsPaused] = useState(false);
 
+  // ─── Board pinch-zoom & pan ──────────────────────────────────────────────────
+  const [boardScale, setBoardScale] = useState(1);
+  const [boardOffset, setBoardOffset] = useState({ x: 0, y: 0 });
+  // Mutable ref tracks mid-gesture state without causing re-renders
+  const boardGesture = useRef({
+    isPinching: false, startDist: 0, startScale: 1,
+    lastTap: 0,
+    isPanning: false, panStartX: 0, panStartY: 0, offsetStartX: 0, offsetStartY: 0,
+    totalMovement: 0, suppressNextClick: false,
+  });
+  // Stable refs so gesture callbacks never go stale
+  const scaleRef  = useRef(boardScale);  scaleRef.current  = boardScale;
+  const offsetRef = useRef(boardOffset); offsetRef.current = boardOffset;
+
   // Derive game mode from profile
   const rawGameMode = (profile?.gameMode ?? '4all') as 'children' | 'adult' | '4all';
   const visibleSizes = ([3, 4, 9, 16] as const).filter(s =>
@@ -719,6 +733,81 @@ export default function Game({ id }: { id: string }) {
     16: "16×16 Pro",
   };
 
+  // ─── Board touch handlers (pinch-zoom + pan + double-tap reset) ────────────
+  // Plain functions (not useCallback) so they can live after the early-return guards
+  // without violating the Rules of Hooks. All values are read from stable refs.
+  const handleBoardTouchStart = (e: React.TouchEvent) => {
+    const g = boardGesture.current;
+    if (e.touches.length === 2) {
+      const [t1, t2] = [e.touches[0], e.touches[1]];
+      g.isPinching = true;
+      g.isPanning  = false;
+      g.startDist  = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+      g.startScale = scaleRef.current;
+    } else if (e.touches.length === 1) {
+      const now = Date.now();
+      const t   = e.touches[0];
+      // Double-tap → reset zoom & pan, suppress the ensuing click
+      if (now - g.lastTap < 300 && scaleRef.current > 1) {
+        setBoardScale(1);
+        setBoardOffset({ x: 0, y: 0 });
+        g.lastTap = 0;
+        g.suppressNextClick = true;
+        return;
+      }
+      g.lastTap           = now;
+      g.totalMovement     = 0;
+      g.suppressNextClick = false;
+      if (scaleRef.current > 1) {
+        g.isPanning    = true;
+        g.panStartX    = t.clientX;
+        g.panStartY    = t.clientY;
+        g.offsetStartX = offsetRef.current.x;
+        g.offsetStartY = offsetRef.current.y;
+      }
+    }
+  };
+
+  const handleBoardTouchMove = (e: React.TouchEvent) => {
+    const g = boardGesture.current;
+    if (e.touches.length === 2 && g.isPinching) {
+      const [t1, t2] = [e.touches[0], e.touches[1]];
+      const dist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+      const next = Math.min(3, Math.max(1, g.startScale * (dist / g.startDist)));
+      setBoardScale(next);
+      if (next <= 1) setBoardOffset({ x: 0, y: 0 });
+    } else if (e.touches.length === 1 && g.isPanning) {
+      const t  = e.touches[0];
+      const dx = t.clientX - g.panStartX;
+      const dy = t.clientY - g.panStartY;
+      g.totalMovement = Math.max(g.totalMovement, Math.abs(dx) + Math.abs(dy));
+      if (g.totalMovement > 8) {
+        g.suppressNextClick = true;
+        setBoardOffset({ x: g.offsetStartX + dx, y: g.offsetStartY + dy });
+      }
+    }
+  };
+
+  const handleBoardTouchEnd = (e: React.TouchEvent) => {
+    const g = boardGesture.current;
+    if (e.touches.length < 2) g.isPinching = false;
+    if (e.touches.length === 0) g.isPanning  = false;
+  };
+
+  const handleBoardTouchCancel = () => {
+    const g = boardGesture.current;
+    g.isPinching = false;
+    g.isPanning  = false;
+  };
+
+  // Capture-phase click guard — fires before any cell onClick after a pan/double-tap
+  const handleBoardClickCapture = (e: React.MouseEvent) => {
+    if (boardGesture.current.suppressNextClick) {
+      boardGesture.current.suppressNextClick = false;
+      e.stopPropagation();
+    }
+  };
+
   // Cell sizing — width is driven by the 1fr grid, height matches via aspect-square
   const cellText =
     mode === "number"
@@ -933,7 +1022,14 @@ export default function Game({ id }: { id: string }) {
 
         {/* LEFT — Board (fills remaining width on desktop) */}
         <div className="w-full md:flex-1 min-w-0">
-          <Card className="w-full shadow-lg border-2 border-foreground/15 overflow-hidden relative">
+          <Card
+            className="w-full shadow-lg border-2 border-foreground/15 overflow-hidden relative"
+            style={{ touchAction: 'none' }}
+            onTouchStart={handleBoardTouchStart}
+            onTouchMove={handleBoardTouchMove}
+            onTouchEnd={handleBoardTouchEnd}
+            onClickCapture={handleBoardClickCapture}
+          >
             {/* Pause overlay */}
             {isPaused && (
               <div
@@ -948,6 +1044,20 @@ export default function Game({ id }: { id: string }) {
                 </p>
               </div>
             )}
+            {/* Zoom-level badge — visible only when zoomed in */}
+            {boardScale > 1.05 && (
+              <div className="absolute top-2 right-2 z-20 bg-black/55 text-white text-[10px] px-2 py-0.5 rounded-full pointer-events-none select-none">
+                {boardScale.toFixed(1)}× · double-tap to reset
+              </div>
+            )}
+            {/* Transform wrapper — scales & pans the grid */}
+            <div
+              style={{
+                transform: `translate(${boardOffset.x}px, ${boardOffset.y}px) scale(${boardScale})`,
+                transformOrigin: 'center center',
+                willChange: boardScale !== 1 ? 'transform' : 'auto',
+              }}
+            >
             <div
               className="grid w-full p-1"
               style={{
@@ -1026,6 +1136,7 @@ export default function Game({ id }: { id: string }) {
                 );
               })}
             </div>
+            </div>{/* end transform wrapper */}
           </Card>
         </div>
 
@@ -1239,7 +1350,7 @@ export default function Game({ id }: { id: string }) {
             <div
               className={`grid w-full ${
                 gridSize === 16
-                  ? "gap-1 grid-cols-6"
+                  ? "gap-1 grid-cols-8 md:grid-cols-8"
                   : gridSize === 4
                   ? "gap-1.5 grid-cols-4"
                   : gridSize === 3
