@@ -8,6 +8,7 @@ import {
   useGeneratePuzzle,
   useCreateGame,
   customFetch,
+  generatePuzzle,
 } from "@workspace/api-client-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
@@ -341,6 +342,30 @@ export default function Game({ id }: { id: string }) {
       setLocation(`/game/${game.id}${modeQuery}`);
     } catch (err) {
       console.error("Error starting new game:", err);
+    }
+  };
+
+  // 9×9/16×16 with only Numbers available: the mode-switcher slot is replaced by a
+  // Difficulty picker — changing it starts a new game immediately at the current grid size.
+  const quickDifficultyInFlightRef = useRef(false);
+  const [quickDifficultyLoading, setQuickDifficultyLoading] = useState(false);
+  const handleQuickDifficultyChange = async (nextDifficulty: "easy" | "medium" | "hard" | "expert") => {
+    if (!profileId || quickDifficultyInFlightRef.current) return;
+    quickDifficultyInFlightRef.current = true;
+    setQuickDifficultyLoading(true);
+    try {
+      const puzzle = await generatePuzzle({ difficulty: nextDifficulty, gridSize: gridSize as any });
+      if (!puzzle) throw new Error("Failed to generate puzzle");
+      const newGame = await createNewGame.mutateAsync({
+        data: { profileId, puzzleId: puzzle.id, difficulty: nextDifficulty },
+      });
+      const modeQuery = mode !== "number" ? `?mode=${mode}` : "";
+      setLocation(`/game/${newGame.id}${modeQuery}`);
+    } catch (err) {
+      console.error("Error starting new game:", err);
+    } finally {
+      setQuickDifficultyLoading(false);
+      quickDifficultyInFlightRef.current = false;
     }
   };
 
@@ -971,6 +996,23 @@ export default function Game({ id }: { id: string }) {
               ))}
             </div>
           )}
+          {/* Only Numbers available (9×9/16×16 with style flags off) — quick difficulty picker, mobile only */}
+          {!isCompleted && !isGameOver && availableModes.length === 1 && (
+            <Select
+              value={game.puzzle?.difficulty ?? "easy"}
+              onValueChange={(v) => handleQuickDifficultyChange(v as "easy" | "medium" | "hard" | "expert")}
+              disabled={quickDifficultyLoading}
+            >
+              <SelectTrigger className="md:hidden h-6 text-[10px] w-[4.5rem] shrink-0 px-1.5">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {visibleDiffs.map((d) => (
+                  <SelectItem key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <div className={`flex items-center gap-1 font-semibold ${
             mistakes === 0 ? "text-muted-foreground"
             : mistakes === 1 ? "text-orange-500"
@@ -1237,6 +1279,25 @@ export default function Game({ id }: { id: string }) {
                   </button>
                 ))}
               </div>
+            </div>
+          )}
+          {!isCompleted && !isGameOver && availableModes.length === 1 && (
+            <div className="flex items-center gap-2 w-full">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground shrink-0">Difficulty</span>
+              <Select
+                value={game.puzzle?.difficulty ?? "easy"}
+                onValueChange={(v) => handleQuickDifficultyChange(v as "easy" | "medium" | "hard" | "expert")}
+                disabled={quickDifficultyLoading}
+              >
+                <SelectTrigger className="h-8 text-xs flex-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {visibleDiffs.map((d) => (
+                    <SelectItem key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
           </div>{/* end hidden md:block — Mode switcher */}
