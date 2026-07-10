@@ -253,7 +253,8 @@ export default function SudokuHome() {
               </div>
             </Button>
 
-            {/* Image theme */}
+            {/* Image theme — only available on 3×3 and 4×4 grids */}
+            {(gridSize === 3 || gridSize === 4) && (
             <Button
               size="lg"
               variant="outline"
@@ -272,7 +273,9 @@ export default function SudokuHome() {
                 </div>
               </div>
             </Button>
+            )}
 
+            {(gridSize === 3 || gridSize === 4) && (
             <button
               onClick={() => setLocation('/themes')}
               className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors pt-0.5 underline underline-offset-2"
@@ -280,6 +283,7 @@ export default function SudokuHome() {
               <Palette className="w-3 h-3 inline mr-1" />
               Change image theme
             </button>
+            )}
           </div>
         </CardContent>
       </Card>

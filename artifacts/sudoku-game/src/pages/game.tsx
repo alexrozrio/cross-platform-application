@@ -183,7 +183,7 @@ export default function Game({ id }: { id: string }) {
   const search = useSearch();
   const params = new URLSearchParams(search);
   const modeParam = params.get("mode");
-  const mode: GameMode =
+  const rawMode: GameMode =
     modeParam === "image"
       ? "image"
       : modeParam === "alpha"
@@ -191,6 +191,7 @@ export default function Game({ id }: { id: string }) {
         : "number";
 
   const switchMode = (newMode: GameMode) => {
+    if (newMode === "image" && !imageModeAllowed) return;
     const next = newMode === "number" ? "" : `?mode=${newMode}`;
     setLocation(`/game/${gameId}${next}`, { replace: true });
   };
@@ -220,6 +221,13 @@ export default function Game({ id }: { id: string }) {
   const gridSize = game?.puzzle?.gridSize ?? 9;
   const totalCells = gridSize * gridSize;
   const boxSize = gridSize === 9 ? 3 : gridSize === 4 ? 2 : gridSize === 16 ? 4 : 0;
+
+  // Image mode is only available on 3×3 and 4×4 grids — 9×9 and 16×16 always use numbers/letters
+  const imageModeAllowed = gridSize === 3 || gridSize === 4;
+  const availableModes: GameMode[] = imageModeAllowed
+    ? ["number", "alpha", "image"]
+    : ["number", "alpha"];
+  const mode: GameMode = !imageModeAllowed && rawMode === "image" ? "number" : rawMode;
 
   const [grid, setGrid] = useState<string[]>(Array(totalCells).fill("0"));
   const [initialGrid, setInitialGrid] = useState<string[]>(
@@ -932,7 +940,7 @@ export default function Game({ id }: { id: string }) {
           {/* Style toggle — after timer, mobile only */}
           {!isCompleted && !isGameOver && (
             <div className="md:hidden flex gap-0.5 shrink-0">
-              {(["number", "alpha", "image"] as GameMode[]).map((m) => (
+              {availableModes.map((m) => (
                 <button
                   key={m}
                   onClick={() => switchMode(m)}
@@ -1197,7 +1205,7 @@ export default function Game({ id }: { id: string }) {
             <div className="flex items-center gap-2 w-full">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground shrink-0">Style</span>
               <div className="flex gap-1 flex-1">
-                {(["number", "alpha", "image"] as GameMode[]).map((m) => (
+                {availableModes.map((m) => (
                   <button
                     key={m}
                     onClick={() => switchMode(m)}
