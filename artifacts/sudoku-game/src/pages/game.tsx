@@ -52,6 +52,7 @@ import {
 import { toast } from "sonner";
 import { pickCompletionMessage } from "@/lib/completion-messages";
 import { getLevelFromXp } from "@/lib/levels";
+import gameFeatures from "@/config/game-features.json";
 
 interface DailyChallengeInfo { puzzleId: number; date: string; }
 interface StreakData { currentStreak: number; longestStreak: number; completedToday: boolean; }
@@ -192,6 +193,7 @@ export default function Game({ id }: { id: string }) {
 
   const switchMode = (newMode: GameMode) => {
     if (newMode === "image" && !imageModeAllowed) return;
+    if (newMode === "alpha" && !alphaModeAllowed) return;
     const next = newMode === "number" ? "" : `?mode=${newMode}`;
     setLocation(`/game/${gameId}${next}`, { replace: true });
   };
@@ -222,12 +224,25 @@ export default function Game({ id }: { id: string }) {
   const totalCells = gridSize * gridSize;
   const boxSize = gridSize === 9 ? 3 : gridSize === 4 ? 2 : gridSize === 16 ? 4 : 0;
 
-  // Image mode is only available on 3×3 and 4×4 grids — 9×9 and 16×16 always use numbers/letters
-  const imageModeAllowed = gridSize === 3 || gridSize === 4;
-  const availableModes: GameMode[] = imageModeAllowed
-    ? ["number", "alpha", "image"]
-    : ["number", "alpha"];
-  const mode: GameMode = !imageModeAllowed && rawMode === "image" ? "number" : rawMode;
+  // Alphabet mode is gated by a global config flag.
+  // Image mode is gated by that same kind of flag AND only available on 3×3 and 4×4 grids
+  // — 9×9 and 16×16 always use numbers (or letters, if enabled).
+  const alphaModeAllowed = gameFeatures.alphabetModeEnabled;
+  const imageModeAllowed =
+    gameFeatures.imageModeEnabled && (gridSize === 3 || gridSize === 4);
+  const availableModes: GameMode[] = (
+    ["number", "alpha", "image"] as GameMode[]
+  ).filter(
+    (m) =>
+      m === "number" ||
+      (m === "alpha" && alphaModeAllowed) ||
+      (m === "image" && imageModeAllowed),
+  );
+  const mode: GameMode =
+    (rawMode === "alpha" && !alphaModeAllowed) ||
+    (rawMode === "image" && !imageModeAllowed)
+      ? "number"
+      : rawMode;
 
   const [grid, setGrid] = useState<string[]>(Array(totalCells).fill("0"));
   const [initialGrid, setInitialGrid] = useState<string[]>(
@@ -938,7 +953,7 @@ export default function Game({ id }: { id: string }) {
             </div>
           )}
           {/* Style toggle — after timer, mobile only */}
-          {!isCompleted && !isGameOver && (
+          {!isCompleted && !isGameOver && availableModes.length > 1 && (
             <div className="md:hidden flex gap-0.5 shrink-0">
               {availableModes.map((m) => (
                 <button
@@ -1201,7 +1216,7 @@ export default function Game({ id }: { id: string }) {
 
           {/* Mode switcher — desktop only (shown above board on mobile) */}
           <div className="hidden md:block">
-          {!isCompleted && !isGameOver && (
+          {!isCompleted && !isGameOver && availableModes.length > 1 && (
             <div className="flex items-center gap-2 w-full">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground shrink-0">Style</span>
               <div className="flex gap-1 flex-1">

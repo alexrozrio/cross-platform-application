@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Play, BarChart2, Trophy, ArrowLeft, Hash, Type, Palette, Flame, BookOpen, Keyboard, Scroll, RotateCcw } from 'lucide-react';
 import { IMAGE_THEMES } from '@/lib/themes';
+import gameFeatures from '@/config/game-features.json';
 
 interface ActiveGame {
   id: number;
@@ -99,8 +100,15 @@ export default function SudokuHome() {
       .catch(() => setActiveGame(null));
   }, [profileId, isReady, location]);
 
-  const doStart = async (mode: 'number' | 'alpha' | 'image') => {
+  const isModeAllowed = (mode: 'number' | 'alpha' | 'image') => {
+    if (mode === 'alpha') return gameFeatures.alphabetModeEnabled;
+    if (mode === 'image') return gameFeatures.imageModeEnabled && (gridSize === 3 || gridSize === 4);
+    return true;
+  };
+
+  const doStart = async (requestedMode: 'number' | 'alpha' | 'image') => {
     if (!profileId) return;
+    const mode = isModeAllowed(requestedMode) ? requestedMode : 'number';
     setPendingMode(null);
     try {
       const res = await generatePuzzle.refetch();
@@ -117,7 +125,8 @@ export default function SudokuHome() {
     }
   };
 
-  const handleStart = (mode: 'number' | 'alpha' | 'image') => {
+  const handleStart = (requestedMode: 'number' | 'alpha' | 'image') => {
+    const mode = isModeAllowed(requestedMode) ? requestedMode : 'number';
     if (activeGame) {
       setPendingMode(mode);
     } else {
@@ -237,6 +246,7 @@ export default function SudokuHome() {
             </Button>
 
             {/* Alphabets */}
+            {gameFeatures.alphabetModeEnabled && (
             <Button
               size="lg"
               variant="secondary"
@@ -252,9 +262,10 @@ export default function SudokuHome() {
                 </div>
               </div>
             </Button>
+            )}
 
             {/* Image theme — only available on 3×3 and 4×4 grids */}
-            {(gridSize === 3 || gridSize === 4) && (
+            {gameFeatures.imageModeEnabled && (gridSize === 3 || gridSize === 4) && (
             <Button
               size="lg"
               variant="outline"
@@ -275,7 +286,7 @@ export default function SudokuHome() {
             </Button>
             )}
 
-            {(gridSize === 3 || gridSize === 4) && (
+            {gameFeatures.imageModeEnabled && (gridSize === 3 || gridSize === 4) && (
             <button
               onClick={() => setLocation('/themes')}
               className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors pt-0.5 underline underline-offset-2"
