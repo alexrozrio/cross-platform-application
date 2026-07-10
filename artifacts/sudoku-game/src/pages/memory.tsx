@@ -42,7 +42,7 @@ const MAX_TIPS = 2;
 const GRID_OPTIONS: { size: GridSize; label: string; pairs: number; desc: string }[] = [
   { size: 2, label: '2×4', pairs: 4,  desc: 'Beginner · 4 pairs' },
   { size: 4, label: '4×4', pairs: 8,  desc: 'Easy · 8 pairs' },
-  { size: 6, label: '4×8', pairs: 16, desc: 'Medium · 16 pairs' },
+  { size: 6, label: '8×4', pairs: 16, desc: 'Medium · 16 pairs' },
   { size: 8, label: '8×8', pairs: 32, desc: 'Hard · 32 pairs' },
 ];
 
@@ -56,6 +56,7 @@ function MemoryCard({
   size,
   displayMode,
   hinted,
+  fillHeight,
 }: {
   card: Card;
   themeId: string;
@@ -64,28 +65,24 @@ function MemoryCard({
   size: GridSize;
   displayMode: DisplayMode;
   hinted?: boolean;
+  fillHeight?: boolean;
 }) {
   const theme = getTheme(themeId as any);
   const symbol = theme.symbols[(card.value - 1) % theme.symbols.length];
 
-  const isSmall = size === 8 || size === 6;
-  const isMedium = size === 4;
-  const cardH = isSmall ? 'h-10 sm:h-12' : size === 2 ? 'h-20 sm:h-24' : 'h-16 sm:h-20';
+  // Font sizes scale with grid: 2×4 biggest, 8×8 smallest — sized to fill ~70–80% of each card
+  const imgSize = size === 8 ? 'text-3xl sm:text-4xl' : size === 6 ? 'text-4xl sm:text-5xl' : size === 4 ? 'text-5xl sm:text-6xl' : 'text-6xl sm:text-7xl';
+  const txtSizeSingle = size === 8 ? 'text-2xl sm:text-3xl' : size === 6 ? 'text-3xl sm:text-4xl' : size === 4 ? 'text-4xl sm:text-5xl' : 'text-5xl sm:text-6xl';
+  const txtSizeMulti  = size === 8 ? 'text-lg sm:text-xl'  : size === 6 ? 'text-xl sm:text-2xl'  : size === 4 ? 'text-2xl sm:text-3xl'  : 'text-4xl sm:text-5xl';
 
   // Front face content
   let frontContent: React.ReactNode;
   if (displayMode === 'image') {
-    const fontSize = isSmall ? 'text-xl' : isMedium ? 'text-2xl' : 'text-3xl';
-    frontContent = <span className={`${fontSize} leading-none`}>{symbol}</span>;
+    frontContent = <span className={`${imgSize} leading-none`}>{symbol}</span>;
   } else {
     const label = getCardLabel(card.value, displayMode);
-    const fontSize = isSmall
-      ? (label.length > 1 ? 'text-sm' : 'text-base')
-      : isMedium
-        ? (label.length > 1 ? 'text-lg' : 'text-xl')
-        : (label.length > 1 ? 'text-2xl' : 'text-3xl');
     frontContent = (
-      <span className={`${fontSize} font-black leading-none tabular-nums`}>
+      <span className={`${label.length > 1 ? txtSizeMulti : txtSizeSingle} font-black leading-none tabular-nums`}>
         {label}
       </span>
     );
@@ -95,7 +92,7 @@ function MemoryCard({
     <motion.button
       onClick={onClick}
       disabled={disabled || card.flipped || card.matched}
-      className={`relative w-full ${cardH} rounded-xl cursor-pointer select-none focus:outline-none`}
+      className={`relative w-full ${fillHeight ? 'h-full' : 'aspect-square'} rounded-xl cursor-pointer select-none focus:outline-none`}
       style={{ perspective: 600 }}
       whileTap={!disabled && !card.flipped && !card.matched ? { scale: 0.93 } : {}}
     >
@@ -449,11 +446,13 @@ export default function MemoryMatchPage() {
     const sizeLabel = GRID_OPTIONS.find(o => o.size === gridSize)?.label ?? `${gridSize}×${gridSize}`;
     const diffLabel = GRID_OPTIONS.find(o => o.size === gridSize)?.desc.split(' · ')[0] ?? '';
     const rank = profile ? getLevelFromXp(profile.xp ?? 0).name : null;
+    const appUrl = `${window.location.origin}/memory`;
     const lines = [
       `${winMessage?.emoji ?? '🎉'} Matched all ${getPairs(gridSize)} pairs (${sizeLabel} ${diffLabel}) in ${formatTime(elapsed)}!`,
       `🔄 ${flips} flip${flips !== 1 ? 's' : ''}`,
       winResult && winResult.points > 0 ? `+${winResult.points.toLocaleString()} pts` : null,
       rank ? `🏅 ${rank} · Brain Games 4 All` : '🧠 Brain Games 4 All',
+      `🔗 ${appUrl}`,
     ].filter(Boolean).join('\n');
     try {
       if (navigator.share) {
@@ -847,146 +846,154 @@ export default function MemoryMatchPage() {
   }
 
   // ── Game board ───────────────────────────────────────────────────────────────
-  const colClass = gridSize === 2 ? 'grid-cols-4' : gridSize === 4 ? 'grid-cols-4' : 'grid-cols-8';
+  const colClass = gridSize === 2 ? 'grid-cols-4' : gridSize === 4 ? 'grid-cols-4' : gridSize === 6 ? 'grid-cols-4' : 'grid-cols-8';
 
   return (
-    <div className="max-w-2xl mx-auto w-full space-y-4 animate-in fade-in duration-300">
-      {/* Header bar */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <button
-          onClick={() => setShowAbandonConfirm(true)}
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </button>
+    <div className="max-w-2xl w-full space-y-4 animate-in fade-in duration-300 -mx-2 px-2 sm:mx-auto sm:px-0">
+      {/* Header bar — two rows so nothing overflows on mobile */}
+      <div className="flex flex-col gap-1.5">
 
-        {/* Abandon game confirmation */}
-        <Dialog open={showAbandonConfirm} onOpenChange={setShowAbandonConfirm}>
-          <DialogContent className="max-w-sm">
-            <DialogHeader>
-              <DialogTitle>Abandon this game?</DialogTitle>
-              <DialogDescription>
-                You have {matchedCount} of {totalPairs} pairs matched. Your progress will be lost if you go back to setup.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
-              <Button variant="outline" className="flex-1" onClick={() => setShowAbandonConfirm(false)}>
-                Keep Playing
-              </Button>
-              <Button variant="destructive" className="flex-1" onClick={() => {
-                localStorage.removeItem('brain-games-memory-session');
-                setShowAbandonConfirm(false);
-                setPhase('setup');
-              }}>
-                Abandon Game
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        {/* Row 1: back · stats · progress bar */}
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setShowAbandonConfirm(true)}
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
 
-        {profile?.showTimer !== false && (
-          <div className="flex items-center gap-1.5 text-sm font-mono tabular-nums shrink-0">
-            <Timer className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-foreground font-semibold">{formatTime(elapsed)}</span>
+          {profile?.showTimer !== false && (
+            <div className="flex items-center gap-1.5 text-sm font-mono tabular-nums shrink-0">
+              <Timer className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="text-foreground font-semibold">{formatTime(elapsed)}</span>
+            </div>
+          )}
+
+          <div className="flex items-center gap-1.5 text-sm shrink-0">
+            <Repeat2 className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="font-semibold">{flips}</span>
+            <span className="text-muted-foreground text-xs">flips</span>
           </div>
-        )}
 
-        <div className="flex items-center gap-1.5 text-sm shrink-0">
-          <Repeat2 className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="font-semibold">{flips}</span>
-          <span className="text-muted-foreground text-xs">flips</span>
+          <div className="flex items-center gap-1.5 text-sm shrink-0">
+            <Trophy className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="font-semibold">{matchedCount}</span>
+            <span className="text-muted-foreground text-xs">/ {totalPairs}</span>
+          </div>
+
+          {/* Progress bar */}
+          <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+            <motion.div
+              className="h-full rounded-full bg-primary"
+              animate={{ width: `${(matchedCount / totalPairs) * 100}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
         </div>
 
-        <div className="flex items-center gap-1.5 text-sm shrink-0">
-          <Trophy className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="font-semibold">{matchedCount}</span>
-          <span className="text-muted-foreground text-xs">/ {totalPairs}</span>
-        </div>
+        {/* Row 2: actions */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setPendingAction({ type: 'reset' })}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
+          >
+            <RotateCcw className="w-3 h-3" /> Reset
+          </button>
 
-        {/* Progress bar */}
-        <div className="flex-1 min-w-24 h-2 rounded-full bg-muted overflow-hidden">
-          <motion.div
-            className="h-full rounded-full bg-primary"
-            animate={{ width: `${(matchedCount / totalPairs) * 100}%` }}
-            transition={{ duration: 0.3 }}
-          />
-        </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setShowNewGame(v => !v)}
+                  className={[
+                    'flex items-center gap-1 text-xs transition-colors shrink-0 font-medium',
+                    showNewGame ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
+                  ].join(' ')}
+                >
+                  <Star className="w-3 h-3" /> New
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>Start new game</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
-        <button
-          onClick={() => setPendingAction({ type: 'reset' })}
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
-        >
-          <RotateCcw className="w-3 h-3" /> Reset
-        </button>
+          <button
+            onClick={handleTip}
+            disabled={tipsUsed >= MAX_TIPS || lockBoard}
+            className={[
+              'flex items-center gap-1 text-xs transition-colors shrink-0 font-medium disabled:cursor-not-allowed',
+              tipsUsed >= MAX_TIPS ? 'text-muted-foreground/40' : 'text-amber-500 hover:text-amber-600',
+            ].join(' ')}
+            title="Tip: briefly reveals all cards"
+          >
+            <Lightbulb className={`w-3 h-3 ${tipsUsed >= MAX_TIPS ? 'opacity-40' : ''}`} />
+            <span>Tip</span>
+            <span className={`text-[9px] font-bold leading-none tabular-nums ${tipsUsed >= MAX_TIPS ? 'text-red-400' : 'text-amber-500'}`}>
+              {MAX_TIPS - tipsUsed}
+            </span>
+          </button>
 
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
+          <button
+            onClick={sounds.toggle}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
+            title={sounds.enabled ? 'Mute sounds' : 'Enable sounds'}
+          >
+            {sounds.enabled
+              ? <Volume2 className="w-3.5 h-3.5" />
+              : <VolumeX className="w-3.5 h-3.5" />
+            }
+          </button>
+
+          {/* Mode toggle */}
+          <div className="flex items-center gap-0.5 rounded-lg border border-border bg-muted/40 p-0.5 shrink-0">
+            {([
+              { id: 'image'  as DisplayMode, title: '🎴' },
+              { id: 'number' as DisplayMode, title: '123' },
+              { id: 'alpha'  as DisplayMode, title: 'ABC' },
+            ] as const).map(m => (
               <button
-                onClick={() => setShowNewGame(v => !v)}
+                key={m.id}
+                type="button"
+                onClick={() => setDisplayMode(m.id)}
                 className={[
-                  'flex items-center gap-1 text-xs transition-colors shrink-0 font-medium',
-                  showNewGame ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
+                  'px-1.5 py-0.5 rounded-md text-[10px] font-bold transition-all',
+                  displayMode === m.id
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground',
                 ].join(' ')}
+                title={m.id === 'image' ? 'Image mode' : m.id === 'number' ? 'Number mode' : 'Alpha mode'}
               >
-                <Star className="w-3 h-3" /> New
+                {m.title}
               </button>
-            </TooltipTrigger>
-            <TooltipContent>Start new game</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-
-        <button
-          onClick={handleTip}
-          disabled={tipsUsed >= MAX_TIPS || lockBoard}
-          className={[
-            'flex items-center gap-1 text-xs transition-colors shrink-0 font-medium disabled:cursor-not-allowed',
-            tipsUsed >= MAX_TIPS ? 'text-muted-foreground/40' : 'text-amber-500 hover:text-amber-600',
-          ].join(' ')}
-          title="Tip: briefly reveals all cards"
-        >
-          <Lightbulb className={`w-3 h-3 ${tipsUsed >= MAX_TIPS ? 'opacity-40' : ''}`} />
-          <span>Tip</span>
-          <span className={`text-[9px] font-bold leading-none tabular-nums ${tipsUsed >= MAX_TIPS ? 'text-red-400' : 'text-amber-500'}`}>
-            {MAX_TIPS - tipsUsed}
-          </span>
-        </button>
-
-        <button
-          onClick={sounds.toggle}
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
-          title={sounds.enabled ? 'Mute sounds' : 'Enable sounds'}
-        >
-          {sounds.enabled
-            ? <Volume2 className="w-3.5 h-3.5" />
-            : <VolumeX className="w-3.5 h-3.5" />
-          }
-        </button>
-
-        {/* Mode toggle (cycle through modes during play) */}
-        <div className="flex items-center gap-0.5 rounded-lg border border-border bg-muted/40 p-0.5 shrink-0">
-          {([
-            { id: 'image'  as DisplayMode, title: '🎴' },
-            { id: 'number' as DisplayMode, title: '123' },
-            { id: 'alpha'  as DisplayMode, title: 'ABC' },
-          ] as const).map(m => (
-            <button
-              key={m.id}
-              type="button"
-              onClick={() => setDisplayMode(m.id)}
-              className={[
-                'px-1.5 py-0.5 rounded-md text-[10px] font-bold transition-all',
-                displayMode === m.id
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground',
-              ].join(' ')}
-              title={m.id === 'image' ? 'Image mode' : m.id === 'number' ? 'Number mode' : 'Alpha mode'}
-            >
-              {m.title}
-            </button>
-          ))}
+            ))}
+          </div>
         </div>
+
       </div>
+
+      {/* Abandon game confirmation */}
+      <Dialog open={showAbandonConfirm} onOpenChange={setShowAbandonConfirm}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Abandon this game?</DialogTitle>
+            <DialogDescription>
+              You have {matchedCount} of {totalPairs} pairs matched. Your progress will be lost if you go back to setup.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
+            <Button variant="outline" className="flex-1" onClick={() => setShowAbandonConfirm(false)}>
+              Keep Playing
+            </Button>
+            <Button variant="destructive" className="flex-1" onClick={() => {
+              localStorage.removeItem('brain-games-memory-session');
+              setShowAbandonConfirm(false);
+              setPhase('setup');
+            }}>
+              Abandon Game
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Reset / new-game confirmation */}
       <AlertDialog open={!!pendingAction} onOpenChange={(open) => { if (!open) setPendingAction(null); }}>
@@ -1053,7 +1060,14 @@ export default function MemoryMatchPage() {
       </AnimatePresence>
 
       {/* Card grid */}
-      <div className={`grid ${colClass} gap-1.5 sm:gap-2`}>
+      {/* For 8×4: fix grid height to viewport so 8 rows fit without scrolling */}
+      <div
+        className={`grid ${colClass} gap-1 sm:gap-2`}
+        style={(gridSize === 4 || gridSize === 6 || gridSize === 8) ? {
+          height: 'calc(100dvh - 280px)',
+          gridTemplateRows: gridSize === 4 ? 'repeat(4, 1fr)' : 'repeat(8, 1fr)',
+        } : undefined}
+      >
         {cards.map(card => (
           <MemoryCard
             key={card.id}
@@ -1064,6 +1078,7 @@ export default function MemoryMatchPage() {
             size={gridSize}
             displayMode={displayMode}
             hinted={hintedIds.includes(card.id)}
+            fillHeight={gridSize === 4 || gridSize === 6 || gridSize === 8}
           />
         ))}
       </div>
