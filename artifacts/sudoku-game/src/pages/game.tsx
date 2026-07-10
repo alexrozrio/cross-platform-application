@@ -32,6 +32,7 @@ import {
   Loader2,
   RefreshCw,
   RotateCcw,
+  Undo2,
   Pause,
   Play,
   Volume2,
@@ -237,6 +238,14 @@ export default function Game({ id }: { id: string }) {
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [wrongCells, setWrongCells] = useState<Set<number>>(new Set());
   const [highlightedNumber, setHighlightedNumber] = useState<string | null>(null);
+  const [history, setHistory] = useState<Array<{
+    grid: string[];
+    notes: Record<number, Set<string>>;
+    wrongCells: Set<number>;
+  }>>([]);
+  // Ref holds a fresh snapshot fn every render — lets useCallback handlers call it
+  // without stale-closure issues and without adding snapshot state to their deps.
+  const pushHistoryRef = useRef<() => void>(() => {});
   const [completionMessage, setCompletionMessage] = useState(() =>
     pickCompletionMessage(game?.puzzle?.difficulty, game?.puzzle?.gridSize),
   );
@@ -512,6 +521,9 @@ export default function Game({ id }: { id: string }) {
       if (selectedCell === null || isCompleted || isGameOver || isPaused) return;
       if (initialGrid[selectedCell] !== "0") return;
 
+      // Snapshot before any modification so Undo can restore it
+      pushHistoryRef.current();
+
       if (notesMode) {
         sounds.note();
         setNotes((prev) => {
@@ -578,6 +590,7 @@ export default function Game({ id }: { id: string }) {
       initialGrid[selectedCell] !== "0"
     )
       return;
+    pushHistoryRef.current(); // snapshot before erase
     sounds.erase();
     const newGrid = [...grid];
     newGrid[selectedCell] = "0";
@@ -597,6 +610,7 @@ export default function Game({ id }: { id: string }) {
     setWrongCells(new Set());
     setSelectedCell(null);
     setHighlightedNumber(null);
+    setHistory([]); // clear undo history on full reset
     localStorage.removeItem(storageKeyGrid);
     localStorage.removeItem(storageKeyNotes);
   }, [initialGrid, storageKeyGrid, storageKeyNotes]);
@@ -808,6 +822,27 @@ export default function Game({ id }: { id: string }) {
     }
   };
 
+  // Keep pushHistoryRef current every render — reads live state so snapshots are always fresh
+  pushHistoryRef.current = () => {
+    setHistory(prev => [...prev.slice(-29), {
+      grid: [...grid],
+      notes: Object.fromEntries(
+        Object.entries(notes).map(([k, v]) => [k, new Set(v as Set<string>)])
+      ) as Record<number, Set<string>>,
+      wrongCells: new Set(wrongCells),
+    }]);
+  };
+
+  const handleUndo = () => {
+    if (history.length === 0 || isCompleted || isGameOver) return;
+    const prev = history[history.length - 1];
+    setHistory(h => h.slice(0, -1));
+    setGrid(prev.grid);
+    setNotes(prev.notes);
+    setWrongCells(prev.wrongCells);
+    setSelectedCell(null);
+  };
+
   // Cell sizing — width is driven by the 1fr grid, height matches via aspect-square
   const cellText =
     mode === "number"
@@ -961,12 +996,25 @@ export default function Game({ id }: { id: string }) {
       {showMobileControls && (
         <div className="md:hidden w-full rounded-lg border border-border/60 bg-muted/30 px-2 py-1.5 flex flex-col gap-1">
 
-          {/* Current game label */}
-          <div className="flex items-center gap-1 text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
-            <span>Now playing:</span>
-            <span className="text-foreground">{GRID_LABELS[gridSize] ?? `${gridSize}×${gridSize}`}</span>
-            <span>·</span>
-            <span className="capitalize text-foreground">{game.puzzle?.difficulty}</span>
+          {/* Current game label + Reset on the same row */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1 text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <span>Now playing:</span>
+              <span className="text-foreground">{GRID_LABELS[gridSize] ?? `${gridSize}×${gridSize}`}</span>
+              <span>·</span>
+              <span className="capitalize text-foreground">{game.puzzle?.difficulty}</span>
+            </div>
+            {!isCompleted && !isGameOver && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-5 px-1.5 py-0 text-[9px] gap-0.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
+                onClick={() => { setShowMobileControls(false); setShowResetDialog(true); }}
+              >
+                <RotateCcw className="h-3 w-3" />
+                Reset
+              </Button>
+            )}
           </div>
 
           {/* Size chips + difficulty + start in one row */}
@@ -1336,11 +1384,11 @@ export default function Game({ id }: { id: string }) {
               <Button
                 variant="secondary"
                 className="flex-col h-12 gap-0.5"
-                onClick={() => setShowResetDialog(true)}
-                disabled={isGameOver}
+                onClick={handleUndo}
+                disabled={isGameOver || history.length === 0}
               >
-                <RotateCcw className="h-4 w-4" />
-                <span className="text-[11px]">Reset</span>
+                <Undo2 className="h-4 w-4" />
+                <span className="text-[11px]">Undo</span>
               </Button>
             </div>
           )}
