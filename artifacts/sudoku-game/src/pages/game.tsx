@@ -8,6 +8,7 @@ import {
   useGeneratePuzzle,
   useCreateGame,
   customFetch,
+  generatePuzzle,
 } from "@workspace/api-client-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
@@ -52,6 +53,7 @@ import {
 import { toast } from "sonner";
 import { pickCompletionMessage } from "@/lib/completion-messages";
 import { getLevelFromXp } from "@/lib/levels";
+import gameFeatures from "@/config/game-features.json";
 
 interface DailyChallengeInfo { puzzleId: number; date: string; }
 interface StreakData { currentStreak: number; longestStreak: number; completedToday: boolean; }
@@ -183,7 +185,7 @@ export default function Game({ id }: { id: string }) {
   const search = useSearch();
   const params = new URLSearchParams(search);
   const modeParam = params.get("mode");
-  const mode: GameMode =
+  const rawMode: GameMode =
     modeParam === "image"
       ? "image"
       : modeParam === "alpha"
@@ -191,6 +193,8 @@ export default function Game({ id }: { id: string }) {
         : "number";
 
   const switchMode = (newMode: GameMode) => {
+    if (newMode === "image" && !imageModeAllowed) return;
+    if (newMode === "alpha" && !alphaModeAllowed) return;
     const next = newMode === "number" ? "" : `?mode=${newMode}`;
     setLocation(`/game/${gameId}${next}`, { replace: true });
   };
@@ -220,6 +224,25 @@ export default function Game({ id }: { id: string }) {
   const gridSize = game?.puzzle?.gridSize ?? 9;
   const totalCells = gridSize * gridSize;
   const boxSize = gridSize === 9 ? 3 : gridSize === 4 ? 2 : gridSize === 16 ? 4 : 0;
+
+  // 3×3 and 4×4 grids always offer all three play styles.
+  // On 9×9 and 16×16, alphabet/image availability is controlled by the global config flags.
+  const smallGrid = gridSize === 3 || gridSize === 4;
+  const alphaModeAllowed = smallGrid || gameFeatures.alphabetModeEnabled;
+  const imageModeAllowed = smallGrid || gameFeatures.imageModeEnabled;
+  const availableModes: GameMode[] = (
+    ["number", "alpha", "image"] as GameMode[]
+  ).filter(
+    (m) =>
+      m === "number" ||
+      (m === "alpha" && alphaModeAllowed) ||
+      (m === "image" && imageModeAllowed),
+  );
+  const mode: GameMode =
+    (rawMode === "alpha" && !alphaModeAllowed) ||
+    (rawMode === "image" && !imageModeAllowed)
+      ? "number"
+      : rawMode;
 
   const [grid, setGrid] = useState<string[]>(Array(totalCells).fill("0"));
   const [initialGrid, setInitialGrid] = useState<string[]>(
@@ -319,6 +342,30 @@ export default function Game({ id }: { id: string }) {
       setLocation(`/game/${game.id}${modeQuery}`);
     } catch (err) {
       console.error("Error starting new game:", err);
+    }
+  };
+
+  // 9×9/16×16 with only Numbers available: the mode-switcher slot is replaced by a
+  // Difficulty picker — changing it starts a new game immediately at the current grid size.
+  const quickDifficultyInFlightRef = useRef(false);
+  const [quickDifficultyLoading, setQuickDifficultyLoading] = useState(false);
+  const handleQuickDifficultyChange = async (nextDifficulty: "easy" | "medium" | "hard" | "expert") => {
+    if (!profileId || quickDifficultyInFlightRef.current) return;
+    quickDifficultyInFlightRef.current = true;
+    setQuickDifficultyLoading(true);
+    try {
+      const puzzle = await generatePuzzle({ difficulty: nextDifficulty, gridSize: gridSize as any });
+      if (!puzzle) throw new Error("Failed to generate puzzle");
+      const newGame = await createNewGame.mutateAsync({
+        data: { profileId, puzzleId: puzzle.id, difficulty: nextDifficulty },
+      });
+      const modeQuery = mode !== "number" ? `?mode=${mode}` : "";
+      setLocation(`/game/${newGame.id}${modeQuery}`);
+    } catch (err) {
+      console.error("Error starting new game:", err);
+    } finally {
+      setQuickDifficultyLoading(false);
+      quickDifficultyInFlightRef.current = false;
     }
   };
 
@@ -930,9 +977,9 @@ export default function Game({ id }: { id: string }) {
             </div>
           )}
           {/* Style toggle — after timer, mobile only */}
-          {!isCompleted && !isGameOver && (
+          {!isCompleted && !isGameOver && availableModes.length > 1 && (
             <div className="md:hidden flex gap-0.5 shrink-0">
-              {(["number", "alpha", "image"] as GameMode[]).map((m) => (
+              {availableModes.map((m) => (
                 <button
                   key={m}
                   onClick={() => switchMode(m)}
@@ -948,6 +995,23 @@ export default function Game({ id }: { id: string }) {
                 </button>
               ))}
             </div>
+          )}
+          {/* Only Numbers available (9×9/16×16 with style flags off) — quick difficulty picker, mobile only */}
+          {!isCompleted && !isGameOver && availableModes.length === 1 && (
+            <Select
+              value={game.puzzle?.difficulty ?? "easy"}
+              onValueChange={(v) => handleQuickDifficultyChange(v as "easy" | "medium" | "hard" | "expert")}
+              disabled={quickDifficultyLoading}
+            >
+              <SelectTrigger className="md:hidden h-6 text-[10px] w-[4.5rem] shrink-0 px-1.5">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {visibleDiffs.map((d) => (
+                  <SelectItem key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
           <div className={`flex items-center gap-1 font-semibold ${
             mistakes === 0 ? "text-muted-foreground"
@@ -1193,11 +1257,11 @@ export default function Game({ id }: { id: string }) {
 
           {/* Mode switcher — desktop only (shown above board on mobile) */}
           <div className="hidden md:block">
-          {!isCompleted && !isGameOver && (
+          {!isCompleted && !isGameOver && availableModes.length > 1 && (
             <div className="flex items-center gap-2 w-full">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground shrink-0">Style</span>
               <div className="flex gap-1 flex-1">
-                {(["number", "alpha", "image"] as GameMode[]).map((m) => (
+                {availableModes.map((m) => (
                   <button
                     key={m}
                     onClick={() => switchMode(m)}
@@ -1215,6 +1279,25 @@ export default function Game({ id }: { id: string }) {
                   </button>
                 ))}
               </div>
+            </div>
+          )}
+          {!isCompleted && !isGameOver && availableModes.length === 1 && (
+            <div className="flex items-center gap-2 w-full">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground shrink-0">Difficulty</span>
+              <Select
+                value={game.puzzle?.difficulty ?? "easy"}
+                onValueChange={(v) => handleQuickDifficultyChange(v as "easy" | "medium" | "hard" | "expert")}
+                disabled={quickDifficultyLoading}
+              >
+                <SelectTrigger className="h-8 text-xs flex-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {visibleDiffs.map((d) => (
+                    <SelectItem key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
           </div>{/* end hidden md:block — Mode switcher */}

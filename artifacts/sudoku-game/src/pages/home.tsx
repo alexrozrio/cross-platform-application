@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useSearch } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { useImageTheme } from '@/hooks/use-image-theme';
-import { useGeneratePuzzle, useCreateGame, useGetProfile, customFetch } from '@workspace/api-client-react';
+import { useCreateGame, useGetProfile, customFetch, generatePuzzle } from '@workspace/api-client-react';
 import { ThemeIcon } from '@/components/theme-icons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Play, BarChart2, Trophy, ArrowLeft, Hash, Type, Palette, Flame, BookOpen, Keyboard, Scroll, RotateCcw } from 'lucide-react';
 import { IMAGE_THEMES } from '@/lib/themes';
+import gameFeatures from '@/config/game-features.json';
 
 interface ActiveGame {
   id: number;
@@ -76,15 +77,15 @@ export default function SudokuHome() {
     true
   );
 
-  const generatePuzzle = useGeneratePuzzle(
-    { difficulty, gridSize: gridSize as any },
-    { query: { enabled: false } }
-  );
   const createGame = useCreateGame();
-  const isLoading = !isReady || generatePuzzle.isFetching || createGame.isPending;
+  const [isGenerating, setIsGenerating] = useState(false);
+  const isLoading = !isReady || isGenerating || createGame.isPending;
 
   const [activeGame, setActiveGame] = useState<ActiveGame | null>(null);
-  const [pendingMode, setPendingMode] = useState<'number' | 'alpha' | 'image' | null>(null);
+  // Play style selected for the *next* game — grid-size buttons start the game immediately
+  // using whichever style is currently selected.
+  const [selectedMode, setSelectedMode] = useState<'number' | 'alpha' | 'image'>('number');
+  const [pendingStart, setPendingStart] = useState<{ size: GridSize; mode: 'number' | 'alpha' | 'image'; difficulty?: Difficulty } | null>(null);
 
   useEffect(() => {
     if (!filteredGridOptions.find(o => o.size === gridSize)) {
@@ -99,29 +100,62 @@ export default function SudokuHome() {
       .catch(() => setActiveGame(null));
   }, [profileId, isReady, location]);
 
-  const doStart = async (mode: 'number' | 'alpha' | 'image') => {
+  const modesForSize = (size: GridSize): Array<'number' | 'alpha' | 'image'> => {
+    const smallGrid = size === 3 || size === 4;
+    const modes: Array<'number' | 'alpha' | 'image'> = ['number'];
+    if (smallGrid || gameFeatures.alphabetModeEnabled) modes.push('alpha');
+    if (smallGrid || gameFeatures.imageModeEnabled) modes.push('image');
+    return modes;
+  };
+  const availableModes = modesForSize(gridSize);
+
+  const startInFlightRef = useRef(false);
+
+  const doStart = async (size: GridSize, requestedMode: 'number' | 'alpha' | 'image', difficultyOverride?: Difficulty) => {
     if (!profileId) return;
-    setPendingMode(null);
+    if (startInFlightRef.current) return;
+    startInFlightRef.current = true;
+    const mode = modesForSize(size).includes(requestedMode) ? requestedMode : 'number';
+    const effectiveDifficulty = difficultyOverride ?? difficulty;
+    setPendingStart(null);
+    setIsGenerating(true);
     try {
-      const res = await generatePuzzle.refetch();
-      const puzzle = res.data;
+      const puzzle = await generatePuzzle({ difficulty: effectiveDifficulty, gridSize: size as any });
       if (!puzzle) throw new Error('Failed to generate puzzle');
       const game = await createGame.mutateAsync({
-        data: { profileId, puzzleId: puzzle.id, difficulty },
+        data: { profileId, puzzleId: puzzle.id, difficulty: effectiveDifficulty },
       });
       setActiveGame(null);
       const modeQuery = mode !== 'number' ? `?mode=${mode}` : '';
       setLocation(`/game/${game.id}${modeQuery}`);
     } catch (err) {
       console.error('Error starting game:', err);
+    } finally {
+      setIsGenerating(false);
+      startInFlightRef.current = false;
     }
   };
 
-  const handleStart = (mode: 'number' | 'alpha' | 'image') => {
+  const handleSelectSize = (size: GridSize) => {
+    if (startInFlightRef.current) return;
+    setGridSize(size);
+    const mode = modesForSize(size).includes(selectedMode) ? selectedMode : 'number';
     if (activeGame) {
-      setPendingMode(mode);
+      setPendingStart({ size, mode });
     } else {
-      doStart(mode);
+      doStart(size, mode);
+    }
+  };
+
+  // On 9×9/16×16 (where Play Style is hidden), changing difficulty starts a new game
+  // immediately at the current grid size.
+  const handleDifficultyAutoStart = (value: Difficulty) => {
+    setDifficulty(value);
+    if (startInFlightRef.current) return;
+    if (activeGame) {
+      setPendingStart({ size: gridSize, mode: 'number', difficulty: value });
+    } else {
+      doStart(gridSize, 'number', value);
     }
   };
 
@@ -175,36 +209,118 @@ export default function SudokuHome() {
           <CardTitle className="flex items-center gap-2">
             <Play className="w-5 h-5 text-primary" /> New Game
           </CardTitle>
-          <CardDescription>Configure your puzzle, then pick a play style</CardDescription>
+          <CardDescription>
+            {availableModes.length > 1
+              ? 'Pick a play style, then tap a grid size to jump right in'
+              : 'Tap a grid size to jump right in'}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
 
-          {/* Grid size */}
+          {/* Play mode selector — hidden entirely when only Numbers is available */}
+          {availableModes.length > 1 && (
           <div className="space-y-2">
             <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Grid Size
+              Play Style
             </label>
-            <div className={`grid gap-2 ${filteredGridOptions.length === 2 ? 'grid-cols-2' : 'grid-cols-4'}`}>
-              {filteredGridOptions.map(opt => (
-                <Button
-                  key={opt.size}
-                  variant={gridSize === opt.size ? 'default' : 'outline'}
-                  className="h-14 flex-col gap-0.5"
-                  onClick={() => setGridSize(opt.size)}
-                >
-                  <span className="font-bold text-base leading-none">{opt.label}</span>
-                  <span className="text-[11px] opacity-70 leading-none">{opt.sublabel}</span>
-                </Button>
-              ))}
-            </div>
-          </div>
 
-          {/* Difficulty dropdown */}
+            {/* Numbers */}
+            <Button
+              size="lg"
+              variant={selectedMode === 'number' ? 'default' : 'outline'}
+              className="w-full h-13 text-base font-medium flex items-center justify-start gap-3"
+              onClick={() => setSelectedMode('number')}
+              disabled={isLoading}
+            >
+              <Hash className="w-5 h-5 shrink-0" />
+              <div className="text-left flex-1 min-w-0">
+                <div className="font-semibold">Numbers</div>
+                <div className="text-xs opacity-80">Classic 1, 2, 3 … style</div>
+              </div>
+            </Button>
+
+            {/* Alphabets — always available for 3×3/4×4; gated by config for 9×9/16×16 */}
+            {availableModes.includes('alpha') && (
+            <Button
+              size="lg"
+              variant={selectedMode === 'alpha' ? 'default' : 'outline'}
+              className="w-full h-13 text-base font-medium flex items-center gap-3"
+              onClick={() => setSelectedMode('alpha')}
+              disabled={isLoading}
+            >
+              <Type className="w-5 h-5 shrink-0 text-primary" />
+              <div className="text-left flex-1 min-w-0">
+                <div className="font-semibold">Letters</div>
+                <div className="text-xs text-muted-foreground flex items-center gap-1">
+                  Colored A, B, C … &nbsp;<AlphaPreview count={gridSize} />
+                </div>
+              </div>
+            </Button>
+            )}
+
+            {/* Image theme — always available for 3×3/4×4; gated by config for 9×9/16×16 */}
+            {availableModes.includes('image') && (
+            <Button
+              size="lg"
+              variant={selectedMode === 'image' ? 'default' : 'outline'}
+              className="w-full h-13 text-base font-medium flex items-center gap-3"
+              onClick={() => setSelectedMode('image')}
+              disabled={isLoading}
+            >
+              <ThemeIcon themeId={themeId} value={1} size={24} />
+              <div className="text-left flex-1 min-w-0">
+                <div className="font-semibold">{activeTheme.name}</div>
+                <div className="text-xs text-muted-foreground flex items-center gap-0.5">
+                  {Array.from({ length: Math.min(gridSize, 5) }, (_, i) => (
+                    <ThemeIcon key={i} themeId={themeId} value={i + 1} size={14} />
+                  ))}
+                  {gridSize > 5 && <span className="opacity-50">…</span>}
+                </div>
+              </div>
+            </Button>
+            )}
+
+            {availableModes.includes('image') && (
+            <button
+              onClick={() => setLocation('/themes')}
+              className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors pt-0.5 underline underline-offset-2"
+            >
+              <Palette className="w-3 h-3 inline mr-1" />
+              Change image theme
+            </button>
+            )}
+          </div>
+          )}
+
+          {/* On 9×9/16×16 (only Numbers available), the Play Style slot is replaced by a
+              Difficulty picker that starts a new game immediately on change. */}
+          {availableModes.length === 1 && (
           <div className="space-y-2">
             <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               Difficulty
             </label>
-            <Select value={difficulty} onValueChange={v => setDifficulty(v as Difficulty)}>
+            <Select value={difficulty} onValueChange={v => handleDifficultyAutoStart(v as Difficulty)} disabled={isLoading}>
+              <SelectTrigger className="h-11">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {allDifficulties.map(d => (
+                  <SelectItem key={d} value={d} className="capitalize">{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">Changing difficulty starts a new {gridSize}×{gridSize} game.</p>
+          </div>
+          )}
+
+          {/* Difficulty dropdown — 3×3/4×4 only; picking difficulty here doesn't start the game,
+              a grid-size tap does. */}
+          {availableModes.length > 1 && (
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Difficulty
+            </label>
+            <Select value={difficulty} onValueChange={v => setDifficulty(v as Difficulty)} disabled={isLoading}>
               <SelectTrigger className="h-11">
                 <SelectValue />
               </SelectTrigger>
@@ -215,71 +331,27 @@ export default function SudokuHome() {
               </SelectContent>
             </Select>
           </div>
+          )}
 
-          {/* Play mode buttons */}
-          <div className="space-y-2 pt-1">
+          {/* Grid size — tapping a size starts the game immediately with the selected style */}
+          <div className="space-y-2">
             <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Play Style
+              Grid Size
             </label>
-
-            {/* Numbers */}
-            <Button
-              size="lg"
-              className="w-full h-13 text-base font-medium flex items-center justify-start gap-3"
-              onClick={() => handleStart('number')}
-              disabled={isLoading}
-            >
-              <Hash className="w-5 h-5 shrink-0" />
-              <div className="text-left flex-1 min-w-0">
-                <div className="font-semibold">Play with Numbers</div>
-                <div className="text-xs opacity-80">Classic 1, 2, 3 … style</div>
-              </div>
-            </Button>
-
-            {/* Alphabets */}
-            <Button
-              size="lg"
-              variant="secondary"
-              className="w-full h-13 text-base font-medium flex items-center gap-3"
-              onClick={() => handleStart('alpha')}
-              disabled={isLoading}
-            >
-              <Type className="w-5 h-5 shrink-0 text-primary" />
-              <div className="text-left flex-1 min-w-0">
-                <div className="font-semibold">Play with Letters</div>
-                <div className="text-xs text-muted-foreground flex items-center gap-1">
-                  Colored A, B, C … &nbsp;<AlphaPreview count={gridSize} />
-                </div>
-              </div>
-            </Button>
-
-            {/* Image theme */}
-            <Button
-              size="lg"
-              variant="outline"
-              className="w-full h-13 text-base font-medium flex items-center gap-3"
-              onClick={() => handleStart('image')}
-              disabled={isLoading}
-            >
-              <ThemeIcon themeId={themeId} value={1} size={24} />
-              <div className="text-left flex-1 min-w-0">
-                <div className="font-semibold">Play — {activeTheme.name}</div>
-                <div className="text-xs text-muted-foreground flex items-center gap-0.5">
-                  {Array.from({ length: Math.min(gridSize, 5) }, (_, i) => (
-                    <ThemeIcon key={i} themeId={themeId} value={i + 1} size={14} />
-                  ))}
-                  {gridSize > 5 && <span className="opacity-50">…</span>}
-                </div>
-              </div>
-            </Button>
-
-            <button
-              onClick={() => setLocation('/themes')}
-              className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors pt-0.5 underline underline-offset-2"
-            >
-              <Palette className="w-3 h-3 inline mr-1" />
-              Change image theme
-            </button>
+            <div className={`grid gap-2 ${filteredGridOptions.length === 2 ? 'grid-cols-2' : 'grid-cols-4'}`}>
+              {filteredGridOptions.map(opt => (
+                <Button
+                  key={opt.size}
+                  variant={gridSize === opt.size ? 'default' : 'outline'}
+                  className="h-14 flex-col gap-0.5"
+                  onClick={() => handleSelectSize(opt.size)}
+                  disabled={isLoading}
+                >
+                  <span className="font-bold text-base leading-none">{opt.label}</span>
+                  <span className="text-[11px] opacity-70 leading-none">{opt.sublabel}</span>
+                </Button>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -425,7 +497,7 @@ export default function SudokuHome() {
       </Dialog>
 
       {/* New game confirmation when one is in progress */}
-      <Dialog open={pendingMode !== null} onOpenChange={o => !o && setPendingMode(null)}>
+      <Dialog open={pendingStart !== null} onOpenChange={o => !o && setPendingStart(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>Start a new game?</DialogTitle>
@@ -438,13 +510,13 @@ export default function SudokuHome() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
-            <Button variant="outline" className="flex-1" onClick={() => {
-              setPendingMode(null);
+            <Button variant="outline" className="flex-1" disabled={isLoading} onClick={() => {
+              setPendingStart(null);
               if (activeGame) setLocation(`/game/${activeGame.id}`);
             }}>
               Resume Last Game
             </Button>
-            <Button className="flex-1" onClick={() => pendingMode && doStart(pendingMode)}>
+            <Button className="flex-1" disabled={isLoading} onClick={() => pendingStart && doStart(pendingStart.size, pendingStart.mode, pendingStart.difficulty)}>
               Start New Game
             </Button>
           </DialogFooter>
