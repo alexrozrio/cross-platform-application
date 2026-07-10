@@ -70,10 +70,10 @@ function MemoryCard({
   const theme = getTheme(themeId as any);
   const symbol = theme.symbols[(card.value - 1) % theme.symbols.length];
 
-  // Font sizes scale with grid: 2×4 biggest, 8×8 smallest
-  const imgSize = size === 8 ? 'text-xl sm:text-2xl' : size === 6 ? 'text-2xl sm:text-3xl' : size === 4 ? 'text-3xl sm:text-4xl' : 'text-4xl sm:text-5xl';
-  const txtSizeSingle = size === 8 ? 'text-base sm:text-lg' : size === 6 ? 'text-xl sm:text-2xl' : size === 4 ? 'text-2xl sm:text-3xl' : 'text-3xl sm:text-4xl';
-  const txtSizeMulti  = size === 8 ? 'text-xs sm:text-sm'  : size === 6 ? 'text-sm sm:text-base'  : size === 4 ? 'text-base sm:text-lg'  : 'text-xl sm:text-2xl';
+  // Font sizes scale with grid: 2×4 biggest, 8×8 smallest — sized to fill ~70–80% of each card
+  const imgSize = size === 8 ? 'text-3xl sm:text-4xl' : size === 6 ? 'text-4xl sm:text-5xl' : size === 4 ? 'text-5xl sm:text-6xl' : 'text-6xl sm:text-7xl';
+  const txtSizeSingle = size === 8 ? 'text-2xl sm:text-3xl' : size === 6 ? 'text-3xl sm:text-4xl' : size === 4 ? 'text-4xl sm:text-5xl' : 'text-5xl sm:text-6xl';
+  const txtSizeMulti  = size === 8 ? 'text-lg sm:text-xl'  : size === 6 ? 'text-xl sm:text-2xl'  : size === 4 ? 'text-2xl sm:text-3xl'  : 'text-4xl sm:text-5xl';
 
   // Front face content
   let frontContent: React.ReactNode;

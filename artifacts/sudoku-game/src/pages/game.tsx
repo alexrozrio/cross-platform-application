@@ -125,13 +125,18 @@ function CellContent({
   gridSize: number;
   cellNotes?: Set<string>;
 }) {
-  const imgSize = gridSize === 3 ? 44 : gridSize === 4 ? 38 : gridSize === 16 ? 14 : 24;
-  const alphaSize = gridSize === 3 ? 36 : gridSize === 4 ? 30 : gridSize === 16 ? 10 : 20;
+  // alphaSize drives inline font-size in AlphaLetter; scale ~80% of cell px
+  const alphaSize = gridSize === 3 ? 88 : gridSize === 4 ? 64 : gridSize === 16 ? 13 : 28;
 
   if (val !== "0") {
     const n = decodeFromGrid(val);
     if (mode === "image")
-      return <ThemeIcon themeId={themeId} value={n} size={imgSize} />;
+      // Wrapper fills 82% of the cell; CSS overrides the SVG's fixed width/height attrs
+      return (
+        <div className="w-[82%] h-[82%] flex items-center justify-center [&_svg]:w-full [&_svg]:h-full [&_img]:!w-full [&_img]:!h-full">
+          <ThemeIcon themeId={themeId} value={n} size={48} />
+        </div>
+      );
     if (mode === "alpha") return <AlphaLetter value={n} size={alphaSize} />;
     return <>{gridSize === 16 ? n : val}</>;
   }
@@ -717,10 +722,10 @@ export default function Game({ id }: { id: string }) {
   // Cell sizing — width is driven by the 1fr grid, height matches via aspect-square
   const cellText =
     mode === "number"
-      ? gridSize === 3 ? "text-2xl sm:text-4xl"
-        : gridSize === 4 ? "text-lg sm:text-2xl"
-        : gridSize === 16 ? "text-[7px] sm:text-[9px] font-bold"
-        : "text-sm sm:text-base"
+      ? gridSize === 3 ? "text-4xl sm:text-6xl"
+        : gridSize === 4 ? "text-3xl sm:text-4xl"
+        : gridSize === 16 ? "text-[9px] sm:text-[11px] font-bold"
+        : "text-xl sm:text-2xl"
       : "";
 
   return (
@@ -1264,11 +1269,15 @@ export default function Game({ id }: { id: string }) {
                     onClick={() => { setHighlightedNumber(encoded); handleNumberInput(encoded); }}
                   >
                     {mode === "image" ? (
-                      <ThemeIcon themeId={themeId} value={num} size={gridSize <= 4 ? 28 : gridSize === 16 ? 12 : gridSize === 9 ? 16 : 20} />
+                      <div className={`flex items-center justify-center [&_svg]:w-full [&_svg]:h-full [&_img]:!w-full [&_img]:!h-full ${
+                        gridSize === 16 ? "w-3.5 h-3.5" : gridSize === 9 ? "w-6 h-6" : "w-8 h-8"
+                      }`}>
+                        <ThemeIcon themeId={themeId} value={num} size={48} />
+                      </div>
                     ) : mode === "alpha" ? (
-                      <AlphaLetter value={num} size={gridSize === 3 ? 26 : gridSize === 4 ? 20 : gridSize === 16 ? 10 : 14} />
+                      <AlphaLetter value={num} size={gridSize === 3 ? 28 : gridSize === 4 ? 24 : gridSize === 16 ? 10 : 18} />
                     ) : (
-                      <span className={gridSize === 16 ? "text-xs font-semibold leading-none" : "text-base font-medium leading-none"}>{num}</span>
+                      <span className={gridSize === 16 ? "text-xs font-semibold leading-none" : gridSize === 9 ? "text-lg font-semibold leading-none" : "text-xl font-semibold leading-none"}>{num}</span>
                     )}
                     {!done && (
                       <span className="text-[9px] leading-none text-muted-foreground font-medium mt-0.5">{remaining}</span>
