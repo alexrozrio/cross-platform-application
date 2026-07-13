@@ -1048,7 +1048,7 @@ export default function MemoryMatchPage() {
                 {filteredGridOptions.map(opt => (
                   <button
                     key={opt.size}
-                    onClick={() => { setPendingAction({ type: 'new', size: opt.size }); setShowNewGame(false); }}
+                    onClick={() => { setShowNewGame(false); startGame(opt.size); }}
                     className={[
                       'flex flex-col items-center gap-1 rounded-lg border-2 py-2.5 px-2 text-center transition-all',
                       opt.size === gridSize
