@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, desc, and, asc } from "drizzle-orm";
+import { eq, desc, and, asc, gte } from "drizzle-orm";
 import { db, gamesTable, puzzlesTable, profilesTable, dailyChallengesTable } from "@workspace/db";
 import {
   CreateGameBody,
@@ -101,13 +101,24 @@ router.get("/games/active/:profileId", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Invalid profileId" });
     return;
   }
+  // Only surface games created within the last 7 days — older ones are considered stale
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const [game] = await db
     .select()
     .from(gamesTable)
-    .where(and(eq(gamesTable.profileId, profileId), eq(gamesTable.status, "active")))
+    .where(and(
+      eq(gamesTable.profileId, profileId),
+      eq(gamesTable.status, "active"),
+      gte(gamesTable.createdAt, sevenDaysAgo),
+    ))
     .orderBy(desc(gamesTable.createdAt))
     .limit(1);
   if (!game) {
+    // Also clean up any lingering stale active games for this profile
+    await db
+      .update(gamesTable)
+      .set({ status: "failed" })
+      .where(and(eq(gamesTable.profileId, profileId), eq(gamesTable.status, "active")));
     res.status(404).json({ error: "No active game" });
     return;
   }
