@@ -153,6 +153,27 @@ router.get("/challenges/for/:profileId", async (req, res): Promise<void> => {
   res.json(details.reverse());
 });
 
+router.get("/challenges/for-game/:gameId", async (req, res): Promise<void> => {
+  const gameId = parseInt(req.params.gameId, 10);
+  if (isNaN(gameId)) {
+    res.status(400).json({ error: "Invalid gameId" });
+    return;
+  }
+
+  const [challenge] = await db
+    .select()
+    .from(challengesTable)
+    .where(or(eq(challengesTable.challengerGameId, gameId), eq(challengesTable.challengedGameId, gameId)))
+    .limit(1);
+
+  if (!challenge) {
+    res.status(404).json({ error: "No challenge for this game" });
+    return;
+  }
+
+  res.json(await formatChallenge(challenge));
+});
+
 router.get("/challenges/:id", async (req, res): Promise<void> => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) {

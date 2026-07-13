@@ -259,6 +259,12 @@ export default function Game({ id }: { id: string }) {
   const [hints, setHints] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
+  const [challengeResult, setChallengeResult] = useState<null | {
+    id: number; status: string; winnerId: number | null;
+    challengerId: number; challengedId: number;
+    challengerUsername: string; challengedUsername: string;
+    challengerPoints: number | null; challengedPoints: number | null;
+  }>(null);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showNewGameDialog, setShowNewGameDialog] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
@@ -536,6 +542,14 @@ export default function Game({ id }: { id: string }) {
                   ? `+${pts.toLocaleString()} pts • ${formattedTime}`
                   : `Time: ${formattedTime} • Mistakes: ${mistakes}`,
               });
+
+              // Fetch challenge result (small delay so resolveChallengeForGame can run)
+              setTimeout(async () => {
+                try {
+                  const cr = await customFetch<typeof challengeResult>(`/api/challenges/for-game/${gameId}`);
+                  setChallengeResult(cr);
+                } catch {}
+              }, 800);
 
               const isDailyChallenge =
                 profileId &&
@@ -1046,6 +1060,62 @@ export default function Game({ id }: { id: string }) {
             </div>
           </div>
         )}
+
+        {/* Challenge result card */}
+        {challengeResult && (() => {
+          const isChallenger = challengeResult.challengerId === profileId;
+          const opponentName = isChallenger ? challengeResult.challengedUsername : challengeResult.challengerUsername;
+          const myPoints = isChallenger ? challengeResult.challengerPoints : challengeResult.challengedPoints;
+          const opponentPoints = isChallenger ? challengeResult.challengedPoints : challengeResult.challengerPoints;
+          const isWinner = challengeResult.winnerId === profileId;
+          const isTie = challengeResult.status === "completed" && challengeResult.winnerId === null;
+          const isPending = challengeResult.status !== "completed";
+
+          return (
+            <div className={[
+              "rounded-2xl border-2 p-4 space-y-3",
+              isWinner ? "border-yellow-400 bg-yellow-50 dark:bg-yellow-950/30" :
+              isTie ? "border-blue-400 bg-blue-50 dark:bg-blue-950/30" :
+              isPending ? "border-muted bg-muted/30" :
+              "border-red-300 bg-red-50 dark:bg-red-950/30",
+            ].join(" ")}>
+              <div className="flex items-center gap-2">
+                <span className="text-xl">
+                  {isPending ? "⏳" : isWinner ? "🏆" : isTie ? "🤝" : "😔"}
+                </span>
+                <div>
+                  <p className="font-bold text-sm">
+                    {isPending
+                      ? `Challenge vs ${opponentName}`
+                      : isWinner ? "You won the challenge!"
+                      : isTie ? "It's a tie!"
+                      : "You lost the challenge"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {isPending
+                      ? `Waiting for ${opponentName} to finish…`
+                      : `vs ${opponentName}`}
+                  </p>
+                </div>
+              </div>
+              {!isPending && (
+                <div className="grid grid-cols-2 gap-2 text-center text-sm">
+                  <div className="rounded-xl bg-background/60 p-2">
+                    <p className="font-black text-base">{myPoints?.toLocaleString() ?? "—"}</p>
+                    <p className="text-xs text-muted-foreground">Your points</p>
+                  </div>
+                  <div className="rounded-xl bg-background/60 p-2">
+                    <p className="font-black text-base">{opponentPoints?.toLocaleString() ?? "—"}</p>
+                    <p className="text-xs text-muted-foreground">{opponentName}'s points</p>
+                  </div>
+                </div>
+              )}
+              {isWinner && (
+                <p className="text-xs text-yellow-700 dark:text-yellow-400 font-semibold text-center">+10 💎 bonus awarded!</p>
+              )}
+            </div>
+          );
+        })()}
 
         <div className="space-y-3">
           <Button
