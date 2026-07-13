@@ -1124,8 +1124,8 @@ export default function Game({ id }: { id: string }) {
               <Button variant="outline" className="flex-1" onClick={() => setShowLeaveDialog(false)}>
                 Keep Playing
               </Button>
-              <Button className="flex-1" onClick={() => {
-                customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }).catch(() => {});
+              <Button className="flex-1" onClick={async () => {
+                try { await customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }); } catch {}
                 setLocation("/sudoku");
               }}>
                 Leave Game
