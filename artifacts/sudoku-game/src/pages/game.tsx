@@ -454,7 +454,10 @@ export default function Game({ id }: { id: string }) {
         });
         setWrongCells(wrong);
       }
-      if (loadedMistakes >= MAX_MISTAKES) setIsGameOver(true);
+      if (loadedMistakes >= MAX_MISTAKES) {
+        setIsGameOver(true);
+        customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }).catch(() => {});
+      }
     }
   }, [game, isCompleted, isGameOver, totalCells, storageKeyGrid, storageKeyNotes]);
 
@@ -614,6 +617,7 @@ export default function Game({ id }: { id: string }) {
         if (newMistakes >= MAX_MISTAKES) {
           sounds.gameover();
           setIsGameOver(true);
+          customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }).catch(() => {});
           toast.error("Game Over! 3 mistakes reached.", { duration: 5000 });
         } else {
           toast.error(`Wrong! ${MAX_MISTAKES - newMistakes} mistake${MAX_MISTAKES - newMistakes !== 1 ? "s" : ""} left.`, { duration: 1200 });

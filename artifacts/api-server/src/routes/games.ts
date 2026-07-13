@@ -163,6 +163,24 @@ router.patch("/games/:id", async (req, res): Promise<void> => {
   res.json(SaveGameResponse.parse(formatGame(game, puzzle)));
 });
 
+router.post("/games/:id/abandon", async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid game id" });
+    return;
+  }
+  const [game] = await db
+    .update(gamesTable)
+    .set({ status: "failed" })
+    .where(and(eq(gamesTable.id, id), eq(gamesTable.status, "active")))
+    .returning();
+  if (!game) {
+    res.status(404).json({ error: "Game not found or already finished" });
+    return;
+  }
+  res.json({ ok: true });
+});
+
 router.post("/games/:id/complete", async (req, res): Promise<void> => {
   const params = CompleteGameParams.safeParse(req.params);
   if (!params.success) {
