@@ -1117,14 +1117,17 @@ export default function Game({ id }: { id: string }) {
             <DialogHeader>
               <DialogTitle>Leave this game?</DialogTitle>
               <DialogDescription>
-                Your progress is saved automatically. You can resume it from the Sudoku home screen.
+                If you leave, this game will end and cannot be resumed.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
               <Button variant="outline" className="flex-1" onClick={() => setShowLeaveDialog(false)}>
                 Keep Playing
               </Button>
-              <Button className="flex-1" onClick={() => setLocation("/sudoku")}>
+              <Button className="flex-1" onClick={() => {
+                customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }).catch(() => {});
+                setLocation("/sudoku");
+              }}>
                 Leave Game
               </Button>
             </DialogFooter>
