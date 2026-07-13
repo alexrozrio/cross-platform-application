@@ -13,7 +13,8 @@ export type EventModalPayload =
   | { type: 'challenge_lost'; opponentName: string }
   | { type: 'tournament_rank_up'; delta: number; newRank: number; period: 'weekly' | 'monthly' }
   | { type: 'tournament_rank_down'; delta: number; newRank: number; period: 'weekly' | 'monthly' }
-  | { type: 'memory_challenge_bonus'; xp: number; gems: number };
+  | { type: 'memory_challenge_bonus'; xp: number; gems: number }
+  | { type: 'rank_up'; previousRank: string; newRank: string; newRankColor: string; newRankRing: string; nextGoalName?: string; nextGoalXp?: number };
 
 type Listener = (payload: EventModalPayload | null) => void;
 
