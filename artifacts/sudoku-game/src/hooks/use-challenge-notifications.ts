@@ -1,8 +1,8 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { customFetch } from "@workspace/api-client-react";
 import { useLocation } from "wouter";
+import { showEventModal } from "@/hooks/use-event-modal";
 
 interface ChallengeNotif {
   id: number;
@@ -33,7 +33,7 @@ export function useChallengeNotifications(profileId: number | null) {
     if (!data || !profileId) return;
 
     if (!initialized.current) {
-      // First load — silently record all current statuses; no toasts for old state
+      // First load — silently record all current statuses; no modals for old state
       data.forEach((c) => seenStatus.current.set(c.id, c.status));
       initialized.current = true;
       return;
@@ -49,46 +49,31 @@ export function useChallengeNotifications(profileId: number | null) {
       // ── Brand-new pending challenge directed at me ────────────────────────
       if (prev === undefined && c.status === "pending" && !isChallenger) {
         seenStatus.current.set(c.id, c.status);
-        toast(`⚔️ ${c.challengerUsername} challenged you!`, {
-          description: "Beat their score to win 10 gems.",
-          duration: 8000,
-          action: { label: "View", onClick: () => setLocation("/challenges") },
+        showEventModal({
+          type: "challenge_received",
+          challengerName: c.challengerUsername,
+          challengeId: c.id,
         });
         return;
       }
 
       // ── Status transition on an existing challenge ────────────────────────
       if (prev === undefined || prev === c.status) {
-        // Unseen new challenge with non-pending status, or no change — just record
         seenStatus.current.set(c.id, c.status);
         return;
       }
 
-      // Status changed — update record then fire toast
+      // Status changed — update record then fire modal
       seenStatus.current.set(c.id, c.status);
 
       // Challenger receives: accepted or declined
       if (isChallenger) {
         if (c.status === "accepted") {
-          toast(`✅ ${opponentName} accepted your challenge!`, {
-            description: "They're playing now — finish your game to find out who wins.",
-            duration: 8000,
-            action: {
-              label: "View",
-              onClick: () => setLocation("/challenges"),
-            },
-          });
+          showEventModal({ type: "challenge_accepted", opponentName });
           return;
         }
         if (c.status === "declined") {
-          toast(`❌ ${opponentName} declined your challenge`, {
-            description: "You can challenge someone else anytime.",
-            duration: 6000,
-            action: {
-              label: "View",
-              onClick: () => setLocation("/challenges"),
-            },
-          });
+          showEventModal({ type: "challenge_declined", opponentName });
           return;
         }
       }
@@ -99,33 +84,11 @@ export function useChallengeNotifications(profileId: number | null) {
         const tied = c.winnerId === null;
 
         if (won) {
-          toast.success(`🏆 You beat ${opponentName}!`, {
-            description:
-              "Congratulations — you won the challenge and earned +10 gems! 💎",
-            duration: 12000,
-            action: {
-              label: "View",
-              onClick: () => setLocation("/challenges"),
-            },
-          });
+          showEventModal({ type: "challenge_won", opponentName, gems: 10 });
         } else if (tied) {
-          toast(`🤝 It's a tie with ${opponentName}!`, {
-            description: "You matched each other's score — well played!",
-            duration: 8000,
-            action: {
-              label: "View",
-              onClick: () => setLocation("/challenges"),
-            },
-          });
+          showEventModal({ type: "challenge_tied", opponentName });
         } else {
-          toast(`😔 ${opponentName} beat you this time`, {
-            description: "Challenge them again and turn it around!",
-            duration: 8000,
-            action: {
-              label: "Rematch",
-              onClick: () => setLocation("/challenges"),
-            },
-          });
+          showEventModal({ type: "challenge_lost", opponentName });
         }
       }
     });

@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/use-auth";
 import { useLoginReward } from "@/hooks/use-login-reward";
 import { LoginRewardModal } from "@/components/login-reward-modal";
+import { EventModal } from "@/components/event-modal";
 import NotFound from "@/pages/not-found";
 import { Layout } from "@/components/layout";
 
@@ -56,6 +57,7 @@ function Router() {
           totalGems={rewardState.result.totalGems}
         />
       )}
+      <EventModal />
       <Layout>
         <Switch>
           <Route path="/" component={Portal} />

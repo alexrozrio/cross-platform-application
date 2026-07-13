@@ -40,6 +40,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
+import { showEventModal } from "@/hooks/use-event-modal";
 import { LevelBadge } from "@/components/level-badge";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -998,7 +999,6 @@ export default function Challenges() {
       queryClient.invalidateQueries({ queryKey: ["challenges"] });
       setRespondingId(null);
       if (vars.action === "accept") {
-        toast.success("Challenge accepted! Let's go!");
         if (challenge.challengedGameId)
           setLocation(`/game/${challenge.challengedGameId}`);
       } else {
@@ -1038,7 +1038,6 @@ export default function Challenges() {
       queryClient.invalidateQueries({ queryKey: ["memory-duels"] });
       setRespondingId(null);
       if (vars.action === "accept") {
-        toast.success("Memory duel accepted! Let's play!");
         if (duel.challengedGameId) {
           setLocation(
             `/memory?duelGameId=${duel.challengedGameId}&gridSize=${duel.gridSize}`,

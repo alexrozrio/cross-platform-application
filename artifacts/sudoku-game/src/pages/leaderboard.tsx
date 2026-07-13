@@ -28,7 +28,7 @@ import {
 import { LevelBadge } from "@/components/level-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
-import { toast } from "sonner";
+import { showEventModal } from "@/hooks/use-event-modal";
 
 type MainTab = "alltime" | "weekly" | "monthly" | "memory";
 
@@ -727,21 +727,19 @@ function TournamentBoard({
       setRankDelta(delta);
 
       if (delta > 0) {
-        toast.success(
-          `You moved up ${delta} spot${delta !== 1 ? "s" : ""}! 🎉`,
-          {
-            description: `Now ranked #${newRank} on the ${type} leaderboard.`,
-            duration: 6000,
-          },
-        );
+        showEventModal({
+          type: "tournament_rank_up",
+          delta,
+          newRank,
+          period: type as "weekly" | "monthly",
+        });
       } else {
-        toast(
-          `You dropped ${Math.abs(delta)} spot${Math.abs(delta) !== 1 ? "s" : ""}.`,
-          {
-            description: `Now ranked #${newRank}. Keep playing to climb back up!`,
-            duration: 5000,
-          },
-        );
+        showEventModal({
+          type: "tournament_rank_down",
+          delta,
+          newRank,
+          period: type as "weekly" | "monthly",
+        });
       }
 
       // Clear the visual delta badge after 12 s
