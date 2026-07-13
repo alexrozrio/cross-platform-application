@@ -318,30 +318,41 @@ export default function Game({ id }: { id: string }) {
   );
   const visibleDiffs = ['easy', 'medium', 'hard', 'expert'] as const;
 
-  // New-game switcher state — initialise to current game's grid size
+  // New-game switcher state — synced to the current game's size/difficulty once loaded
   const [newSize, setNewSize] = useState<3 | 4 | 9 | 16>(3);
   const [newDiff, setNewDiff] = useState<"easy" | "medium" | "hard" | "expert">("easy");
+  const [newGameFetching, setNewGameFetching] = useState(false);
 
-  const generateNew = useGeneratePuzzle(
-    { difficulty: newDiff, gridSize: newSize as any },
-    { query: { enabled: false } },
-  );
+  // Sync to current game once data arrives
+  useEffect(() => {
+    if (game?.puzzle) {
+      setNewSize(game.puzzle.gridSize as 3 | 4 | 9 | 16);
+      setNewDiff((game.puzzle.difficulty ?? "easy") as "easy" | "medium" | "hard" | "expert");
+    }
+  }, [game?.puzzle?.gridSize, game?.puzzle?.difficulty]);
+
   const createNewGame = useCreateGame();
-  const newGameLoading = generateNew.isFetching || createNewGame.isPending;
+  const newGameLoading = newGameFetching || createNewGame.isPending;
 
-  const handleNewGame = async () => {
+  // Accepts explicit overrides so callers don't have to wait for state to flush
+  const handleNewGame = async (sizeOverride?: 3 | 4 | 9 | 16, diffOverride?: "easy" | "medium" | "hard" | "expert") => {
+    const size = sizeOverride ?? newSize;
+    const diff = diffOverride ?? newDiff;
     if (!profileId || newGameLoading) return;
+    setNewGameFetching(true);
+    setShowMobileControls(false);
     try {
-      const res = await generateNew.refetch();
-      const puzzle = res.data;
+      const puzzle = await generatePuzzle({ difficulty: diff, gridSize: size as any });
       if (!puzzle) return;
-      const game = await createNewGame.mutateAsync({
-        data: { profileId, puzzleId: puzzle.id, difficulty: newDiff },
+      const newGameResult = await createNewGame.mutateAsync({
+        data: { profileId, puzzleId: puzzle.id, difficulty: diff },
       });
       const modeQuery = mode !== "number" ? `?mode=${mode}` : "";
-      setLocation(`/game/${game.id}${modeQuery}`);
+      setLocation(`/game/${newGameResult.id}${modeQuery}`);
     } catch (err) {
       console.error("Error starting new game:", err);
+    } finally {
+      setNewGameFetching(false);
     }
   };
 
@@ -953,21 +964,6 @@ export default function Game({ id }: { id: string }) {
           </AlertDialogContent>
         </AlertDialog>
 
-        {/* New-game confirmation dialog */}
-        <AlertDialog open={showNewGameDialog} onOpenChange={setShowNewGameDialog}>
-          <AlertDialogContent className="max-w-sm">
-            <AlertDialogHeader>
-              <AlertDialogTitle>Start a new game?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Your current progress will be saved, but you'll leave this puzzle. Are you sure you want to start a new game?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Keep Playing</AlertDialogCancel>
-              <AlertDialogAction onClick={handleNewGame}>Start New Game</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
 
         <div className="flex items-center gap-1 sm:gap-2 text-sm font-medium">
           {profile?.showTimer !== false && (
@@ -1081,28 +1077,33 @@ export default function Game({ id }: { id: string }) {
             )}
           </div>
 
-          {/* Size chips + difficulty + start in one row */}
+          {/* Size chips + difficulty — tapping either starts immediately */}
           <div className="flex items-center gap-1">
-            {/* All sizes including 3×3 */}
             <div className="flex gap-0.5 flex-1">
               {visibleSizes.map((s) => (
                 <button
                   key={s}
-                  onClick={() => setNewSize(s)}
+                  disabled={newGameLoading}
+                  onClick={() => { setNewSize(s); handleNewGame(s, newDiff); }}
                   className={[
-                    "flex-1 rounded py-0.5 text-[10px] font-bold transition-all leading-none",
+                    "flex-1 rounded py-0.5 text-[10px] font-bold transition-all leading-none disabled:opacity-50",
                     newSize === s
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "bg-background text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
                   ].join(" ")}
                 >
-                  {s}×{s}
+                  {newGameLoading && newSize === s
+                    ? <Loader2 className="w-2.5 h-2.5 animate-spin mx-auto" />
+                    : `${s}×${s}`}
                 </button>
               ))}
             </div>
 
-            {/* Difficulty */}
-            <Select value={newDiff} onValueChange={(v) => setNewDiff(v as typeof newDiff)}>
+            <Select
+              value={newDiff}
+              disabled={newGameLoading}
+              onValueChange={(v) => { setNewDiff(v as typeof newDiff); handleNewGame(newSize, v as typeof newDiff); }}
+            >
               <SelectTrigger className="h-6 text-[10px] w-[4.5rem] shrink-0 px-1.5">
                 <SelectValue />
               </SelectTrigger>
@@ -1112,19 +1113,6 @@ export default function Game({ id }: { id: string }) {
                 ))}
               </SelectContent>
             </Select>
-
-            {/* Start */}
-            <Button
-              size="sm"
-              className="h-6 px-2 text-[10px] gap-1 shrink-0"
-              onClick={() => setShowNewGameDialog(true)}
-              disabled={newGameLoading || !profileId}
-            >
-              {newGameLoading
-                ? <Loader2 className="w-2.5 h-2.5 animate-spin" />
-                : <RefreshCw className="w-2.5 h-2.5" />}
-              Start
-            </Button>
           </div>
         </div>
       )}
@@ -1310,41 +1298,35 @@ export default function Game({ id }: { id: string }) {
               {visibleSizes.map((s) => (
                 <button
                   key={s}
-                  onClick={() => setNewSize(s)}
+                  disabled={newGameLoading}
+                  onClick={() => { setNewSize(s); handleNewGame(s, newDiff); }}
                   className={[
-                    "rounded-md py-1.5 text-xs font-bold transition-all leading-none",
+                    "rounded-md py-1.5 text-xs font-bold transition-all leading-none disabled:opacity-50",
                     newSize === s
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "bg-background text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
                   ].join(" ")}
                 >
-                  {s}×{s}
+                  {newGameLoading && newSize === s
+                    ? <Loader2 className="w-3 h-3 animate-spin mx-auto" />
+                    : `${s}×${s}`}
                 </button>
               ))}
             </div>
-            <div className="flex gap-2">
-              <Select value={newDiff} onValueChange={(v) => setNewDiff(v as typeof newDiff)}>
-                <SelectTrigger className="h-8 text-xs flex-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {visibleDiffs.map(d => (
-                    <SelectItem key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                size="sm"
-                className="h-8 px-4 text-xs gap-1.5 shrink-0"
-                onClick={() => setShowNewGameDialog(true)}
-                disabled={newGameLoading || !profileId}
-              >
-                {newGameLoading
-                  ? <Loader2 className="w-3 h-3 animate-spin" />
-                  : <RefreshCw className="w-3 h-3" />}
-                Start
-              </Button>
-            </div>
+            <Select
+              value={newDiff}
+              disabled={newGameLoading}
+              onValueChange={(v) => { setNewDiff(v as typeof newDiff); handleNewGame(newSize, v as typeof newDiff); }}
+            >
+              <SelectTrigger className="h-8 text-xs w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {visibleDiffs.map(d => (
+                  <SelectItem key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           </div>{/* end hidden md:block — New game switcher */}
 
