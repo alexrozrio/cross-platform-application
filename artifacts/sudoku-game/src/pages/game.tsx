@@ -40,6 +40,9 @@ import {
   VolumeX,
   Share2,
   ChevronDown,
+  Zap,
+  Gem,
+  Trophy,
 } from "lucide-react";
 import { useSound } from "@/hooks/use-sound";
 import { Confetti } from "@/components/confetti";
@@ -910,6 +913,182 @@ export default function Game({ id }: { id: string }) {
         : "text-2xl sm:text-3xl"
       : "";
 
+  const diff = game?.puzzle?.difficulty ?? "";
+  const diffLabel = diff.charAt(0).toUpperCase() + diff.slice(1);
+  const sizeLabel = `${gridSize}×${gridSize}`;
+  const gemsEarned = pointsEarned !== null ? Math.max(1, Math.floor(pointsEarned / 5000)) : null;
+
+  // ── Full-page Game Over result screen ────────────────────────────────────────
+  if (isGameOver) {
+    return (
+      <div className="max-w-lg mx-auto w-full space-y-6 animate-in fade-in duration-500 pt-4">
+        <div className="rounded-2xl bg-destructive text-destructive-foreground p-6 text-center space-y-3 shadow-lg">
+          <div className="text-5xl mb-1">💀</div>
+          <h1 className="text-3xl font-serif font-bold">Game Over</h1>
+          <p className="opacity-80 text-sm">
+            {MAX_MISTAKES} mistakes made — better luck next time!
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { icon: Clock, label: "Time", value: formattedTime },
+            { icon: AlertTriangle, label: "Mistakes", value: `${mistakes} / ${MAX_MISTAKES}` },
+          ].map(({ icon: Icon, label, value }) => (
+            <div key={label} className="rounded-xl border bg-card p-4 text-center space-y-1">
+              <Icon className="w-4 h-4 text-primary mx-auto" />
+              <p className="text-xl font-black tabular-nums">{value}</p>
+              <p className="text-xs text-muted-foreground">{label}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="space-y-3">
+          <Button
+            className="w-full gap-2"
+            onClick={() => handleNewGame(gridSize as 3 | 4 | 9 | 16, diff as "easy" | "medium" | "hard" | "expert")}
+            disabled={newGameLoading}
+          >
+            {newGameLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+            Try again ({sizeLabel} {diffLabel})
+          </Button>
+
+          <div className="space-y-2">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground text-center">Or start a new game</p>
+            <div className={`grid gap-2 ${visibleSizes.length === 2 ? "grid-cols-2" : "grid-cols-2"}`}>
+              {visibleSizes.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => handleNewGame(s, newDiff)}
+                  disabled={newGameLoading}
+                  className={[
+                    "flex flex-col items-center gap-1 rounded-xl border-2 py-3 px-2 text-center transition-all",
+                    s === gridSize
+                      ? "border-primary bg-primary/10 shadow-sm"
+                      : "border-border hover:border-primary/40 hover:bg-muted/50",
+                  ].join(" ")}
+                >
+                  <span className="font-black text-base text-primary">{s}×{s}</span>
+                  <span className="text-[10px] text-muted-foreground leading-tight">
+                    {s === 3 ? "Child" : s === 4 ? "Mini" : s === 9 ? "Classic" : "Pro"}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setLocation("/")}
+          className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          ← Back to Brain Games 4 All
+        </button>
+      </div>
+    );
+  }
+
+  // ── Full-page Completion result screen ───────────────────────────────────────
+  if (isCompleted) {
+    return (
+      <div className="max-w-lg mx-auto w-full space-y-6 animate-in fade-in duration-500 pt-4">
+        <Confetti />
+
+        <div className="rounded-2xl bg-primary text-primary-foreground p-6 text-center space-y-3 shadow-lg">
+          <div className="text-5xl mb-1">{completionMessage.emoji}</div>
+          <h1 className="text-3xl font-serif font-bold">{completionMessage.headline}</h1>
+          <p className="opacity-80 text-sm">
+            {sizeLabel} {diffLabel} · {formattedTime} · {mistakes} mistake{mistakes !== 1 ? "s" : ""}
+          </p>
+          <button
+            onClick={handleShare}
+            className="inline-flex items-center gap-2 mt-1 text-sm opacity-80 hover:opacity-100 transition-opacity bg-white/15 hover:bg-white/25 rounded-lg px-4 py-1.5"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            Share your result
+          </button>
+        </div>
+
+        {isPersonalBest && (
+          <div className="flex items-center justify-center gap-2 rounded-xl border border-yellow-300/60 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/20 dark:border-yellow-700/40 px-4 py-2.5">
+            <span className="text-lg">🏆</span>
+            <span className="font-bold text-yellow-700 dark:text-yellow-400 text-sm">New Personal Best!</span>
+          </div>
+        )}
+
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { icon: Clock, label: "Time", value: formattedTime },
+            { icon: AlertTriangle, label: "Mistakes", value: `${mistakes} / ${MAX_MISTAKES}` },
+            { icon: Trophy, label: "Points", value: pointsEarned !== null ? pointsEarned.toLocaleString() : "—" },
+          ].map(({ icon: Icon, label, value }) => (
+            <div key={label} className="rounded-xl border bg-card p-4 text-center space-y-1">
+              <Icon className="w-4 h-4 text-primary mx-auto" />
+              <p className="text-xl font-black tabular-nums">{value}</p>
+              <p className="text-xs text-muted-foreground">{label}</p>
+            </div>
+          ))}
+        </div>
+
+        {pointsEarned !== null && (
+          <div className="rounded-xl border-2 border-primary/20 bg-gradient-to-r from-primary/8 to-primary/4 p-4 flex items-center justify-center gap-6">
+            <div className="flex items-center gap-2">
+              <Zap className="w-5 h-5 text-yellow-500" />
+              <span className="font-black text-lg">+{pointsEarned.toLocaleString()} pts</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Gem className="w-5 h-5 text-cyan-500" />
+              <span className="font-black text-lg">+{gemsEarned} 💎</span>
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-3">
+          <Button
+            variant="outline"
+            className="w-full gap-2"
+            onClick={() => handleNewGame(gridSize as 3 | 4 | 9 | 16, diff as "easy" | "medium" | "hard" | "expert")}
+            disabled={newGameLoading}
+          >
+            {newGameLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+            Play again ({sizeLabel} {diffLabel})
+          </Button>
+
+          <div className="space-y-2">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground text-center">Or start a new game</p>
+            <div className="grid grid-cols-2 gap-2">
+              {visibleSizes.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => handleNewGame(s, newDiff)}
+                  disabled={newGameLoading}
+                  className={[
+                    "flex flex-col items-center gap-1 rounded-xl border-2 py-3 px-2 text-center transition-all",
+                    s === gridSize
+                      ? "border-primary bg-primary/10 shadow-sm"
+                      : "border-border hover:border-primary/40 hover:bg-muted/50",
+                  ].join(" ")}
+                >
+                  <span className="font-black text-base text-primary">{s}×{s}</span>
+                  <span className="text-[10px] text-muted-foreground leading-tight">
+                    {s === 3 ? "Child" : s === 4 ? "Mini" : s === 9 ? "Classic" : "Pro"}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setLocation("/")}
+          className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          ← Back to Brain Games 4 All
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col w-full gap-1.5 md:gap-3 animate-in fade-in duration-300 pb-16 sm:pb-20 md:pb-4">
       {/* Header */}
@@ -1298,75 +1477,6 @@ export default function Game({ id }: { id: string }) {
             </div>
           </div>
           </div>{/* end hidden md:block — New game switcher */}
-
-          {/* Game Over banner */}
-          {isGameOver && (
-            <Card className="bg-destructive text-destructive-foreground border-none w-full">
-              <CardContent className="pt-6 flex flex-col items-center text-center gap-3">
-                <h2 className="text-2xl font-serif font-bold">Game Over 💀</h2>
-                <p className="opacity-90 text-sm">
-                  You made {MAX_MISTAKES} mistakes — better luck next time!
-                </p>
-                <div className="flex gap-2 w-full mt-2">
-                  <Button variant="secondary" className="flex-1" onClick={() => setLocation("/sudoku")}>
-                    Try Again
-                  </Button>
-                  <Button variant="secondary" className="flex-1" onClick={() => setLocation("/")}>
-                    Brain Games 4 All
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Confetti on completion */}
-          {isCompleted && <Confetti />}
-
-          {/* Completed banner */}
-          {isCompleted && (
-            <Card className="bg-primary text-primary-foreground border-none w-full">
-              <CardContent className="pt-6 flex flex-col items-center text-center gap-3">
-                <h2 className="text-2xl font-serif font-bold">{completionMessage.headline} {completionMessage.emoji}</h2>
-                <p className="opacity-90 text-sm">
-                  {formattedTime} • {mistakes} mistake{mistakes !== 1 ? "s" : ""}
-                </p>
-                {isPersonalBest && (
-                  <div className="flex items-center gap-1.5 bg-yellow-400/20 border border-yellow-300/50 text-yellow-200 rounded-full px-3 py-1 text-xs font-bold tracking-wide">
-                    🏆 New Personal Best!
-                  </div>
-                )}
-                {pointsEarned !== null && (
-                  <div className="flex gap-4 items-end justify-center">
-                    <div className="flex flex-col items-center gap-0.5">
-                      <span className="text-3xl font-black tracking-tight">+{pointsEarned.toLocaleString()}</span>
-                      <span className="text-xs opacity-80 uppercase tracking-widest font-semibold">points</span>
-                    </div>
-                    <div className="flex flex-col items-center gap-0.5">
-                      <span className="text-3xl font-black tracking-tight">+{Math.max(1, Math.floor(pointsEarned / 5000))}</span>
-                      <span className="text-xs opacity-80 uppercase tracking-widest font-semibold">💎 gems</span>
-                    </div>
-                  </div>
-                )}
-                <div className="flex gap-2 w-full mt-2">
-                  <Button variant="secondary" className="flex-1" onClick={() => setLocation("/sudoku")}>
-                    Play Again
-                  </Button>
-                  <Button variant="secondary" className="flex-1" onClick={() => setLocation("/leaderboard")}>
-                    Leaderboard
-                  </Button>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full opacity-80 hover:opacity-100 gap-2 text-primary-foreground hover:text-primary-foreground hover:bg-white/15"
-                  onClick={handleShare}
-                >
-                  <Share2 className="w-4 h-4" />
-                  Share your result
-                </Button>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Controls */}
           {!isCompleted && (
