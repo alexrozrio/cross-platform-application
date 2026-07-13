@@ -893,10 +893,10 @@ export default function Game({ id }: { id: string }) {
   // Cell sizing — width is driven by the 1fr grid, height matches via aspect-square
   const cellText =
     mode === "number"
-      ? gridSize === 3 ? "text-4xl sm:text-6xl"
-        : gridSize === 4 ? "text-3xl sm:text-4xl"
-        : gridSize === 16 ? "text-[9px] sm:text-[11px] font-bold"
-        : "text-xl sm:text-2xl"
+      ? gridSize === 3 ? "text-5xl sm:text-7xl"
+        : gridSize === 4 ? "text-4xl sm:text-5xl"
+        : gridSize === 16 ? "text-[11px] sm:text-[13px] font-bold"
+        : "text-2xl sm:text-3xl"
       : "";
 
   return (
@@ -1171,7 +1171,7 @@ export default function Game({ id }: { id: string }) {
               }}
             >
             <div
-              className="grid w-full p-1"
+              className="grid w-full p-0"
               style={{
                 gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
                 gap: "1px",
