@@ -1077,42 +1077,25 @@ export default function Game({ id }: { id: string }) {
             )}
           </div>
 
-          {/* Size chips + difficulty — tapping either starts immediately */}
-          <div className="flex items-center gap-1">
-            <div className="flex gap-0.5 flex-1">
-              {visibleSizes.map((s) => (
-                <button
-                  key={s}
-                  disabled={newGameLoading}
-                  onClick={() => { setNewSize(s); handleNewGame(s, newDiff); }}
-                  className={[
-                    "flex-1 rounded py-0.5 text-[10px] font-bold transition-all leading-none disabled:opacity-50",
-                    newSize === s
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "bg-background text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
-                  ].join(" ")}
-                >
-                  {newGameLoading && newSize === s
-                    ? <Loader2 className="w-2.5 h-2.5 animate-spin mx-auto" />
-                    : `${s}×${s}`}
-                </button>
-              ))}
-            </div>
-
-            <Select
-              value={newDiff}
-              disabled={newGameLoading}
-              onValueChange={(v) => { setNewDiff(v as typeof newDiff); handleNewGame(newSize, v as typeof newDiff); }}
-            >
-              <SelectTrigger className="h-6 text-[10px] w-[4.5rem] shrink-0 px-1.5">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {visibleDiffs.map(d => (
-                  <SelectItem key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Size chips — tapping one starts immediately with the current difficulty */}
+          <div className="flex gap-0.5">
+            {visibleSizes.map((s) => (
+              <button
+                key={s}
+                disabled={newGameLoading}
+                onClick={() => { setNewSize(s); handleNewGame(s, newDiff); }}
+                className={[
+                  "flex-1 rounded py-0.5 text-[10px] font-bold transition-all leading-none disabled:opacity-50",
+                  newSize === s
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-background text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
+                ].join(" ")}
+              >
+                {newGameLoading && newSize === s
+                  ? <Loader2 className="w-2.5 h-2.5 animate-spin mx-auto" />
+                  : `${s}×${s}`}
+              </button>
+            ))}
           </div>
         </div>
       )}
@@ -1313,20 +1296,6 @@ export default function Game({ id }: { id: string }) {
                 </button>
               ))}
             </div>
-            <Select
-              value={newDiff}
-              disabled={newGameLoading}
-              onValueChange={(v) => { setNewDiff(v as typeof newDiff); handleNewGame(newSize, v as typeof newDiff); }}
-            >
-              <SelectTrigger className="h-8 text-xs w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {visibleDiffs.map(d => (
-                  <SelectItem key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
           </div>{/* end hidden md:block — New game switcher */}
 
