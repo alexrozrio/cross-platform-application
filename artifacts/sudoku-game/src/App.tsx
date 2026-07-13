@@ -65,7 +65,7 @@ function Router() {
           <Route path="/themes" component={Themes} />
           <Route path="/profile" component={Profile} />
           <Route path="/game/:id">
-            {(params) => <Game id={params.id} />}
+            {(params) => <Game key={params.id} id={params.id} />}
           </Route>
           <Route path="/daily-challenge" component={DailyChallenge} />
           <Route path="/leaderboard" component={Leaderboard} />
