@@ -70,7 +70,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-200" style={{ minHeight: "100svh" }}>
+    <div className="flex flex-col bg-background text-foreground transition-colors duration-200" style={{ minHeight: "100dvh" }}>
       <AchievementUnlockModal achievements={newlyUnlocked} onDismiss={dismiss} profileId={profileId} />
       <header className="border-b bg-card py-4 px-6 flex items-center justify-between sticky top-0 z-10">
         <Link href="/" className="font-serif text-2xl font-bold tracking-tight text-primary">
@@ -139,7 +139,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="flex-1 w-full max-w-4xl mx-auto px-2 py-4 sm:px-4 md:px-8 md:py-8 flex flex-col pb-20 md:pb-8">
+      <main className="flex-1 w-full max-w-4xl mx-auto px-2 py-4 sm:px-4 md:px-8 md:py-8 flex flex-col md:pb-8" style={{ paddingBottom: "calc(5rem + env(safe-area-inset-bottom, 0px))" }}>
         {children}
       </main>
 
