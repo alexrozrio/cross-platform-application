@@ -96,7 +96,7 @@ export function useChallengeNotifications(profileId: number | null) {
 }
 
 export function usePendingChallengeCount(profileId: number | null): number {
-  const { data } = useQuery<ChallengeNotif[]>({
+  const { data: sudokuChallenges } = useQuery<ChallengeNotif[]>({
     queryKey: ["challenges", profileId],
     queryFn: () =>
       customFetch<ChallengeNotif[]>(`/api/challenges/for/${profileId}`),
@@ -105,8 +105,21 @@ export function usePendingChallengeCount(profileId: number | null): number {
     staleTime: 10000,
   });
 
-  if (!data || !profileId) return 0;
-  return data.filter(
+  const { data: memoryDuels } = useQuery<ChallengeNotif[]>({
+    queryKey: ["memory-duels", profileId],
+    queryFn: () =>
+      customFetch<ChallengeNotif[]>(`/api/memory-duels/for/${profileId}`),
+    enabled: !!profileId,
+    refetchInterval: 15000,
+    staleTime: 10000,
+  });
+
+  if (!profileId) return 0;
+  const sudokuPending = (sudokuChallenges ?? []).filter(
     (c) => c.status === "pending" && c.challengedId === profileId,
   ).length;
+  const memoryPending = (memoryDuels ?? []).filter(
+    (c) => c.status === "pending" && c.challengedId === profileId,
+  ).length;
+  return sudokuPending + memoryPending;
 }
