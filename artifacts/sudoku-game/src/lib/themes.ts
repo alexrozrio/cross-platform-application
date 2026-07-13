@@ -7,6 +7,7 @@ export interface ImageTheme {
   name: string;
   preview: string;
   symbols: string[];
+  colors: string[];
   bg: string;
 }
 
@@ -17,6 +18,7 @@ export const IMAGE_THEMES: ImageTheme[] = iconSetsConfig
     name: t.name,
     preview: t.preview,
     symbols: t.symbols,
+    colors: (t as any).colors ?? [],
     bg: t.bg,
   }));
 

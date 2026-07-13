@@ -76,13 +76,20 @@ function MemoryCard({
   const txtSizeMulti  = size === 8 ? 'text-lg sm:text-xl'  : size === 6 ? 'text-xl sm:text-2xl'  : size === 4 ? 'text-2xl sm:text-3xl'  : 'text-4xl sm:text-5xl';
 
   // Front face content
+  const themeColor = theme.colors.length > 0
+    ? theme.colors[(card.value - 1) % theme.colors.length]
+    : undefined;
+
   let frontContent: React.ReactNode;
   if (displayMode === 'image') {
     frontContent = <span className={`${imgSize} leading-none`}>{symbol}</span>;
   } else {
     const label = getCardLabel(card.value, displayMode);
     frontContent = (
-      <span className={`${label.length > 1 ? txtSizeMulti : txtSizeSingle} font-black leading-none tabular-nums`}>
+      <span
+        className={`${label.length > 1 ? txtSizeMulti : txtSizeSingle} font-black leading-none tabular-nums`}
+        style={themeColor ? { color: themeColor } : undefined}
+      >
         {label}
       </span>
     );
