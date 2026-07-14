@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, text, timestamp, index } from "drizzle-orm/pg-core";
 import { profilesTable } from "./profiles";
 
 export const memoryGamesTable = pgTable("memory_games", {
@@ -13,6 +13,9 @@ export const memoryGamesTable = pgTable("memory_games", {
   gemsEarned: integer("gems_earned"),
   completedAt: timestamp("completed_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => [
+  index("memory_games_status_completed_at_idx").on(table.status, table.completedAt),
+  index("memory_games_profile_id_idx").on(table.profileId),
+]);
 
 export type MemoryGame = typeof memoryGamesTable.$inferSelect;

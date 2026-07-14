@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, text, timestamp, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { profilesTable } from "./profiles";
@@ -17,7 +17,13 @@ export const gamesTable = pgTable("games", {
   xpEarned: integer("xp_earned"),
   completedAt: timestamp("completed_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => [
+  // Leaderboard/tournament queries filter on status + completedAt range and
+  // group by profileId — these indexes keep those aggregations fast as the
+  // games table grows instead of forcing a full table scan.
+  index("games_status_completed_at_idx").on(table.status, table.completedAt),
+  index("games_profile_id_idx").on(table.profileId),
+]);
 
 export const insertGameSchema = createInsertSchema(gamesTable).omit({ id: true, createdAt: true });
 export type InsertGame = z.infer<typeof insertGameSchema>;
