@@ -199,18 +199,42 @@ function isValid16x16(grid: Grid, pos: number, num: number): boolean {
   return true;
 }
 
-function solve16x16(grid: Grid): boolean {
-  const empty = grid.indexOf(0);
-  if (empty === -1) return true;
-  const nums = Array.from({ length: 16 }, (_, i) => i + 1).sort(() => Math.random() - 0.5);
-  for (const num of nums) {
-    if (isValid16x16(grid, empty, num)) {
-      grid[empty] = num;
-      if (solve16x16(grid)) return true;
-      grid[empty] = 0;
+// Algebraic base solution: value = (row*4 + floor(row/4) + col) % 16 + 1
+// This satisfies all row, column, and 4×4 box constraints.
+// Randomised by permuting: values, row-bands (each 4 rows), rows within bands,
+// col-bands, and cols within bands — producing a huge variety without backtracking.
+function generate16x16Solution(): Grid {
+  const SIZE = 16;
+  const BOX = 4;
+
+  // Build base grid
+  const base: Grid = new Array(256).fill(0);
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      base[r * SIZE + c] = (r * BOX + Math.floor(r / BOX) + c) % SIZE + 1;
     }
   }
-  return false;
+
+  // Random number permutation
+  const numPerm = Array.from({ length: SIZE }, (_, i) => i + 1).sort(() => Math.random() - 0.5);
+
+  // Random band + row-within-band permutations
+  const bandOrder = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
+  const rowPerm = bandOrder.flatMap(b =>
+    [0, 1, 2, 3].sort(() => Math.random() - 0.5).map(r => b * BOX + r)
+  );
+  const colBandOrder = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
+  const colPerm = colBandOrder.flatMap(b =>
+    [0, 1, 2, 3].sort(() => Math.random() - 0.5).map(c => b * BOX + c)
+  );
+
+  const solution: Grid = new Array(256).fill(0);
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      solution[r * SIZE + c] = numPerm[base[rowPerm[r] * SIZE + colPerm[c]] - 1];
+    }
+  }
+  return solution;
 }
 
 const CLUES_16x16: Record<string, number> = {
@@ -280,8 +304,7 @@ export function generatePuzzle(
   }
 
   if (gridSize === 16) {
-    const solution: Grid = new Array(256).fill(0);
-    solve16x16(solution);
+    const solution = generate16x16Solution();
     const solutionStr = encodeGrid(solution);
 
     const puzzle = [...solution];
