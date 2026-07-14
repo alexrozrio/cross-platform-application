@@ -34,6 +34,10 @@ function NotifBadge({ count }: { count: number }) {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
+  // Game routes get a focused, chrome-free layout on mobile so the board
+  // fits inside the viewport even with the browser's address bar showing —
+  // the in-game back arrow replaces the global header/nav for navigation.
+  const isGameRoute = location.startsWith("/game/");
   const { profileId, isSignedIn, replitUser } = useAuth();
   const { data: profile } = useGetProfile(profileId as number, { query: { enabled: !!profileId } });
   const pendingCount = usePendingChallengeCount(profileId);
@@ -72,7 +76,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col bg-background text-foreground transition-colors duration-200" style={{ minHeight: "100dvh" }}>
       <AchievementUnlockModal achievements={newlyUnlocked} onDismiss={dismiss} profileId={profileId} />
-      <header className="border-b bg-card py-4 px-6 flex items-center justify-between sticky top-0 z-10">
+      <header className={[
+        "border-b bg-card py-4 px-6 items-center justify-between sticky top-0 z-10",
+        isGameRoute ? "hidden md:flex" : "flex",
+      ].join(" ")}>
         <Link href="/" className="font-serif text-2xl font-bold tracking-tight text-primary">
           Brain Games 4 All
         </Link>
@@ -139,10 +146,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="flex-1 w-full max-w-4xl mx-auto px-2 py-4 sm:px-4 md:px-8 md:py-8 flex flex-col md:pb-8" style={{ paddingBottom: "calc(5rem + env(safe-area-inset-bottom, 0px))" }}>
+      <main
+        className={[
+          "flex-1 w-full max-w-4xl mx-auto flex flex-col",
+          isGameRoute
+            ? "px-2 py-1.5 sm:px-4 md:px-8 md:py-8 md:pb-8"
+            : "px-2 py-4 sm:px-4 md:px-8 md:py-8 md:pb-8",
+        ].join(" ")}
+        style={{
+          paddingBottom: isGameRoute
+            ? "env(safe-area-inset-bottom, 0px)"
+            : "calc(5rem + env(safe-area-inset-bottom, 0px))",
+        }}
+      >
         {children}
       </main>
 
+      {!isGameRoute && (
       <nav className="md:hidden border-t bg-card pt-2 px-2 flex items-center justify-around fixed bottom-0 left-0 right-0 z-10" style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}>
         {navItems.map((item) => (
           <Link
@@ -177,6 +197,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </span>
         </button>
       </nav>
+      )}
     </div>
   );
 }

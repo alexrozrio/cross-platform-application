@@ -1233,7 +1233,7 @@ export default function Game({ id }: { id: string }) {
   }
 
   return (
-    <div className="flex flex-col w-full gap-1.5 md:gap-3 animate-in fade-in duration-300 pb-16 sm:pb-20 md:pb-4">
+    <div className="flex flex-col w-full gap-1.5 md:gap-3 animate-in fade-in duration-300 pb-2 sm:pb-4 md:pb-4">
       {/* Header */}
       <div className="flex items-center justify-between w-full">
         <Button
