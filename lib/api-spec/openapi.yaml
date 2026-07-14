@@ -772,6 +772,9 @@ components:
           type: integer
         gamesPlayed:
           type: integer
+        xp:
+          type: integer
+          description: "Player's total profile XP (used to derive their rank tier, e.g. Iron/Silver/Gold)"
 
     TournamentLeaderboard:
       type: object

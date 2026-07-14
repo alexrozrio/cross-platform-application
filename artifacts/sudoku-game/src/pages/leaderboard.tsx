@@ -822,6 +822,9 @@ function TournamentBoard({
                             >
                               {entry.username}
                             </p>
+                            {(entry as any).xp !== undefined && (
+                              <LevelBadge xp={(entry as any).xp} size="xs" />
+                            )}
                             {isMe && (
                               <span className="text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-full px-2 py-0.5">
                                 You

@@ -271,6 +271,8 @@ export interface TournamentEntry {
   avatar?: string | null;
   totalPoints: number;
   gamesPlayed: number;
+  /** Player's total profile XP (used to derive their rank tier, e.g. Iron/Silver/Gold) */
+  xp?: number;
 }
 
 export type TournamentLeaderboardType = typeof TournamentLeaderboardType[keyof typeof TournamentLeaderboardType];

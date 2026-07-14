@@ -352,7 +352,8 @@ export const GetTournamentLeaderboardResponse = zod.object({
   "username": zod.string(),
   "avatar": zod.string().nullish(),
   "totalPoints": zod.number(),
-  "gamesPlayed": zod.number()
+  "gamesPlayed": zod.number(),
+  "xp": zod.number().optional().describe('Player\'s total profile XP (used to derive their rank tier, e.g. Iron\/Silver\/Gold)')
 }))
 })
 
