@@ -21,4 +21,6 @@ export interface LeaderboardEntry {
   completedAt: string;
   /** Experience points of the player at the time of the entry */
   xp?: number;
+  /** XP earned for this game (or total XP earned across games, for aggregate views) */
+  xpEarned?: number;
 }

@@ -291,7 +291,8 @@ export const GetLeaderboardResponseItem = zod.object({
   "elapsedSeconds": zod.number(),
   "mistakeCount": zod.number().optional(),
   "completedAt": zod.string(),
-  "xp": zod.number().optional().describe('Experience points of the player at the time of the entry')
+  "xp": zod.number().optional().describe('Experience points of the player at the time of the entry'),
+  "xpEarned": zod.number().optional().describe('XP earned for this game (or total XP earned across games, for aggregate views)')
 })
 export const GetLeaderboardResponse = zod.array(GetLeaderboardResponseItem)
 

@@ -508,21 +508,18 @@ function AlltimeBoard({ myProfileId }: { myProfileId?: number }) {
                           {entry.xp !== undefined && (
                             <LevelBadge xp={entry.xp} size="xs" />
                           )}
-                          {gridFilter !== "all" && entry.difficulty && (() => {
-                            const xpMap: Record<string, number> = { easy: 1, medium: 2, hard: 3, expert: 5 };
-                            const earned = xpMap[entry.difficulty];
-                            return earned ? (
-                              <span className="text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200 rounded-full px-1.5 py-0.5">
-                                +{earned} XP
-                              </span>
-                            ) : null;
-                          })()}
+                          {(entry as any).xpEarned != null && (entry as any).xpEarned > 0 && (
+                            <span className="text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200 rounded-full px-1.5 py-0.5">
+                              +{(entry as any).xpEarned} XP
+                            </span>
+                          )}
                         </div>
                         <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
                           {gridFilter === "all" ? (
                             <span>{(entry as any).gamesPlayed ?? 0} game{((entry as any).gamesPlayed ?? 0) !== 1 ? "s" : ""} across all grids</span>
                           ) : (
                             <>
+                              <span className="font-semibold text-primary">{entry.points ?? 0} pts</span>
                               <span>{entry.mistakeCount ?? 0} mistake{entry.mistakeCount !== 1 ? "s" : ""}</span>
                               {entry.difficulty && (
                                 <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium capitalize ${diffColor[entry.difficulty] ?? ""}`}>

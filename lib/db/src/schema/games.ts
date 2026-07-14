@@ -14,6 +14,7 @@ export const gamesTable = pgTable("games", {
   mistakeCount: integer("mistake_count").notNull().default(0),
   hintsUsed: integer("hints_used").notNull().default(0),
   points: integer("points"),
+  xpEarned: integer("xp_earned"),
   completedAt: timestamp("completed_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

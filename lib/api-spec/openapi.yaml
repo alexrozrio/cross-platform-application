@@ -701,6 +701,9 @@ components:
         xp:
           type: integer
           description: "Experience points of the player at the time of the entry"
+        xpEarned:
+          type: integer
+          description: "XP earned for this game (or total XP earned across games, for aggregate views)"
 
     PlayerStats:
       type: object
