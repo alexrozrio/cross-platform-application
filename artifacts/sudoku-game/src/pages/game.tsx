@@ -345,6 +345,24 @@ export default function Game({ id }: { id: string }) {
   }, [numberCounts, gridSize]);
   const [isPaused, setIsPaused] = useState(false);
 
+  // ─── Mobile browser-chrome collapse ──────────────────────────────────────────
+  // Keeping the app header/nav visible (just shrunk) means the board needs the
+  // extra room the browser's own address bar is holding onto. Nudging a scroll
+  // into the game section (like jumping to a `#anchor`) prompts mobile Safari/
+  // Chrome to auto-hide that bar, which grows the dvh-based layout to fill in.
+  const gameViewRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!window.matchMedia("(max-width: 767px)").matches) return;
+    const nudge = () => {
+      gameViewRef.current?.scrollIntoView({ block: "start", behavior: "auto" });
+      window.scrollTo({ top: window.scrollY + 1, behavior: "auto" });
+    };
+    const raf = requestAnimationFrame(nudge);
+    const t = setTimeout(nudge, 250);
+    return () => { cancelAnimationFrame(raf); clearTimeout(t); };
+  }, [gameId]);
+
   // ─── Board pinch-zoom & pan ──────────────────────────────────────────────────
   const [boardScale, setBoardScale] = useState(1);
   const [boardOffset, setBoardOffset] = useState({ x: 0, y: 0 });
@@ -1233,7 +1251,7 @@ export default function Game({ id }: { id: string }) {
   }
 
   return (
-    <div className="flex flex-col w-full gap-1.5 md:gap-3 animate-in fade-in duration-300 pb-2 sm:pb-4 md:pb-4">
+    <div ref={gameViewRef} className="flex flex-col w-full gap-1.5 md:gap-3 animate-in fade-in duration-300 pb-16 sm:pb-20 md:pb-4 scroll-mt-2">
       {/* Header */}
       <div className="flex items-center justify-between w-full">
         <Button

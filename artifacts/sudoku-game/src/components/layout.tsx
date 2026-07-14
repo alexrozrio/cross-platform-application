@@ -34,9 +34,10 @@ function NotifBadge({ count }: { count: number }) {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
-  // Game routes get a focused, chrome-free layout on mobile so the board
-  // fits inside the viewport even with the browser's address bar showing —
-  // the in-game back arrow replaces the global header/nav for navigation.
+  // Game routes keep the header/nav chrome visible, just shrunk down, so
+  // there's still room to reach Home/Leaderboard/etc. while playing. The
+  // extra vertical space needed for the board comes from letting the
+  // mobile browser's own address bar collapse (see Game's scroll-nudge).
   const isGameRoute = location.startsWith("/game/");
   const { profileId, isSignedIn, replitUser } = useAuth();
   const { data: profile } = useGetProfile(profileId as number, { query: { enabled: !!profileId } });
@@ -77,16 +78,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex flex-col bg-background text-foreground transition-colors duration-200" style={{ minHeight: "100dvh" }}>
       <AchievementUnlockModal achievements={newlyUnlocked} onDismiss={dismiss} profileId={profileId} />
       <header className={[
-        "border-b bg-card py-4 px-6 items-center justify-between sticky top-0 z-10",
-        isGameRoute ? "hidden md:flex" : "flex",
+        "border-b bg-card flex items-center justify-between sticky top-0 z-10",
+        isGameRoute ? "py-1.5 px-3 md:py-4 md:px-6" : "py-4 px-6",
       ].join(" ")}>
-        <Link href="/" className="font-serif text-2xl font-bold tracking-tight text-primary">
+        <Link href="/" className={[
+          "font-serif font-bold tracking-tight text-primary",
+          isGameRoute ? "text-base md:text-2xl" : "text-2xl",
+        ].join(" ")}>
           Brain Games 4 All
         </Link>
 
         {/* Gems badge */}
         {profileId && profile?.gems !== undefined && (
-          <div className="flex items-center gap-1.5 text-sm font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 px-3 py-1 rounded-full border border-cyan-200 dark:border-cyan-800 ml-2 mr-auto">
+          <div className={[
+            "flex items-center gap-1.5 font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 rounded-full border border-cyan-200 dark:border-cyan-800 ml-2 mr-auto",
+            isGameRoute ? "text-xs px-2 py-0.5 md:text-sm md:px-3 md:py-1" : "text-sm px-3 py-1",
+          ].join(" ")}>
             <Gem className="w-3.5 h-3.5" />
             <span>{profile.gems.toLocaleString()}</span>
           </div>
@@ -150,19 +157,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
         className={[
           "flex-1 w-full max-w-4xl mx-auto flex flex-col",
           isGameRoute
-            ? "px-2 py-1.5 sm:px-4 md:px-8 md:py-8 md:pb-8"
+            ? "px-2 py-2 sm:px-4 md:px-8 md:py-8 md:pb-8"
             : "px-2 py-4 sm:px-4 md:px-8 md:py-8 md:pb-8",
         ].join(" ")}
-        style={{
-          paddingBottom: isGameRoute
-            ? "env(safe-area-inset-bottom, 0px)"
-            : "calc(5rem + env(safe-area-inset-bottom, 0px))",
-        }}
+        style={{ paddingBottom: "calc(5rem + env(safe-area-inset-bottom, 0px))" }}
       >
         {children}
       </main>
 
-      {!isGameRoute && (
       <nav className="md:hidden border-t bg-card pt-2 px-2 flex items-center justify-around fixed bottom-0 left-0 right-0 z-10" style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}>
         {navItems.map((item) => (
           <Link
@@ -197,7 +199,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </span>
         </button>
       </nav>
-      )}
     </div>
   );
 }
