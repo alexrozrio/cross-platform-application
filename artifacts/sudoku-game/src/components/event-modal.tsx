@@ -139,6 +139,20 @@ const CONFIGS: Record<EventModalPayload["type"], ModalConfig> = {
     secondaryLabel: "Nice!",
     autoDismiss: 6000,
   },
+  rank_up: {
+    icon: <Trophy className="w-10 h-10 text-white" />,
+    iconBg: "bg-gradient-to-br from-yellow-400 to-amber-600",
+    headline: (p) =>
+      p.type === "rank_up" ? `You reached ${p.newRank}! 🎉` : "",
+    body: (p) =>
+      p.type === "rank_up"
+        ? p.nextGoalName
+          ? `Next milestone: ${p.nextGoalName} at ${p.nextGoalXp?.toLocaleString()} XP`
+          : "You've reached the highest rank. Incredible!"
+        : "",
+    secondaryLabel: "Awesome!",
+    autoDismiss: 10000,
+  },
 };
 
 // ── Progress bar for auto-dismiss ─────────────────────────────────────────────
@@ -188,17 +202,38 @@ export function EventModal() {
     if (cfg.primaryHref) setLocation(cfg.primaryHref(payload));
   };
 
+  const isRankUp = payload.type === "rank_up";
+  const rankUpPayload = isRankUp ? payload : null;
+  const heroBgStyle = rankUpPayload
+    ? { background: `linear-gradient(135deg, ${rankUpPayload.newRankColor}dd, ${rankUpPayload.newRankColor})` }
+    : undefined;
+
   return (
     <Dialog open onOpenChange={(open) => { if (!open) dismissEventModal(); }}>
       <DialogContent className="max-w-sm p-0 overflow-hidden border-0 shadow-2xl gap-0">
         {/* Coloured hero band */}
-        <div className={`${cfg.iconBg} flex flex-col items-center justify-center gap-3 py-10 px-6`}>
-          <div className="rounded-full bg-white/20 p-4 ring-4 ring-white/30 shadow-lg">
-            {cfg.icon}
+        <div
+          className={heroBgStyle ? undefined : `${cfg.iconBg}`}
+          style={heroBgStyle}
+        >
+          <div className="flex flex-col items-center justify-center gap-3 py-10 px-6">
+            {rankUpPayload && (
+              <div className="flex items-center gap-2 text-white/80 text-xs font-semibold mb-1 bg-white/15 rounded-full px-3 py-1">
+                <span>{rankUpPayload.previousRank}</span>
+                <span>→</span>
+                <span className="text-white font-bold">{rankUpPayload.newRank}</span>
+              </div>
+            )}
+            <div
+              className="rounded-full bg-white/20 p-4 ring-4 shadow-lg"
+              style={rankUpPayload ? { boxShadow: `0 0 0 4px ${rankUpPayload.newRankRing}55` } : undefined}
+            >
+              {cfg.icon}
+            </div>
+            <h2 className="text-xl font-bold text-white text-center leading-snug drop-shadow">
+              {cfg.headline(payload)}
+            </h2>
           </div>
-          <h2 className="text-xl font-bold text-white text-center leading-snug drop-shadow">
-            {cfg.headline(payload)}
-          </h2>
         </div>
 
         {/* Body */}

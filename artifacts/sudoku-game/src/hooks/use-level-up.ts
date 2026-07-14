@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useGetProfile } from "@workspace/api-client-react";
 import { getLevelFromXp } from "@/lib/levels";
-import { toast } from "sonner";
+import { showEventModal } from "@/hooks/use-event-modal";
 
 export function useLevelUpWatcher(profileId: number | null) {
   const { data: profile } = useGetProfile(profileId as number, {
@@ -23,17 +23,14 @@ export function useLevelUpWatcher(profileId: number | null) {
     }
 
     if (prevTierRef.current && prevTierRef.current !== level.name) {
-      toast.success(`🎉 Rank Up! You are now ${level.name}!`, {
-        description: level.nextTier
-          ? `Next goal: ${level.nextTier.name} at ${level.nextTier.minXp.toLocaleString()} XP`
-          : "You've reached the highest rank. Incredible!",
-        duration: 6000,
-        style: {
-          background: level.color,
-          color: level.textColor,
-          border: `2px solid ${level.ring}`,
-          fontWeight: "bold",
-        },
+      showEventModal({
+        type: "rank_up",
+        previousRank: prevTierRef.current,
+        newRank: level.name,
+        newRankColor: level.color,
+        newRankRing: level.ring,
+        nextGoalName: level.nextTier?.name,
+        nextGoalXp: level.nextTier?.minXp,
       });
     }
 
