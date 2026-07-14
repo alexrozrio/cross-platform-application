@@ -61,9 +61,9 @@ function countSolutions3x3(grid: Grid, limit = 2): number {
 }
 
 const CLUES_3x3: Record<string, number> = {
-  easy: 8,
-  medium: 7,
-  hard: 6,
+  easy: 9,   // all cells given = tutorial mode
+  medium: 8,
+  hard: 7,
   expert: 5,
 };
 
@@ -117,10 +117,10 @@ function countSolutions4x4(grid: Grid, limit = 2): number {
 }
 
 const CLUES_4x4: Record<string, number> = {
-  easy: 10,
-  medium: 8,
-  hard: 6,
-  expert: 4,
+  easy: 14,   // 2 empty cells — very easy
+  medium: 11,
+  hard: 8,
+  expert: 6,
 };
 
 // ─── 9×9 (3×3 boxes) ─────────────────────────────────────────────────────────
@@ -171,10 +171,10 @@ function countSolutions9x9(grid: Grid, limit = 2): number {
 }
 
 const CLUES_9x9: Record<string, number> = {
-  easy: 36,
-  medium: 28,
-  hard: 24,
-  expert: 20,
+  easy: 50,    // ~31 cells to fill — genuinely easy
+  medium: 38,  // ~43 cells to fill
+  hard: 28,    // ~53 cells to fill
+  expert: 22,  // ~59 cells to fill — very challenging
 };
 
 // ─── 16×16 (4×4 boxes, values 1-16) ──────────────────────────────────────────
@@ -214,10 +214,10 @@ function solve16x16(grid: Grid): boolean {
 }
 
 const CLUES_16x16: Record<string, number> = {
-  easy: 150,   // remove 106 of 256
-  medium: 120, // remove 136 of 256
-  hard: 100,   // remove 156 of 256
-  expert: 80,  // remove 176 of 256
+  easy: 196,   // remove  60 of 256 — very easy
+  medium: 160, // remove  96 of 256
+  hard: 128,   // remove 128 of 256
+  expert: 100, // remove 156 of 256 — very challenging
 };
 
 // ─── Public API ───────────────────────────────────────────────────────────────

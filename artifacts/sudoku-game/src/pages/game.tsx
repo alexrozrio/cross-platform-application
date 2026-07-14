@@ -93,6 +93,47 @@ function decodeFromGrid(c: string): number {
   return c.charCodeAt(0) - 87;
 }
 
+// ─── Smart hint helpers ───────────────────────────────────────────────────────
+
+function getPossibleValues(grid: string[], idx: number, size: number, boxSz: number): number[] {
+  const row = Math.floor(idx / size);
+  const col = idx % size;
+  const used = new Set<number>();
+  for (let c = 0; c < size; c++) { const v = grid[row * size + c]; if (v !== "0") used.add(decodeFromGrid(v)); }
+  for (let r = 0; r < size; r++) { const v = grid[r * size + col]; if (v !== "0") used.add(decodeFromGrid(v)); }
+  if (boxSz > 0) {
+    const br = Math.floor(row / boxSz) * boxSz;
+    const bc = Math.floor(col / boxSz) * boxSz;
+    for (let r = br; r < br + boxSz; r++)
+      for (let c = bc; c < bc + boxSz; c++) { const v = grid[r * size + c]; if (v !== "0") used.add(decodeFromGrid(v)); }
+  }
+  return Array.from({ length: size }, (_, i) => i + 1).filter(n => !used.has(n));
+}
+
+function findBestHintCell(grid: string[], initialGrid: string[], size: number, boxSz: number): number | null {
+  const emptyCells: number[] = [];
+  for (let i = 0; i < grid.length; i++) {
+    if (grid[i] !== "0" || initialGrid[i] !== "0") continue;
+    const possible = getPossibleValues(grid, i, size, boxSz);
+    if (possible.length === 1) return i; // naked single — best hint!
+    if (possible.length > 0) emptyCells.push(i);
+  }
+  if (emptyCells.length === 0) return null;
+  return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+}
+
+function computeAutoNotes(grid: string[], initialGrid: string[], size: number, boxSz: number): Record<number, Set<string>> {
+  const result: Record<number, Set<string>> = {};
+  for (let i = 0; i < grid.length; i++) {
+    if (grid[i] !== "0" || initialGrid[i] !== "0") continue;
+    const possible = getPossibleValues(grid, i, size, boxSz);
+    if (possible.length > 0) result[i] = new Set(possible.map(n => encodeForGrid(n)));
+  }
+  return result;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 function AlphaLetter({ value, size = 32 }: { value: number; size?: number }) {
   const letter = String.fromCharCode(64 + value); // 1→A, 2→B …
   const color = ALPHA_COLORS[(value - 1) % ALPHA_COLORS.length];
@@ -356,6 +397,9 @@ export default function Game({ id }: { id: string }) {
       const newGameResult = await createNewGame.mutateAsync({
         data: { profileId, puzzleId: puzzle.id, difficulty: diff },
       });
+      // Clear old game's local storage so it can't bleed into the new one
+      localStorage.removeItem(storageKeyGrid);
+      localStorage.removeItem(storageKeyNotes);
       const modeQuery = mode !== "number" ? `?mode=${mode}` : "";
       setLocation(`/game/${newGameResult.id}${modeQuery}`);
     } catch (err) {
@@ -379,6 +423,9 @@ export default function Game({ id }: { id: string }) {
       const newGame = await createNewGame.mutateAsync({
         data: { profileId, puzzleId: puzzle.id, difficulty: nextDifficulty },
       });
+      // Clear old game's local storage before navigating
+      localStorage.removeItem(storageKeyGrid);
+      localStorage.removeItem(storageKeyNotes);
       const modeQuery = mode !== "number" ? `?mode=${mode}` : "";
       setLocation(`/game/${newGame.id}${modeQuery}`);
     } catch (err) {
@@ -695,30 +742,52 @@ export default function Game({ id }: { id: string }) {
   }, [initialGrid, storageKeyGrid, storageKeyNotes]);
 
   const handleHint = () => {
-    if (
-      selectedCell === null ||
-      isCompleted ||
-      isGameOver ||
-      hints >= MAX_HINTS ||
-      initialGrid[selectedCell] !== "0" ||
-      grid[selectedCell] !== "0"
-    )
-      return;
+    if (isCompleted || isGameOver || hints >= MAX_HINTS) return;
     const solution = game?.puzzle?.solution;
-    if (solution) {
-      const newHints = hints + 1;
-      setHints(newHints);
-      const newGrid = [...grid];
-      newGrid[selectedCell] = solution[selectedCell];
-      setGrid(newGrid);
-      setWrongCells((prev) => {
-        const s = new Set(prev);
-        s.delete(selectedCell);
-        return s;
+    if (!solution) return;
+
+    const newHints = hints + 1;
+    setHints(newHints);
+
+    // Notes mode: auto-fill all possible pencil marks
+    if (notesMode) {
+      const autoNotes = computeAutoNotes(grid, initialGrid, gridSize, boxSize);
+      setNotes(prev => {
+        const merged = { ...prev };
+        for (const [k, v] of Object.entries(autoNotes)) merged[Number(k)] = v;
+        return merged;
       });
-      if (newHints >= MAX_HINTS) toast.error("No more hints available!", { duration: 2000 });
-      checkCompletion(newGrid, solution);
+      toast.success("📝 Notes auto-filled!", {
+        description: "All possible values have been pencilled into empty cells.",
+        duration: 3500,
+      });
+      if (newHints >= MAX_HINTS) setTimeout(() => toast.error("No more hints available!", { duration: 2000 }), 400);
+      return;
     }
+
+    // Value mode: find best cell (naked single first, else random empty)
+    const cellToReveal = findBestHintCell(grid, initialGrid, gridSize, boxSize);
+    if (cellToReveal === null) return;
+
+    const newGrid = [...grid];
+    newGrid[cellToReveal] = solution[cellToReveal];
+    setGrid(newGrid);
+    setWrongCells(prev => { const s = new Set(prev); s.delete(cellToReveal); return s; });
+    setSelectedCell(cellToReveal);
+
+    const possible = getPossibleValues(grid, cellToReveal, gridSize, boxSize);
+    const row = Math.floor(cellToReveal / gridSize) + 1;
+    const col = (cellToReveal % gridSize) + 1;
+    const isNaked = possible.length === 1;
+    toast.success("💡 Hint!", {
+      description: isNaked
+        ? `Row ${row}, Col ${col}: only one value could fit here!`
+        : `Row ${row}, Col ${col}: filled in for you.`,
+      duration: 3500,
+    });
+
+    if (newHints >= MAX_HINTS) setTimeout(() => toast.error("No more hints available!", { duration: 2000 }), 400);
+    checkCompletion(newGrid, solution);
   };
 
   const handleShare = useCallback(async () => {
@@ -1583,10 +1652,11 @@ export default function Game({ id }: { id: string }) {
                 variant="secondary"
                 className="flex-col h-12 gap-0.5 relative"
                 onClick={handleHint}
-                disabled={isGameOver || hints >= MAX_HINTS || selectedCell === null || grid[selectedCell] !== "0"}
+                disabled={isGameOver || hints >= MAX_HINTS}
+                title={notesMode ? "Auto-fill pencil marks (uses 1 hint)" : "Reveal the easiest empty cell (uses 1 hint)"}
               >
                 <Lightbulb className={`h-4 w-4 ${hints >= MAX_HINTS ? "opacity-40" : ""}`} />
-                <span className="text-[11px]">Hint</span>
+                <span className="text-[11px]">{notesMode ? "Auto✏️" : "Hint"}</span>
                 <span className={`text-[9px] font-bold leading-none ${hints >= MAX_HINTS ? "text-red-400" : "text-primary"}`}>
                   {MAX_HINTS - hints} left
                 </span>
