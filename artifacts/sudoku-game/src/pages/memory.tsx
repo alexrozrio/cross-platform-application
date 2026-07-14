@@ -76,13 +76,20 @@ function MemoryCard({
   const txtSizeMulti  = size === 8 ? 'text-lg sm:text-xl'  : size === 6 ? 'text-xl sm:text-2xl'  : size === 4 ? 'text-2xl sm:text-3xl'  : 'text-4xl sm:text-5xl';
 
   // Front face content
+  const themeColor = theme.colors.length > 0
+    ? theme.colors[(card.value - 1) % theme.colors.length]
+    : undefined;
+
   let frontContent: React.ReactNode;
   if (displayMode === 'image') {
     frontContent = <span className={`${imgSize} leading-none`}>{symbol}</span>;
   } else {
     const label = getCardLabel(card.value, displayMode);
     frontContent = (
-      <span className={`${label.length > 1 ? txtSizeMulti : txtSizeSingle} font-black leading-none tabular-nums`}>
+      <span
+        className={`${label.length > 1 ? txtSizeMulti : txtSizeSingle} font-black leading-none tabular-nums`}
+        style={themeColor ? { color: themeColor } : undefined}
+      >
         {label}
       </span>
     );
@@ -1041,7 +1048,7 @@ export default function MemoryMatchPage() {
                 {filteredGridOptions.map(opt => (
                   <button
                     key={opt.size}
-                    onClick={() => { setPendingAction({ type: 'new', size: opt.size }); setShowNewGame(false); }}
+                    onClick={() => { setShowNewGame(false); startGame(opt.size); }}
                     className={[
                       'flex flex-col items-center gap-1 rounded-lg border-2 py-2.5 px-2 text-center transition-all',
                       opt.size === gridSize

@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, desc, asc, and } from "drizzle-orm";
 import { db, gamesTable, puzzlesTable, profilesTable } from "@workspace/db";
+import { XP_PER_DIFFICULTY } from "../utils/levels";
 
 const router: IRouter = Router();
 
@@ -23,6 +24,8 @@ router.get("/leaderboard", async (req, res): Promise<void> => {
         avatar: profilesTable.avatar,
         xp: profilesTable.xp,
         points: gamesTable.points,
+        xpEarned: gamesTable.xpEarned,
+        difficulty: puzzlesTable.difficulty,
       })
       .from(gamesTable)
       .innerJoin(puzzlesTable, eq(gamesTable.puzzleId, puzzlesTable.id))
@@ -36,6 +39,7 @@ router.get("/leaderboard", async (req, res): Promise<void> => {
       xp: number;
       totalPoints: number;
       gamesPlayed: number;
+      totalXpEarned: number;
     }>();
 
     for (const row of rows) {
@@ -46,9 +50,11 @@ router.get("/leaderboard", async (req, res): Promise<void> => {
         xp: row.xp ?? 0,
         totalPoints: 0,
         gamesPlayed: 0,
+        totalXpEarned: 0,
       };
       cur.totalPoints += row.points ?? 0;
       cur.gamesPlayed += 1;
+      cur.totalXpEarned += row.xpEarned ?? XP_PER_DIFFICULTY[row.difficulty as keyof typeof XP_PER_DIFFICULTY] ?? 0;
       agg.set(row.profileId, cur);
     }
 
@@ -63,6 +69,7 @@ router.get("/leaderboard", async (req, res): Promise<void> => {
         xp: d.xp,
         totalPoints: d.totalPoints,
         gamesPlayed: d.gamesPlayed,
+        xpEarned: d.totalXpEarned,
         // null fields not applicable for aggregate view
         points: d.totalPoints,
         difficulty: null,
@@ -90,6 +97,7 @@ router.get("/leaderboard", async (req, res): Promise<void> => {
       username: profilesTable.username,
       avatar: profilesTable.avatar,
       xp: profilesTable.xp,
+      xpEarned: gamesTable.xpEarned,
     })
     .from(gamesTable)
     .innerJoin(puzzlesTable, eq(gamesTable.puzzleId, puzzlesTable.id))
@@ -109,6 +117,7 @@ router.get("/leaderboard", async (req, res): Promise<void> => {
     points: g.points ?? 0,
     totalPoints: null,
     gamesPlayed: null,
+    xpEarned: g.xpEarned ?? XP_PER_DIFFICULTY[g.difficulty as keyof typeof XP_PER_DIFFICULTY] ?? 0,
     elapsedSeconds: g.elapsedSeconds,
     mistakeCount: g.mistakeCount,
     completedAt: g.completedAt?.toISOString() ?? null,

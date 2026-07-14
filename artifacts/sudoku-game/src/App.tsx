@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -7,26 +7,29 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/use-auth";
 import { useLoginReward } from "@/hooks/use-login-reward";
 import { LoginRewardModal } from "@/components/login-reward-modal";
-import NotFound from "@/pages/not-found";
+import { EventModal } from "@/components/event-modal";
 import { Layout } from "@/components/layout";
+import { PageLoader } from "@/components/page-loader";
 
-// Pages
-import Portal from "@/pages/portal";
-import SudokuHome from "@/pages/home";
-import Game from "@/pages/game";
-import Profile from "@/pages/profile";
-import Leaderboard from "@/pages/leaderboard";
-import Stats from "@/pages/stats";
-import Themes from "@/pages/themes";
-import BadgeSharePage from "@/pages/badge-share";
-import DailyChallenge from "@/pages/daily-challenge";
-import Challenges from "@/pages/challenges";
-import About from "@/pages/about";
-import PrivacyPolicy from "@/pages/privacy-policy";
-import TermsOfService from "@/pages/terms-of-service";
-import MemoryMatch from "@/pages/memory";
-import MemoryChallengePage from "@/pages/memory-challenge";
-import PublicProfilePage from "@/pages/public-profile";
+// Pages — lazy-loaded so each route only ships the JS it needs, instead of
+// one large bundle that has to load before the app becomes interactive.
+const Portal = lazy(() => import("@/pages/portal"));
+const SudokuHome = lazy(() => import("@/pages/home"));
+const Game = lazy(() => import("@/pages/game"));
+const Profile = lazy(() => import("@/pages/profile"));
+const Leaderboard = lazy(() => import("@/pages/leaderboard"));
+const Stats = lazy(() => import("@/pages/stats"));
+const Themes = lazy(() => import("@/pages/themes"));
+const BadgeSharePage = lazy(() => import("@/pages/badge-share"));
+const DailyChallenge = lazy(() => import("@/pages/daily-challenge"));
+const Challenges = lazy(() => import("@/pages/challenges"));
+const About = lazy(() => import("@/pages/about"));
+const PrivacyPolicy = lazy(() => import("@/pages/privacy-policy"));
+const TermsOfService = lazy(() => import("@/pages/terms-of-service"));
+const MemoryMatch = lazy(() => import("@/pages/memory"));
+const MemoryChallengePage = lazy(() => import("@/pages/memory-challenge"));
+const PublicProfilePage = lazy(() => import("@/pages/public-profile"));
+const NotFound = lazy(() => import("@/pages/not-found"));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
@@ -56,30 +59,33 @@ function Router() {
           totalGems={rewardState.result.totalGems}
         />
       )}
+      <EventModal />
       <Layout>
-        <Switch>
-          <Route path="/" component={Portal} />
-          <Route path="/sudoku" component={SudokuHome} />
-          <Route path="/themes" component={Themes} />
-          <Route path="/profile" component={Profile} />
-          <Route path="/game/:id">
-            {(params) => <Game id={params.id} />}
-          </Route>
-          <Route path="/daily-challenge" component={DailyChallenge} />
-          <Route path="/leaderboard" component={Leaderboard} />
-          <Route path="/stats" component={Stats} />
-          <Route path="/challenges" component={Challenges} />
-          <Route path="/badges/:token" component={BadgeSharePage} />
-          <Route path="/memory" component={MemoryMatch} />
-          <Route path="/memory-challenge" component={MemoryChallengePage} />
-          <Route path="/players/:profileId">
-            {(params) => <PublicProfilePage profileId={params.profileId} />}
-          </Route>
-          <Route path="/about" component={About} />
-          <Route path="/privacy" component={PrivacyPolicy} />
-          <Route path="/terms" component={TermsOfService} />
-          <Route component={NotFound} />
-        </Switch>
+        <Suspense fallback={<PageLoader />}>
+          <Switch>
+            <Route path="/" component={Portal} />
+            <Route path="/sudoku" component={SudokuHome} />
+            <Route path="/themes" component={Themes} />
+            <Route path="/profile" component={Profile} />
+            <Route path="/game/:id">
+              {(params) => <Game key={params.id} id={params.id} />}
+            </Route>
+            <Route path="/daily-challenge" component={DailyChallenge} />
+            <Route path="/leaderboard" component={Leaderboard} />
+            <Route path="/stats" component={Stats} />
+            <Route path="/challenges" component={Challenges} />
+            <Route path="/badges/:token" component={BadgeSharePage} />
+            <Route path="/memory" component={MemoryMatch} />
+            <Route path="/memory-challenge" component={MemoryChallengePage} />
+            <Route path="/players/:profileId">
+              {(params) => <PublicProfilePage profileId={params.profileId} />}
+            </Route>
+            <Route path="/about" component={About} />
+            <Route path="/privacy" component={PrivacyPolicy} />
+            <Route path="/terms" component={TermsOfService} />
+            <Route component={NotFound} />
+          </Switch>
+        </Suspense>
       </Layout>
     </AuthProvider>
   );

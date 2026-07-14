@@ -220,6 +220,8 @@ export interface LeaderboardEntry {
   completedAt: string;
   /** Experience points of the player at the time of the entry */
   xp?: number;
+  /** XP earned for this game (or total XP earned across games, for aggregate views) */
+  xpEarned?: number;
 }
 
 export type PlayerStatsBestTimes = {
@@ -269,6 +271,8 @@ export interface TournamentEntry {
   avatar?: string | null;
   totalPoints: number;
   gamesPlayed: number;
+  /** Player's total profile XP (used to derive their rank tier, e.g. Iron/Silver/Gold) */
+  xp?: number;
 }
 
 export type TournamentLeaderboardType = typeof TournamentLeaderboardType[keyof typeof TournamentLeaderboardType];

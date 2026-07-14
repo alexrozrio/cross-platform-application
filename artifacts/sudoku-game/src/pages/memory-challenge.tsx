@@ -21,7 +21,7 @@ import {
   Clock,
   ArrowLeft,
 } from "lucide-react";
-import { toast } from "sonner";
+import { showEventModal } from "@/hooks/use-event-modal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -303,9 +303,11 @@ export default function MemoryChallengePage() {
       }),
     onSuccess: (data) => {
       if (!data.alreadyClaimed) {
-        toast.success(
-          `Challenge bonus claimed! +${data.bonusXp} XP +${data.bonusGems} 💎`,
-        );
+        showEventModal({
+          type: "memory_challenge_bonus",
+          xp: data.bonusXp,
+          gems: data.bonusGems,
+        });
       }
       queryClient.invalidateQueries({ queryKey: ["memory-challenge-status"] });
       queryClient.invalidateQueries({

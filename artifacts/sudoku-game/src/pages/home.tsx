@@ -140,7 +140,10 @@ export default function SudokuHome() {
     if (startInFlightRef.current) return;
     setGridSize(size);
     const mode = modesForSize(size).includes(selectedMode) ? selectedMode : 'number';
-    if (activeGame) {
+    const activeMatchesPick =
+      activeGame?.puzzle?.gridSize === size &&
+      activeGame?.puzzle?.difficulty === difficulty;
+    if (activeGame && activeMatchesPick) {
       setPendingStart({ size, mode });
     } else {
       doStart(size, mode);
@@ -152,7 +155,10 @@ export default function SudokuHome() {
   const handleDifficultyAutoStart = (value: Difficulty) => {
     setDifficulty(value);
     if (startInFlightRef.current) return;
-    if (activeGame) {
+    const activeMatchesPick =
+      activeGame?.puzzle?.gridSize === gridSize &&
+      activeGame?.puzzle?.difficulty === value;
+    if (activeGame && activeMatchesPick) {
       setPendingStart({ size: gridSize, mode: 'number', difficulty: value });
     } else {
       doStart(gridSize, 'number', value);

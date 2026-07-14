@@ -34,6 +34,7 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
       profileId: gamesTable.profileId,
       username: profilesTable.username,
       avatar: profilesTable.avatar,
+      xp: profilesTable.xp,
       points: gamesTable.points,
       gridSizeVal: puzzlesTable.gridSize,
     })
@@ -55,6 +56,7 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
           profileId: memoryGamesTable.profileId,
           username: profilesTable.username,
           avatar: profilesTable.avatar,
+          xp: profilesTable.xp,
           points: memoryGamesTable.points,
         })
         .from(memoryGamesTable)
@@ -79,6 +81,7 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
     {
       username: string;
       avatar: string | null;
+      xp: number;
       totalPoints: number;
       gamesPlayed: number;
       sudokuGamesPlayed: number;
@@ -86,16 +89,16 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
     }
   >();
 
-  const ensureEntry = (profileId: number, username: string, avatar: string | null) => {
+  const ensureEntry = (profileId: number, username: string, avatar: string | null, xp: number) => {
     if (!grouped.has(profileId)) {
-      grouped.set(profileId, { username, avatar, totalPoints: 0, gamesPlayed: 0, sudokuGamesPlayed: 0, memoryGamesPlayed: 0 });
+      grouped.set(profileId, { username, avatar, xp, totalPoints: 0, gamesPlayed: 0, sudokuGamesPlayed: 0, memoryGamesPlayed: 0 });
     }
     return grouped.get(profileId)!;
   };
 
   for (const row of filteredSudoku) {
     if (!row.profileId) continue;
-    const entry = ensureEntry(row.profileId, row.username, row.avatar ?? null);
+    const entry = ensureEntry(row.profileId, row.username, row.avatar ?? null, row.xp ?? 0);
     entry.totalPoints += row.points ?? 0;
     entry.gamesPlayed += 1;
     entry.sudokuGamesPlayed += 1;
@@ -103,7 +106,7 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
 
   for (const row of memoryRows) {
     if (!row.profileId) continue;
-    const entry = ensureEntry(row.profileId, row.username, row.avatar ?? null);
+    const entry = ensureEntry(row.profileId, row.username, row.avatar ?? null, row.xp ?? 0);
     entry.totalPoints += row.points ?? 0;
     entry.gamesPlayed += 1;
     entry.memoryGamesPlayed += 1;
@@ -149,6 +152,7 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
     profileId,
     username: data.username,
     avatar: data.avatar,
+    xp: data.xp,
     totalPoints: data.totalPoints,
     gamesPlayed: data.gamesPlayed,
     sudokuGamesPlayed: data.sudokuGamesPlayed,

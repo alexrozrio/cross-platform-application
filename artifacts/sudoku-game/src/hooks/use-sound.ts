@@ -2,6 +2,11 @@ import { useRef, useCallback, useEffect, useState } from 'react';
 
 const STORAGE_KEY = 'sudoku-sound-enabled';
 
+// Module-level: tracks whether the user explicitly toggled sound this session.
+// While non-null it takes priority over the profile setting so navigating
+// between games doesn't reset the mute the user just chose.
+let sessionOverride: boolean | null = null;
+
 let sharedCtx: AudioContext | null = null;
 
 function getCtx(): AudioContext {
@@ -81,7 +86,11 @@ function soundGameOver() {
 
 export function useSound(profileEnabled?: boolean) {
   const [enabled, setEnabled] = useState<boolean>(() => {
+    // Session override wins (user toggled during this page session)
+    if (sessionOverride !== null) return sessionOverride;
+    // Profile setting from backend is next
     if (profileEnabled !== undefined) return profileEnabled;
+    // Fall back to localStorage
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       return stored === null ? true : stored === 'true';
@@ -94,7 +103,9 @@ export function useSound(profileEnabled?: boolean) {
   useEffect(() => { enabledRef.current = enabled; }, [enabled]);
 
   useEffect(() => {
-    if (profileEnabled !== undefined) {
+    // Only let the profile setting apply if the user hasn't explicitly
+    // toggled this session — otherwise we'd undo their in-session mute.
+    if (profileEnabled !== undefined && sessionOverride === null) {
       setEnabled(profileEnabled);
       try { localStorage.setItem(STORAGE_KEY, String(profileEnabled)); } catch {}
     }
@@ -103,6 +114,7 @@ export function useSound(profileEnabled?: boolean) {
   const toggle = useCallback(() => {
     setEnabled(prev => {
       const next = !prev;
+      sessionOverride = next;                                   // persist for this session
       try { localStorage.setItem(STORAGE_KEY, String(next)); } catch {}
       return next;
     });

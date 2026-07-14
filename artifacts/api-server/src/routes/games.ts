@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, desc, and, asc } from "drizzle-orm";
+import { eq, desc, and, asc, gte } from "drizzle-orm";
 import { db, gamesTable, puzzlesTable, profilesTable, dailyChallengesTable } from "@workspace/db";
 import {
   CreateGameBody,
@@ -101,13 +101,24 @@ router.get("/games/active/:profileId", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Invalid profileId" });
     return;
   }
+  // Only surface games created within the last 7 days — older ones are considered stale
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const [game] = await db
     .select()
     .from(gamesTable)
-    .where(and(eq(gamesTable.profileId, profileId), eq(gamesTable.status, "active")))
+    .where(and(
+      eq(gamesTable.profileId, profileId),
+      eq(gamesTable.status, "active"),
+      gte(gamesTable.createdAt, sevenDaysAgo),
+    ))
     .orderBy(desc(gamesTable.createdAt))
     .limit(1);
   if (!game) {
+    // Also clean up any lingering stale active games for this profile
+    await db
+      .update(gamesTable)
+      .set({ status: "failed" })
+      .where(and(eq(gamesTable.profileId, profileId), eq(gamesTable.status, "active")));
     res.status(404).json({ error: "No active game" });
     return;
   }
@@ -163,6 +174,24 @@ router.patch("/games/:id", async (req, res): Promise<void> => {
   res.json(SaveGameResponse.parse(formatGame(game, puzzle)));
 });
 
+router.post("/games/:id/abandon", async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid game id" });
+    return;
+  }
+  const [game] = await db
+    .update(gamesTable)
+    .set({ status: "failed" })
+    .where(and(eq(gamesTable.id, id), eq(gamesTable.status, "active")))
+    .returning();
+  if (!game) {
+    res.status(404).json({ error: "Game not found or already finished" });
+    return;
+  }
+  res.json({ ok: true });
+});
+
 router.post("/games/:id/complete", async (req, res): Promise<void> => {
   const params = CompleteGameParams.safeParse(req.params);
   if (!params.success) {
@@ -209,6 +238,7 @@ router.post("/games/:id/complete", async (req, res): Promise<void> => {
     ? calcPoints(puzzle.gridSize, puzzle.difficulty, elapsed, mistakes, hints)
     : 0;
   const gemsEarned = calcGems(points);
+  const xpEarned = puzzle ? (XP_PER_DIFFICULTY[puzzle.difficulty] ?? 1) : 1;
 
   const [game] = await db
     .update(gamesTable)
@@ -218,6 +248,7 @@ router.post("/games/:id/complete", async (req, res): Promise<void> => {
       mistakeCount: mistakes,
       hintsUsed: hints,
       points,
+      xpEarned,
       completedAt: new Date(),
     })
     .where(eq(gamesTable.id, params.data.id))
@@ -225,7 +256,6 @@ router.post("/games/:id/complete", async (req, res): Promise<void> => {
 
   // Award gems and XP to the player's profile
   if (existing.profileId) {
-    const xpEarned = puzzle ? (XP_PER_DIFFICULTY[puzzle.difficulty] ?? 1) : 1;
     await db
       .update(profilesTable)
       .set({ gems: sql`gems + ${gemsEarned}`, xp: sql`xp + ${xpEarned}` })

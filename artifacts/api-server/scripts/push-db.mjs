@@ -31,7 +31,7 @@ console.log('[db-push] Running drizzle-kit push...');
 
 const result = spawnSync(
   'pnpm',
-  ['--filter', '@workspace/db', 'run', 'push'],
+  ['--filter', '@workspace/db', 'run', 'push-force'],
   {
     stdio: 'inherit',
     cwd: resolve(__dirname, '../../..'),

@@ -5,9 +5,9 @@
     "gems": 0,
     "visible": true,
     "preview": "Aa",
-    "sans": "'Outfit', sans-serif",
-    "serif": "'Playfair Display', serif",
-    "previewFont": "'Outfit', sans-serif"
+    "sans": "'Nunito', sans-serif",
+    "serif": "'Nunito', sans-serif",
+    "previewFont": "'Nunito', sans-serif"
   },
   {
     "id": "modern",
@@ -30,14 +30,14 @@
     "previewFont": "'Cormorant Garamond', serif"
   },
   {
-    "id": "rounded",
-    "name": "Rounded",
+    "id": "straight",
+    "name": "Straight",
     "gems": 50,
     "visible": true,
     "preview": "Aa",
-    "sans": "'Nunito', sans-serif",
-    "serif": "'Nunito', sans-serif",
-    "previewFont": "'Nunito', sans-serif"
+    "sans": "'Outfit', sans-serif",
+    "serif": "'Playfair Display', serif",
+    "previewFont": "'Outfit', sans-serif"
   },
   {
     "id": "playful",

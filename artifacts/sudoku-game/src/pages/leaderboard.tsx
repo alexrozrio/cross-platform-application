@@ -28,7 +28,7 @@ import {
 import { LevelBadge } from "@/components/level-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
-import { toast } from "sonner";
+import { showEventModal } from "@/hooks/use-event-modal";
 
 type MainTab = "alltime" | "weekly" | "monthly" | "memory";
 
@@ -508,21 +508,18 @@ function AlltimeBoard({ myProfileId }: { myProfileId?: number }) {
                           {entry.xp !== undefined && (
                             <LevelBadge xp={entry.xp} size="xs" />
                           )}
-                          {gridFilter !== "all" && entry.difficulty && (() => {
-                            const xpMap: Record<string, number> = { easy: 1, medium: 2, hard: 3, expert: 5 };
-                            const earned = xpMap[entry.difficulty];
-                            return earned ? (
-                              <span className="text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200 rounded-full px-1.5 py-0.5">
-                                +{earned} XP
-                              </span>
-                            ) : null;
-                          })()}
+                          {(entry as any).xpEarned != null && (entry as any).xpEarned > 0 && (
+                            <span className="text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200 rounded-full px-1.5 py-0.5">
+                              +{(entry as any).xpEarned} XP
+                            </span>
+                          )}
                         </div>
                         <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
                           {gridFilter === "all" ? (
                             <span>{(entry as any).gamesPlayed ?? 0} game{((entry as any).gamesPlayed ?? 0) !== 1 ? "s" : ""} across all grids</span>
                           ) : (
                             <>
+                              <span className="font-semibold text-primary">{entry.points ?? 0} pts</span>
                               <span>{entry.mistakeCount ?? 0} mistake{entry.mistakeCount !== 1 ? "s" : ""}</span>
                               {entry.difficulty && (
                                 <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium capitalize ${diffColor[entry.difficulty] ?? ""}`}>
@@ -727,21 +724,19 @@ function TournamentBoard({
       setRankDelta(delta);
 
       if (delta > 0) {
-        toast.success(
-          `You moved up ${delta} spot${delta !== 1 ? "s" : ""}! 🎉`,
-          {
-            description: `Now ranked #${newRank} on the ${type} leaderboard.`,
-            duration: 6000,
-          },
-        );
+        showEventModal({
+          type: "tournament_rank_up",
+          delta,
+          newRank,
+          period: type as "weekly" | "monthly",
+        });
       } else {
-        toast(
-          `You dropped ${Math.abs(delta)} spot${Math.abs(delta) !== 1 ? "s" : ""}.`,
-          {
-            description: `Now ranked #${newRank}. Keep playing to climb back up!`,
-            duration: 5000,
-          },
-        );
+        showEventModal({
+          type: "tournament_rank_down",
+          delta,
+          newRank,
+          period: type as "weekly" | "monthly",
+        });
       }
 
       // Clear the visual delta badge after 12 s
@@ -827,6 +822,9 @@ function TournamentBoard({
                             >
                               {entry.username}
                             </p>
+                            {(entry as any).xp !== undefined && (
+                              <LevelBadge xp={(entry as any).xp} size="xs" />
+                            )}
                             {isMe && (
                               <span className="text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-full px-2 py-0.5">
                                 You

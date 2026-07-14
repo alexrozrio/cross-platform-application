@@ -291,7 +291,8 @@ export const GetLeaderboardResponseItem = zod.object({
   "elapsedSeconds": zod.number(),
   "mistakeCount": zod.number().optional(),
   "completedAt": zod.string(),
-  "xp": zod.number().optional().describe('Experience points of the player at the time of the entry')
+  "xp": zod.number().optional().describe('Experience points of the player at the time of the entry'),
+  "xpEarned": zod.number().optional().describe('XP earned for this game (or total XP earned across games, for aggregate views)')
 })
 export const GetLeaderboardResponse = zod.array(GetLeaderboardResponseItem)
 
@@ -351,7 +352,8 @@ export const GetTournamentLeaderboardResponse = zod.object({
   "username": zod.string(),
   "avatar": zod.string().nullish(),
   "totalPoints": zod.number(),
-  "gamesPlayed": zod.number()
+  "gamesPlayed": zod.number(),
+  "xp": zod.number().optional().describe('Player\'s total profile XP (used to derive their rank tier, e.g. Iron\/Silver\/Gold)')
 }))
 })
 

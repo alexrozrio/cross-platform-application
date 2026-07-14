@@ -40,6 +40,9 @@ import {
   VolumeX,
   Share2,
   ChevronDown,
+  Zap,
+  Gem,
+  Trophy,
 } from "lucide-react";
 import { useSound } from "@/hooks/use-sound";
 import { Confetti } from "@/components/confetti";
@@ -89,6 +92,47 @@ function decodeFromGrid(c: string): number {
   if (!isNaN(n)) return n;
   return c.charCodeAt(0) - 87;
 }
+
+// ─── Smart hint helpers ───────────────────────────────────────────────────────
+
+function getPossibleValues(grid: string[], idx: number, size: number, boxSz: number): number[] {
+  const row = Math.floor(idx / size);
+  const col = idx % size;
+  const used = new Set<number>();
+  for (let c = 0; c < size; c++) { const v = grid[row * size + c]; if (v !== "0") used.add(decodeFromGrid(v)); }
+  for (let r = 0; r < size; r++) { const v = grid[r * size + col]; if (v !== "0") used.add(decodeFromGrid(v)); }
+  if (boxSz > 0) {
+    const br = Math.floor(row / boxSz) * boxSz;
+    const bc = Math.floor(col / boxSz) * boxSz;
+    for (let r = br; r < br + boxSz; r++)
+      for (let c = bc; c < bc + boxSz; c++) { const v = grid[r * size + c]; if (v !== "0") used.add(decodeFromGrid(v)); }
+  }
+  return Array.from({ length: size }, (_, i) => i + 1).filter(n => !used.has(n));
+}
+
+function findBestHintCell(grid: string[], initialGrid: string[], size: number, boxSz: number): number | null {
+  const emptyCells: number[] = [];
+  for (let i = 0; i < grid.length; i++) {
+    if (grid[i] !== "0" || initialGrid[i] !== "0") continue;
+    const possible = getPossibleValues(grid, i, size, boxSz);
+    if (possible.length === 1) return i; // naked single — best hint!
+    if (possible.length > 0) emptyCells.push(i);
+  }
+  if (emptyCells.length === 0) return null;
+  return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+}
+
+function computeAutoNotes(grid: string[], initialGrid: string[], size: number, boxSz: number): Record<number, Set<string>> {
+  const result: Record<number, Set<string>> = {};
+  for (let i = 0; i < grid.length; i++) {
+    if (grid[i] !== "0" || initialGrid[i] !== "0") continue;
+    const possible = getPossibleValues(grid, i, size, boxSz);
+    if (possible.length > 0) result[i] = new Set(possible.map(n => encodeForGrid(n)));
+  }
+  return result;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 function AlphaLetter({ value, size = 32 }: { value: number; size?: number }) {
   const letter = String.fromCharCode(64 + value); // 1→A, 2→B …
@@ -256,6 +300,12 @@ export default function Game({ id }: { id: string }) {
   const [hints, setHints] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
+  const [challengeResult, setChallengeResult] = useState<null | {
+    id: number; status: string; winnerId: number | null;
+    challengerId: number; challengedId: number;
+    challengerUsername: string; challengedUsername: string;
+    challengerPoints: number | null; challengedPoints: number | null;
+  }>(null);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showNewGameDialog, setShowNewGameDialog] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
@@ -295,6 +345,24 @@ export default function Game({ id }: { id: string }) {
   }, [numberCounts, gridSize]);
   const [isPaused, setIsPaused] = useState(false);
 
+  // ─── Mobile browser-chrome collapse ──────────────────────────────────────────
+  // Keeping the app header/nav visible (just shrunk) means the board needs the
+  // extra room the browser's own address bar is holding onto. Nudging a scroll
+  // into the game section (like jumping to a `#anchor`) prompts mobile Safari/
+  // Chrome to auto-hide that bar, which grows the dvh-based layout to fill in.
+  const gameViewRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!window.matchMedia("(max-width: 767px)").matches) return;
+    const nudge = () => {
+      gameViewRef.current?.scrollIntoView({ block: "start", behavior: "auto" });
+      window.scrollTo({ top: window.scrollY + 1, behavior: "auto" });
+    };
+    const raf = requestAnimationFrame(nudge);
+    const t = setTimeout(nudge, 250);
+    return () => { cancelAnimationFrame(raf); clearTimeout(t); };
+  }, [gameId]);
+
   // ─── Board pinch-zoom & pan ──────────────────────────────────────────────────
   const [boardScale, setBoardScale] = useState(1);
   const [boardOffset, setBoardOffset] = useState({ x: 0, y: 0 });
@@ -318,30 +386,44 @@ export default function Game({ id }: { id: string }) {
   );
   const visibleDiffs = ['easy', 'medium', 'hard', 'expert'] as const;
 
-  // New-game switcher state — initialise to current game's grid size
+  // New-game switcher state — synced to the current game's size/difficulty once loaded
   const [newSize, setNewSize] = useState<3 | 4 | 9 | 16>(3);
   const [newDiff, setNewDiff] = useState<"easy" | "medium" | "hard" | "expert">("easy");
+  const [newGameFetching, setNewGameFetching] = useState(false);
 
-  const generateNew = useGeneratePuzzle(
-    { difficulty: newDiff, gridSize: newSize as any },
-    { query: { enabled: false } },
-  );
+  // Sync to current game once data arrives
+  useEffect(() => {
+    if (game?.puzzle) {
+      setNewSize(game.puzzle.gridSize as 3 | 4 | 9 | 16);
+      setNewDiff((game.puzzle.difficulty ?? "easy") as "easy" | "medium" | "hard" | "expert");
+    }
+  }, [game?.puzzle?.gridSize, game?.puzzle?.difficulty]);
+
   const createNewGame = useCreateGame();
-  const newGameLoading = generateNew.isFetching || createNewGame.isPending;
+  const newGameLoading = newGameFetching || createNewGame.isPending;
 
-  const handleNewGame = async () => {
+  // Accepts explicit overrides so callers don't have to wait for state to flush
+  const handleNewGame = async (sizeOverride?: 3 | 4 | 9 | 16, diffOverride?: "easy" | "medium" | "hard" | "expert") => {
+    const size = sizeOverride ?? newSize;
+    const diff = diffOverride ?? newDiff;
     if (!profileId || newGameLoading) return;
+    setNewGameFetching(true);
+    setShowMobileControls(false);
     try {
-      const res = await generateNew.refetch();
-      const puzzle = res.data;
+      const puzzle = await generatePuzzle({ difficulty: diff, gridSize: size as any });
       if (!puzzle) return;
-      const game = await createNewGame.mutateAsync({
-        data: { profileId, puzzleId: puzzle.id, difficulty: newDiff },
+      const newGameResult = await createNewGame.mutateAsync({
+        data: { profileId, puzzleId: puzzle.id, difficulty: diff },
       });
+      // Clear old game's local storage so it can't bleed into the new one
+      localStorage.removeItem(storageKeyGrid);
+      localStorage.removeItem(storageKeyNotes);
       const modeQuery = mode !== "number" ? `?mode=${mode}` : "";
-      setLocation(`/game/${game.id}${modeQuery}`);
+      setLocation(`/game/${newGameResult.id}${modeQuery}`);
     } catch (err) {
       console.error("Error starting new game:", err);
+    } finally {
+      setNewGameFetching(false);
     }
   };
 
@@ -359,6 +441,9 @@ export default function Game({ id }: { id: string }) {
       const newGame = await createNewGame.mutateAsync({
         data: { profileId, puzzleId: puzzle.id, difficulty: nextDifficulty },
       });
+      // Clear old game's local storage before navigating
+      localStorage.removeItem(storageKeyGrid);
+      localStorage.removeItem(storageKeyNotes);
       const modeQuery = mode !== "number" ? `?mode=${mode}` : "";
       setLocation(`/game/${newGame.id}${modeQuery}`);
     } catch (err) {
@@ -440,7 +525,10 @@ export default function Game({ id }: { id: string }) {
         });
         setWrongCells(wrong);
       }
-      if (loadedMistakes >= MAX_MISTAKES) setIsGameOver(true);
+      if (loadedMistakes >= MAX_MISTAKES) {
+        setIsGameOver(true);
+        customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }).catch(() => {});
+      }
     }
   }, [game, isCompleted, isGameOver, totalCells, storageKeyGrid, storageKeyNotes]);
 
@@ -519,6 +607,14 @@ export default function Game({ id }: { id: string }) {
                   ? `+${pts.toLocaleString()} pts • ${formattedTime}`
                   : `Time: ${formattedTime} • Mistakes: ${mistakes}`,
               });
+
+              // Fetch challenge result (small delay so resolveChallengeForGame can run)
+              setTimeout(async () => {
+                try {
+                  const cr = await customFetch<typeof challengeResult>(`/api/challenges/for-game/${gameId}`);
+                  setChallengeResult(cr);
+                } catch {}
+              }, 800);
 
               const isDailyChallenge =
                 profileId &&
@@ -600,6 +696,7 @@ export default function Game({ id }: { id: string }) {
         if (newMistakes >= MAX_MISTAKES) {
           sounds.gameover();
           setIsGameOver(true);
+          customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }).catch(() => {});
           toast.error("Game Over! 3 mistakes reached.", { duration: 5000 });
         } else {
           toast.error(`Wrong! ${MAX_MISTAKES - newMistakes} mistake${MAX_MISTAKES - newMistakes !== 1 ? "s" : ""} left.`, { duration: 1200 });
@@ -663,30 +760,52 @@ export default function Game({ id }: { id: string }) {
   }, [initialGrid, storageKeyGrid, storageKeyNotes]);
 
   const handleHint = () => {
-    if (
-      selectedCell === null ||
-      isCompleted ||
-      isGameOver ||
-      hints >= MAX_HINTS ||
-      initialGrid[selectedCell] !== "0" ||
-      grid[selectedCell] !== "0"
-    )
-      return;
+    if (isCompleted || isGameOver || hints >= MAX_HINTS) return;
     const solution = game?.puzzle?.solution;
-    if (solution) {
-      const newHints = hints + 1;
-      setHints(newHints);
-      const newGrid = [...grid];
-      newGrid[selectedCell] = solution[selectedCell];
-      setGrid(newGrid);
-      setWrongCells((prev) => {
-        const s = new Set(prev);
-        s.delete(selectedCell);
-        return s;
+    if (!solution) return;
+
+    const newHints = hints + 1;
+    setHints(newHints);
+
+    // Notes mode: auto-fill all possible pencil marks
+    if (notesMode) {
+      const autoNotes = computeAutoNotes(grid, initialGrid, gridSize, boxSize);
+      setNotes(prev => {
+        const merged = { ...prev };
+        for (const [k, v] of Object.entries(autoNotes)) merged[Number(k)] = v;
+        return merged;
       });
-      if (newHints >= MAX_HINTS) toast.error("No more hints available!", { duration: 2000 });
-      checkCompletion(newGrid, solution);
+      toast.success("📝 Notes auto-filled!", {
+        description: "All possible values have been pencilled into empty cells.",
+        duration: 3500,
+      });
+      if (newHints >= MAX_HINTS) setTimeout(() => toast.error("No more hints available!", { duration: 2000 }), 400);
+      return;
     }
+
+    // Value mode: find best cell (naked single first, else random empty)
+    const cellToReveal = findBestHintCell(grid, initialGrid, gridSize, boxSize);
+    if (cellToReveal === null) return;
+
+    const newGrid = [...grid];
+    newGrid[cellToReveal] = solution[cellToReveal];
+    setGrid(newGrid);
+    setWrongCells(prev => { const s = new Set(prev); s.delete(cellToReveal); return s; });
+    setSelectedCell(cellToReveal);
+
+    const possible = getPossibleValues(grid, cellToReveal, gridSize, boxSize);
+    const row = Math.floor(cellToReveal / gridSize) + 1;
+    const col = (cellToReveal % gridSize) + 1;
+    const isNaked = possible.length === 1;
+    toast.success("💡 Hint!", {
+      description: isNaked
+        ? `Row ${row}, Col ${col}: only one value could fit here!`
+        : `Row ${row}, Col ${col}: filled in for you.`,
+      duration: 3500,
+    });
+
+    if (newHints >= MAX_HINTS) setTimeout(() => toast.error("No more hints available!", { duration: 2000 }), 400);
+    checkCompletion(newGrid, solution);
   };
 
   const handleShare = useCallback(async () => {
@@ -893,14 +1012,246 @@ export default function Game({ id }: { id: string }) {
   // Cell sizing — width is driven by the 1fr grid, height matches via aspect-square
   const cellText =
     mode === "number"
-      ? gridSize === 3 ? "text-4xl sm:text-6xl"
-        : gridSize === 4 ? "text-3xl sm:text-4xl"
-        : gridSize === 16 ? "text-[9px] sm:text-[11px] font-bold"
-        : "text-xl sm:text-2xl"
+      ? gridSize === 3 ? "text-5xl sm:text-7xl"
+        : gridSize === 4 ? "text-4xl sm:text-5xl"
+        : gridSize === 16 ? "text-[11px] sm:text-[13px] font-bold"
+        : "text-2xl sm:text-3xl"
       : "";
 
+  const diff = game?.puzzle?.difficulty ?? "";
+  const diffLabel = diff.charAt(0).toUpperCase() + diff.slice(1);
+  const sizeLabel = `${gridSize}×${gridSize}`;
+  const gemsEarned = pointsEarned !== null ? Math.max(1, Math.floor(pointsEarned / 5000)) : null;
+
+  // ── Full-page Game Over result screen ────────────────────────────────────────
+  if (isGameOver) {
+    return (
+      <div className="max-w-lg mx-auto w-full space-y-6 animate-in fade-in duration-500 pt-4">
+        <div className="rounded-2xl bg-destructive text-destructive-foreground p-6 text-center space-y-3 shadow-lg">
+          <div className="text-5xl mb-1">💀</div>
+          <h1 className="text-3xl font-serif font-bold">Game Over</h1>
+          <p className="opacity-80 text-sm">
+            {MAX_MISTAKES} mistakes made — better luck next time!
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { icon: Clock, label: "Time", value: formattedTime },
+            { icon: AlertTriangle, label: "Mistakes", value: `${mistakes} / ${MAX_MISTAKES}` },
+          ].map(({ icon: Icon, label, value }) => (
+            <div key={label} className="rounded-xl border bg-card p-4 text-center space-y-1">
+              <Icon className="w-4 h-4 text-primary mx-auto" />
+              <p className="text-xl font-black tabular-nums">{value}</p>
+              <p className="text-xs text-muted-foreground">{label}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="space-y-3">
+          <Button
+            className="w-full gap-2"
+            onClick={() => handleNewGame(gridSize as 3 | 4 | 9 | 16, diff as "easy" | "medium" | "hard" | "expert")}
+            disabled={newGameLoading}
+          >
+            {newGameLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+            Try again ({sizeLabel} {diffLabel})
+          </Button>
+
+          <div className="space-y-2">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground text-center">Or start a new game</p>
+            <div className={`grid gap-2 ${visibleSizes.length === 2 ? "grid-cols-2" : "grid-cols-2"}`}>
+              {visibleSizes.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => handleNewGame(s, newDiff)}
+                  disabled={newGameLoading}
+                  className={[
+                    "flex flex-col items-center gap-1 rounded-xl border-2 py-3 px-2 text-center transition-all",
+                    s === gridSize
+                      ? "border-primary bg-primary/10 shadow-sm"
+                      : "border-border hover:border-primary/40 hover:bg-muted/50",
+                  ].join(" ")}
+                >
+                  <span className="font-black text-base text-primary">{s}×{s}</span>
+                  <span className="text-[10px] text-muted-foreground leading-tight">
+                    {s === 3 ? "Child" : s === 4 ? "Mini" : s === 9 ? "Classic" : "Pro"}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setLocation("/")}
+          className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          ← Back to Brain Games 4 All
+        </button>
+      </div>
+    );
+  }
+
+  // ── Full-page Completion result screen ───────────────────────────────────────
+  if (isCompleted) {
+    return (
+      <div className="max-w-lg mx-auto w-full space-y-6 animate-in fade-in duration-500 pt-4">
+        <Confetti />
+
+        <div className="rounded-2xl bg-primary text-primary-foreground p-6 text-center space-y-3 shadow-lg">
+          <div className="text-5xl mb-1">{completionMessage.emoji}</div>
+          <h1 className="text-3xl font-serif font-bold">{completionMessage.headline}</h1>
+          <p className="opacity-80 text-sm">
+            {sizeLabel} {diffLabel} · {formattedTime} · {mistakes} mistake{mistakes !== 1 ? "s" : ""}
+          </p>
+          <button
+            onClick={handleShare}
+            className="inline-flex items-center gap-2 mt-1 text-sm opacity-80 hover:opacity-100 transition-opacity bg-white/15 hover:bg-white/25 rounded-lg px-4 py-1.5"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            Share your result
+          </button>
+        </div>
+
+        {isPersonalBest && (
+          <div className="flex items-center justify-center gap-2 rounded-xl border border-yellow-300/60 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/20 dark:border-yellow-700/40 px-4 py-2.5">
+            <span className="text-lg">🏆</span>
+            <span className="font-bold text-yellow-700 dark:text-yellow-400 text-sm">New Personal Best!</span>
+          </div>
+        )}
+
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { icon: Clock, label: "Time", value: formattedTime },
+            { icon: AlertTriangle, label: "Mistakes", value: `${mistakes} / ${MAX_MISTAKES}` },
+            { icon: Trophy, label: "Points", value: pointsEarned !== null ? pointsEarned.toLocaleString() : "—" },
+          ].map(({ icon: Icon, label, value }) => (
+            <div key={label} className="rounded-xl border bg-card p-4 text-center space-y-1">
+              <Icon className="w-4 h-4 text-primary mx-auto" />
+              <p className="text-xl font-black tabular-nums">{value}</p>
+              <p className="text-xs text-muted-foreground">{label}</p>
+            </div>
+          ))}
+        </div>
+
+        {pointsEarned !== null && (
+          <div className="rounded-xl border-2 border-primary/20 bg-gradient-to-r from-primary/8 to-primary/4 p-4 flex items-center justify-center gap-6">
+            <div className="flex items-center gap-2">
+              <Zap className="w-5 h-5 text-yellow-500" />
+              <span className="font-black text-lg">+{pointsEarned.toLocaleString()} pts</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Gem className="w-5 h-5 text-cyan-500" />
+              <span className="font-black text-lg">+{gemsEarned} 💎</span>
+            </div>
+          </div>
+        )}
+
+        {/* Challenge result card */}
+        {challengeResult && (() => {
+          const isChallenger = challengeResult.challengerId === profileId;
+          const opponentName = isChallenger ? challengeResult.challengedUsername : challengeResult.challengerUsername;
+          const myPoints = isChallenger ? challengeResult.challengerPoints : challengeResult.challengedPoints;
+          const opponentPoints = isChallenger ? challengeResult.challengedPoints : challengeResult.challengerPoints;
+          const isWinner = challengeResult.winnerId === profileId;
+          const isTie = challengeResult.status === "completed" && challengeResult.winnerId === null;
+          const isPending = challengeResult.status !== "completed";
+
+          return (
+            <div className={[
+              "rounded-2xl border-2 p-4 space-y-3",
+              isWinner ? "border-yellow-400 bg-yellow-50 dark:bg-yellow-950/30" :
+              isTie ? "border-blue-400 bg-blue-50 dark:bg-blue-950/30" :
+              isPending ? "border-muted bg-muted/30" :
+              "border-red-300 bg-red-50 dark:bg-red-950/30",
+            ].join(" ")}>
+              <div className="flex items-center gap-2">
+                <span className="text-xl">
+                  {isPending ? "⏳" : isWinner ? "🏆" : isTie ? "🤝" : "😔"}
+                </span>
+                <div>
+                  <p className="font-bold text-sm">
+                    {isPending
+                      ? `Challenge vs ${opponentName}`
+                      : isWinner ? "You won the challenge!"
+                      : isTie ? "It's a tie!"
+                      : "You lost the challenge"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {isPending
+                      ? `Waiting for ${opponentName} to finish…`
+                      : `vs ${opponentName}`}
+                  </p>
+                </div>
+              </div>
+              {!isPending && (
+                <div className="grid grid-cols-2 gap-2 text-center text-sm">
+                  <div className="rounded-xl bg-background/60 p-2">
+                    <p className="font-black text-base">{myPoints?.toLocaleString() ?? "—"}</p>
+                    <p className="text-xs text-muted-foreground">Your points</p>
+                  </div>
+                  <div className="rounded-xl bg-background/60 p-2">
+                    <p className="font-black text-base">{opponentPoints?.toLocaleString() ?? "—"}</p>
+                    <p className="text-xs text-muted-foreground">{opponentName}'s points</p>
+                  </div>
+                </div>
+              )}
+              {isWinner && (
+                <p className="text-xs text-yellow-700 dark:text-yellow-400 font-semibold text-center">+10 💎 bonus awarded!</p>
+              )}
+            </div>
+          );
+        })()}
+
+        <div className="space-y-3">
+          <Button
+            variant="outline"
+            className="w-full gap-2"
+            onClick={() => handleNewGame(gridSize as 3 | 4 | 9 | 16, diff as "easy" | "medium" | "hard" | "expert")}
+            disabled={newGameLoading}
+          >
+            {newGameLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+            Play again ({sizeLabel} {diffLabel})
+          </Button>
+
+          <div className="space-y-2">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground text-center">Or start a new game</p>
+            <div className="grid grid-cols-2 gap-2">
+              {visibleSizes.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => handleNewGame(s, newDiff)}
+                  disabled={newGameLoading}
+                  className={[
+                    "flex flex-col items-center gap-1 rounded-xl border-2 py-3 px-2 text-center transition-all",
+                    s === gridSize
+                      ? "border-primary bg-primary/10 shadow-sm"
+                      : "border-border hover:border-primary/40 hover:bg-muted/50",
+                  ].join(" ")}
+                >
+                  <span className="font-black text-base text-primary">{s}×{s}</span>
+                  <span className="text-[10px] text-muted-foreground leading-tight">
+                    {s === 3 ? "Child" : s === 4 ? "Mini" : s === 9 ? "Classic" : "Pro"}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setLocation("/")}
+          className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          ← Back to Brain Games 4 All
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col w-full gap-1.5 md:gap-3 animate-in fade-in duration-300 pb-16 sm:pb-20 md:pb-4">
+    <div ref={gameViewRef} className="flex flex-col w-full gap-1.5 md:gap-3 animate-in fade-in duration-300 pb-16 sm:pb-20 md:pb-4 scroll-mt-2">
       {/* Header */}
       <div className="flex items-center justify-between w-full">
         <Button
@@ -923,14 +1274,17 @@ export default function Game({ id }: { id: string }) {
             <DialogHeader>
               <DialogTitle>Leave this game?</DialogTitle>
               <DialogDescription>
-                Your progress is saved automatically. You can resume it from the Sudoku home screen.
+                If you leave, this game will end and cannot be resumed.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
               <Button variant="outline" className="flex-1" onClick={() => setShowLeaveDialog(false)}>
                 Keep Playing
               </Button>
-              <Button className="flex-1" onClick={() => setLocation("/sudoku")}>
+              <Button className="flex-1" onClick={async () => {
+                try { await customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }); } catch {}
+                setLocation("/sudoku");
+              }}>
                 Leave Game
               </Button>
             </DialogFooter>
@@ -953,21 +1307,6 @@ export default function Game({ id }: { id: string }) {
           </AlertDialogContent>
         </AlertDialog>
 
-        {/* New-game confirmation dialog */}
-        <AlertDialog open={showNewGameDialog} onOpenChange={setShowNewGameDialog}>
-          <AlertDialogContent className="max-w-sm">
-            <AlertDialogHeader>
-              <AlertDialogTitle>Start a new game?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Your current progress will be saved, but you'll leave this puzzle. Are you sure you want to start a new game?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Keep Playing</AlertDialogCancel>
-              <AlertDialogAction onClick={handleNewGame}>Start New Game</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
 
         <div className="flex items-center gap-1 sm:gap-2 text-sm font-medium">
           {profile?.showTimer !== false && (
@@ -1081,50 +1420,25 @@ export default function Game({ id }: { id: string }) {
             )}
           </div>
 
-          {/* Size chips + difficulty + start in one row */}
-          <div className="flex items-center gap-1">
-            {/* All sizes including 3×3 */}
-            <div className="flex gap-0.5 flex-1">
-              {visibleSizes.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setNewSize(s)}
-                  className={[
-                    "flex-1 rounded py-0.5 text-[10px] font-bold transition-all leading-none",
-                    newSize === s
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "bg-background text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
-                  ].join(" ")}
-                >
-                  {s}×{s}
-                </button>
-              ))}
-            </div>
-
-            {/* Difficulty */}
-            <Select value={newDiff} onValueChange={(v) => setNewDiff(v as typeof newDiff)}>
-              <SelectTrigger className="h-6 text-[10px] w-[4.5rem] shrink-0 px-1.5">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {visibleDiffs.map(d => (
-                  <SelectItem key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Start */}
-            <Button
-              size="sm"
-              className="h-6 px-2 text-[10px] gap-1 shrink-0"
-              onClick={() => setShowNewGameDialog(true)}
-              disabled={newGameLoading || !profileId}
-            >
-              {newGameLoading
-                ? <Loader2 className="w-2.5 h-2.5 animate-spin" />
-                : <RefreshCw className="w-2.5 h-2.5" />}
-              Start
-            </Button>
+          {/* Size chips — tapping one starts immediately with the current difficulty */}
+          <div className="flex gap-0.5">
+            {visibleSizes.map((s) => (
+              <button
+                key={s}
+                disabled={newGameLoading}
+                onClick={() => { setNewSize(s); handleNewGame(s, newDiff); }}
+                className={[
+                  "flex-1 rounded py-0.5 text-[10px] font-bold transition-all leading-none disabled:opacity-50",
+                  newSize === s
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-background text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
+                ].join(" ")}
+              >
+                {newGameLoading && newSize === s
+                  ? <Loader2 className="w-2.5 h-2.5 animate-spin mx-auto" />
+                  : `${s}×${s}`}
+              </button>
+            ))}
           </div>
         </div>
       )}
@@ -1171,7 +1485,7 @@ export default function Game({ id }: { id: string }) {
               }}
             >
             <div
-              className="grid w-full p-1"
+              className="grid w-full p-0"
               style={{
                 gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
                 gap: "1px",
@@ -1310,112 +1624,23 @@ export default function Game({ id }: { id: string }) {
               {visibleSizes.map((s) => (
                 <button
                   key={s}
-                  onClick={() => setNewSize(s)}
+                  disabled={newGameLoading}
+                  onClick={() => { setNewSize(s); handleNewGame(s, newDiff); }}
                   className={[
-                    "rounded-md py-1.5 text-xs font-bold transition-all leading-none",
+                    "rounded-md py-1.5 text-xs font-bold transition-all leading-none disabled:opacity-50",
                     newSize === s
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "bg-background text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
                   ].join(" ")}
                 >
-                  {s}×{s}
+                  {newGameLoading && newSize === s
+                    ? <Loader2 className="w-3 h-3 animate-spin mx-auto" />
+                    : `${s}×${s}`}
                 </button>
               ))}
             </div>
-            <div className="flex gap-2">
-              <Select value={newDiff} onValueChange={(v) => setNewDiff(v as typeof newDiff)}>
-                <SelectTrigger className="h-8 text-xs flex-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {visibleDiffs.map(d => (
-                    <SelectItem key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                size="sm"
-                className="h-8 px-4 text-xs gap-1.5 shrink-0"
-                onClick={() => setShowNewGameDialog(true)}
-                disabled={newGameLoading || !profileId}
-              >
-                {newGameLoading
-                  ? <Loader2 className="w-3 h-3 animate-spin" />
-                  : <RefreshCw className="w-3 h-3" />}
-                Start
-              </Button>
-            </div>
           </div>
           </div>{/* end hidden md:block — New game switcher */}
-
-          {/* Game Over banner */}
-          {isGameOver && (
-            <Card className="bg-destructive text-destructive-foreground border-none w-full">
-              <CardContent className="pt-6 flex flex-col items-center text-center gap-3">
-                <h2 className="text-2xl font-serif font-bold">Game Over 💀</h2>
-                <p className="opacity-90 text-sm">
-                  You made {MAX_MISTAKES} mistakes — better luck next time!
-                </p>
-                <div className="flex gap-2 w-full mt-2">
-                  <Button variant="secondary" className="flex-1" onClick={() => setLocation("/sudoku")}>
-                    Try Again
-                  </Button>
-                  <Button variant="secondary" className="flex-1" onClick={() => setLocation("/")}>
-                    Brain Games 4 All
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Confetti on completion */}
-          {isCompleted && <Confetti />}
-
-          {/* Completed banner */}
-          {isCompleted && (
-            <Card className="bg-primary text-primary-foreground border-none w-full">
-              <CardContent className="pt-6 flex flex-col items-center text-center gap-3">
-                <h2 className="text-2xl font-serif font-bold">{completionMessage.headline} {completionMessage.emoji}</h2>
-                <p className="opacity-90 text-sm">
-                  {formattedTime} • {mistakes} mistake{mistakes !== 1 ? "s" : ""}
-                </p>
-                {isPersonalBest && (
-                  <div className="flex items-center gap-1.5 bg-yellow-400/20 border border-yellow-300/50 text-yellow-200 rounded-full px-3 py-1 text-xs font-bold tracking-wide">
-                    🏆 New Personal Best!
-                  </div>
-                )}
-                {pointsEarned !== null && (
-                  <div className="flex gap-4 items-end justify-center">
-                    <div className="flex flex-col items-center gap-0.5">
-                      <span className="text-3xl font-black tracking-tight">+{pointsEarned.toLocaleString()}</span>
-                      <span className="text-xs opacity-80 uppercase tracking-widest font-semibold">points</span>
-                    </div>
-                    <div className="flex flex-col items-center gap-0.5">
-                      <span className="text-3xl font-black tracking-tight">+{Math.max(1, Math.floor(pointsEarned / 5000))}</span>
-                      <span className="text-xs opacity-80 uppercase tracking-widest font-semibold">💎 gems</span>
-                    </div>
-                  </div>
-                )}
-                <div className="flex gap-2 w-full mt-2">
-                  <Button variant="secondary" className="flex-1" onClick={() => setLocation("/sudoku")}>
-                    Play Again
-                  </Button>
-                  <Button variant="secondary" className="flex-1" onClick={() => setLocation("/leaderboard")}>
-                    Leaderboard
-                  </Button>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full opacity-80 hover:opacity-100 gap-2 text-primary-foreground hover:text-primary-foreground hover:bg-white/15"
-                  onClick={handleShare}
-                >
-                  <Share2 className="w-4 h-4" />
-                  Share your result
-                </Button>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Controls */}
           {!isCompleted && (
@@ -1445,10 +1670,11 @@ export default function Game({ id }: { id: string }) {
                 variant="secondary"
                 className="flex-col h-12 gap-0.5 relative"
                 onClick={handleHint}
-                disabled={isGameOver || hints >= MAX_HINTS || selectedCell === null || grid[selectedCell] !== "0"}
+                disabled={isGameOver || hints >= MAX_HINTS}
+                title={notesMode ? "Auto-fill pencil marks (uses 1 hint)" : "Reveal the easiest empty cell (uses 1 hint)"}
               >
                 <Lightbulb className={`h-4 w-4 ${hints >= MAX_HINTS ? "opacity-40" : ""}`} />
-                <span className="text-[11px]">Hint</span>
+                <span className="text-[11px]">{notesMode ? "Auto✏️" : "Hint"}</span>
                 <span className={`text-[9px] font-bold leading-none ${hints >= MAX_HINTS ? "text-red-400" : "text-primary"}`}>
                   {MAX_HINTS - hints} left
                 </span>
