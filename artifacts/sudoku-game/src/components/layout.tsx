@@ -81,11 +81,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
         "border-b bg-card flex items-center justify-between sticky top-0 z-10",
         isGameRoute ? "py-1.5 px-3 md:py-4 md:px-6" : "py-4 px-6",
       ].join(" ")}>
-        <Link href="/" className={[
-          "font-serif font-bold tracking-tight text-primary",
-          isGameRoute ? "text-base md:text-2xl" : "text-2xl",
-        ].join(" ")}>
-          Brain Games 4 All
+        <Link href="/" className="flex items-center gap-2 shrink-0">
+          <img
+            src="/brain-games-logo.png"
+            alt="Brain Games 4 All"
+            className={[
+              "shrink-0",
+              isGameRoute ? "h-6 w-6 md:h-9 md:w-9" : "h-9 w-9",
+            ].join(" ")}
+          />
+          <span className={[
+            "font-serif font-bold tracking-tight text-primary",
+            isGameRoute ? "text-base md:text-2xl" : "text-2xl",
+          ].join(" ")}>
+            Brain Games 4 All
+          </span>
         </Link>
 
         {/* Gems badge */}
