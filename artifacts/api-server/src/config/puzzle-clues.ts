@@ -10,9 +10,9 @@ export type Difficulty = "easy" | "medium" | "hard" | "expert";
 
 export const PUZZLE_CLUES: Record<number, Record<Difficulty, number>> = {
   3: {
-    easy: 9, // all cells given = tutorial mode
-    medium: 8,
-    hard: 7,
+    easy: 8, // all cells given = tutorial mode
+    medium: 7,
+    hard: 6,
     expert: 5,
   },
   4: {
