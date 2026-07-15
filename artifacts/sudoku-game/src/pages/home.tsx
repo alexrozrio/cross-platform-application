@@ -54,12 +54,27 @@ const GRID_OPTIONS: { size: GridSize; label: string; sublabel: string; difficult
 
 type InfoModal = 'rules' | 'controls' | 'backstory' | null;
 
+const LAST_GRID_SIZE_KEY = 'sudoku-last-grid-size';
+
+function getLastPlayedGridSize(): GridSize | null {
+  try {
+    const stored = Number(localStorage.getItem(LAST_GRID_SIZE_KEY));
+    return [3, 4, 9, 16].includes(stored) ? (stored as GridSize) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function SudokuHome() {
   const { profileId, isReady } = useAuth();
   const [location, setLocation] = useLocation();
   const search = useSearch();
   const sizeParam = new URLSearchParams(search).get('size');
-  const initialSize = ([3, 4, 9, 16].includes(Number(sizeParam)) ? Number(sizeParam) : 9) as GridSize;
+  const initialSize = (
+    [3, 4, 9, 16].includes(Number(sizeParam))
+      ? Number(sizeParam)
+      : getLastPlayedGridSize() ?? 9
+  ) as GridSize;
   const [difficulty, setDifficulty] = useState<Difficulty>('easy');
   const [gridSize, setGridSize] = useState<GridSize>(initialSize);
   const { themeId } = useImageTheme();
@@ -126,6 +141,11 @@ export default function SudokuHome() {
         data: { profileId, puzzleId: puzzle.id, difficulty: effectiveDifficulty },
       });
       setActiveGame(null);
+      try {
+        localStorage.setItem(LAST_GRID_SIZE_KEY, String(size));
+      } catch {
+        // ignore storage failures (e.g. private browsing)
+      }
       const modeQuery = mode !== 'number' ? `?mode=${mode}` : '';
       setLocation(`/game/${game.id}${modeQuery}`);
     } catch (err) {
