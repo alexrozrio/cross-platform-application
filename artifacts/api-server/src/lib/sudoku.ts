@@ -1,3 +1,5 @@
+import { getClueCount } from "../config/puzzle-clues";
+
 type Grid = number[];
 
 // ─── Encoding helpers (for 16×16 where values go up to 16) ────────────────────
@@ -60,13 +62,6 @@ function countSolutions3x3(grid: Grid, limit = 2): number {
   return count;
 }
 
-const CLUES_3x3: Record<string, number> = {
-  easy: 9,   // all cells given = tutorial mode
-  medium: 8,
-  hard: 7,
-  expert: 5,
-};
-
 // ─── 4×4 (2×2 boxes) ─────────────────────────────────────────────────────────
 
 function isValid4x4(grid: Grid, pos: number, num: number): boolean {
@@ -116,13 +111,6 @@ function countSolutions4x4(grid: Grid, limit = 2): number {
   return count;
 }
 
-const CLUES_4x4: Record<string, number> = {
-  easy: 14,   // 2 empty cells — very easy
-  medium: 11,
-  hard: 8,
-  expert: 6,
-};
-
 // ─── 9×9 (3×3 boxes) ─────────────────────────────────────────────────────────
 
 function isValid9x9(grid: Grid, pos: number, num: number): boolean {
@@ -169,13 +157,6 @@ function countSolutions9x9(grid: Grid, limit = 2): number {
   }
   return count;
 }
-
-const CLUES_9x9: Record<string, number> = {
-  easy: 50,    // ~31 cells to fill — genuinely easy
-  medium: 38,  // ~43 cells to fill
-  hard: 28,    // ~53 cells to fill
-  expert: 22,  // ~59 cells to fill — very challenging
-};
 
 // ─── 16×16 (4×4 boxes, values 1-16) ──────────────────────────────────────────
 // Values encoded: '1'-'9' for 1-9, 'a'-'g' for 10-16, '0' for empty
@@ -237,13 +218,6 @@ function generate16x16Solution(): Grid {
   return solution;
 }
 
-const CLUES_16x16: Record<string, number> = {
-  easy: 196,   // remove  60 of 256 — very easy
-  medium: 160, // remove  96 of 256
-  hard: 128,   // remove 128 of 256
-  expert: 100, // remove 156 of 256 — very challenging
-};
-
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 export function generatePuzzle(
@@ -258,7 +232,7 @@ export function generatePuzzle(
 
     const puzzle = [...solution];
     const positions = Array.from({ length: 9 }, (_, i) => i).sort(() => Math.random() - 0.5);
-    const clues = CLUES_3x3[difficulty] ?? 7;
+    const clues = getClueCount(3, difficulty);
     let removed = 0;
     const target = 9 - clues;
 
@@ -284,7 +258,7 @@ export function generatePuzzle(
 
     const puzzle = [...solution];
     const positions = Array.from({ length: 16 }, (_, i) => i).sort(() => Math.random() - 0.5);
-    const clues = CLUES_4x4[difficulty] ?? 8;
+    const clues = getClueCount(4, difficulty);
     let removed = 0;
     const target = 16 - clues;
 
@@ -309,7 +283,7 @@ export function generatePuzzle(
 
     const puzzle = [...solution];
     const positions = Array.from({ length: 256 }, (_, i) => i).sort(() => Math.random() - 0.5);
-    const clues = CLUES_16x16[difficulty] ?? 120;
+    const clues = getClueCount(16, difficulty);
     let removed = 0;
     const target = 256 - clues;
 
@@ -330,7 +304,7 @@ export function generatePuzzle(
 
   const puzzle = [...solution];
   const positions = Array.from({ length: 81 }, (_, i) => i).sort(() => Math.random() - 0.5);
-  const clues = CLUES_9x9[difficulty] ?? 28;
+  const clues = getClueCount(9, difficulty);
   let removed = 0;
   const target = 81 - clues;
 
