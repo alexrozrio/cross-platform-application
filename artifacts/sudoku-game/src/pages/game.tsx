@@ -385,6 +385,7 @@ export default function Game({ id }: { id: string }) {
     true
   );
   const visibleDiffs = ['easy', 'medium', 'hard', 'expert'] as const;
+  const DIFF_SHORT: Record<string, string> = { easy: 'Easy', medium: 'Med', hard: 'Hard', expert: 'Exp' };
 
   // New-game switcher state — synced to the current game's size/difficulty once loaded
   const [newSize, setNewSize] = useState<3 | 4 | 9 | 16>(3);
@@ -1308,22 +1309,24 @@ export default function Game({ id }: { id: string }) {
         </AlertDialog>
 
 
-        <div className="flex items-center gap-1 sm:gap-2 text-sm font-medium">
+        <div className="flex items-center gap-0.5 sm:gap-2 text-sm font-medium">
           {profile?.showTimer !== false && (
-            <div className="flex items-center gap-1 text-muted-foreground">
+            <div className="flex items-center gap-0.5 text-muted-foreground mr-0.5 sm:mr-0">
               <Clock className="h-3.5 w-3.5 hidden xs:block" />
               <span className="font-mono text-xs sm:text-sm">{formattedTime}</span>
             </div>
           )}
-          {/* Style toggle — after timer, mobile only */}
-          {!isCompleted && !isGameOver && availableModes.length > 1 && (
-            <div className="md:hidden flex gap-0.5 shrink-0">
-              {availableModes.map((m) => (
+          {/* Style toggle + quick difficulty picker — mobile only, grouped tightly so both
+              fit on one line even for 3×3/4×4 (which has a style choice); 9×9/16×16 only
+              show the difficulty picker since there's no style choice for them. */}
+          {!isCompleted && !isGameOver && (
+            <div className="md:hidden flex items-center gap-0.5 shrink-0">
+              {availableModes.length > 1 && availableModes.map((m) => (
                 <button
                   key={m}
                   onClick={() => switchMode(m)}
                   className={[
-                    "flex items-center justify-center w-7 h-6 rounded text-[10px] font-bold transition-all",
+                    "flex items-center justify-center w-6 h-6 rounded text-[10px] font-bold transition-all shrink-0",
                     mode === m
                       ? "bg-muted text-foreground shadow-sm border border-border"
                       : "text-muted-foreground hover:text-foreground",
@@ -1333,24 +1336,21 @@ export default function Game({ id }: { id: string }) {
                   {m === "number" ? "123" : m === "alpha" ? "ABC" : "🖼"}
                 </button>
               ))}
+              <Select
+                value={game.puzzle?.difficulty ?? "easy"}
+                onValueChange={(v) => handleQuickDifficultyChange(v as "easy" | "medium" | "hard" | "expert")}
+                disabled={quickDifficultyLoading}
+              >
+                <SelectTrigger className="h-6 text-[10px] w-10 shrink-0 px-1">
+                  <SelectValue>{DIFF_SHORT[game.puzzle?.difficulty ?? "easy"]}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {visibleDiffs.map((d) => (
+                    <SelectItem key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          )}
-          {/* Only Numbers available (9×9/16×16 with style flags off) — quick difficulty picker, mobile only */}
-          {!isCompleted && !isGameOver && availableModes.length === 1 && (
-            <Select
-              value={game.puzzle?.difficulty ?? "easy"}
-              onValueChange={(v) => handleQuickDifficultyChange(v as "easy" | "medium" | "hard" | "expert")}
-              disabled={quickDifficultyLoading}
-            >
-              <SelectTrigger className="md:hidden h-6 text-[10px] w-[4.5rem] shrink-0 px-1.5">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {visibleDiffs.map((d) => (
-                  <SelectItem key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           )}
           <div className={`flex items-center gap-1 font-semibold ${
             mistakes === 0 ? "text-muted-foreground"
@@ -1595,7 +1595,7 @@ export default function Game({ id }: { id: string }) {
               </div>
             </div>
           )}
-          {!isCompleted && !isGameOver && availableModes.length === 1 && (
+          {!isCompleted && !isGameOver && (
             <div className="flex items-center gap-2 w-full">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground shrink-0">Difficulty</span>
               <Select
