@@ -22,23 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Swords,
-  Trophy,
-  Clock,
-  Search,
-  Gem,
-  CheckCircle2,
-  XCircle,
-  Loader2,
-  ChevronRight,
-  Crown,
-  Minus,
-  Brain,
-  Grid2x2,
-  Zap,
-  RotateCcw,
-} from "lucide-react";
+import { Swords, Trophy, Clock, Search, Gem, CircleCheck as CheckCircle2, Circle as XCircle, Loader as Loader2, ChevronRight, Crown, Minus, Brain, Grid2x2, Zap, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { showEventModal } from "@/hooks/use-event-modal";
 import { LevelBadge } from "@/components/level-badge";
@@ -46,7 +30,7 @@ import { LevelBadge } from "@/components/level-badge";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Difficulty = "easy" | "medium" | "hard" | "expert";
-type SudokuGridSize = 3 | 4 | 9 | 16;
+type SudokuGridSize = 3 | 4 | 6 | 9 | 16;
 type MemoryGridSize = 2 | 4 | 6 | 8;
 type ChallengeStatus = "pending" | "accepted" | "declined" | "completed";
 type GameType = "sudoku" | "memory";
@@ -113,6 +97,7 @@ const DIFF_COLORS: Record<Difficulty, string> = {
 const SUDOKU_GRID_LABELS: Record<number, string> = {
   3: "3×3",
   4: "4×4",
+  6: "6×6",
   9: "9×9",
   16: "16×16",
 };
@@ -572,6 +557,7 @@ type GameMode = 'children' | 'adult' | '4all';
 const SUDOKU_SIZE_OPTIONS: { value: SudokuGridSize; label: string }[] = [
   { value: 3,  label: '3×3 Baby' },
   { value: 4,  label: '4×4 Mini' },
+  { value: 6,  label: '6×6 Dual' },
   { value: 9,  label: '9×9 Classic' },
   { value: 16, label: '16×16 Pro' },
 ];

@@ -46,9 +46,10 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
   // Grid size completions
   const has3x3  = completedSudoku.some(g => g.gridSize === 3);
   const has4x4  = completedSudoku.some(g => g.gridSize === 4);
+  const has6x6  = completedSudoku.some(g => g.gridSize === 6);
   const has9x9  = completedSudoku.some(g => g.gridSize === 9);
   const has16x16 = completedSudoku.some(g => g.gridSize === 16);
-  const hasAllGrids = has3x3 && has4x4 && has9x9 && has16x16;
+  const hasAllGrids = has3x3 && has4x4 && has6x6 && has9x9 && has16x16;
 
   // Advanced skill
   const hasFlawlessExpert = completedSudoku.some(g => g.difficulty === "expert" && g.mistakeCount === 0);
@@ -68,7 +69,7 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
   const totalMemoryWins = completedMemory.length;
   const memoryStreak    = profile?.memoryStreak ?? 0;
   const has8x8          = completedMemory.some(g => g.gridSize === 8);
-  const has6x6          = completedMemory.some(g => g.gridSize === 6);
+  const hasMemory6x6    = completedMemory.some(g => g.gridSize === 6);
 
   const memory4x4Games  = completedMemory.filter(g => g.gridSize === 4);
   const best4x4Time     = memory4x4Games.length > 0 ? Math.min(...memory4x4Games.map(g => g.elapsedSeconds)) : Infinity;
@@ -99,10 +100,11 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
     // ── Sudoku: Grid Explorer ────────────────────────────────────────────────
     baby_steps:       { unlocked: has3x3,      progress: has3x3      ? 1 : 0, total: 1 },
     mini_master:      { unlocked: has4x4,      progress: has4x4      ? 1 : 0, total: 1 },
+    dual_master:      { unlocked: has6x6,      progress: has6x6      ? 1 : 0, total: 1 },
     classic_champ:    { unlocked: has9x9,      progress: has9x9      ? 1 : 0, total: 1 },
     pro_player:       { unlocked: has16x16,    progress: has16x16    ? 1 : 0, total: 1 },
     all_grids:        { unlocked: hasAllGrids,
-      progress: [has3x3, has4x4, has9x9, has16x16].filter(Boolean).length, total: 4 },
+      progress: [has3x3, has4x4, has6x6, has9x9, has16x16].filter(Boolean).length, total: 5 },
 
     // ── Sudoku: Difficulty ───────────────────────────────────────────────────
     medium_solver:    { unlocked: hasMedium,        progress: hasMedium        ? 1 : 0, total: 1 },
@@ -136,7 +138,7 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
 
     // ── Memory Match: Skill ──────────────────────────────────────────────────
     memory_big_board:     { unlocked: has8x8,             progress: has8x8             ? 1 : 0, total: 1 },
-    memory_challenger:    { unlocked: has6x6,             progress: has6x6             ? 1 : 0, total: 1 },
+    memory_challenger:    { unlocked: hasMemory6x6,       progress: hasMemory6x6       ? 1 : 0, total: 1 },
     memory_speed_demon:   { unlocked: best4x4Time <= 45,  progress: best4x4Time <= 45  ? 1 : 0, total: 1 },
     memory_lightning:     { unlocked: best4x4Time <= 25,  progress: best4x4Time <= 25  ? 1 : 0, total: 1 },
     memory_speed_6x6:     { unlocked: best6x6Time <= 60,  progress: best6x6Time <= 60  ? 1 : 0, total: 1 },

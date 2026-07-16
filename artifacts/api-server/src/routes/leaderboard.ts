@@ -8,7 +8,7 @@ const router: IRouter = Router();
 router.get("/leaderboard", async (req, res): Promise<void> => {
   const rawGridSize = req.query.gridSize !== undefined ? Number(req.query.gridSize) : undefined;
   const gridSize: number | undefined =
-    rawGridSize !== undefined && [3, 4, 9, 16].includes(rawGridSize)
+    rawGridSize !== undefined && [3, 4, 6, 9, 16].includes(rawGridSize)
       ? rawGridSize
       : undefined;
 

@@ -423,16 +423,17 @@ const GRID_LABELS: Record<string, string> = {
   all: "All Grids",
   "3": "3×3 Baby",
   "4": "4×4 Mini",
+  "6": "6×6 Dual",
   "9": "9×9 Classic",
   "16": "16×16 Pro",
 };
 
 function AlltimeBoard({ myProfileId }: { myProfileId?: number }) {
-  const [gridFilter, setGridFilter] = useState<"all" | "3" | "4" | "9" | "16">(
+  const [gridFilter, setGridFilter] = useState<"all" | "3" | "4" | "6" | "9" | "16">(
     "all",
   );
   const gridSize =
-    gridFilter === "all" ? undefined : (Number(gridFilter) as 3 | 4 | 9 | 16);
+    gridFilter === "all" ? undefined : (Number(gridFilter) as 3 | 4 | 6 | 9 | 16);
   const { data, isLoading } = useGetLeaderboard(
     gridSize !== undefined
       ? { gridSize: gridSize as any, limit: 50 }
@@ -446,10 +447,11 @@ function AlltimeBoard({ myProfileId }: { myProfileId?: number }) {
         onValueChange={(v) => setGridFilter(v as typeof gridFilter)}
         className="w-full"
       >
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="9">9×9</TabsTrigger>
           <TabsTrigger value="16">16×16</TabsTrigger>
+          <TabsTrigger value="6">6×6</TabsTrigger>
           <TabsTrigger value="4">4×4</TabsTrigger>
           <TabsTrigger value="3">3×3</TabsTrigger>
         </TabsList>
@@ -574,6 +576,7 @@ interface BreakdownData {
 const SUDOKU_GRID_NAMES: Record<number, string> = {
   3: "3×3",
   4: "4×4",
+  6: "6×6",
   9: "9×9",
   16: "16×16",
 };
@@ -634,7 +637,7 @@ function BreakdownPanel({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {(
             data?.sudoku ??
-            [3, 4, 9, 16].map((gs) => ({ gridSize: gs, points: 0, games: 0 }))
+            [3, 4, 6, 9, 16].map((gs) => ({ gridSize: gs, points: 0, games: 0 }))
           ).map((item) => (
             <div
               key={item.gridSize}

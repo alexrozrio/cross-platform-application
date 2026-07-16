@@ -62,6 +62,55 @@ function countSolutions3x3(grid: Grid, limit = 2): number {
   return count;
 }
 
+// ─── 6×6 (2×3 boxes) ─────────────────────────────────────────────────────────
+
+function isValid6x6(grid: Grid, pos: number, num: number): boolean {
+  const row = Math.floor(pos / 6);
+  const col = pos % 6;
+  const boxRow = Math.floor(row / 2) * 2;
+  const boxCol = Math.floor(col / 3) * 3;
+
+  for (let i = 0; i < 6; i++) {
+    if (grid[row * 6 + i] === num) return false;
+    if (grid[i * 6 + col] === num) return false;
+  }
+  for (let r = boxRow; r < boxRow + 2; r++) {
+    for (let c = boxCol; c < boxCol + 3; c++) {
+      if (grid[r * 6 + c] === num) return false;
+    }
+  }
+  return true;
+}
+
+function solve6x6(grid: Grid): boolean {
+  const empty = grid.indexOf(0);
+  if (empty === -1) return true;
+  const nums = [1, 2, 3, 4, 5, 6].sort(() => Math.random() - 0.5);
+  for (const num of nums) {
+    if (isValid6x6(grid, empty, num)) {
+      grid[empty] = num;
+      if (solve6x6(grid)) return true;
+      grid[empty] = 0;
+    }
+  }
+  return false;
+}
+
+function countSolutions6x6(grid: Grid, limit = 2): number {
+  const empty = grid.indexOf(0);
+  if (empty === -1) return 1;
+  let count = 0;
+  for (let num = 1; num <= 6; num++) {
+    if (isValid6x6(grid, empty, num)) {
+      grid[empty] = num;
+      count += countSolutions6x6(grid, limit);
+      grid[empty] = 0;
+      if (count >= limit) return count;
+    }
+  }
+  return count;
+}
+
 // ─── 4×4 (2×2 boxes) ─────────────────────────────────────────────────────────
 
 function isValid4x4(grid: Grid, pos: number, num: number): boolean {
@@ -268,6 +317,32 @@ export function generatePuzzle(
       puzzle[pos] = 0;
       const copy = [...puzzle];
       if (countSolutions4x4(copy) === 1) {
+        removed++;
+      } else {
+        puzzle[pos] = backup;
+      }
+    }
+
+    return { grid: puzzle.join(""), solution: solutionStr };
+  }
+
+  if (gridSize === 6) {
+    const solution: Grid = new Array(36).fill(0);
+    solve6x6(solution);
+    const solutionStr = solution.join("");
+
+    const puzzle = [...solution];
+    const positions = Array.from({ length: 36 }, (_, i) => i).sort(() => Math.random() - 0.5);
+    const clues = getClueCount(6, difficulty);
+    let removed = 0;
+    const target = 36 - clues;
+
+    for (const pos of positions) {
+      if (removed >= target) break;
+      const backup = puzzle[pos];
+      puzzle[pos] = 0;
+      const copy = [...puzzle];
+      if (countSolutions6x6(copy) === 1) {
         removed++;
       } else {
         puzzle[pos] = backup;

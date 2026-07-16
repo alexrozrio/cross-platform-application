@@ -12,7 +12,7 @@ import {
 
 const router: IRouter = Router();
 
-const VALID_GRID_SIZES = new Set([3, 4, 9, 16]);
+const VALID_GRID_SIZES = new Set([3, 4, 6, 9, 16]);
 const VALID_TYPES = new Set(["weekly", "monthly"]);
 
 router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
@@ -20,7 +20,7 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
   const type = VALID_TYPES.has(rawType) ? (rawType as "weekly" | "monthly") : "weekly";
   const rawGridSize = req.query.gridSize !== undefined ? Number(req.query.gridSize) : undefined;
   const gridSize = rawGridSize !== undefined && VALID_GRID_SIZES.has(rawGridSize)
-    ? (rawGridSize as 3 | 4 | 9)
+    ? (rawGridSize as 3 | 4 | 6 | 9 | 16)
     : undefined;
   const rawPeriod = req.query.period ? String(req.query.period) : undefined;
 
@@ -230,7 +230,7 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
   res.json({
     profileId,
     period,
-    sudoku: [3, 4, 9, 16].map(gs => ({
+    sudoku: [3, 4, 6, 9, 16].map(gs => ({
       gridSize: gs,
       points: sudokuByGrid.get(gs)?.points ?? 0,
       games: sudokuByGrid.get(gs)?.games ?? 0,

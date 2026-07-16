@@ -15,6 +15,7 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
   const completedSudoku = await db
     .select({
       difficulty: puzzlesTable.difficulty,
+      gridSize:   puzzlesTable.gridSize,
       elapsedSeconds: gamesTable.elapsedSeconds,
       mistakeCount: gamesTable.mistakeCount,
       hintsUsed: gamesTable.hintsUsed,
@@ -38,6 +39,14 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
   const hasHard       = completedSudoku.some(g => g.difficulty === "hard");
   const hasMedium     = completedSudoku.some(g => g.difficulty === "medium");
 
+  // Grid size completions
+  const has3x3  = completedSudoku.some(g => g.gridSize === 3);
+  const has4x4  = completedSudoku.some(g => g.gridSize === 4);
+  const has6x6  = completedSudoku.some(g => g.gridSize === 6);
+  const has9x9  = completedSudoku.some(g => g.gridSize === 9);
+  const has16x16 = completedSudoku.some(g => g.gridSize === 16);
+  const hasAllGrids = has3x3 && has4x4 && has6x6 && has9x9 && has16x16;
+
   // ── Memory Match data ──────────────────────────────────────────────────────
   const completedMemory = await db
     .select({
@@ -53,7 +62,7 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
   const totalMemoryWins   = completedMemory.length;
   const memoryStreak      = profile?.memoryStreak ?? 0;
   const has8x8            = completedMemory.some(g => g.gridSize === 8);
-  const has6x6            = completedMemory.some(g => g.gridSize === 6);
+  const hasMemory6x6      = completedMemory.some(g => g.gridSize === 6);
 
   // Speed: best time on a 4×4 game
   const memory4x4Games    = completedMemory.filter(g => g.gridSize === 4);
@@ -80,6 +89,17 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
     dedicated:        { unlocked: totalWins >= 10,  progress: Math.min(totalWins, 10),  total: 10  },
     half_century:     { unlocked: totalWins >= 50,  progress: Math.min(totalWins, 50),  total: 50  },
     century:          { unlocked: totalWins >= 100, progress: Math.min(totalWins, 100), total: 100 },
+
+    // ── Sudoku: Grid Explorer ────────────────────────────────────────────────
+    baby_steps:       { unlocked: has3x3,      progress: has3x3      ? 1 : 0, total: 1 },
+    mini_master:      { unlocked: has4x4,      progress: has4x4      ? 1 : 0, total: 1 },
+    dual_master:      { unlocked: has6x6,      progress: has6x6      ? 1 : 0, total: 1 },
+    classic_champ:    { unlocked: has9x9,      progress: has9x9      ? 1 : 0, total: 1 },
+    pro_player:       { unlocked: has16x16,    progress: has16x16    ? 1 : 0, total: 1 },
+    all_grids:        { unlocked: hasAllGrids,
+      progress: [has3x3, has4x4, has6x6, has9x9, has16x16].filter(Boolean).length, total: 5 },
+
+    // ── Sudoku: Difficulty ───────────────────────────────────────────────────
     medium_solver:    { unlocked: hasMedium,  progress: hasMedium  ? 1 : 0, total: 1 },
     hard_solver:      { unlocked: hasHard,    progress: hasHard    ? 1 : 0, total: 1 },
     expert_solver:    { unlocked: hasExpert,  progress: hasExpert  ? 1 : 0, total: 1 },
@@ -95,7 +115,7 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
     memory_dedicated:     { unlocked: totalMemoryWins >= 10,  progress: Math.min(totalMemoryWins, 10),  total: 10  },
     memory_half_century:  { unlocked: totalMemoryWins >= 50,  progress: Math.min(totalMemoryWins, 50),  total: 50  },
     memory_big_board:     { unlocked: has8x8,           progress: has8x8           ? 1 : 0, total: 1 },
-    memory_challenger:    { unlocked: has6x6,           progress: has6x6           ? 1 : 0, total: 1 },
+    memory_challenger:    { unlocked: hasMemory6x6,     progress: hasMemory6x6     ? 1 : 0, total: 1 },
     memory_speed_demon:   { unlocked: best4x4Time <= 45, progress: best4x4Time <= 45 ? 1 : 0, total: 1 },
     memory_lightning:     { unlocked: best4x4Time <= 25, progress: best4x4Time <= 25 ? 1 : 0, total: 1 },
     memory_perfectionist: { unlocked: hasMemoryPerfect, progress: hasMemoryPerfect ? 1 : 0, total: 1 },

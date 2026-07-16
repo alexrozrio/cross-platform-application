@@ -3,8 +3,8 @@
 // what players see immediately when they start a new game — no other code
 // changes are needed, `generatePuzzle` in `lib/sudoku.ts` reads from here.
 //
-// Grid sizes: 3 (Baby/3×3), 4 (Mini/4×4), 9 (Classic/9×9), 16 (Pro/16×16).
-// Totals: 3×3 = 9 cells, 4×4 = 16 cells, 9×9 = 81 cells, 16×16 = 256 cells.
+// Grid sizes: 3 (Baby/3×3), 4 (Mini/4×4), 6 (6×6), 9 (Classic/9×9), 16 (Pro/16×16).
+// Totals: 3×3 = 9 cells, 4×4 = 16 cells, 6×6 = 36 cells, 9×9 = 81 cells, 16×16 = 256 cells.
 
 export type Difficulty = "easy" | "medium" | "hard" | "expert";
 
@@ -20,6 +20,12 @@ export const PUZZLE_CLUES: Record<number, Record<Difficulty, number>> = {
     medium: 11,
     hard: 8,
     expert: 6,
+  },
+  6: {
+    easy: 24, // 12 empty cells — gentle intro
+    medium: 18, // 18 empty cells
+    hard: 14, // 22 empty cells
+    expert: 10, // 26 empty cells — challenging
   },
   9: {
     easy: 50, // ~31 cells to fill — genuinely easy
