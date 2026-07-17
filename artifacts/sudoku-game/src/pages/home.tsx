@@ -48,7 +48,7 @@ function AlphaPreview({ count }: { count: number }) {
 const GRID_OPTIONS: { size: GridSize; label: string; sublabel: string; difficulties: Difficulty[] }[] = [
   { size: 3, label: '3×3', sublabel: 'Baby', difficulties: ['easy', 'medium', 'hard', 'expert'] },
   { size: 4, label: '4×4', sublabel: 'Mini', difficulties: ['easy', 'medium', 'hard', 'expert'] },
-  { size: 6, label: '6×6 Dual', sublabel: '2×3 boxes', difficulties: ['easy', 'medium', 'hard', 'expert'] },
+  { size: 6, label: '6×6', sublabel: 'Dual', difficulties: ['easy', 'medium', 'hard', 'expert'] },
   { size: 9, label: '9×9', sublabel: 'Classic', difficulties: ['easy', 'medium', 'hard', 'expert'] },
   { size: 16, label: '16×16', sublabel: 'Pro', difficulties: ['easy', 'medium', 'hard', 'expert'] },
 ];
@@ -187,6 +187,15 @@ export default function SudokuHome() {
   };
 
   const activeTheme = IMAGE_THEMES.find(t => t.id === themeId) ?? IMAGE_THEMES[0];
+
+  // Determine grid column layout based on number of options
+  const getGridCols = () => {
+    const count = filteredGridOptions.length;
+    if (count === 2) return 'grid-cols-2';
+    if (count === 3) return 'grid-cols-3';
+    if (count === 4) return 'grid-cols-4';
+    return 'grid-cols-5'; // 5 grids - all in one row
+  };
 
   return (
     <div className="max-w-lg mx-auto w-full space-y-8 animate-in fade-in duration-500">
@@ -365,7 +374,7 @@ export default function SudokuHome() {
             <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               Grid Size
             </label>
-            <div className={`grid gap-2 ${filteredGridOptions.length === 2 ? 'grid-cols-2' : 'grid-cols-4'}`}>
+            <div className={`grid gap-2 ${getGridCols()}`}>
               {filteredGridOptions.map(opt => (
                 <Button
                   key={opt.size}
