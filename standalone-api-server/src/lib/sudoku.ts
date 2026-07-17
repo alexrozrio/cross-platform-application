@@ -1,3 +1,5 @@
+import { getClueCount } from "../config/puzzle-clues";
+
 type Grid = number[];
 
 // ─── Encoding helpers (for 16×16 where values go up to 16) ────────────────────
@@ -19,278 +21,547 @@ function encodeGrid(grid: Grid): string {
   return grid.map(encodeCell).join("");
 }
 
-// ─── 3×3 (child / Latin-square, rows + columns only) ────────────────────────
+// ─── Candidate Set Utilities (Bit Flags) ──────────────────────────────────────
+// Each position stores a byte with bits representing possible values
+// For size N: bits 0 to N-1 represent values 1 to N
 
-function isValid3x3(grid: Grid, pos: number, num: number): boolean {
-  const row = Math.floor(pos / 3);
-  const col = pos % 3;
-  for (let i = 0; i < 3; i++) {
-    if (grid[row * 3 + i] === num) return false;
-    if (grid[i * 3 + col] === num) return false;
+function initCandidates(grid: Grid, size: number): Uint8Array {
+  const candidates = new Uint8Array(grid.length);
+  const allBits = (1 << size) - 1;
+  for (let i = 0; i < grid.length; i++) {
+    candidates[i] = grid[i] === 0 ? allBits : 0;
+  }
+  return candidates;
+}
+
+function clearBit(candidates: Uint8Array, pos: number, val: number): void {
+  candidates[pos] &= ~(1 << (val - 1));
+}
+
+function hasBit(candidates: Uint8Array, pos: number, val: number): boolean {
+  return (candidates[pos] & (1 << (val - 1))) !== 0;
+}
+
+function countBits(byte: number): number {
+  let count = 0;
+  while (byte) {
+    count += byte & 1;
+    byte >>= 1;
+  }
+  return count;
+}
+
+function getFirstBit(byte: number): number {
+  for (let i = 1; i <= 16; i++) {
+    if ((byte & (1 << (i - 1))) !== 0) return i;
+  }
+  return 0;
+}
+
+// ─── 3×3 (Latin-square: rows + columns only) ──────────────────────────────────
+
+function constrain3x3(grid: Grid, candidates: Uint8Array): boolean {
+  let changed = true;
+  while (changed) {
+    changed = false;
+
+    for (let i = 0; i < grid.length; i++) {
+      if (grid[i] !== 0 || candidates[i] === 0) continue;
+
+      const row = Math.floor(i / 3);
+      const col = i % 3;
+      const oldCand = candidates[i];
+
+      for (let j = 0; j < 3; j++) {
+        const rowVal = grid[row * 3 + j];
+        const colVal = grid[j * 3 + col];
+        if (rowVal !== 0) clearBit(candidates, i, rowVal);
+        if (colVal !== 0) clearBit(candidates, i, colVal);
+      }
+
+      if (candidates[i] === 0) return false;
+      if (candidates[i] !== oldCand) changed = true;
+
+      if (countBits(candidates[i]) === 1) {
+        const val = getFirstBit(candidates[i]);
+        grid[i] = val;
+        candidates[i] = 0;
+        changed = true;
+      }
+    }
   }
   return true;
 }
 
-function solve3x3(grid: Grid): boolean {
-  const empty = grid.indexOf(0);
-  if (empty === -1) return true;
-  const nums = [1, 2, 3].sort(() => Math.random() - 0.5);
-  for (const num of nums) {
-    if (isValid3x3(grid, empty, num)) {
-      grid[empty] = num;
-      if (solve3x3(grid)) return true;
-      grid[empty] = 0;
+function solve3x3(grid: Grid, candidates: Uint8Array): boolean {
+  if (!constrain3x3(grid, candidates)) return false;
+
+  let minCand = 10;
+  let bestPos = -1;
+  for (let i = 0; i < grid.length; i++) {
+    if (grid[i] === 0 && candidates[i] !== 0) {
+      const count = countBits(candidates[i]);
+      if (count < minCand) {
+        minCand = count;
+        bestPos = i;
+        if (count === 1) break;
+      }
+    }
+  }
+
+  if (bestPos === -1) return true;
+
+  for (let num = 1; num <= 3; num++) {
+    if (hasBit(candidates, bestPos, num)) {
+      const gridBak = [...grid];
+      const candBak = new Uint8Array(candidates);
+
+      grid[bestPos] = num;
+      candidates[bestPos] = 0;
+
+      if (solve3x3(grid, candidates)) return true;
+
+      for (let j = 0; j < grid.length; j++) {
+        grid[j] = gridBak[j];
+        candidates[j] = candBak[j];
+      }
     }
   }
   return false;
 }
 
-function countSolutions3x3(grid: Grid, limit = 2): number {
-  const empty = grid.indexOf(0);
-  if (empty === -1) return 1;
+function countSolutions3x3(grid: Grid, candidates: Uint8Array, limit = 2): number {
+  const gridCopy = [...grid];
+  const candCopy = new Uint8Array(candidates);
+
+  if (!constrain3x3(gridCopy, candCopy)) return 0;
+
+  let minCand = 10;
+  let bestPos = -1;
+  for (let i = 0; i < gridCopy.length; i++) {
+    if (gridCopy[i] === 0 && candCopy[i] !== 0) {
+      const count = countBits(candCopy[i]);
+      if (count < minCand) {
+        minCand = count;
+        bestPos = i;
+      }
+    }
+  }
+
+  if (bestPos === -1) return 1;
+
   let count = 0;
   for (let num = 1; num <= 3; num++) {
-    if (isValid3x3(grid, empty, num)) {
-      grid[empty] = num;
-      count += countSolutions3x3(grid, limit);
-      grid[empty] = 0;
+    if (hasBit(candCopy, bestPos, num)) {
+      const gc = [...gridCopy];
+      const cc = new Uint8Array(candCopy);
+      gc[bestPos] = num;
+      cc[bestPos] = 0;
+      count += countSolutions3x3(gc, cc, limit);
       if (count >= limit) return count;
     }
   }
   return count;
 }
 
-const CLUES_3x3: Record<string, number> = {
-  easy: 8,
-  medium: 7,
-  hard: 6,
-  expert: 5,
-};
+// ─── 4×4 (2×2 boxes) ──────────────────────────────────────────────────────────
 
-// ─── 4×4 (2×2 boxes) ─────────────────────────────────────────────────────────
+function constrain4x4(grid: Grid, candidates: Uint8Array): boolean {
+  let changed = true;
+  while (changed) {
+    changed = false;
 
-function isValid4x4(grid: Grid, pos: number, num: number): boolean {
-  const row = Math.floor(pos / 4);
-  const col = pos % 4;
-  const boxRow = Math.floor(row / 2) * 2;
-  const boxCol = Math.floor(col / 2) * 2;
+    for (let i = 0; i < grid.length; i++) {
+      if (grid[i] !== 0 || candidates[i] === 0) continue;
 
-  for (let i = 0; i < 4; i++) {
-    if (grid[row * 4 + i] === num) return false;
-    if (grid[i * 4 + col] === num) return false;
-  }
-  for (let r = boxRow; r < boxRow + 2; r++) {
-    for (let c = boxCol; c < boxCol + 2; c++) {
-      if (grid[r * 4 + c] === num) return false;
+      const row = Math.floor(i / 4);
+      const col = i % 4;
+      const boxRow = Math.floor(row / 2) * 2;
+      const boxCol = Math.floor(col / 2) * 2;
+      const oldCand = candidates[i];
+
+      for (let j = 0; j < 4; j++) {
+        const rowVal = grid[row * 4 + j];
+        const colVal = grid[j * 4 + col];
+        if (rowVal !== 0) clearBit(candidates, i, rowVal);
+        if (colVal !== 0) clearBit(candidates, i, colVal);
+      }
+
+      for (let r = boxRow; r < boxRow + 2; r++) {
+        for (let c = boxCol; c < boxCol + 2; c++) {
+          const val = grid[r * 4 + c];
+          if (val !== 0) clearBit(candidates, i, val);
+        }
+      }
+
+      if (candidates[i] === 0) return false;
+      if (candidates[i] !== oldCand) changed = true;
+
+      if (countBits(candidates[i]) === 1) {
+        const val = getFirstBit(candidates[i]);
+        grid[i] = val;
+        candidates[i] = 0;
+        changed = true;
+      }
     }
   }
   return true;
 }
 
-function solve4x4(grid: Grid): boolean {
-  const empty = grid.indexOf(0);
-  if (empty === -1) return true;
-  const nums = [1, 2, 3, 4].sort(() => Math.random() - 0.5);
-  for (const num of nums) {
-    if (isValid4x4(grid, empty, num)) {
-      grid[empty] = num;
-      if (solve4x4(grid)) return true;
-      grid[empty] = 0;
+function solve4x4(grid: Grid, candidates: Uint8Array): boolean {
+  if (!constrain4x4(grid, candidates)) return false;
+
+  let minCand = 10;
+  let bestPos = -1;
+  for (let i = 0; i < grid.length; i++) {
+    if (grid[i] === 0 && candidates[i] !== 0) {
+      const count = countBits(candidates[i]);
+      if (count < minCand) {
+        minCand = count;
+        bestPos = i;
+        if (count === 1) break;
+      }
+    }
+  }
+
+  if (bestPos === -1) return true;
+
+  for (let num = 1; num <= 4; num++) {
+    if (hasBit(candidates, bestPos, num)) {
+      const gridBak = [...grid];
+      const candBak = new Uint8Array(candidates);
+
+      grid[bestPos] = num;
+      candidates[bestPos] = 0;
+
+      if (solve4x4(grid, candidates)) return true;
+
+      for (let j = 0; j < grid.length; j++) {
+        grid[j] = gridBak[j];
+        candidates[j] = candBak[j];
+      }
     }
   }
   return false;
 }
 
-function countSolutions4x4(grid: Grid, limit = 2): number {
-  const empty = grid.indexOf(0);
-  if (empty === -1) return 1;
+function countSolutions4x4(grid: Grid, candidates: Uint8Array, limit = 2): number {
+  const gridCopy = [...grid];
+  const candCopy = new Uint8Array(candidates);
+
+  if (!constrain4x4(gridCopy, candCopy)) return 0;
+
+  let minCand = 10;
+  let bestPos = -1;
+  for (let i = 0; i < gridCopy.length; i++) {
+    if (gridCopy[i] === 0 && candCopy[i] !== 0) {
+      const count = countBits(candCopy[i]);
+      if (count < minCand) {
+        minCand = count;
+        bestPos = i;
+      }
+    }
+  }
+
+  if (bestPos === -1) return 1;
+
   let count = 0;
   for (let num = 1; num <= 4; num++) {
-    if (isValid4x4(grid, empty, num)) {
-      grid[empty] = num;
-      count += countSolutions4x4(grid, limit);
-      grid[empty] = 0;
+    if (hasBit(candCopy, bestPos, num)) {
+      const gc = [...gridCopy];
+      const cc = new Uint8Array(candCopy);
+      gc[bestPos] = num;
+      cc[bestPos] = 0;
+      count += countSolutions4x4(gc, cc, limit);
       if (count >= limit) return count;
     }
   }
   return count;
 }
 
-const CLUES_4x4: Record<string, number> = {
-  easy: 10,
-  medium: 8,
-  hard: 6,
-  expert: 4,
-};
+// ─── 6×6 (2×3 boxes) ──────────────────────────────────────────────────────────
 
-// ─── 6×6 (2×3 boxes) ─────────────────────────────────────────────────────────
+function constrain6x6(grid: Grid, candidates: Uint8Array): boolean {
+  let changed = true;
+  while (changed) {
+    changed = false;
 
-function isValid6x6(grid: Grid, pos: number, num: number): boolean {
-  const row = Math.floor(pos / 6);
-  const col = pos % 6;
-  const boxRow = Math.floor(row / 2) * 2;
-  const boxCol = Math.floor(col / 3) * 3;
+    for (let i = 0; i < grid.length; i++) {
+      if (grid[i] !== 0 || candidates[i] === 0) continue;
 
-  for (let i = 0; i < 6; i++) {
-    if (grid[row * 6 + i] === num) return false;
-    if (grid[i * 6 + col] === num) return false;
-  }
-  for (let r = boxRow; r < boxRow + 2; r++) {
-    for (let c = boxCol; c < boxCol + 3; c++) {
-      if (grid[r * 6 + c] === num) return false;
+      const row = Math.floor(i / 6);
+      const col = i % 6;
+      const boxRow = Math.floor(row / 2) * 2;
+      const boxCol = Math.floor(col / 3) * 3;
+      const oldCand = candidates[i];
+
+      for (let j = 0; j < 6; j++) {
+        const rowVal = grid[row * 6 + j];
+        const colVal = grid[j * 6 + col];
+        if (rowVal !== 0) clearBit(candidates, i, rowVal);
+        if (colVal !== 0) clearBit(candidates, i, colVal);
+      }
+
+      for (let r = boxRow; r < boxRow + 2; r++) {
+        for (let c = boxCol; c < boxCol + 3; c++) {
+          const val = grid[r * 6 + c];
+          if (val !== 0) clearBit(candidates, i, val);
+        }
+      }
+
+      if (candidates[i] === 0) return false;
+      if (candidates[i] !== oldCand) changed = true;
+
+      if (countBits(candidates[i]) === 1) {
+        const val = getFirstBit(candidates[i]);
+        grid[i] = val;
+        candidates[i] = 0;
+        changed = true;
+      }
     }
   }
   return true;
 }
 
-function solve6x6(grid: Grid): boolean {
-  const empty = grid.indexOf(0);
-  if (empty === -1) return true;
-  const nums = [1, 2, 3, 4, 5, 6].sort(() => Math.random() - 0.5);
-  for (const num of nums) {
-    if (isValid6x6(grid, empty, num)) {
-      grid[empty] = num;
-      if (solve6x6(grid)) return true;
-      grid[empty] = 0;
+function solve6x6(grid: Grid, candidates: Uint8Array): boolean {
+  if (!constrain6x6(grid, candidates)) return false;
+
+  let minCand = 10;
+  let bestPos = -1;
+  for (let i = 0; i < grid.length; i++) {
+    if (grid[i] === 0 && candidates[i] !== 0) {
+      const count = countBits(candidates[i]);
+      if (count < minCand) {
+        minCand = count;
+        bestPos = i;
+        if (count === 1) break;
+      }
+    }
+  }
+
+  if (bestPos === -1) return true;
+
+  for (let num = 1; num <= 6; num++) {
+    if (hasBit(candidates, bestPos, num)) {
+      const gridBak = [...grid];
+      const candBak = new Uint8Array(candidates);
+
+      grid[bestPos] = num;
+      candidates[bestPos] = 0;
+
+      if (solve6x6(grid, candidates)) return true;
+
+      for (let j = 0; j < grid.length; j++) {
+        grid[j] = gridBak[j];
+        candidates[j] = candBak[j];
+      }
     }
   }
   return false;
 }
 
-function countSolutions6x6(grid: Grid, limit = 2): number {
-  const empty = grid.indexOf(0);
-  if (empty === -1) return 1;
+function countSolutions6x6(grid: Grid, candidates: Uint8Array, limit = 2): number {
+  const gridCopy = [...grid];
+  const candCopy = new Uint8Array(candidates);
+
+  if (!constrain6x6(gridCopy, candCopy)) return 0;
+
+  let minCand = 10;
+  let bestPos = -1;
+  for (let i = 0; i < gridCopy.length; i++) {
+    if (gridCopy[i] === 0 && candCopy[i] !== 0) {
+      const count = countBits(candCopy[i]);
+      if (count < minCand) {
+        minCand = count;
+        bestPos = i;
+      }
+    }
+  }
+
+  if (bestPos === -1) return 1;
+
   let count = 0;
   for (let num = 1; num <= 6; num++) {
-    if (isValid6x6(grid, empty, num)) {
-      grid[empty] = num;
-      count += countSolutions6x6(grid, limit);
-      grid[empty] = 0;
+    if (hasBit(candCopy, bestPos, num)) {
+      const gc = [...gridCopy];
+      const cc = new Uint8Array(candCopy);
+      gc[bestPos] = num;
+      cc[bestPos] = 0;
+      count += countSolutions6x6(gc, cc, limit);
       if (count >= limit) return count;
     }
   }
   return count;
 }
 
-const CLUES_6x6: Record<string, number> = {
-  easy: 24,
-  medium: 18,
-  hard: 14,
-  expert: 10,
-};
+// ─── 9×9 (3×3 boxes) ──────────────────────────────────────────────────────────
 
-// ─── 9×9 (3×3 boxes) ─────────────────────────────────────────────────────────
+function constrain9x9(grid: Grid, candidates: Uint8Array): boolean {
+  let changed = true;
+  while (changed) {
+    changed = false;
 
-function isValid9x9(grid: Grid, pos: number, num: number): boolean {
-  const row = Math.floor(pos / 9);
-  const col = pos % 9;
-  const boxRow = Math.floor(row / 3) * 3;
-  const boxCol = Math.floor(col / 3) * 3;
+    for (let i = 0; i < grid.length; i++) {
+      if (grid[i] !== 0 || candidates[i] === 0) continue;
 
-  for (let i = 0; i < 9; i++) {
-    if (grid[row * 9 + i] === num) return false;
-    if (grid[i * 9 + col] === num) return false;
-    const br = boxRow + Math.floor(i / 3);
-    const bc = boxCol + (i % 3);
-    if (grid[br * 9 + bc] === num) return false;
+      const row = Math.floor(i / 9);
+      const col = i % 9;
+      const boxRow = Math.floor(row / 3) * 3;
+      const boxCol = Math.floor(col / 3) * 3;
+      const oldCand = candidates[i];
+
+      for (let j = 0; j < 9; j++) {
+        const rowVal = grid[row * 9 + j];
+        const colVal = grid[j * 9 + col];
+        if (rowVal !== 0) clearBit(candidates, i, rowVal);
+        if (colVal !== 0) clearBit(candidates, i, colVal);
+
+        const br = boxRow + Math.floor(j / 3);
+        const bc = boxCol + (j % 3);
+        const boxVal = grid[br * 9 + bc];
+        if (boxVal !== 0) clearBit(candidates, i, boxVal);
+      }
+
+      if (candidates[i] === 0) return false;
+      if (candidates[i] !== oldCand) changed = true;
+
+      if (countBits(candidates[i]) === 1) {
+        const val = getFirstBit(candidates[i]);
+        grid[i] = val;
+        candidates[i] = 0;
+        changed = true;
+      }
+    }
   }
   return true;
 }
 
-function solve9x9(grid: Grid): boolean {
-  const empty = grid.indexOf(0);
-  if (empty === -1) return true;
-  const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9].sort(() => Math.random() - 0.5);
-  for (const num of nums) {
-    if (isValid9x9(grid, empty, num)) {
-      grid[empty] = num;
-      if (solve9x9(grid)) return true;
-      grid[empty] = 0;
+function solve9x9(grid: Grid, candidates: Uint8Array): boolean {
+  if (!constrain9x9(grid, candidates)) return false;
+
+  let minCand = 10;
+  let bestPos = -1;
+  for (let i = 0; i < grid.length; i++) {
+    if (grid[i] === 0 && candidates[i] !== 0) {
+      const count = countBits(candidates[i]);
+      if (count < minCand) {
+        minCand = count;
+        bestPos = i;
+        if (count === 1) break;
+      }
+    }
+  }
+
+  if (bestPos === -1) return true;
+
+  for (let num = 1; num <= 9; num++) {
+    if (hasBit(candidates, bestPos, num)) {
+      const gridBak = [...grid];
+      const candBak = new Uint8Array(candidates);
+
+      grid[bestPos] = num;
+      candidates[bestPos] = 0;
+
+      if (solve9x9(grid, candidates)) return true;
+
+      for (let j = 0; j < grid.length; j++) {
+        grid[j] = gridBak[j];
+        candidates[j] = candBak[j];
+      }
     }
   }
   return false;
 }
 
-function countSolutions9x9(grid: Grid, limit = 2): number {
-  const empty = grid.indexOf(0);
-  if (empty === -1) return 1;
+function countSolutions9x9(grid: Grid, candidates: Uint8Array, limit = 2): number {
+  const gridCopy = [...grid];
+  const candCopy = new Uint8Array(candidates);
+
+  if (!constrain9x9(gridCopy, candCopy)) return 0;
+
+  let minCand = 10;
+  let bestPos = -1;
+  for (let i = 0; i < gridCopy.length; i++) {
+    if (gridCopy[i] === 0 && candCopy[i] !== 0) {
+      const count = countBits(candCopy[i]);
+      if (count < minCand) {
+        minCand = count;
+        bestPos = i;
+      }
+    }
+  }
+
+  if (bestPos === -1) return 1;
+
   let count = 0;
   for (let num = 1; num <= 9; num++) {
-    if (isValid9x9(grid, empty, num)) {
-      grid[empty] = num;
-      count += countSolutions9x9(grid, limit);
-      grid[empty] = 0;
+    if (hasBit(candCopy, bestPos, num)) {
+      const gc = [...gridCopy];
+      const cc = new Uint8Array(candCopy);
+      gc[bestPos] = num;
+      cc[bestPos] = 0;
+      count += countSolutions9x9(gc, cc, limit);
       if (count >= limit) return count;
     }
   }
   return count;
 }
 
-const CLUES_9x9: Record<string, number> = {
-  easy: 36,
-  medium: 28,
-  hard: 24,
-  expert: 20,
-};
-
 // ─── 16×16 (4×4 boxes, values 1-16) ──────────────────────────────────────────
-// Values encoded: '1'-'9' for 1-9, 'a'-'g' for 10-16, '0' for empty
-// Uniqueness check is skipped for performance (256 cells × 16 values is too slow)
+// Algebraic base solution: value = (row*4 + floor(row/4) + col) % 16 + 1
+// This satisfies all row, column, and 4×4 box constraints.
+// Randomised by permuting: values, row-bands (each 4 rows), rows within bands,
+// col-bands, and cols within bands — producing a huge variety without backtracking.
 
-function isValid16x16(grid: Grid, pos: number, num: number): boolean {
-  const row = Math.floor(pos / 16);
-  const col = pos % 16;
-  const boxRow = Math.floor(row / 4) * 4;
-  const boxCol = Math.floor(col / 4) * 4;
+function generate16x16Solution(): Grid {
+  const SIZE = 16;
+  const BOX = 4;
 
-  for (let i = 0; i < 16; i++) {
-    if (grid[row * 16 + i] === num) return false;
-    if (grid[i * 16 + col] === num) return false;
-  }
-  for (let r = boxRow; r < boxRow + 4; r++) {
-    for (let c = boxCol; c < boxCol + 4; c++) {
-      if (grid[r * 16 + c] === num) return false;
+  // Build base grid
+  const base: Grid = new Array(256).fill(0);
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      base[r * SIZE + c] = (r * BOX + Math.floor(r / BOX) + c) % SIZE + 1;
     }
   }
-  return true;
-}
 
-function solve16x16(grid: Grid): boolean {
-  const empty = grid.indexOf(0);
-  if (empty === -1) return true;
-  const nums = Array.from({ length: 16 }, (_, i) => i + 1).sort(() => Math.random() - 0.5);
-  for (const num of nums) {
-    if (isValid16x16(grid, empty, num)) {
-      grid[empty] = num;
-      if (solve16x16(grid)) return true;
-      grid[empty] = 0;
+  // Random number permutation
+  const numPerm = Array.from({ length: SIZE }, (_, i) => i + 1).sort(() => Math.random() - 0.5);
+
+  // Random band + row-within-band permutations
+  const bandOrder = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
+  const rowPerm = bandOrder.flatMap(b =>
+    [0, 1, 2, 3].sort(() => Math.random() - 0.5).map(r => b * BOX + r)
+  );
+  const colBandOrder = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
+  const colPerm = colBandOrder.flatMap(b =>
+    [0, 1, 2, 3].sort(() => Math.random() - 0.5).map(c => b * BOX + c)
+  );
+
+  const solution: Grid = new Array(256).fill(0);
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      solution[r * SIZE + c] = numPerm[base[rowPerm[r] * SIZE + colPerm[c]] - 1];
     }
   }
-  return false;
+  return solution;
 }
 
-const CLUES_16x16: Record<string, number> = {
-  easy: 150,   // remove 106 of 256
-  medium: 120, // remove 136 of 256
-  hard: 100,   // remove 156 of 256
-  expert: 80,  // remove 176 of 256
-};
-
-// ─── Public API ───────────────────────────────────────────────────────────────
+// ─── Public API ─────────────────────────────────────────────────────────────────
 
 export function generatePuzzle(
   difficulty: string,
   gridSize: number = 9
 ): { grid: string; solution: string } {
-
   if (gridSize === 3) {
     const solution: Grid = new Array(9).fill(0);
-    solve3x3(solution);
+    const candidates = initCandidates(solution, 3);
+    solve3x3(solution, candidates);
     const solutionStr = solution.join("");
 
     const puzzle = [...solution];
     const positions = Array.from({ length: 9 }, (_, i) => i).sort(() => Math.random() - 0.5);
-    const clues = CLUES_3x3[difficulty] ?? 7;
+    const clues = getClueCount(3, difficulty);
     let removed = 0;
     const target = 9 - clues;
 
@@ -299,7 +570,8 @@ export function generatePuzzle(
       const backup = puzzle[pos];
       puzzle[pos] = 0;
       const copy = [...puzzle];
-      if (countSolutions3x3(copy) === 1) {
+      const candCopy = initCandidates(copy, 3);
+      if (countSolutions3x3(copy, candCopy) === 1) {
         removed++;
       } else {
         puzzle[pos] = backup;
@@ -311,12 +583,13 @@ export function generatePuzzle(
 
   if (gridSize === 4) {
     const solution: Grid = new Array(16).fill(0);
-    solve4x4(solution);
+    const candidates = initCandidates(solution, 4);
+    solve4x4(solution, candidates);
     const solutionStr = solution.join("");
 
     const puzzle = [...solution];
     const positions = Array.from({ length: 16 }, (_, i) => i).sort(() => Math.random() - 0.5);
-    const clues = CLUES_4x4[difficulty] ?? 8;
+    const clues = getClueCount(4, difficulty);
     let removed = 0;
     const target = 16 - clues;
 
@@ -325,7 +598,8 @@ export function generatePuzzle(
       const backup = puzzle[pos];
       puzzle[pos] = 0;
       const copy = [...puzzle];
-      if (countSolutions4x4(copy) === 1) {
+      const candCopy = initCandidates(copy, 4);
+      if (countSolutions4x4(copy, candCopy) === 1) {
         removed++;
       } else {
         puzzle[pos] = backup;
@@ -337,12 +611,13 @@ export function generatePuzzle(
 
   if (gridSize === 6) {
     const solution: Grid = new Array(36).fill(0);
-    solve6x6(solution);
+    const candidates = initCandidates(solution, 6);
+    solve6x6(solution, candidates);
     const solutionStr = solution.join("");
 
     const puzzle = [...solution];
     const positions = Array.from({ length: 36 }, (_, i) => i).sort(() => Math.random() - 0.5);
-    const clues = CLUES_6x6[difficulty] ?? 14;
+    const clues = getClueCount(6, difficulty);
     let removed = 0;
     const target = 36 - clues;
 
@@ -351,7 +626,8 @@ export function generatePuzzle(
       const backup = puzzle[pos];
       puzzle[pos] = 0;
       const copy = [...puzzle];
-      if (countSolutions6x6(copy) === 1) {
+      const candCopy = initCandidates(copy, 6);
+      if (countSolutions6x6(copy, candCopy) === 1) {
         removed++;
       } else {
         puzzle[pos] = backup;
@@ -362,13 +638,12 @@ export function generatePuzzle(
   }
 
   if (gridSize === 16) {
-    const solution: Grid = new Array(256).fill(0);
-    solve16x16(solution);
+    const solution = generate16x16Solution();
     const solutionStr = encodeGrid(solution);
 
     const puzzle = [...solution];
     const positions = Array.from({ length: 256 }, (_, i) => i).sort(() => Math.random() - 0.5);
-    const clues = CLUES_16x16[difficulty] ?? 120;
+    const clues = getClueCount(16, difficulty);
     let removed = 0;
     const target = 256 - clues;
 
@@ -384,12 +659,13 @@ export function generatePuzzle(
 
   // Default 9×9
   const solution: Grid = new Array(81).fill(0);
-  solve9x9(solution);
+  const candidates = initCandidates(solution, 9);
+  solve9x9(solution, candidates);
   const solutionStr = solution.join("");
 
   const puzzle = [...solution];
   const positions = Array.from({ length: 81 }, (_, i) => i).sort(() => Math.random() - 0.5);
-  const clues = CLUES_9x9[difficulty] ?? 28;
+  const clues = getClueCount(9, difficulty);
   let removed = 0;
   const target = 81 - clues;
 
@@ -398,7 +674,8 @@ export function generatePuzzle(
     const backup = puzzle[pos];
     puzzle[pos] = 0;
     const copy = [...puzzle];
-    if (countSolutions9x9(copy) === 1) {
+    const candCopy = initCandidates(copy, 9);
+    if (countSolutions9x9(copy, candCopy) === 1) {
       removed++;
     } else {
       puzzle[pos] = backup;
