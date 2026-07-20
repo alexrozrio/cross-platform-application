@@ -437,17 +437,11 @@ export default function Game({ id }: { id: string }) {
     }
   };
 
-  // Prefer localStorage elapsed time so the timer continues from where the
-  // user left off even if the server value is stale (server only updates
-  // when grid changes, not every second).
-  const initialElapsed = (() => {
-    if (!gameId) return game?.elapsedSeconds || 0;
-    const saved = localStorage.getItem(`sudoku-elapsed-${gameId}`);
-    const local = saved ? parseInt(saved, 10) : NaN;
-    return !isNaN(local) ? local : (game?.elapsedSeconds || 0);
-  })();
+  // Holds the elapsed seconds resolved once when the game first loads.
+  // Using state (not an inline read) prevents re-running on every render.
+  const [resumedElapsed, setResumedElapsed] = useState(0);
   const { seconds, formattedTime } = useGameTimer(
-    initialElapsed,
+    resumedElapsed,
     !isCompleted && !isGameOver && !isPaused && game?.status === "active",
   );
   const saveTimeoutRef = useRef<number | null>(null);
@@ -480,6 +474,12 @@ export default function Game({ id }: { id: string }) {
       }
       const serverGrid = game.currentGrid.split("");
       const loadedInitial = game.puzzle?.grid.split("") || Array(totalCells).fill("0");
+
+      // Restore elapsed time — prefer localStorage (saved every second) over
+      // the server value (only updated when the grid changes).
+      const savedElapsed = localStorage.getItem(storageKeyElapsed);
+      const localElapsed = savedElapsed ? parseInt(savedElapsed, 10) : NaN;
+      setResumedElapsed(!isNaN(localElapsed) ? localElapsed : (game.elapsedSeconds || 0));
 
       // Prefer localStorage grid if it has more filled cells (handles quick-refresh data loss)
       const savedGrid = localStorage.getItem(storageKeyGrid);
