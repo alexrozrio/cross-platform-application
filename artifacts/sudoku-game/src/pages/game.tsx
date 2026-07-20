@@ -201,6 +201,7 @@ export default function Game({ id }: { id: string }) {
   const gameId = parseInt(id, 10);
   const storageKeyGrid = `sudoku-grid-${gameId}`;
   const storageKeyNotes = `sudoku-notes-${gameId}`;
+  const storageKeyElapsed = `sudoku-elapsed-${gameId}`;
   const [, setLocation] = useLocation();
   const search = useSearch();
   const params = new URLSearchParams(search);
@@ -398,6 +399,7 @@ export default function Game({ id }: { id: string }) {
       // Clear old game's local storage so it can't bleed into the new one
       localStorage.removeItem(storageKeyGrid);
       localStorage.removeItem(storageKeyNotes);
+      localStorage.removeItem(storageKeyElapsed);
       const modeQuery = mode !== "number" ? `?mode=${mode}` : "";
       setLocation(`/game/${newGameResult.id}${modeQuery}`);
     } catch (err) {
@@ -424,6 +426,7 @@ export default function Game({ id }: { id: string }) {
       // Clear old game's local storage before navigating
       localStorage.removeItem(storageKeyGrid);
       localStorage.removeItem(storageKeyNotes);
+      localStorage.removeItem(storageKeyElapsed);
       const modeQuery = mode !== "number" ? `?mode=${mode}` : "";
       setLocation(`/game/${newGame.id}${modeQuery}`);
     } catch (err) {
@@ -434,8 +437,17 @@ export default function Game({ id }: { id: string }) {
     }
   };
 
+  // Prefer localStorage elapsed time so the timer continues from where the
+  // user left off even if the server value is stale (server only updates
+  // when grid changes, not every second).
+  const initialElapsed = (() => {
+    if (!gameId) return game?.elapsedSeconds || 0;
+    const saved = localStorage.getItem(`sudoku-elapsed-${gameId}`);
+    const local = saved ? parseInt(saved, 10) : NaN;
+    return !isNaN(local) ? local : (game?.elapsedSeconds || 0);
+  })();
   const { seconds, formattedTime } = useGameTimer(
-    game?.elapsedSeconds || 0,
+    initialElapsed,
     !isCompleted && !isGameOver && !isPaused && game?.status === "active",
   );
   const saveTimeoutRef = useRef<number | null>(null);
@@ -463,6 +475,7 @@ export default function Game({ id }: { id: string }) {
         setIsCompleted(true);
         localStorage.removeItem(storageKeyGrid);
         localStorage.removeItem(storageKeyNotes);
+        localStorage.removeItem(storageKeyElapsed);
         return;
       }
       const serverGrid = game.currentGrid.split("");
@@ -519,6 +532,14 @@ export default function Game({ id }: { id: string }) {
     localStorage.setItem(storageKeyGrid, grid.join(""));
   }, [grid, isCompleted, isGameOver, storageKeyGrid]);
 
+  // Persist elapsed seconds to localStorage every second so resuming the game
+  // continues the timer from where the user left off (server only updates
+  // elapsedSeconds when the grid changes, which could leave it stale).
+  useEffect(() => {
+    if (!gameLoadedRef.current || isCompleted || isGameOver) return;
+    localStorage.setItem(storageKeyElapsed, String(seconds));
+  }, [seconds, isCompleted, isGameOver, storageKeyElapsed]);
+
   // Immediately persist notes to localStorage on every change.
   useEffect(() => {
     if (!gameLoadedRef.current) return;
@@ -571,6 +592,7 @@ export default function Game({ id }: { id: string }) {
             onSuccess: async (data) => {
               localStorage.removeItem(storageKeyGrid);
               localStorage.removeItem(storageKeyNotes);
+              localStorage.removeItem(storageKeyElapsed);
               if (profileId) {
                 queryClient.invalidateQueries({ queryKey: [`/api/profiles/${profileId}`] });
                 queryClient.invalidateQueries({ queryKey: [`/api/achievements/${profileId}`] });
@@ -737,7 +759,8 @@ export default function Game({ id }: { id: string }) {
     setHistory([]); // clear undo history on full reset
     localStorage.removeItem(storageKeyGrid);
     localStorage.removeItem(storageKeyNotes);
-  }, [initialGrid, storageKeyGrid, storageKeyNotes]);
+    localStorage.removeItem(storageKeyElapsed);
+  }, [initialGrid, storageKeyGrid, storageKeyNotes, storageKeyElapsed]);
 
   const handleHint = () => {
     if (isCompleted || isGameOver || hints >= MAX_HINTS) return;
