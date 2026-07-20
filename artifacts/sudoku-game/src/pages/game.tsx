@@ -360,7 +360,7 @@ export default function Game({ id }: { id: string }) {
   // Derive game mode from profile
   const rawGameMode = (profile?.gameMode ?? '4all') as 'children' | 'adult' | '4all';
   const visibleSizes = ([3, 4, 6, 9, 16] as const).filter(s =>
-    rawGameMode === 'children' ? [3, 4].includes(s) :
+    rawGameMode === 'children' ? [3, 4, 6].includes(s) :
     rawGameMode === 'adult'    ? [9, 16].includes(s) :
     true
   );

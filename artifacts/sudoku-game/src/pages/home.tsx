@@ -88,7 +88,7 @@ export default function SudokuHome() {
   const gameMode = (profile?.gameMode ?? '4all') as 'children' | 'adult' | '4all';
   const allDifficulties: Difficulty[] = ['easy', 'medium', 'hard', 'expert'];
   const filteredGridOptions = GRID_OPTIONS.filter(opt =>
-    gameMode === 'children' ? [3, 4].includes(opt.size) :
+    gameMode === 'children' ? [3, 4, 6].includes(opt.size) :
     gameMode === 'adult'    ? [9, 16].includes(opt.size) :
     true
   );
@@ -217,7 +217,7 @@ export default function SudokuHome() {
       {activeGame && (() => {
         const gs = activeGame.puzzle?.gridSize;
         const validForMode =
-          gameMode === 'children' ? [3, 4].includes(gs!) :
+          gameMode === 'children' ? [3, 4, 6].includes(gs!) :
           gameMode === 'adult'    ? [9, 16].includes(gs!) :
           true;
         return validForMode;
