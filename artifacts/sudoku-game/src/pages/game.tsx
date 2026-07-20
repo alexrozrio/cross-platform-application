@@ -1330,7 +1330,7 @@ export default function Game({ id }: { id: string }) {
                   key={m}
                   onClick={() => switchMode(m)}
                   className={[
-                    "flex items-center justify-center w-7 h-7 rounded text-[10px] font-bold transition-all shrink-0",
+                    "flex items-center justify-center w-6 h-6 rounded text-[10px] font-bold transition-all shrink-0",
                     mode === m
                       ? "bg-muted text-foreground shadow-sm border border-border"
                       : "text-muted-foreground hover:text-foreground",
@@ -1347,7 +1347,7 @@ export default function Game({ id }: { id: string }) {
               >
                 <SelectTrigger className={[
                   "h-7 text-xs shrink-0 px-2",
-                  availableModes.length > 1 ? "w-[82px]" : "w-[108px]",
+                  availableModes.length > 1 ? "w-[64px]" : "w-[108px]",
                 ].join(" ")}>
                   <SelectValue>
                     {availableModes.length > 1
