@@ -251,7 +251,7 @@ export default function Game({ id }: { id: string }) {
 
   // 3×3 and 4×4 grids always offer all three play styles.
   // On 9×9 and 16×16, alphabet/image availability is controlled by the global config flags.
-  const smallGrid = gridSize === 3 || gridSize === 4;
+  const smallGrid = gridSize === 3 || gridSize === 4 || gridSize === 6;
   const alphaModeAllowed = smallGrid || gameFeatures.alphabetModeEnabled;
   const imageModeAllowed = smallGrid || gameFeatures.imageModeEnabled;
   const availableModes: GameMode[] = (
@@ -1347,7 +1347,7 @@ export default function Game({ id }: { id: string }) {
               >
                 <SelectTrigger className={[
                   "h-7 text-xs shrink-0 px-2",
-                  availableModes.length > 1 ? "w-[64px]" : "w-[108px]",
+                  availableModes.length > 1 ? "w-[52px]" : "w-[108px]",
                 ].join(" ")}>
                   <SelectValue>
                     {availableModes.length > 1
