@@ -578,7 +578,7 @@ const DIFFICULTY_OPTIONS: { value: Difficulty; label: string }[] = [
 
 function filteredSudokuSizes(gameMode: GameMode) {
   return SUDOKU_SIZE_OPTIONS.filter(o =>
-    gameMode === 'children' ? [3, 4].includes(o.value) :
+    gameMode === 'children' ? [3, 4, 6].includes(o.value) :
     gameMode === 'adult'    ? [9, 16].includes(o.value) :
     true
   );
