@@ -125,13 +125,13 @@ export const generatePuzzleQueryGridSizeDefault = 9;
 
 export const GeneratePuzzleQueryParams = zod.object({
   "difficulty": zod.enum(['easy', 'medium', 'hard', 'expert']).default(generatePuzzleQueryDifficultyDefault),
-  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(9),zod.literal(16)]).default(generatePuzzleQueryGridSizeDefault)
+  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(6),zod.literal(9),zod.literal(16)]).default(generatePuzzleQueryGridSizeDefault)
 })
 
 export const GeneratePuzzleResponse = zod.object({
   "id": zod.number(),
   "difficulty": zod.enum(['easy', 'medium', 'hard', 'expert']),
-  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(9),zod.literal(16)]),
+  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(6),zod.literal(9),zod.literal(16)]),
   "grid": zod.string().describe('gridSize\*gridSize character string, 0 = empty; 16x16 uses hex chars (a-g for 10-16)'),
   "solution": zod.string(),
   "createdAt": zod.string().optional()
@@ -148,7 +148,7 @@ export const GetPuzzleParams = zod.object({
 export const GetPuzzleResponse = zod.object({
   "id": zod.number(),
   "difficulty": zod.enum(['easy', 'medium', 'hard', 'expert']),
-  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(9),zod.literal(16)]),
+  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(6),zod.literal(9),zod.literal(16)]),
   "grid": zod.string().describe('gridSize\*gridSize character string, 0 = empty; 16x16 uses hex chars (a-g for 10-16)'),
   "solution": zod.string(),
   "createdAt": zod.string().optional()
@@ -181,7 +181,7 @@ export const GetGameResponse = zod.object({
   "puzzle": zod.object({
   "id": zod.number(),
   "difficulty": zod.enum(['easy', 'medium', 'hard', 'expert']),
-  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(9),zod.literal(16)]),
+  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(6),zod.literal(9),zod.literal(16)]),
   "grid": zod.string().describe('gridSize\*gridSize character string, 0 = empty; 16x16 uses hex chars (a-g for 10-16)'),
   "solution": zod.string(),
   "createdAt": zod.string().optional()
@@ -218,7 +218,7 @@ export const SaveGameResponse = zod.object({
   "puzzle": zod.object({
   "id": zod.number(),
   "difficulty": zod.enum(['easy', 'medium', 'hard', 'expert']),
-  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(9),zod.literal(16)]),
+  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(6),zod.literal(9),zod.literal(16)]),
   "grid": zod.string().describe('gridSize\*gridSize character string, 0 = empty; 16x16 uses hex chars (a-g for 10-16)'),
   "solution": zod.string(),
   "createdAt": zod.string().optional()
@@ -254,7 +254,7 @@ export const CompleteGameResponse = zod.object({
   "puzzle": zod.object({
   "id": zod.number(),
   "difficulty": zod.enum(['easy', 'medium', 'hard', 'expert']),
-  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(9),zod.literal(16)]),
+  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(6),zod.literal(9),zod.literal(16)]),
   "grid": zod.string().describe('gridSize\*gridSize character string, 0 = empty; 16x16 uses hex chars (a-g for 10-16)'),
   "solution": zod.string(),
   "createdAt": zod.string().optional()
@@ -277,7 +277,7 @@ export const getLeaderboardQueryGridSizeDefault = 9;
 export const getLeaderboardQueryLimitDefault = 10;
 
 export const GetLeaderboardQueryParams = zod.object({
-  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(9),zod.literal(16)]).default(getLeaderboardQueryGridSizeDefault),
+  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(6),zod.literal(9),zod.literal(16)]).default(getLeaderboardQueryGridSizeDefault),
   "limit": zod.coerce.number().default(getLeaderboardQueryLimitDefault)
 })
 
@@ -287,7 +287,7 @@ export const GetLeaderboardResponseItem = zod.object({
   "username": zod.string(),
   "avatar": zod.string().nullish(),
   "difficulty": zod.enum(['easy', 'medium', 'hard', 'expert']).optional(),
-  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(9),zod.literal(16)]).optional(),
+  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(6),zod.literal(9),zod.literal(16)]).optional(),
   "elapsedSeconds": zod.number(),
   "mistakeCount": zod.number().optional(),
   "completedAt": zod.string(),
@@ -338,7 +338,7 @@ export const getTournamentLeaderboardQueryTypeDefault = `weekly`;
 
 export const GetTournamentLeaderboardQueryParams = zod.object({
   "type": zod.enum(['weekly', 'monthly']).default(getTournamentLeaderboardQueryTypeDefault),
-  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(9),zod.literal(16)]).optional(),
+  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(6),zod.literal(9),zod.literal(16)]).optional(),
   "period": zod.coerce.string().optional()
 })
 
@@ -403,7 +403,7 @@ export const CreateChallengeBody = zod.object({
   "challengerId": zod.number(),
   "challengedId": zod.number(),
   "difficulty": zod.enum(['easy', 'medium', 'hard', 'expert']),
-  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(9),zod.literal(16)])
+  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(6),zod.literal(9),zod.literal(16)])
 })
 
 export const CreateChallengeResponse = zod.void()
@@ -432,7 +432,7 @@ export const GetChallengesForProfileResponseItem = zod.object({
   "challengerPoints": zod.number().nullish(),
   "challengedPoints": zod.number().nullish(),
   "difficulty": zod.enum(['easy', 'medium', 'hard', 'expert']).optional(),
-  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(9),zod.literal(16)]).optional(),
+  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(6),zod.literal(9),zod.literal(16)]).optional(),
   "createdAt": zod.string()
 })
 export const GetChallengesForProfileResponse = zod.array(GetChallengesForProfileResponseItem)
@@ -461,7 +461,7 @@ export const GetChallengeResponse = zod.object({
   "challengerPoints": zod.number().nullish(),
   "challengedPoints": zod.number().nullish(),
   "difficulty": zod.enum(['easy', 'medium', 'hard', 'expert']).optional(),
-  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(9),zod.literal(16)]).optional(),
+  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(6),zod.literal(9),zod.literal(16)]).optional(),
   "createdAt": zod.string()
 })
 
@@ -494,7 +494,7 @@ export const RespondToChallengeResponse = zod.object({
   "challengerPoints": zod.number().nullish(),
   "challengedPoints": zod.number().nullish(),
   "difficulty": zod.enum(['easy', 'medium', 'hard', 'expert']).optional(),
-  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(9),zod.literal(16)]).optional(),
+  "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(6),zod.literal(9),zod.literal(16)]).optional(),
   "createdAt": zod.string()
 })
 
