@@ -139,7 +139,7 @@ paths:
           required: false
           schema:
             type: integer
-            enum: [3, 4, 9, 16]
+            enum: [3, 4, 6, 9, 16]
             default: 9
       responses:
         "200":
@@ -269,7 +269,7 @@ paths:
           required: false
           schema:
             type: integer
-            enum: [3, 4, 9, 16]
+            enum: [3, 4, 6, 9, 16]
             default: 9
         - name: limit
           in: query
@@ -324,7 +324,7 @@ paths:
           required: false
           schema:
             type: integer
-            enum: [3, 4, 9, 16]
+            enum: [3, 4, 6, 9, 16]
         - name: period
           in: query
           required: false
@@ -600,7 +600,7 @@ components:
           enum: [easy, medium, hard, expert]
         gridSize:
           type: integer
-          enum: [3, 4, 9, 16]
+          enum: [3, 4, 6, 9, 16]
         grid:
           type: string
           description: "gridSize*gridSize character string, 0 = empty; 16x16 uses hex chars (a-g for 10-16)"
@@ -691,7 +691,7 @@ components:
           enum: [easy, medium, hard, expert]
         gridSize:
           type: integer
-          enum: [3, 4, 9, 16]
+          enum: [3, 4, 6, 9, 16]
         elapsedSeconds:
           type: integer
         mistakeCount:
@@ -858,7 +858,7 @@ components:
           enum: [easy, medium, hard, expert]
         gridSize:
           type: integer
-          enum: [3, 4, 9, 16]
+          enum: [3, 4, 6, 9, 16]
 
     ChallengeResponse:
       type: object
@@ -908,6 +908,6 @@ components:
           enum: [easy, medium, hard, expert]
         gridSize:
           type: integer
-          enum: [3, 4, 9, 16]
+          enum: [3, 4, 6, 9, 16]
         createdAt:
           type: string

@@ -8,7 +8,7 @@ const router: IRouter = Router();
 
 type Difficulty = "easy" | "medium" | "hard" | "expert";
 const VALID_DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard", "expert"];
-const VALID_GRID_SIZES = [3, 4, 9, 16];
+const VALID_GRID_SIZES = [3, 4, 6, 9, 16];
 
 function validateChallengeInput(body: unknown): { challengerId: number; challengedId: number; difficulty: Difficulty; gridSize: number } | null {
   if (!body || typeof body !== "object") return null;

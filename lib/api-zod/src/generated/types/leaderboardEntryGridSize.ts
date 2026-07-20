@@ -12,6 +12,7 @@ export type LeaderboardEntryGridSize = typeof LeaderboardEntryGridSize[keyof typ
 export const LeaderboardEntryGridSize = {
   NUMBER_3: 3,
   NUMBER_4: 4,
+  NUMBER_6: 6,
   NUMBER_9: 9,
   NUMBER_16: 16,
 } as const;

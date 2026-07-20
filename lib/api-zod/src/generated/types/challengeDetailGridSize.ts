@@ -12,6 +12,7 @@ export type ChallengeDetailGridSize = typeof ChallengeDetailGridSize[keyof typeo
 export const ChallengeDetailGridSize = {
   NUMBER_3: 3,
   NUMBER_4: 4,
+  NUMBER_6: 6,
   NUMBER_9: 9,
   NUMBER_16: 16,
 } as const;

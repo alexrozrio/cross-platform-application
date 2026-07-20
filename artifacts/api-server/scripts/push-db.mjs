@@ -33,7 +33,10 @@ const result = spawnSync(
   'pnpm',
   ['--filter', '@workspace/db', 'run', 'push-force'],
   {
-    stdio: 'inherit',
+    // pipe stdin so interactive prompts (e.g. "truncate table?") get an
+    // automatic "no" answer and don't block CI / workflow startup
+    input: 'no\n',
+    stdio: ['pipe', 'inherit', 'inherit'],
     cwd: resolve(__dirname, '../../..'),
     shell: false,
   }

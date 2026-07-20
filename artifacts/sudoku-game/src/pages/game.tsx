@@ -19,31 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import {
-  ArrowLeft,
-  Clock,
-  AlertTriangle,
-  Lightbulb,
-  Eraser,
-  PenLine,
-  Hash,
-  Type,
-  Image,
-  Flame,
-  Loader2,
-  RefreshCw,
-  RotateCcw,
-  Undo2,
-  Pause,
-  Play,
-  Volume2,
-  VolumeX,
-  Share2,
-  ChevronDown,
-  Zap,
-  Gem,
-  Trophy,
-} from "lucide-react";
+import { ArrowLeft, Clock, TriangleAlert as AlertTriangle, Lightbulb, Eraser, PenLine, Hash, Type, Image, Flame, Loader as Loader2, RefreshCw, RotateCcw, Undo2, Pause, Play, Volume2, VolumeX, Share2, ChevronDown, Zap, Gem, Trophy } from "lucide-react";
 import { useSound } from "@/hooks/use-sound";
 import { Confetti } from "@/components/confetti";
 import {
@@ -95,26 +71,26 @@ function decodeFromGrid(c: string): number {
 
 // ─── Smart hint helpers ───────────────────────────────────────────────────────
 
-function getPossibleValues(grid: string[], idx: number, size: number, boxSz: number): number[] {
+function getPossibleValues(grid: string[], idx: number, size: number, boxRows: number, boxCols: number): number[] {
   const row = Math.floor(idx / size);
   const col = idx % size;
   const used = new Set<number>();
   for (let c = 0; c < size; c++) { const v = grid[row * size + c]; if (v !== "0") used.add(decodeFromGrid(v)); }
   for (let r = 0; r < size; r++) { const v = grid[r * size + col]; if (v !== "0") used.add(decodeFromGrid(v)); }
-  if (boxSz > 0) {
-    const br = Math.floor(row / boxSz) * boxSz;
-    const bc = Math.floor(col / boxSz) * boxSz;
-    for (let r = br; r < br + boxSz; r++)
-      for (let c = bc; c < bc + boxSz; c++) { const v = grid[r * size + c]; if (v !== "0") used.add(decodeFromGrid(v)); }
+  if (boxRows > 0 && boxCols > 0) {
+    const br = Math.floor(row / boxRows) * boxRows;
+    const bc = Math.floor(col / boxCols) * boxCols;
+    for (let r = br; r < br + boxRows; r++)
+      for (let c = bc; c < bc + boxCols; c++) { const v = grid[r * size + c]; if (v !== "0") used.add(decodeFromGrid(v)); }
   }
   return Array.from({ length: size }, (_, i) => i + 1).filter(n => !used.has(n));
 }
 
-function findBestHintCell(grid: string[], initialGrid: string[], size: number, boxSz: number): number | null {
+function findBestHintCell(grid: string[], initialGrid: string[], size: number, boxRows: number, boxCols: number): number | null {
   const emptyCells: number[] = [];
   for (let i = 0; i < grid.length; i++) {
     if (grid[i] !== "0" || initialGrid[i] !== "0") continue;
-    const possible = getPossibleValues(grid, i, size, boxSz);
+    const possible = getPossibleValues(grid, i, size, boxRows, boxCols);
     if (possible.length === 1) return i; // naked single — best hint!
     if (possible.length > 0) emptyCells.push(i);
   }
@@ -122,11 +98,11 @@ function findBestHintCell(grid: string[], initialGrid: string[], size: number, b
   return emptyCells[Math.floor(Math.random() * emptyCells.length)];
 }
 
-function computeAutoNotes(grid: string[], initialGrid: string[], size: number, boxSz: number): Record<number, Set<string>> {
+function computeAutoNotes(grid: string[], initialGrid: string[], size: number, boxRows: number, boxCols: number): Record<number, Set<string>> {
   const result: Record<number, Set<string>> = {};
   for (let i = 0; i < grid.length; i++) {
     if (grid[i] !== "0" || initialGrid[i] !== "0") continue;
-    const possible = getPossibleValues(grid, i, size, boxSz);
+    const possible = getPossibleValues(grid, i, size, boxRows, boxCols);
     if (possible.length > 0) result[i] = new Set(possible.map(n => encodeForGrid(n)));
   }
   return result;
@@ -173,7 +149,7 @@ function CellContent({
   cellNotes?: Set<string>;
 }) {
   // alphaSize drives inline font-size in AlphaLetter; scale ~80% of cell px
-  const alphaSize = gridSize === 3 ? 88 : gridSize === 4 ? 64 : gridSize === 16 ? 13 : 28;
+  const alphaSize = gridSize === 3 ? 88 : gridSize === 4 ? 64 : gridSize === 6 ? 48 : gridSize === 16 ? 13 : 28;
 
   if (val !== "0") {
     const n = decodeFromGrid(val);
@@ -189,7 +165,7 @@ function CellContent({
   }
 
   if (cellNotes && cellNotes.size > 0) {
-    const cols = gridSize <= 3 ? gridSize : gridSize === 4 ? 2 : gridSize === 16 ? 4 : 3;
+    const cols = gridSize <= 3 ? gridSize : gridSize === 4 ? 2 : gridSize === 6 ? 3 : gridSize === 16 ? 4 : 3;
     return (
       <div
         className="grid w-full h-full p-0.5 pointer-events-none"
@@ -225,6 +201,7 @@ export default function Game({ id }: { id: string }) {
   const gameId = parseInt(id, 10);
   const storageKeyGrid = `sudoku-grid-${gameId}`;
   const storageKeyNotes = `sudoku-notes-${gameId}`;
+  const storageKeyElapsed = `sudoku-elapsed-${gameId}`;
   const [, setLocation] = useLocation();
   const search = useSearch();
   const params = new URLSearchParams(search);
@@ -267,11 +244,14 @@ export default function Game({ id }: { id: string }) {
 
   const gridSize = game?.puzzle?.gridSize ?? 9;
   const totalCells = gridSize * gridSize;
-  const boxSize = gridSize === 9 ? 3 : gridSize === 4 ? 2 : gridSize === 16 ? 4 : 0;
+  // Box geometry — 6×6 uses 2×3 (non-square) boxes, so rows/cols are separate.
+  const boxRows = gridSize === 3 ? 0 : gridSize === 4 ? 2 : gridSize === 6 ? 2 : gridSize === 9 ? 3 : gridSize === 16 ? 4 : 0;
+  const boxCols = gridSize === 3 ? 0 : gridSize === 4 ? 2 : gridSize === 6 ? 3 : gridSize === 9 ? 3 : gridSize === 16 ? 4 : 0;
+  const boxSize = Math.max(boxRows, boxCols);
 
   // 3×3 and 4×4 grids always offer all three play styles.
   // On 9×9 and 16×16, alphabet/image availability is controlled by the global config flags.
-  const smallGrid = gridSize === 3 || gridSize === 4;
+  const smallGrid = gridSize === 3 || gridSize === 4 || gridSize === 6;
   const alphaModeAllowed = smallGrid || gameFeatures.alphabetModeEnabled;
   const imageModeAllowed = smallGrid || gameFeatures.imageModeEnabled;
   const availableModes: GameMode[] = (
@@ -379,8 +359,8 @@ export default function Game({ id }: { id: string }) {
 
   // Derive game mode from profile
   const rawGameMode = (profile?.gameMode ?? '4all') as 'children' | 'adult' | '4all';
-  const visibleSizes = ([3, 4, 9, 16] as const).filter(s =>
-    rawGameMode === 'children' ? [3, 4].includes(s) :
+  const visibleSizes = ([3, 4, 6, 9, 16] as const).filter(s =>
+    rawGameMode === 'children' ? [3, 4, 6].includes(s) :
     rawGameMode === 'adult'    ? [9, 16].includes(s) :
     true
   );
@@ -388,14 +368,14 @@ export default function Game({ id }: { id: string }) {
   const DIFF_SHORT: Record<string, string> = { easy: 'Easy', medium: 'Med', hard: 'Hard', expert: 'Exp' };
 
   // New-game switcher state — synced to the current game's size/difficulty once loaded
-  const [newSize, setNewSize] = useState<3 | 4 | 9 | 16>(3);
+  const [newSize, setNewSize] = useState<3 | 4 | 6 | 9 | 16>(3);
   const [newDiff, setNewDiff] = useState<"easy" | "medium" | "hard" | "expert">("easy");
   const [newGameFetching, setNewGameFetching] = useState(false);
 
   // Sync to current game once data arrives
   useEffect(() => {
     if (game?.puzzle) {
-      setNewSize(game.puzzle.gridSize as 3 | 4 | 9 | 16);
+      setNewSize(game.puzzle.gridSize as 3 | 4 | 6 | 9 | 16);
       setNewDiff((game.puzzle.difficulty ?? "easy") as "easy" | "medium" | "hard" | "expert");
     }
   }, [game?.puzzle?.gridSize, game?.puzzle?.difficulty]);
@@ -404,7 +384,7 @@ export default function Game({ id }: { id: string }) {
   const newGameLoading = newGameFetching || createNewGame.isPending;
 
   // Accepts explicit overrides so callers don't have to wait for state to flush
-  const handleNewGame = async (sizeOverride?: 3 | 4 | 9 | 16, diffOverride?: "easy" | "medium" | "hard" | "expert") => {
+  const handleNewGame = async (sizeOverride?: 3 | 4 | 6 | 9 | 16, diffOverride?: "easy" | "medium" | "hard" | "expert") => {
     const size = sizeOverride ?? newSize;
     const diff = diffOverride ?? newDiff;
     if (!profileId || newGameLoading) return;
@@ -419,6 +399,7 @@ export default function Game({ id }: { id: string }) {
       // Clear old game's local storage so it can't bleed into the new one
       localStorage.removeItem(storageKeyGrid);
       localStorage.removeItem(storageKeyNotes);
+      localStorage.removeItem(storageKeyElapsed);
       const modeQuery = mode !== "number" ? `?mode=${mode}` : "";
       setLocation(`/game/${newGameResult.id}${modeQuery}`);
     } catch (err) {
@@ -445,6 +426,7 @@ export default function Game({ id }: { id: string }) {
       // Clear old game's local storage before navigating
       localStorage.removeItem(storageKeyGrid);
       localStorage.removeItem(storageKeyNotes);
+      localStorage.removeItem(storageKeyElapsed);
       const modeQuery = mode !== "number" ? `?mode=${mode}` : "";
       setLocation(`/game/${newGame.id}${modeQuery}`);
     } catch (err) {
@@ -455,8 +437,11 @@ export default function Game({ id }: { id: string }) {
     }
   };
 
+  // Holds the elapsed seconds resolved once when the game first loads.
+  // Using state (not an inline read) prevents re-running on every render.
+  const [resumedElapsed, setResumedElapsed] = useState(0);
   const { seconds, formattedTime } = useGameTimer(
-    game?.elapsedSeconds || 0,
+    resumedElapsed,
     !isCompleted && !isGameOver && !isPaused && game?.status === "active",
   );
   const saveTimeoutRef = useRef<number | null>(null);
@@ -465,7 +450,7 @@ export default function Game({ id }: { id: string }) {
   // Sync new-game size pill to the current game's grid size (only if valid for current mode)
   useEffect(() => {
     if (gridSize && visibleSizes.includes(gridSize as any)) {
-      setNewSize(gridSize as 3 | 4 | 9 | 16);
+      setNewSize(gridSize as 3 | 4 | 6 | 9 | 16);
     } else if (visibleSizes.length > 0) {
       setNewSize(visibleSizes[0]);
     }
@@ -484,10 +469,17 @@ export default function Game({ id }: { id: string }) {
         setIsCompleted(true);
         localStorage.removeItem(storageKeyGrid);
         localStorage.removeItem(storageKeyNotes);
+        localStorage.removeItem(storageKeyElapsed);
         return;
       }
       const serverGrid = game.currentGrid.split("");
       const loadedInitial = game.puzzle?.grid.split("") || Array(totalCells).fill("0");
+
+      // Restore elapsed time — prefer localStorage (saved every second) over
+      // the server value (only updated when the grid changes).
+      const savedElapsed = localStorage.getItem(storageKeyElapsed);
+      const localElapsed = savedElapsed ? parseInt(savedElapsed, 10) : NaN;
+      setResumedElapsed(!isNaN(localElapsed) ? localElapsed : (game.elapsedSeconds || 0));
 
       // Prefer localStorage grid if it has more filled cells (handles quick-refresh data loss)
       const savedGrid = localStorage.getItem(storageKeyGrid);
@@ -539,6 +531,14 @@ export default function Game({ id }: { id: string }) {
     if (!gameLoadedRef.current || isCompleted || isGameOver) return;
     localStorage.setItem(storageKeyGrid, grid.join(""));
   }, [grid, isCompleted, isGameOver, storageKeyGrid]);
+
+  // Persist elapsed seconds to localStorage every second so resuming the game
+  // continues the timer from where the user left off (server only updates
+  // elapsedSeconds when the grid changes, which could leave it stale).
+  useEffect(() => {
+    if (!gameLoadedRef.current || isCompleted || isGameOver) return;
+    localStorage.setItem(storageKeyElapsed, String(seconds));
+  }, [seconds, isCompleted, isGameOver, storageKeyElapsed]);
 
   // Immediately persist notes to localStorage on every change.
   useEffect(() => {
@@ -592,6 +592,7 @@ export default function Game({ id }: { id: string }) {
             onSuccess: async (data) => {
               localStorage.removeItem(storageKeyGrid);
               localStorage.removeItem(storageKeyNotes);
+              localStorage.removeItem(storageKeyElapsed);
               if (profileId) {
                 queryClient.invalidateQueries({ queryKey: [`/api/profiles/${profileId}`] });
                 queryClient.invalidateQueries({ queryKey: [`/api/achievements/${profileId}`] });
@@ -758,7 +759,8 @@ export default function Game({ id }: { id: string }) {
     setHistory([]); // clear undo history on full reset
     localStorage.removeItem(storageKeyGrid);
     localStorage.removeItem(storageKeyNotes);
-  }, [initialGrid, storageKeyGrid, storageKeyNotes]);
+    localStorage.removeItem(storageKeyElapsed);
+  }, [initialGrid, storageKeyGrid, storageKeyNotes, storageKeyElapsed]);
 
   const handleHint = () => {
     if (isCompleted || isGameOver || hints >= MAX_HINTS) return;
@@ -770,7 +772,7 @@ export default function Game({ id }: { id: string }) {
 
     // Notes mode: auto-fill all possible pencil marks
     if (notesMode) {
-      const autoNotes = computeAutoNotes(grid, initialGrid, gridSize, boxSize);
+      const autoNotes = computeAutoNotes(grid, initialGrid, gridSize, boxRows, boxCols);
       setNotes(prev => {
         const merged = { ...prev };
         for (const [k, v] of Object.entries(autoNotes)) merged[Number(k)] = v;
@@ -785,7 +787,7 @@ export default function Game({ id }: { id: string }) {
     }
 
     // Value mode: find best cell (naked single first, else random empty)
-    const cellToReveal = findBestHintCell(grid, initialGrid, gridSize, boxSize);
+    const cellToReveal = findBestHintCell(grid, initialGrid, gridSize, boxRows, boxCols);
     if (cellToReveal === null) return;
 
     const newGrid = [...grid];
@@ -794,7 +796,7 @@ export default function Game({ id }: { id: string }) {
     setWrongCells(prev => { const s = new Set(prev); s.delete(cellToReveal); return s; });
     setSelectedCell(cellToReveal);
 
-    const possible = getPossibleValues(grid, cellToReveal, gridSize, boxSize);
+    const possible = getPossibleValues(grid, cellToReveal, gridSize, boxRows, boxCols);
     const row = Math.floor(cellToReveal / gridSize) + 1;
     const col = (cellToReveal % gridSize) + 1;
     const isNaked = possible.length === 1;
@@ -910,6 +912,7 @@ export default function Game({ id }: { id: string }) {
   const GRID_LABELS: Record<number, string> = {
     3: "3×3 Child",
     4: "4×4 Mini",
+    6: "6×6 Dual",
     9: "9×9 Classic",
     16: "16×16 Pro",
   };
@@ -1015,6 +1018,7 @@ export default function Game({ id }: { id: string }) {
     mode === "number"
       ? gridSize === 3 ? "text-5xl sm:text-7xl"
         : gridSize === 4 ? "text-4xl sm:text-5xl"
+        : gridSize === 6 ? "text-3xl sm:text-4xl"
         : gridSize === 16 ? "text-[11px] sm:text-[13px] font-bold"
         : "text-2xl sm:text-3xl"
       : "";
@@ -1052,7 +1056,7 @@ export default function Game({ id }: { id: string }) {
         <div className="space-y-3">
           <Button
             className="w-full gap-2"
-            onClick={() => handleNewGame(gridSize as 3 | 4 | 9 | 16, diff as "easy" | "medium" | "hard" | "expert")}
+            onClick={() => handleNewGame(gridSize as 3 | 4 | 6 | 9 | 16, diff as "easy" | "medium" | "hard" | "expert")}
             disabled={newGameLoading}
           >
             {newGameLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
@@ -1076,7 +1080,7 @@ export default function Game({ id }: { id: string }) {
                 >
                   <span className="font-black text-base text-primary">{s}×{s}</span>
                   <span className="text-[10px] text-muted-foreground leading-tight">
-                    {s === 3 ? "Child" : s === 4 ? "Mini" : s === 9 ? "Classic" : "Pro"}
+                    {s === 3 ? "Child" : s === 4 ? "Mini" : s === 6 ? "Dual" : s === 9 ? "Classic" : "Pro"}
                   </span>
                 </button>
               ))}
@@ -1209,7 +1213,7 @@ export default function Game({ id }: { id: string }) {
           <Button
             variant="outline"
             className="w-full gap-2"
-            onClick={() => handleNewGame(gridSize as 3 | 4 | 9 | 16, diff as "easy" | "medium" | "hard" | "expert")}
+            onClick={() => handleNewGame(gridSize as 3 | 4 | 6 | 9 | 16, diff as "easy" | "medium" | "hard" | "expert")}
             disabled={newGameLoading}
           >
             {newGameLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
@@ -1233,7 +1237,7 @@ export default function Game({ id }: { id: string }) {
                 >
                   <span className="font-black text-base text-primary">{s}×{s}</span>
                   <span className="text-[10px] text-muted-foreground leading-tight">
-                    {s === 3 ? "Child" : s === 4 ? "Mini" : s === 9 ? "Classic" : "Pro"}
+                    {s === 3 ? "Child" : s === 4 ? "Mini" : s === 6 ? "Dual" : s === 9 ? "Classic" : "Pro"}
                   </span>
                 </button>
               ))}
@@ -1316,11 +1320,11 @@ export default function Game({ id }: { id: string }) {
               <span className="font-mono text-xs sm:text-sm">{formattedTime}</span>
             </div>
           )}
-          {/* Style toggle + quick difficulty picker — mobile only, grouped tightly so both
-              fit on one line even for 3×3/4×4 (which has a style choice); 9×9/16×16 only
-              show the difficulty picker since there's no style choice for them. */}
+          {/* Style toggle + quick difficulty picker — mobile only.
+              When no mode choice exists (9×9/16×16) the difficulty select
+              gets the full available space and a larger tap target. */}
           {!isCompleted && !isGameOver && (
-            <div className="md:hidden flex items-center gap-0.5 shrink-0">
+            <div className="md:hidden flex items-center gap-1 shrink-0">
               {availableModes.length > 1 && availableModes.map((m) => (
                 <button
                   key={m}
@@ -1341,8 +1345,15 @@ export default function Game({ id }: { id: string }) {
                 onValueChange={(v) => handleQuickDifficultyChange(v as "easy" | "medium" | "hard" | "expert")}
                 disabled={quickDifficultyLoading}
               >
-                <SelectTrigger className="h-6 text-[10px] w-10 shrink-0 px-1">
-                  <SelectValue>{DIFF_SHORT[game.puzzle?.difficulty ?? "easy"]}</SelectValue>
+                <SelectTrigger className={[
+                  "h-7 text-xs shrink-0 px-2",
+                  availableModes.length > 1 ? "w-[52px]" : "w-[108px]",
+                ].join(" ")}>
+                  <SelectValue>
+                    {availableModes.length > 1
+                      ? DIFF_SHORT[game.puzzle?.difficulty ?? "easy"]
+                      : (game.puzzle?.difficulty ?? "easy").charAt(0).toUpperCase() + (game.puzzle?.difficulty ?? "easy").slice(1)}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {visibleDiffs.map((d) => (
@@ -1420,7 +1431,26 @@ export default function Game({ id }: { id: string }) {
             )}
           </div>
 
-          {/* Size chips — tapping one starts immediately with the current difficulty */}
+          {/* Difficulty chips */}
+          <div className="flex gap-0.5">
+            {visibleDiffs.map((d) => (
+              <button
+                key={d}
+                disabled={newGameLoading}
+                onClick={() => setNewDiff(d)}
+                className={[
+                  "flex-1 rounded py-1 text-[10px] font-bold transition-all leading-none disabled:opacity-50 capitalize",
+                  newDiff === d
+                    ? "bg-primary/80 text-primary-foreground shadow-sm"
+                    : "bg-background text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
+                ].join(" ")}
+              >
+                {d.charAt(0).toUpperCase() + d.slice(1)}
+              </button>
+            ))}
+          </div>
+
+          {/* Size chips — tapping one starts with the selected difficulty above */}
           <div className="flex gap-0.5">
             {visibleSizes.map((s) => (
               <button
@@ -1428,7 +1458,7 @@ export default function Game({ id }: { id: string }) {
                 disabled={newGameLoading}
                 onClick={() => { setNewSize(s); handleNewGame(s, newDiff); }}
                 className={[
-                  "flex-1 rounded py-0.5 text-[10px] font-bold transition-all leading-none disabled:opacity-50",
+                  "flex-1 rounded py-1 text-[10px] font-bold transition-all leading-none disabled:opacity-50",
                   newSize === s
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "bg-background text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
@@ -1501,20 +1531,20 @@ export default function Game({ id }: { id: string }) {
                   !isSelected &&
                   (Math.floor(selectedCell / gridSize) === row ||
                     selectedCell % gridSize === col ||
-                    (boxSize > 0 &&
-                      Math.floor(Math.floor(selectedCell / gridSize) / boxSize) ===
-                        Math.floor(row / boxSize) &&
-                      Math.floor((selectedCell % gridSize) / boxSize) ===
-                        Math.floor(col / boxSize)));
+                    (boxRows > 0 && boxCols > 0 &&
+                      Math.floor(Math.floor(selectedCell / gridSize) / boxRows) ===
+                        Math.floor(row / boxRows) &&
+                      Math.floor((selectedCell % gridSize) / boxCols) ===
+                        Math.floor(col / boxCols)));
                 const activeHighlight = selectedValue ?? highlightedNumber;
                 const isSameValue =
                   activeHighlight && val === activeHighlight && !isSelected;
                 const isInitial = initialGrid[index] !== "0";
                 const isWrong = wrongCells.has(index);
                 const rightBorder =
-                  boxSize > 0 && (col + 1) % boxSize === 0 && col !== gridSize - 1;
+                  boxCols > 0 && (col + 1) % boxCols === 0 && col !== gridSize - 1;
                 const bottomBorder =
-                  boxSize > 0 && (row + 1) % boxSize === 0 && row !== gridSize - 1;
+                  boxRows > 0 && (row + 1) % boxRows === 0 && row !== gridSize - 1;
 
                 return (
                   <div
@@ -1708,6 +1738,8 @@ export default function Game({ id }: { id: string }) {
               className={`grid w-full ${
                 gridSize === 16
                   ? "gap-1 grid-cols-8 md:grid-cols-8"
+                  : gridSize === 6
+                  ? "gap-1.5 grid-cols-6"
                   : gridSize === 4
                   ? "gap-1.5 grid-cols-4"
                   : gridSize === 3
@@ -1727,9 +1759,10 @@ export default function Game({ id }: { id: string }) {
                     className={[
                       "flex flex-col items-center justify-center relative gap-0",
                       mode !== "number"
-                        ? gridSize === 9 ? "h-10 md:h-12 p-0.5" : "h-12 p-0.5"
+                        ? gridSize === 9 ? "h-10 md:h-12 p-0.5" : gridSize === 6 ? "h-11 p-0.5" : "h-12 p-0.5"
                         : gridSize === 16 ? "h-10"
                         : gridSize === 9 ? "h-10 md:h-12"
+                        : gridSize === 6 ? "h-11"
                         : "h-12",
                       done ? "opacity-30" : "",
                       highlightedNumber === encoded && !done ? "ring-2 ring-primary" : "",
@@ -1738,14 +1771,14 @@ export default function Game({ id }: { id: string }) {
                   >
                     {mode === "image" ? (
                       <div className={`flex items-center justify-center [&_svg]:w-full [&_svg]:h-full [&_img]:!w-full [&_img]:!h-full ${
-                        gridSize === 16 ? "w-3.5 h-3.5" : gridSize === 9 ? "w-6 h-6" : "w-8 h-8"
+                        gridSize === 16 ? "w-3.5 h-3.5" : gridSize === 9 ? "w-6 h-6" : gridSize === 6 ? "w-7 h-7" : "w-8 h-8"
                       }`}>
                         <ThemeIcon themeId={themeId} value={num} size={48} />
                       </div>
                     ) : mode === "alpha" ? (
-                      <AlphaLetter value={num} size={gridSize === 3 ? 28 : gridSize === 4 ? 24 : gridSize === 16 ? 10 : 18} />
+                      <AlphaLetter value={num} size={gridSize === 3 ? 28 : gridSize === 4 ? 24 : gridSize === 6 ? 20 : gridSize === 16 ? 10 : 18} />
                     ) : (
-                      <span className={gridSize === 16 ? "text-xs font-semibold leading-none" : gridSize === 9 ? "text-lg font-semibold leading-none" : "text-xl font-semibold leading-none"}>{num}</span>
+                      <span className={gridSize === 16 ? "text-xs font-semibold leading-none" : gridSize === 9 ? "text-lg font-semibold leading-none" : gridSize === 6 ? "text-base font-semibold leading-none" : "text-xl font-semibold leading-none"}>{num}</span>
                     )}
                     {!done && (
                       <span className="text-[9px] leading-none text-muted-foreground font-medium mt-0.5">{remaining}</span>

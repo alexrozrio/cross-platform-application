@@ -216,6 +216,14 @@ export default function MemoryMatchPage() {
         localStorage.removeItem(STORAGE_KEY);
         return;
       }
+      // If the URL is requesting a specific size that differs from the saved
+      // game, discard the saved game and let the URL auto-start run instead.
+      const urlParams = new URLSearchParams(window.location.search);
+      const requestedSize = parseInt(urlParams.get('size') ?? urlParams.get('gridSize') ?? '', 10);
+      if (!isNaN(requestedSize) && requestedSize !== s.gridSize) {
+        localStorage.removeItem(STORAGE_KEY);
+        return;
+      }
       restoredRef.current = true;
       setGridSize(s.gridSize);
       setCards((s.cards as Card[]).map((c) => ({ ...c, flipped: c.matched })));

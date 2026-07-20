@@ -70,6 +70,82 @@ describe('generatePuzzle 4×4', () => {
   });
 });
 
+// ─── 6×6 ──────────────────────────────────────────────────────────────────────
+
+describe('generatePuzzle 6×6', { timeout: 30000 }, () => {
+  it('returns a 36-character grid and solution', () => {
+    const { grid, solution } = generatePuzzle('easy', 6);
+    expect(grid).toHaveLength(36);
+    expect(solution).toHaveLength(36);
+  });
+
+  it('solution contains only digits 1–6', () => {
+    const { solution } = generatePuzzle('easy', 6);
+    expect(solution).toMatch(/^[1-6]{36}$/);
+  });
+
+  it('solution has exactly 6 of each digit', () => {
+    const { solution } = generatePuzzle('medium', 6);
+    for (const d of '123456') {
+      const count = solution.split('').filter(c => c === d).length;
+      expect(count).toBe(6);
+    }
+  });
+
+  it('puzzle has at least one empty cell', () => {
+    const { grid } = generatePuzzle('hard', 6);
+    expect(grid).toContain('0');
+  });
+
+  it('every filled cell in puzzle matches solution', () => {
+    const { grid, solution } = generatePuzzle('easy', 6);
+    for (let i = 0; i < 36; i++) {
+      if (grid[i] !== '0') {
+        expect(grid[i]).toBe(solution[i]);
+      }
+    }
+  });
+
+  it('each row in the solution contains no duplicate digits', () => {
+    const { solution } = generatePuzzle('easy', 6);
+    for (let row = 0; row < 6; row++) {
+      const rowDigits = solution.slice(row * 6, row * 6 + 6).split('');
+      expect(new Set(rowDigits).size).toBe(6);
+    }
+  });
+
+  it('each column in the solution contains no duplicate digits', () => {
+    const { solution } = generatePuzzle('easy', 6);
+    for (let col = 0; col < 6; col++) {
+      const colDigits = Array.from({ length: 6 }, (_, r) => solution[r * 6 + col]);
+      expect(new Set(colDigits).size).toBe(6);
+    }
+  });
+
+  it('each 2×3 box in the solution contains no duplicate digits', () => {
+    const { solution } = generatePuzzle('easy', 6);
+    for (let br = 0; br < 3; br++) {
+      for (let bc = 0; bc < 2; bc++) {
+        const box: string[] = [];
+        for (let r = 0; r < 2; r++) {
+          for (let c = 0; c < 3; c++) {
+            box.push(solution[(br * 2 + r) * 6 + bc * 3 + c]);
+          }
+        }
+        expect(new Set(box).size).toBe(6);
+      }
+    }
+  });
+
+  it('expert has fewer or equal clues than easy', () => {
+    const easy = generatePuzzle('easy', 6);
+    const expert = generatePuzzle('expert', 6);
+    const easyClues = easy.grid.split('').filter(c => c !== '0').length;
+    const expertClues = expert.grid.split('').filter(c => c !== '0').length;
+    expect(expertClues).toBeLessThanOrEqual(easyClues);
+  });
+});
+
 // ─── 9×9 ──────────────────────────────────────────────────────────────────────
 
 describe('generatePuzzle 9×9', { timeout: 30000 }, () => {
@@ -146,4 +222,4 @@ describe('generatePuzzle 9×9', { timeout: 30000 }, () => {
     const expertClues = expert.grid.split('').filter(c => c !== '0').length;
     expect(expertClues).toBeLessThanOrEqual(easyClues);
   });
-}, { timeout: 30000 });
+});

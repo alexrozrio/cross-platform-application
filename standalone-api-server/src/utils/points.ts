@@ -8,6 +8,7 @@ export type GameType = "sudoku";
 const SUDOKU_BASE: Record<number, number> = {
   3: 100,
   4: 250,
+  6: 500,
   9: 1000,
   16: 2500,
 };
@@ -23,6 +24,7 @@ const DIFF_MULT: Record<string, number> = {
 const SUDOKU_PAR: Record<number, number> = {
   3: 120,
   4: 300,
+  6: 600,
   9: 900,
   16: 2700,
 };

@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useImageTheme } from '@/hooks/use-image-theme';
 import { ThemeIcon } from '@/components/theme-icons';
 import { Badge } from '@/components/ui/badge';
-import { Grid3X3, Sparkles, Loader2, RotateCcw } from 'lucide-react';
+import { Grid3x2 as Grid3X3, Sparkles, Loader as Loader2, RotateCcw } from 'lucide-react';
 import { customFetch, useGetProfile } from '@workspace/api-client-react';
 import { getLevelFromXp } from '@/lib/levels';
 import { getTheme } from '@/lib/themes';
@@ -31,6 +31,7 @@ const COMING_SOON = [
 const GRID_QUICK_START = [
   { size: 3, label: '3×3', sublabel: 'Baby' },
   { size: 4, label: '4×4', sublabel: 'Mini' },
+  { size: 6, label: '6×6', sublabel: 'Dual' },
   { size: 9, label: '9×9', sublabel: 'Classic' },
   { size: 16, label: '16×16', sublabel: 'Pro' },
 ];
@@ -48,7 +49,7 @@ export default function Portal() {
   const gameMode = (profile?.gameMode ?? '4all') as 'children' | 'adult' | '4all';
 
   const visibleSudokuSizes = GRID_QUICK_START.filter(opt =>
-    gameMode === 'children' ? [3, 4].includes(opt.size) :
+    gameMode === 'children' ? [3, 4, 6].includes(opt.size) :
     gameMode === 'adult'    ? [9, 16].includes(opt.size) :
     true
   );
@@ -205,7 +206,7 @@ export default function Portal() {
             {activeGame && (() => {
               const gs = activeGame.puzzle?.gridSize;
               const validForMode =
-                gameMode === 'children' ? [3, 4].includes(gs!) :
+                gameMode === 'children' ? [3, 4, 6].includes(gs!) :
                 gameMode === 'adult'    ? [9, 16].includes(gs!) :
                 true;
               return validForMode;

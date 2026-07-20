@@ -117,6 +117,7 @@ export type PuzzleGridSize = typeof PuzzleGridSize[keyof typeof PuzzleGridSize];
 export const PuzzleGridSize = {
   NUMBER_3: 3,
   NUMBER_4: 4,
+  NUMBER_6: 6,
   NUMBER_9: 9,
   NUMBER_16: 16,
 } as const;
@@ -203,6 +204,7 @@ export type LeaderboardEntryGridSize = typeof LeaderboardEntryGridSize[keyof typ
 export const LeaderboardEntryGridSize = {
   NUMBER_3: 3,
   NUMBER_4: 4,
+  NUMBER_6: 6,
   NUMBER_9: 9,
   NUMBER_16: 16,
 } as const;
@@ -336,6 +338,7 @@ export type ChallengeInputGridSize = typeof ChallengeInputGridSize[keyof typeof 
 export const ChallengeInputGridSize = {
   NUMBER_3: 3,
   NUMBER_4: 4,
+  NUMBER_6: 6,
   NUMBER_9: 9,
   NUMBER_16: 16,
 } as const;
@@ -386,6 +389,7 @@ export type ChallengeDetailGridSize = typeof ChallengeDetailGridSize[keyof typeo
 export const ChallengeDetailGridSize = {
   NUMBER_3: 3,
   NUMBER_4: 4,
+  NUMBER_6: 6,
   NUMBER_9: 9,
   NUMBER_16: 16,
 } as const;
@@ -438,6 +442,7 @@ export type GeneratePuzzleGridSize = typeof GeneratePuzzleGridSize[keyof typeof 
 export const GeneratePuzzleGridSize = {
   NUMBER_3: 3,
   NUMBER_4: 4,
+  NUMBER_6: 6,
   NUMBER_9: 9,
   NUMBER_16: 16,
 } as const;
@@ -453,6 +458,7 @@ export type GetLeaderboardGridSize = typeof GetLeaderboardGridSize[keyof typeof 
 export const GetLeaderboardGridSize = {
   NUMBER_3: 3,
   NUMBER_4: 4,
+  NUMBER_6: 6,
   NUMBER_9: 9,
   NUMBER_16: 16,
 } as const;
@@ -480,6 +486,7 @@ export type GetTournamentLeaderboardGridSize = typeof GetTournamentLeaderboardGr
 export const GetTournamentLeaderboardGridSize = {
   NUMBER_3: 3,
   NUMBER_4: 4,
+  NUMBER_6: 6,
   NUMBER_9: 9,
   NUMBER_16: 16,
 } as const;
