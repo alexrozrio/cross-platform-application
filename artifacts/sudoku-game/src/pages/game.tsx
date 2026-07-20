@@ -1320,17 +1320,17 @@ export default function Game({ id }: { id: string }) {
               <span className="font-mono text-xs sm:text-sm">{formattedTime}</span>
             </div>
           )}
-          {/* Style toggle + quick difficulty picker — mobile only, grouped tightly so both
-              fit on one line even for 3×3/4×4 (which has a style choice); 9×9/16×16 only
-              show the difficulty picker since there's no style choice for them. */}
+          {/* Style toggle + quick difficulty picker — mobile only.
+              When no mode choice exists (9×9/16×16) the difficulty select
+              gets the full available space and a larger tap target. */}
           {!isCompleted && !isGameOver && (
-            <div className="md:hidden flex items-center gap-0.5 shrink-0">
+            <div className="md:hidden flex items-center gap-1 shrink-0">
               {availableModes.length > 1 && availableModes.map((m) => (
                 <button
                   key={m}
                   onClick={() => switchMode(m)}
                   className={[
-                    "flex items-center justify-center w-6 h-6 rounded text-[10px] font-bold transition-all shrink-0",
+                    "flex items-center justify-center w-7 h-7 rounded text-[10px] font-bold transition-all shrink-0",
                     mode === m
                       ? "bg-muted text-foreground shadow-sm border border-border"
                       : "text-muted-foreground hover:text-foreground",
@@ -1345,8 +1345,15 @@ export default function Game({ id }: { id: string }) {
                 onValueChange={(v) => handleQuickDifficultyChange(v as "easy" | "medium" | "hard" | "expert")}
                 disabled={quickDifficultyLoading}
               >
-                <SelectTrigger className="h-6 text-[10px] w-10 shrink-0 px-1">
-                  <SelectValue>{DIFF_SHORT[game.puzzle?.difficulty ?? "easy"]}</SelectValue>
+                <SelectTrigger className={[
+                  "h-7 text-xs shrink-0 px-2",
+                  availableModes.length > 1 ? "w-[82px]" : "w-[108px]",
+                ].join(" ")}>
+                  <SelectValue>
+                    {availableModes.length > 1
+                      ? DIFF_SHORT[game.puzzle?.difficulty ?? "easy"]
+                      : (game.puzzle?.difficulty ?? "easy").charAt(0).toUpperCase() + (game.puzzle?.difficulty ?? "easy").slice(1)}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {visibleDiffs.map((d) => (
@@ -1424,7 +1431,26 @@ export default function Game({ id }: { id: string }) {
             )}
           </div>
 
-          {/* Size chips — tapping one starts immediately with the current difficulty */}
+          {/* Difficulty chips */}
+          <div className="flex gap-0.5">
+            {visibleDiffs.map((d) => (
+              <button
+                key={d}
+                disabled={newGameLoading}
+                onClick={() => setNewDiff(d)}
+                className={[
+                  "flex-1 rounded py-1 text-[10px] font-bold transition-all leading-none disabled:opacity-50 capitalize",
+                  newDiff === d
+                    ? "bg-primary/80 text-primary-foreground shadow-sm"
+                    : "bg-background text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
+                ].join(" ")}
+              >
+                {d.charAt(0).toUpperCase() + d.slice(1)}
+              </button>
+            ))}
+          </div>
+
+          {/* Size chips — tapping one starts with the selected difficulty above */}
           <div className="flex gap-0.5">
             {visibleSizes.map((s) => (
               <button
@@ -1432,7 +1458,7 @@ export default function Game({ id }: { id: string }) {
                 disabled={newGameLoading}
                 onClick={() => { setNewSize(s); handleNewGame(s, newDiff); }}
                 className={[
-                  "flex-1 rounded py-0.5 text-[10px] font-bold transition-all leading-none disabled:opacity-50",
+                  "flex-1 rounded py-1 text-[10px] font-bold transition-all leading-none disabled:opacity-50",
                   newSize === s
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "bg-background text-muted-foreground border border-border hover:border-primary/40 hover:text-foreground",
