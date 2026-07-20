@@ -193,6 +193,9 @@ function XpGuide() {
             XP is added to your total after every completed game, regardless of
             speed or mistakes. Harder puzzles reward more XP.
           </p>
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            Applies to all grid sizes — 3×3, 4×4, <span className="font-semibold text-foreground">6×6</span>, 9×9, and 16×16.
+          </p>
         </div>
       )}
     </div>
@@ -264,6 +267,7 @@ function PointsGuide() {
               {[
                 { label: "3×3", base: 100, par: "2:00" },
                 { label: "4×4", base: 250, par: "5:00" },
+                { label: "6×6", base: 500, par: "10:00" },
                 { label: "9×9", base: 1000, par: "15:00" },
                 { label: "16×16", base: 2500, par: "45:00" },
               ].map((row, i) => (
