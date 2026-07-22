@@ -14,13 +14,18 @@ import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const require = createRequire(import.meta.url);
-const { configDotenv } = require('dotenv');
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const onReplit = Boolean(process.env.REPL_ID);
 
 // Load .env so SKIP_DB_PUSH is visible even before the server sets up env vars
-configDotenv({ path: resolve(__dirname, '../.env') });
+// dotenv is optional — on Replit env vars are already injected by the platform
+try {
+  const { configDotenv } = require('dotenv');
+  configDotenv({ path: resolve(__dirname, '../.env') });
+} catch {
+  // dotenv not available; env vars already present in environment
+}
 
 if (process.env.SKIP_DB_PUSH === 'true') {
   console.log('[db-push] Skipped (SKIP_DB_PUSH=true)');
