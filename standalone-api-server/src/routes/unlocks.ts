@@ -12,11 +12,12 @@ const ITEM_COSTS: Record<ItemType, Record<string, number>> = {
     ocean: 100, forest: 150, sunset: 150, midnight: 200, rose: 200,
   },
   font: {
-    default: 0, modern: 50, elegant: 50, rounded: 50,
+    default: 0, modern: 50, elegant: 50, straight: 50,
+    playful: 75, mono: 75, classic: 75, handwritten: 75,
   },
   icon_set: {
-    shapes: 0, adventure: 0,
-    superhero: 100, ocean: 200, jungle: 300, space: 300,
+    shapes: 0, ocean: 0,
+    adventure: 100, superhero: 100, jungle: 100, space: 100,
   },
 };
 
