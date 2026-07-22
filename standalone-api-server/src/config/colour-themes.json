@@ -1,0 +1,254 @@
+[
+  {
+    "id": "light",
+    "name": "Classic",
+    "gems": 0,
+    "visible": true,
+    "bg": "#f8f6f0",
+    "primary": "#4a6585",
+    "accent": "#e8e4da"
+  },
+  {
+    "id": "dark",
+    "name": "Dark",
+    "gems": 0,
+    "visible": true,
+    "bg": "#1a1f2e",
+    "primary": "#6b8fc4",
+    "accent": "#2a3045"
+  },
+  {
+    "id": "ocean",
+    "name": "Ocean",
+    "gems": 10,
+    "visible": true,
+    "bg": "#eef7fb",
+    "primary": "#2e8a91",
+    "accent": "#cce9f0"
+  },
+  {
+    "id": "forest",
+    "name": "Forest",
+    "gems": 10,
+    "visible": true,
+    "bg": "#f2f8f2",
+    "primary": "#2e6b40",
+    "accent": "#cce5cc"
+  },
+  {
+    "id": "sunset",
+    "name": "Sunset",
+    "gems": 10,
+    "visible": true,
+    "bg": "#fdf6f0",
+    "primary": "#b84e20",
+    "accent": "#f0d8c4"
+  },
+  {
+    "id": "midnight",
+    "name": "Midnight",
+    "gems": 10,
+    "visible": true,
+    "bg": "#0f0b1a",
+    "primary": "#8b5cf6",
+    "accent": "#2a1f40"
+  },
+  {
+    "id": "rose",
+    "name": "Rose",
+    "gems": 10,
+    "visible": true,
+    "bg": "#fdf5f7",
+    "primary": "#a3254e",
+    "accent": "#f0d0da"
+  },
+  {
+    "id": "emerald",
+    "name": "Emerald",
+    "gems": 10,
+    "visible": true,
+    "bg": "#f0fdf4",
+    "primary": "#059669",
+    "accent": "#d1fae5"
+  },
+  {
+    "id": "slate",
+    "name": "Slate",
+    "gems": 10,
+    "visible": true,
+    "bg": "#f8fafc",
+    "primary": "#475569",
+    "accent": "#e2e8f0"
+  },
+  {
+    "id": "lavender",
+    "name": "Lavender",
+    "gems": 10,
+    "visible": true,
+    "bg": "#f5f0ff",
+    "primary": "#7c3aed",
+    "accent": "#ede9fe"
+  },
+  {
+    "id": "amber",
+    "name": "Amber",
+    "gems": 10,
+    "visible": true,
+    "bg": "#fffbeb",
+    "primary": "#d97706",
+    "accent": "#fef3c7"
+  },
+  {
+    "id": "teal",
+    "name": "Teal",
+    "gems": 10,
+    "visible": false,
+    "bg": "#f0fdfa",
+    "primary": "#0d9488",
+    "accent": "#ccfbf1"
+  },
+  {
+    "id": "crimson",
+    "name": "Crimson",
+    "gems": 10,
+    "visible": true,
+    "bg": "#fff5f5",
+    "primary": "#dc2626",
+    "accent": "#fee2e2"
+  },
+  {
+    "id": "coral",
+    "name": "Coral",
+    "gems": 10,
+    "visible": false,
+    "bg": "#fff7f5",
+    "primary": "#e05a4e",
+    "accent": "#ffd5d0"
+  },
+  {
+    "id": "arctic",
+    "name": "Arctic",
+    "gems": 10,
+    "visible": false,
+    "bg": "#f0f8ff",
+    "primary": "#2563eb",
+    "accent": "#dbeafe"
+  },
+  {
+    "id": "mocha",
+    "name": "Mocha",
+    "gems": 10,
+    "visible": true,
+    "bg": "#faf8f5",
+    "primary": "#78503a",
+    "accent": "#e8ddd5"
+  },
+  {
+    "id": "neon",
+    "name": "Neon",
+    "gems": 10,
+    "visible": true,
+    "bg": "#0a0e10",
+    "primary": "#00e676",
+    "accent": "#0a2e1a"
+  },
+  {
+    "id": "cyberpunk",
+    "name": "Cyberpunk",
+    "gems": 10,
+    "visible": true,
+    "bg": "#0e0815",
+    "primary": "#e91e8c",
+    "accent": "#2a0830"
+  },
+  {
+    "id": "deepsea",
+    "name": "Deep Sea",
+    "gems": 10,
+    "visible": true,
+    "bg": "#060f1a",
+    "primary": "#00bcd4",
+    "accent": "#082030"
+  },
+  {
+    "id": "obsidian",
+    "name": "Obsidian",
+    "gems": 10,
+    "visible": true,
+    "bg": "#0f0c08",
+    "primary": "#c9a227",
+    "accent": "#251e10"
+  },
+  {
+    "id": "mint",
+    "name": "Mint",
+    "gems": 10,
+    "visible": false,
+    "bg": "#f0fdf8",
+    "primary": "#1a7a5e",
+    "accent": "#ccfaee"
+  },
+  {
+    "id": "peach",
+    "name": "Peach",
+    "gems": 10,
+    "visible": false,
+    "bg": "#fff7f0",
+    "primary": "#d4620a",
+    "accent": "#ffdcc2"
+  },
+  {
+    "id": "nordic",
+    "name": "Nordic",
+    "gems": 10,
+    "visible": true,
+    "bg": "#f0f4fa",
+    "primary": "#2248a0",
+    "accent": "#d0ddf5"
+  },
+  {
+    "id": "wine",
+    "name": "Wine",
+    "gems": 10,
+    "visible": false,
+    "bg": "#fdf0f8",
+    "primary": "#8b1a54",
+    "accent": "#f5d0e8"
+  },
+  {
+    "id": "superman",
+    "name": "Superman",
+    "gems": 50,
+    "visible": false,
+    "bg": "#e8f4ff",
+    "primary": "#1a3a8f",
+    "accent": "#bbdefb"
+  },
+  {
+    "id": "spiderman",
+    "name": "Spiderman",
+    "gems": 50,
+    "visible": false,
+    "bg": "#fff0f0",
+    "primary": "#b71c1c",
+    "accent": "#ffcdd2"
+  },
+  {
+    "id": "batman",
+    "name": "Batman",
+    "gems": 50,
+    "visible": false,
+    "bg": "#111108",
+    "primary": "#f9ca24",
+    "accent": "#2a2808"
+  },
+  {
+    "id": "dora",
+    "name": "Dora",
+    "gems": 50,
+    "visible": false,
+    "bg": "#fdf0ff",
+    "primary": "#9b27af",
+    "accent": "#f3d0ff"
+  }
+]

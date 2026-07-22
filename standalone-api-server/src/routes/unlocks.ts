@@ -1,24 +1,20 @@
 import { Router, type IRouter } from "express";
 import { eq, and } from "drizzle-orm";
 import { db, unlockedItemsTable, profilesTable } from "@workspace/db";
+import colourThemes from "../config/colour-themes.json" assert { type: "json" };
+import fontThemes from "../config/font-themes.json" assert { type: "json" };
+import iconSets from "../config/icon-sets.json" assert { type: "json" };
 
 const router: IRouter = Router();
 
 type ItemType = "color_theme" | "font" | "icon_set";
 
+// Build cost maps directly from the same JSON config files the UI uses.
+// This ensures the API and UI are always in sync — update the JSON, both sides update.
 const ITEM_COSTS: Record<ItemType, Record<string, number>> = {
-  color_theme: {
-    light: 0, dark: 0,
-    ocean: 100, forest: 150, sunset: 150, midnight: 200, rose: 200,
-  },
-  font: {
-    default: 0, modern: 50, elegant: 50, straight: 50,
-    playful: 75, mono: 75, classic: 75, handwritten: 75,
-  },
-  icon_set: {
-    shapes: 0, ocean: 0,
-    adventure: 100, superhero: 100, jungle: 100, space: 100,
-  },
+  color_theme: Object.fromEntries(colourThemes.map((t) => [t.id, t.gems ?? 0])),
+  font:        Object.fromEntries(fontThemes.map((t) => [t.id, t.gems ?? 0])),
+  icon_set:    Object.fromEntries(iconSets.map((t) => [t.id, t.gems ?? 0])),
 };
 
 const VALID_TYPES = Object.keys(ITEM_COSTS) as ItemType[];

@@ -1,0 +1,82 @@
+[
+  {
+    "id": "default",
+    "name": "Default",
+    "gems": 0,
+    "visible": true,
+    "preview": "Aa",
+    "sans": "'Nunito', sans-serif",
+    "serif": "'Nunito', sans-serif",
+    "previewFont": "'Nunito', sans-serif"
+  },
+  {
+    "id": "modern",
+    "name": "Modern",
+    "gems": 50,
+    "visible": true,
+    "preview": "Aa",
+    "sans": "'DM Sans', sans-serif",
+    "serif": "'DM Serif Display', serif",
+    "previewFont": "'DM Sans', sans-serif"
+  },
+  {
+    "id": "elegant",
+    "name": "Elegant",
+    "gems": 50,
+    "visible": true,
+    "preview": "Aa",
+    "sans": "'Lato', sans-serif",
+    "serif": "'Cormorant Garamond', serif",
+    "previewFont": "'Cormorant Garamond', serif"
+  },
+  {
+    "id": "straight",
+    "name": "Straight",
+    "gems": 50,
+    "visible": true,
+    "preview": "Aa",
+    "sans": "'Outfit', sans-serif",
+    "serif": "'Playfair Display', serif",
+    "previewFont": "'Outfit', sans-serif"
+  },
+  {
+    "id": "playful",
+    "name": "Playful",
+    "gems": 75,
+    "visible": true,
+    "preview": "Aa",
+    "sans": "'Quicksand', sans-serif",
+    "serif": "'Pacifico', cursive",
+    "previewFont": "'Pacifico', cursive"
+  },
+  {
+    "id": "mono",
+    "name": "Mono",
+    "gems": 75,
+    "visible": true,
+    "preview": "Aa",
+    "sans": "'Space Mono', monospace",
+    "serif": "'Space Mono', monospace",
+    "previewFont": "'Space Mono', monospace"
+  },
+  {
+    "id": "classic",
+    "name": "Classic Serif",
+    "gems": 75,
+    "visible": true,
+    "preview": "Aa",
+    "sans": "'Source Sans 3', sans-serif",
+    "serif": "'Merriweather', serif",
+    "previewFont": "'Merriweather', serif"
+  },
+  {
+    "id": "handwritten",
+    "name": "Handwritten",
+    "gems": 75,
+    "visible": true,
+    "preview": "Aa",
+    "sans": "'Karla', sans-serif",
+    "serif": "'Caveat', cursive",
+    "previewFont": "'Caveat', cursive"
+  }
+]
