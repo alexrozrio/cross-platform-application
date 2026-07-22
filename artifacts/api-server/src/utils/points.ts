@@ -29,8 +29,8 @@ const SUDOKU_PAR: Record<number, number> = {
   16: 2700,
 };
 
-// Gems earned per 500 points (rounded down per game)
-const GEMS_PER_POINTS = 500;
+// Gems earned per 5000 points (rounded down per game)
+const GEMS_PER_POINTS = 5000;
 
 export function calcPoints(
   gridSize: number,
