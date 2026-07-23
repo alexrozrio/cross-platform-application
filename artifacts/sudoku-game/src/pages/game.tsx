@@ -335,8 +335,15 @@ export default function Game({ id }: { id: string }) {
     if (typeof window === "undefined") return;
     if (!window.matchMedia("(max-width: 767px)").matches) return;
     const nudge = () => {
-      gameViewRef.current?.scrollIntoView({ block: "start", behavior: "auto" });
-      window.scrollTo({ top: window.scrollY + 1, behavior: "auto" });
+      if (!gameViewRef.current) return;
+      // Measure the sticky nav so we never scroll the game header under it.
+      // scrollIntoView({ block:"start" }) was used before but ignored the nav
+      // height, causing the difficulty row to disappear under the header on load.
+      const navH = (document.querySelector("header") as HTMLElement | null)?.offsetHeight ?? 44;
+      const elemTop = gameViewRef.current.getBoundingClientRect().top + window.scrollY;
+      // The +1 nudge prompts mobile Safari/Chrome to collapse their address bar
+      // (growing the dvh layout). Subtracting navH keeps the header row visible.
+      window.scrollTo({ top: Math.max(0, elemTop - navH) + 1, behavior: "auto" });
     };
     const raf = requestAnimationFrame(nudge);
     const t = setTimeout(nudge, 250);
