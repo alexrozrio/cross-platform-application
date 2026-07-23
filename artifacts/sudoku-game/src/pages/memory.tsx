@@ -144,6 +144,24 @@ function MemoryCard({
   );
 }
 
+// ─── Setup-screen theme preview symbol ───────────────────────────────────────
+// Shows a real image file when one exists in /public/themes/<id>/<value>.<ext>,
+// otherwise falls back to the emoji symbol from the config.
+function MemoryThemeSymbol({ themeId, value, sym }: { themeId: string; value: number; sym: string }) {
+  const imageSrc = useThemeImageSrc(themeId, value);
+  if (imageSrc) {
+    return (
+      <img
+        src={imageSrc}
+        alt={sym}
+        draggable={false}
+        style={{ width: 32, height: 32, objectFit: 'contain', userSelect: 'none' }}
+      />
+    );
+  }
+  return <span className="text-2xl leading-none">{sym}</span>;
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function MemoryMatchPage() {
@@ -516,7 +534,7 @@ export default function MemoryMatchPage() {
         <div className="flex items-center gap-2 flex-wrap">
           {displayMode === 'image'
             ? theme.symbols.slice(0, 8).map((sym, i) => (
-                <span key={i} className="text-2xl leading-none">{sym}</span>
+                <MemoryThemeSymbol key={i} themeId={themeId} value={i + 1} sym={sym} />
               ))
             : (displayMode === 'number'
                 ? Array.from({ length: 8 }, (_, i) => String(i + 1))
