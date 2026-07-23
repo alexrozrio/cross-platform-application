@@ -18,7 +18,11 @@ const SudokuHome = lazy(() => import("@/pages/home"));
 const Game = lazy(() => import("@/pages/game"));
 const Profile = lazy(() => import("@/pages/profile"));
 const Leaderboard = lazy(() => import("@/pages/leaderboard"));
-const Stats = lazy(() => import("@/pages/stats"));
+function StatsRedirect() {
+  const [, setLocation] = useLocation();
+  React.useEffect(() => { setLocation("/profile"); }, []);
+  return null;
+}
 const Themes = lazy(() => import("@/pages/themes"));
 const BadgeSharePage = lazy(() => import("@/pages/badge-share"));
 const DailyChallenge = lazy(() => import("@/pages/daily-challenge"));
@@ -72,7 +76,7 @@ function Router() {
             </Route>
             <Route path="/daily-challenge" component={DailyChallenge} />
             <Route path="/leaderboard" component={Leaderboard} />
-            <Route path="/stats" component={Stats} />
+            <Route path="/stats" component={StatsRedirect} />
             <Route path="/challenges" component={Challenges} />
             <Route path="/badges/:token" component={BadgeSharePage} />
             <Route path="/memory" component={MemoryMatch} />

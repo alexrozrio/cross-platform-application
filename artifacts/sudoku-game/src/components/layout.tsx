@@ -5,7 +5,7 @@ import { useGetProfile } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { apiUrl } from "@/lib/api-base-url";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Trophy, User, Home, BarChart2, Palette, LogIn, LogOut, Gem, Swords } from "lucide-react";
+import { Trophy, User, Home, Palette, LogIn, LogOut, Gem, Swords } from "lucide-react";
 import { useFontTheme } from "@/hooks/use-font-theme";
 import { useChallengeNotifications, usePendingChallengeCount } from "@/hooks/use-challenge-notifications";
 import { useLevelUpWatcher } from "@/hooks/use-level-up";
@@ -57,7 +57,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/", label: "Home", shortLabel: "Home", icon: Home, badge: 0, tooltip: "Play Sudoku & Memory Match — earn XP and climb the ranks" },
     { href: "/leaderboard", label: "Leaderboard", shortLabel: "Ranks", icon: Trophy, badge: 0, tooltip: "See the top players — complete games to rise up the rankings" },
     { href: "/challenges", label: "Challenges", shortLabel: "Duels", icon: Swords, badge: pendingCount, tooltip: "Challenge others to a duel — win to earn 10 💎 gems" },
-    { href: "/stats", label: "Stats", shortLabel: "Stats", icon: BarChart2, badge: 0, tooltip: "Your game history, win streaks, and personal bests" },
     { href: "/themes", label: "Themes", shortLabel: "Themes", icon: Palette, badge: 0, tooltip: "Unlock new board themes and fonts with your gems" },
     { href: "/profile", label: isSignedIn ? (replitUser?.firstName || "Account") : "Profile", shortLabel: isSignedIn ? "Account" : "Profile", icon: User, badge: 0, tooltip: "Your profile, XP rank, badges, and game settings" },
   ];
