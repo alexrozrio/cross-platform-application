@@ -55,7 +55,8 @@ const GRID_OPTIONS: { size: GridSize; label: string; sublabel: string; difficult
 
 type InfoModal = 'rules' | 'controls' | 'backstory' | null;
 
-const LAST_GRID_SIZE_KEY = 'sudoku-last-grid-size';
+const LAST_GRID_SIZE_KEY  = 'sudoku-last-grid-size';
+const LAST_DIFFICULTY_KEY = 'sudoku-last-difficulty';
 
 function getLastPlayedGridSize(): GridSize | null {
   try {
@@ -64,6 +65,16 @@ function getLastPlayedGridSize(): GridSize | null {
   } catch {
     return null;
   }
+}
+
+function getLastPlayedDifficulty(): Difficulty {
+  try {
+    const stored = localStorage.getItem(LAST_DIFFICULTY_KEY);
+    if (stored && ['easy', 'medium', 'hard', 'expert'].includes(stored)) {
+      return stored as Difficulty;
+    }
+  } catch { /* ignore */ }
+  return 'easy';
 }
 
 export default function SudokuHome() {
@@ -76,7 +87,7 @@ export default function SudokuHome() {
       ? Number(sizeParam)
       : getLastPlayedGridSize() ?? 9
   ) as GridSize;
-  const [difficulty, setDifficulty] = useState<Difficulty>('easy');
+  const [difficulty, setDifficulty] = useState<Difficulty>(getLastPlayedDifficulty);
   const [gridSize, setGridSize] = useState<GridSize>(initialSize);
   const { themeId } = useImageTheme();
   const [infoModal, setInfoModal] = useState<InfoModal>(null);
@@ -144,6 +155,7 @@ export default function SudokuHome() {
       setActiveGame(null);
       try {
         localStorage.setItem(LAST_GRID_SIZE_KEY, String(size));
+        localStorage.setItem(LAST_DIFFICULTY_KEY, effectiveDifficulty);
       } catch {
         // ignore storage failures (e.g. private browsing)
       }
