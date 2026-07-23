@@ -97,14 +97,25 @@ export default function Portal() {
   const handleQuickStart = async (size: number) => {
     if (!isReady || !profileId || loadingSize !== null) return;
     setLoadingSize(size);
+    // Use the difficulty the player last chose (persisted by home.tsx), defaulting to easy.
+    const difficulty = (() => {
+      try {
+        const stored = localStorage.getItem('sudoku-last-difficulty');
+        return stored && ['easy', 'medium', 'hard', 'expert'].includes(stored) ? stored : 'easy';
+      } catch { return 'easy'; }
+    })();
     try {
       const puzzle = await customFetch<{ id: number; difficulty: string }>(
-        `/api/puzzles/new?difficulty=easy&gridSize=${size}`,
+        `/api/puzzles/new?difficulty=${difficulty}&gridSize=${size}`,
       );
       const game = await customFetch<{ id: number }>('/api/games', {
         method: 'POST',
-        body: JSON.stringify({ profileId, puzzleId: puzzle.id, difficulty: 'easy' }),
+        body: JSON.stringify({ profileId, puzzleId: puzzle.id, difficulty }),
       });
+      try {
+        localStorage.setItem('sudoku-last-grid-size', String(size));
+        localStorage.setItem('sudoku-last-difficulty', difficulty);
+      } catch { /* private browsing */ }
       setLocation(`/game/${game.id}`);
     } catch (err) {
       console.error('Error starting game:', err);
