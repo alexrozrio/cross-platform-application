@@ -16,9 +16,8 @@ export interface LoginRewardTier {
 export const LOGIN_REWARD_TIERS: LoginRewardTier[] = [
   { label: "Day 1",      daysInTier: 1,        gems: 1 },
   { label: "Days 2–7",   daysInTier: 6,        gems: 2 },
-  { label: "Days 8–14",  daysInTier: 7,        gems: 3 },
-  { label: "Days 15–21", daysInTier: 7,        gems: 4 },
-  { label: "Day 22+",    daysInTier: Infinity,  gems: 5 },
+  { label: "Days 8–21",  daysInTier: 7,        gems: 3 },
+  { label: "Day 22+",    daysInTier: Infinity,  gems: 4 },
 ];
 
 /** Returns the gems awarded for a given consecutive login streak (1-based). */
