@@ -2157,7 +2157,7 @@ function probeThemeImage(baseUrl: string, themeId: string, value: number): Promi
   });
 }
 
-function useThemeImageSrc(themeId: string, value: number): string | null | undefined {
+export function useThemeImageSrc(themeId: string, value: number): string | null | undefined {
   const base = import.meta.env.BASE_URL ?? '/';
   const key = `${themeId}/${value}`;
 

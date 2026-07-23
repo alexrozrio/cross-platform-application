@@ -1,6 +1,6 @@
 import React from 'react';
 import { useImageTheme } from '@/hooks/use-image-theme';
-import { ThemeIcon } from '@/components/theme-icons';
+import { ThemeIcon, useThemeImageSrc } from '@/components/theme-icons';
 import { IMAGE_THEMES, getTheme } from '@/lib/themes';
 import { Check, Lock, Gem, LayoutGrid, Eye } from 'lucide-react';
 import { type ThemeId } from '@/lib/themes';
@@ -572,7 +572,10 @@ export default function Themes() {
                     className="flex flex-col items-center gap-0.5 rounded-lg bg-muted/40 p-1.5"
                     title={`#${i + 1}`}
                   >
-                    <span className="text-xl leading-none">{sym}</span>
+                    {/* Images take precedence over emoji — ThemeIcon probes for a real image
+                        file first; if none exists it falls back to the SVG icon, and we
+                        render the emoji symbol as a last resort. */}
+                    <ThemeIconWithEmojiFallback themeId={ovId} value={i + 1} sym={sym} />
                     <span className="text-[8px] text-muted-foreground font-mono">{i + 1}</span>
                   </div>
                 ))}
@@ -661,6 +664,27 @@ export default function Themes() {
       </Dialog>
     </div>
   );
+}
+
+/** Shows a real image if one has been placed in /public/themes/<id>/<value>.<ext>,
+ *  otherwise falls back to the emoji symbol from the config.
+ *  Used in the "All symbols" dialog so images always take precedence over text. */
+function ThemeIconWithEmojiFallback({ themeId, value, sym }: { themeId: ThemeId; value: number; sym: string }) {
+  const imageSrc = useThemeImageSrc(themeId, value);
+
+  if (imageSrc) {
+    return (
+      <img
+        src={imageSrc}
+        alt={sym}
+        draggable={false}
+        style={{ width: 28, height: 28, objectFit: 'contain', display: 'block', userSelect: 'none' }}
+      />
+    );
+  }
+
+  // While probing (undefined) show emoji; if probe fails (null) also show emoji.
+  return <span className="text-xl leading-none">{sym}</span>;
 }
 
 function getCharacterNames(themeId: ThemeId): string[] {
