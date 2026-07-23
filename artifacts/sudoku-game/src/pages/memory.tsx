@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/use-auth';
 import { useImageTheme } from '@/hooks/use-image-theme';
 import { getTheme } from '@/lib/themes';
+import { useThemeImageSrc } from '@/components/theme-icons';
 import { customFetch, useGetProfile } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -69,11 +70,14 @@ function MemoryCard({
 }) {
   const theme = getTheme(themeId as any);
   const symbol = theme.symbols[(card.value - 1) % theme.symbols.length];
+  const imageSrc = useThemeImageSrc(themeId, card.value);
 
   // Font sizes scale with grid: 2×4 biggest, 8×8 smallest — sized to fill ~70–80% of each card
   const imgSize = size === 8 ? 'text-3xl sm:text-4xl' : size === 6 ? 'text-4xl sm:text-5xl' : size === 4 ? 'text-5xl sm:text-6xl' : 'text-6xl sm:text-7xl';
   const txtSizeSingle = size === 8 ? 'text-2xl sm:text-3xl' : size === 6 ? 'text-3xl sm:text-4xl' : size === 4 ? 'text-4xl sm:text-5xl' : 'text-5xl sm:text-6xl';
   const txtSizeMulti  = size === 8 ? 'text-lg sm:text-xl'  : size === 6 ? 'text-xl sm:text-2xl'  : size === 4 ? 'text-2xl sm:text-3xl'  : 'text-4xl sm:text-5xl';
+  // Pixel size for real images, matched to the emoji text sizes above
+  const imgPx = size === 8 ? 40 : size === 6 ? 52 : size === 4 ? 64 : 76;
 
   // Front face content
   const themeColor = theme.colors.length > 0
@@ -82,7 +86,11 @@ function MemoryCard({
 
   let frontContent: React.ReactNode;
   if (displayMode === 'image') {
-    frontContent = <span className={`${imgSize} leading-none`}>{symbol}</span>;
+    // Real image file takes precedence; fall back to emoji if no image found
+    frontContent = imageSrc
+      ? <img src={imageSrc} alt={symbol} draggable={false}
+          style={{ width: imgPx, height: imgPx, objectFit: 'contain', userSelect: 'none' }} />
+      : <span className={`${imgSize} leading-none`}>{symbol}</span>;
   } else {
     const label = getCardLabel(card.value, displayMode);
     frontContent = (
