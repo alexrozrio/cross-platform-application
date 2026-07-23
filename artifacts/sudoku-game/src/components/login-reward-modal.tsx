@@ -2,6 +2,7 @@ import React from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Gem, Flame } from "lucide-react";
+import { LOGIN_REWARD_TIERS, tierIndexForStreak } from "@/config/login-rewards";
 
 interface LoginRewardModalProps {
   open: boolean;
@@ -11,19 +12,16 @@ interface LoginRewardModalProps {
   totalGems: number;
 }
 
-const MAX_STREAK_DISPLAY = 7;
-const DAY_REWARDS = [1, 2, 3, 4, 5, 6, 7];
-
 function streakMessage(streak: number): string {
   if (streak === 1) return "Welcome back!";
-  if (streak === 2) return "2 days in a row!";
-  if (streak === 3) return "3 days strong!";
-  if (streak < 7) return `${streak} days in a row!`;
-  return `${streak} day streak! 🔥`;
+  if (streak < 8) return `${streak} days in a row!`;
+  if (streak < 15) return `${streak} days strong! 🔥`;
+  if (streak < 22) return `${streak} day streak! Incredible!`;
+  return `${streak} day streak! You're unstoppable! 🔥`;
 }
 
 export function LoginRewardModal({ open, onClose, gemsAwarded, loginStreak, totalGems }: LoginRewardModalProps) {
-  const displayStreak = Math.min(loginStreak, MAX_STREAK_DISPLAY);
+  const currentTierIndex = tierIndexForStreak(loginStreak);
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
@@ -31,10 +29,15 @@ export function LoginRewardModal({ open, onClose, gemsAwarded, loginStreak, tota
         <DialogTitle className="sr-only">Daily Login Reward</DialogTitle>
         <DialogDescription className="sr-only">You earned gems for logging in today.</DialogDescription>
 
-        {/* Header banner — uses primary colour so it pops regardless of theme */}
+        {/* Header banner */}
         <div className="bg-primary px-6 pt-8 pb-10 text-center text-primary-foreground relative overflow-hidden">
-          <div className="absolute inset-0 opacity-[0.08] pointer-events-none select-none"
-            style={{ backgroundImage: "radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px), radial-gradient(circle at 60% 80%, white 1px, transparent 1px)", backgroundSize: "40px 40px" }}
+          <div
+            className="absolute inset-0 opacity-[0.08] pointer-events-none select-none"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px), radial-gradient(circle at 60% 80%, white 1px, transparent 1px)",
+              backgroundSize: "40px 40px",
+            }}
           />
           <div className="relative">
             <div className="flex justify-center mb-3">
@@ -47,7 +50,7 @@ export function LoginRewardModal({ open, onClose, gemsAwarded, loginStreak, tota
           </div>
         </div>
 
-        {/* Gems awarded card — floats over the banner */}
+        {/* Gems awarded card */}
         <div className="px-6 -mt-6">
           <div className="bg-card rounded-xl shadow-md border border-border p-4 text-center">
             <div className="flex items-center justify-center gap-2">
@@ -62,9 +65,9 @@ export function LoginRewardModal({ open, onClose, gemsAwarded, loginStreak, tota
           </div>
         </div>
 
-        {/* Streak tracker */}
+        {/* Tier tracker */}
         <div className="px-6 pt-5 pb-3">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
               <Flame className="w-3.5 h-3.5 text-orange-400" /> Login Streak
             </span>
@@ -73,46 +76,35 @@ export function LoginRewardModal({ open, onClose, gemsAwarded, loginStreak, tota
             </span>
           </div>
 
-          <div className="grid grid-cols-7 gap-1">
-            {DAY_REWARDS.map((gems, i) => {
-              const dayNum = i + 1;
-              const isCompleted = dayNum < displayStreak;
-              const isCurrent = dayNum === displayStreak;
-              const isFuture = dayNum > displayStreak;
+          <div className="flex gap-1.5">
+            {LOGIN_REWARD_TIERS.map((tier, i) => {
+              const isCompleted = i < currentTierIndex;
+              const isCurrent = i === currentTierIndex;
               return (
-                <div key={dayNum} className="flex flex-col items-center gap-1">
-                  <div
-                    className={`w-full aspect-square rounded-lg flex flex-col items-center justify-center transition-all ${
-                      isCompleted
-                        ? "bg-primary text-primary-foreground"
-                        : isCurrent
-                        ? "bg-primary text-primary-foreground ring-2 ring-primary/40 scale-110 shadow-md"
-                        : "bg-muted text-muted-foreground"
+                <div
+                  key={tier.label}
+                  className={`flex-1 rounded-lg p-1.5 flex flex-col items-center gap-0.5 transition-all ${
+                    isCompleted
+                      ? "bg-primary/80 text-primary-foreground"
+                      : isCurrent
+                      ? "bg-primary text-primary-foreground ring-2 ring-primary/50 scale-105 shadow-md"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  <Gem
+                    className={`w-3.5 h-3.5 ${
+                      isCompleted || isCurrent ? "text-primary-foreground/90" : "opacity-30"
                     }`}
-                  >
-                    <Gem
-                      className={`w-3 h-3 ${
-                        isCompleted || isCurrent
-                          ? "text-primary-foreground/80"
-                          : isFuture
-                          ? "opacity-30"
-                          : ""
-                      }`}
-                    />
-                  </div>
-                  <span className={`text-[9px] font-medium ${isCurrent ? "text-primary" : "text-muted-foreground"}`}>
-                    {dayNum === 7 ? "7+" : `Day ${dayNum}`}
-                  </span>
-                  <span className={`text-[9px] ${isCurrent ? "text-primary font-bold" : "text-muted-foreground"}`}>
-                    +{gems}💎
-                  </span>
+                  />
+                  <span className="text-[9px] font-bold leading-none">+{tier.gems}💎</span>
+                  <span className="text-[8px] leading-none opacity-80 text-center">{tier.label}</span>
                 </div>
               );
             })}
           </div>
 
           <p className="text-[11px] text-muted-foreground text-center mt-3">
-            Log in every day to earn more gems. Missing a day resets your streak.
+            Log in every day to earn more gems. Missing a day resets your streak to Day 1.
           </p>
         </div>
 

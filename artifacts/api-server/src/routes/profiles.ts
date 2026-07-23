@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, or, ilike, ne, and } from "drizzle-orm";
 import { db, profilesTable } from "@workspace/db";
+import { gemsForLoginStreak } from "../config/login-rewards";
 import {
   CreateProfileBody,
   GetProfileParams,
@@ -172,10 +173,6 @@ router.patch("/profiles/:id", async (req, res): Promise<void> => {
 });
 
 // ─── Claim daily login reward ────────────────────────────────────────────────
-
-function gemsForLoginStreak(streak: number): number {
-  return Math.min(streak, 7);
-}
 
 function todayUTC(): string {
   return new Date().toISOString().slice(0, 10);
