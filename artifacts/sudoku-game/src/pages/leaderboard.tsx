@@ -332,16 +332,16 @@ function PointsGuide() {
                 },
                 {
                   label: "Medium",
-                  base: 1200,
+                  base: 1600,
                   par: "2:00",
-                  max: 1800,
+                  max: 2400,
                   cls: "text-yellow-700",
                 },
                 {
                   label: "Hard",
-                  base: 2500,
-                  par: "3:20",
-                  max: 3750,
+                  base: 5000,
+                  par: "5:00",
+                  max: 7500,
                   cls: "text-orange-700",
                 },
               ].map((row, i) => (
@@ -362,7 +362,8 @@ function PointsGuide() {
             </div>
             <p className="text-[10px] text-muted-foreground mt-2">
               score = base × (1 + speed bonus) × flip factor &nbsp;·&nbsp; speed
-              bonus up to +50%, −2% per extra flip.
+              bonus up to +50%, −2% per extra flip, floor 50%. Hard always
+              beats Medium at every skill level.
             </p>
           </div>
 
