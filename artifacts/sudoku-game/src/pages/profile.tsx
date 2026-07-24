@@ -57,9 +57,12 @@ import {
   Clock,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   Brain,
   Layers,
   BarChart2,
+  ExternalLink,
 } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -395,6 +398,123 @@ function AchievementsCard({ profileId, game }: { profileId: number; game: "sudok
   );
 }
 
+// ─── Best Times — Sudoku ─────────────────────────────────────────────────────
+
+function BestTimesSudoku({
+  stats,
+  formatTime,
+}: {
+  stats: { bestTimes?: Record<string, number | null>; averageTime?: number | null };
+  formatTime: (s: number | null | undefined) => string;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-xl border border-primary/10 overflow-hidden shadow-sm">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-4 py-3.5 bg-card hover:bg-muted/40 transition-colors text-left"
+      >
+        <span className="flex items-center gap-2 text-sm font-semibold">
+          <Clock className="w-4 h-4 text-primary" /> Best Times by Difficulty
+        </span>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/leaderboard?tab=alltime"
+            onClick={(e) => e.stopPropagation()}
+            className="text-[11px] text-primary flex items-center gap-0.5 hover:underline"
+          >
+            Leaderboard <ExternalLink className="w-3 h-3" />
+          </Link>
+          {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+        </div>
+      </button>
+      {open && (
+        <div className="border-t px-4 py-4 bg-muted/10 space-y-2">
+          {(["easy", "medium", "hard", "expert"] as const).map((diff) => (
+            <div key={diff} className="flex justify-between items-center p-3 rounded-lg bg-background border border-border">
+              <span className="capitalize font-medium text-sm">{diff}</span>
+              <span className="font-mono text-base font-bold text-primary">{formatTime(stats.bestTimes?.[diff])}</span>
+            </div>
+          ))}
+          {stats.averageTime != null && (
+            <div className="flex justify-between items-center p-3 rounded-lg bg-primary/5 border border-primary/10">
+              <span className="font-medium text-sm">Avg. Completion Time</span>
+              <span className="font-mono text-base font-bold text-primary">{formatTime(stats.averageTime)}</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Best Times — Memory ─────────────────────────────────────────────────────
+
+function BestTimesMemory({
+  mem,
+  formatTime,
+}: {
+  mem: { bestTimes?: Record<string, number | null>; averageTime?: number | null; averageFlips?: number | null };
+  formatTime: (s: number | null | undefined) => string;
+}) {
+  const [open, setOpen] = useState(false);
+  const SIZES = [
+    { size: 2, label: "Beginner", pairs: 4 },
+    { size: 4, label: "Easy",     pairs: 8 },
+    { size: 6, label: "Medium",   pairs: 16 },
+    { size: 8, label: "Hard",     pairs: 32 },
+  ];
+  return (
+    <div className="rounded-xl border border-purple-200/60 overflow-hidden shadow-sm">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-4 py-3.5 bg-card hover:bg-muted/40 transition-colors text-left"
+      >
+        <span className="flex items-center gap-2 text-sm font-semibold">
+          <Clock className="w-4 h-4 text-purple-500" /> Best Times by Grid Size
+        </span>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/leaderboard?tab=memory"
+            onClick={(e) => e.stopPropagation()}
+            className="text-[11px] text-purple-600 flex items-center gap-0.5 hover:underline"
+          >
+            Leaderboard <ExternalLink className="w-3 h-3" />
+          </Link>
+          {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+        </div>
+      </button>
+      {open && (
+        <div className="border-t px-4 py-4 bg-muted/10 space-y-2">
+          {SIZES.map(({ size, label, pairs }) => (
+            <div key={size} className="flex justify-between items-center p-3 rounded-lg bg-background border border-border">
+              <div>
+                <span className="font-medium text-sm">{label}</span>
+                <span className="text-xs text-muted-foreground ml-2">({pairs} pairs)</span>
+              </div>
+              <span className="font-mono text-base font-bold text-purple-600">{formatTime(mem.bestTimes?.[String(size)])}</span>
+            </div>
+          ))}
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            {mem.averageTime != null && (
+              <div className="flex justify-between items-center p-3 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30">
+                <span className="font-medium text-sm">Avg. Time</span>
+                <span className="font-mono text-base font-bold text-purple-600">{formatTime(mem.averageTime)}</span>
+              </div>
+            )}
+            {mem.averageFlips != null && (
+              <div className="flex justify-between items-center p-3 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30">
+                <span className="font-medium text-sm">Avg. Flips</span>
+                <span className="font-mono text-base font-bold text-purple-600">{mem.averageFlips}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface TournamentStreakData {
@@ -702,29 +822,7 @@ export default function Profile() {
                     </Card>
                   </div>
 
-                  <Card className="shadow-sm border-primary/10">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-base">
-                        <Clock className="w-4 h-4 text-primary" /> Best Times by Difficulty
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {(["easy", "medium", "hard", "expert"] as const).map((diff) => (
-                          <div key={diff} className="flex justify-between items-center p-4 rounded-lg bg-muted/50">
-                            <span className="capitalize font-medium">{diff}</span>
-                            <span className="font-mono text-lg font-bold text-primary">{formatTime(stats.bestTimes?.[diff])}</span>
-                          </div>
-                        ))}
-                      </div>
-                      {stats.averageTime != null && (
-                        <div className="mt-3 flex justify-between items-center p-4 rounded-lg bg-primary/5 border border-primary/10">
-                          <span className="font-medium text-sm">Avg. Completion Time</span>
-                          <span className="font-mono text-lg font-bold text-primary">{formatTime(stats.averageTime)}</span>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
+                  <BestTimesSudoku stats={stats} formatTime={formatTime} />
                 </>
               ) : (
                 <p className="text-center text-sm text-muted-foreground py-4">Play some Sudoku games to see your stats!</p>
@@ -772,42 +870,7 @@ export default function Profile() {
                     </Card>
                   </div>
 
-                  <Card className="shadow-sm border-purple-200/60">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-base">
-                        <Clock className="w-4 h-4 text-purple-500" /> Best Times by Grid Size
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {([2, 4, 6, 8] as const).map((size) => (
-                          <div key={size} className="flex justify-between items-center p-4 rounded-lg bg-muted/50">
-                            <div>
-                              <span className="font-medium">{size}×{size} Grid</span>
-                              <span className="text-xs text-muted-foreground ml-2">({(size * size) / 2} pairs)</span>
-                            </div>
-                            <span className="font-mono text-lg font-bold text-purple-600">
-                              {formatTime(mem.bestTimes?.[String(size)])}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="mt-3 grid grid-cols-2 gap-3">
-                        {mem.averageTime != null && (
-                          <div className="flex justify-between items-center p-4 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30">
-                            <span className="font-medium text-sm">Avg. Time</span>
-                            <span className="font-mono text-lg font-bold text-purple-600">{formatTime(mem.averageTime)}</span>
-                          </div>
-                        )}
-                        {mem.averageFlips != null && (
-                          <div className="flex justify-between items-center p-4 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30">
-                            <span className="font-medium text-sm">Avg. Flips</span>
-                            <span className="font-mono text-lg font-bold text-purple-600">{mem.averageFlips}</span>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <BestTimesMemory mem={mem} formatTime={formatTime} />
                 </>
               ) : (
                 <p className="text-center text-sm text-muted-foreground py-4">Play some Memory Match games to see your stats!</p>

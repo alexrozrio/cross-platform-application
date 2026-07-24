@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "wouter";
+import { Link, useSearch } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import {
   useGetLeaderboard,
@@ -433,39 +433,16 @@ const GRID_LABELS: Record<string, string> = {
 };
 
 function AlltimeBoard({ myProfileId }: { myProfileId?: number }) {
-  const [gridFilter, setGridFilter] = useState<"all" | "3" | "4" | "6" | "9" | "16">(
-    "all",
-  );
-  const gridSize =
-    gridFilter === "all" ? undefined : (Number(gridFilter) as 3 | 4 | 6 | 9 | 16);
-  const { data, isLoading } = useGetLeaderboard(
-    gridSize !== undefined
-      ? { gridSize: gridSize as any, limit: 50 }
-      : ({ limit: 50 } as any),
-  );
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const { data, isLoading } = useGetLeaderboard({ limit: 50 } as any);
 
   return (
     <div className="space-y-5">
-      <Tabs
-        defaultValue="all"
-        onValueChange={(v) => setGridFilter(v as typeof gridFilter)}
-        className="w-full"
-      >
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="9">9×9</TabsTrigger>
-          <TabsTrigger value="16">16×16</TabsTrigger>
-          <TabsTrigger value="6">6×6</TabsTrigger>
-          <TabsTrigger value="4">4×4</TabsTrigger>
-          <TabsTrigger value="3">3×3</TabsTrigger>
-        </TabsList>
-      </Tabs>
-
       <Card className="shadow-md border-primary/10">
         <CardHeader className="bg-card pb-4 border-b">
           <CardTitle className="text-lg flex items-center gap-2">
             <Zap className="w-5 h-5 text-primary" />
-            {gridFilter === "all" ? "Top Scores — All Grids" : `Fastest Times — ${GRID_LABELS[gridFilter]}`}
+            Top Scores — All Grids Combined
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -478,84 +455,50 @@ function AlltimeBoard({ myProfileId }: { myProfileId?: number }) {
           ) : !data || data.length === 0 ? (
             <div className="p-12 text-center text-muted-foreground">
               <Trophy className="w-10 h-10 mx-auto mb-3 opacity-20" />
-              <p className="font-medium">
-                {gridFilter === "all"
-                  ? "No completed games yet."
-                  : `No entries yet for ${gridSize}×${gridSize}.`}
-              </p>
-              <p className="text-sm mt-1">
-                Complete a puzzle to claim the top spot!
-              </p>
+              <p className="font-medium">No completed games yet.</p>
+              <p className="text-sm mt-1">Complete a puzzle to claim the top spot!</p>
             </div>
           ) : (
             <div className="divide-y">
               {data.map((entry) => {
-                const isMe =
-                  myProfileId !== undefined && entry.profileId === myProfileId;
+                const isMe = myProfileId !== undefined && entry.profileId === myProfileId;
+                const isExpanded = expandedId === entry.profileId;
                 return (
-                  <div
-                    key={`${entry.profileId}-${entry.rank}`}
-                    className={`flex items-center justify-between px-5 py-4 transition-colors ${isMe ? "bg-primary/8 hover:bg-primary/12" : "hover:bg-muted/40"}`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <RankBadge rank={entry.rank} />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p
-                            className={`font-semibold truncate ${isMe ? "text-primary" : ""}`}
-                          >
-                            {entry.username}
+                  <div key={`${entry.profileId}-${entry.rank}`}>
+                    <button
+                      onClick={() => setExpandedId((p) => p === entry.profileId ? null : entry.profileId)}
+                      className={`w-full flex items-center justify-between px-5 py-4 transition-colors text-left ${isMe ? "bg-primary/8 hover:bg-primary/12" : "hover:bg-muted/40"} ${isExpanded ? "bg-muted/30" : ""}`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <RankBadge rank={entry.rank} />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className={`font-semibold truncate ${isMe ? "text-primary" : ""}`}>
+                              {entry.username}
+                            </p>
+                            {isMe && (
+                              <span className="text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-full px-2 py-0.5">You</span>
+                            )}
+                            {entry.xp !== undefined && <LevelBadge xp={entry.xp} size="xs" />}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {(entry as any).gamesPlayed ?? 0} game{((entry as any).gamesPlayed ?? 0) !== 1 ? "s" : ""} across all grids
                           </p>
-                          {isMe && (
-                            <span className="text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-full px-2 py-0.5">
-                              You
-                            </span>
-                          )}
-                          {entry.xp !== undefined && (
-                            <LevelBadge xp={entry.xp} size="xs" />
-                          )}
-                          {(entry as any).xpEarned != null && (entry as any).xpEarned > 0 && (
-                            <span className="text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200 rounded-full px-1.5 py-0.5">
-                              +{(entry as any).xpEarned} XP
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
-                          {gridFilter === "all" ? (
-                            <span>{(entry as any).gamesPlayed ?? 0} game{((entry as any).gamesPlayed ?? 0) !== 1 ? "s" : ""} across all grids</span>
-                          ) : (
-                            <>
-                              <span className="font-semibold text-primary">{entry.points ?? 0} pts</span>
-                              <span>{entry.mistakeCount ?? 0} mistake{entry.mistakeCount !== 1 ? "s" : ""}</span>
-                              {entry.difficulty && (
-                                <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium capitalize ${diffColor[entry.difficulty] ?? ""}`}>
-                                  {entry.difficulty}
-                                </span>
-                              )}
-                            </>
-                          )}
                         </div>
                       </div>
-                    </div>
-                    <div className="text-right shrink-0 ml-4">
-                      {gridFilter === "all" ? (
-                        <>
-                          <p className={`font-black text-xl tabular-nums ${isMe ? "text-primary" : "text-primary"}`}>
+                      <div className="flex items-center gap-3 shrink-0 ml-4">
+                        <div className="text-right">
+                          <p className="font-black text-xl tabular-nums text-primary">
                             {((entry as any).points as number ?? 0).toLocaleString()}
                           </p>
                           <p className="text-xs text-muted-foreground mt-0.5">pts</p>
-                        </>
-                      ) : (
-                        <>
-                          <p className={`font-mono text-xl font-bold tabular-nums ${isMe ? "text-primary" : "text-primary"}`}>
-                            {formatTime(entry.elapsedSeconds)}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {new Date(entry.completedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                          </p>
-                        </>
-                      )}
-                    </div>
+                        </div>
+                        {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                      </div>
+                    </button>
+                    {isExpanded && (
+                      <PlayerDetailsPanel profileId={entry.profileId} game="sudoku" myProfileId={myProfileId} />
+                    )}
                   </div>
                 );
               })}
@@ -595,12 +538,14 @@ function BreakdownPanel({
   profileId,
   type,
   period,
+  defaultGame,
 }: {
   profileId: number;
   type: "weekly" | "monthly";
   period: string;
+  defaultGame?: "sudoku" | "memory";
 }) {
-  const [bdTab, setBdTab] = useState<"sudoku" | "memory">("sudoku");
+  const [bdTab, setBdTab] = useState<"sudoku" | "memory">(defaultGame ?? "sudoku");
   const { data, isLoading } = useQuery<BreakdownData>({
     queryKey: ["tournament-breakdown", profileId, type, period],
     queryFn: () =>
@@ -687,6 +632,71 @@ function BreakdownPanel({
             </div>
           ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Per-player details panel (used in Sudoku & Memory all-time boards) ──────
+
+function PlayerDetailsPanel({
+  profileId,
+  game,
+  myProfileId,
+}: {
+  profileId: number;
+  game: "sudoku" | "memory";
+  myProfileId?: number;
+}) {
+  const { data: weeklyLb } = useGetTournamentLeaderboard({ type: "weekly" } as any, { query: { staleTime: 60_000 } });
+  const { data: monthlyLb } = useGetTournamentLeaderboard({ type: "monthly" } as any, { query: { staleTime: 60_000 } });
+
+  const weeklyEntry = (weeklyLb as any)?.entries?.find((e: any) => e.profileId === profileId);
+  const monthlyEntry = (monthlyLb as any)?.entries?.find((e: any) => e.profileId === profileId);
+  const weeklyPeriod = (weeklyLb as any)?.period as string | undefined;
+  const monthlyPeriod = (monthlyLb as any)?.period as string | undefined;
+  const isMe = myProfileId === profileId;
+
+  return (
+    <div className="px-5 pb-4 pt-3 border-t bg-muted/10 space-y-3">
+      {/* Weekly / Monthly totals */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-xl border p-3 text-center bg-background">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
+            <CalendarDays className="w-3 h-3" /> This Week
+          </p>
+          <p className="text-xl font-black text-primary tabular-nums">
+            {weeklyEntry ? weeklyEntry.totalPoints.toLocaleString() : "—"}
+          </p>
+          {weeklyEntry && (
+            <p className="text-[10px] text-muted-foreground mt-0.5">rank #{weeklyEntry.rank}</p>
+          )}
+        </div>
+        <div className="rounded-xl border p-3 text-center bg-background">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
+            <Calendar className="w-3 h-3" /> This Month
+          </p>
+          <p className="text-xl font-black text-primary tabular-nums">
+            {monthlyEntry ? monthlyEntry.totalPoints.toLocaleString() : "—"}
+          </p>
+          {monthlyEntry && (
+            <p className="text-[10px] text-muted-foreground mt-0.5">rank #{monthlyEntry.rank}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Grid / level breakdown for the current week */}
+      {weeklyPeriod && (
+        <BreakdownPanel profileId={profileId} type="weekly" period={weeklyPeriod} defaultGame={game} />
+      )}
+
+      {isMe && (
+        <Link
+          href={`/profile?tab=${game}`}
+          className="flex items-center justify-center gap-1 text-xs font-semibold text-primary hover:underline pt-1"
+        >
+          View your full stats →
+        </Link>
       )}
     </div>
   );
@@ -1113,54 +1123,25 @@ interface MemoryEntry {
 }
 
 function MemoryBoard({ myProfileId }: { myProfileId?: number }) {
-  const [tab, setTab] = useState<MemoryTab>("all");
   const [data, setData] = useState<MemoryEntry[] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   useEffect(() => {
     setLoading(true);
-    setData(null);
-    const url =
-      tab === "all"
-        ? "/api/memory-games/leaderboard?gridSize=all"
-        : `/api/memory-games/leaderboard?gridSize=${tab}`;
-    customFetch<MemoryEntry[]>(url)
+    customFetch<MemoryEntry[]>("/api/memory-games/leaderboard?gridSize=all")
       .then((rows) => setData(rows))
       .catch(() => setData([]))
       .finally(() => setLoading(false));
-  }, [tab]);
-
-  const currentSize = MEMORY_SIZES.find((o) => o.size === tab);
-
-  const cardTitle =
-    tab === "all"
-      ? "Memory Match — All Levels Combined"
-      : `Memory Match — ${currentSize?.label} (${currentSize?.pairs} pairs)`;
+  }, []);
 
   return (
     <div className="space-y-5">
-      <Tabs
-        value={String(tab)}
-        onValueChange={(v) =>
-          setTab(v === "all" ? "all" : (Number(v) as MemorySize))
-        }
-        className="w-full"
-      >
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="all">All</TabsTrigger>
-          {MEMORY_SIZES.map((opt) => (
-            <TabsTrigger key={opt.size} value={String(opt.size)}>
-              {opt.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
-
-      <Card className="shadow-md border-primary/10">
+      <Card className="shadow-md border-purple-200/60">
         <CardHeader className="bg-card pb-4 border-b">
           <CardTitle className="text-lg flex items-center gap-2">
             <Brain className="w-5 h-5 text-violet-500" />
-            {cardTitle}
+            Memory Match — All Levels Combined
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -1173,99 +1154,51 @@ function MemoryBoard({ myProfileId }: { myProfileId?: number }) {
           ) : !data || data.length === 0 ? (
             <div className="p-12 text-center text-muted-foreground">
               <Brain className="w-10 h-10 mx-auto mb-3 opacity-20" />
-              <p className="font-medium">
-                {tab === "all"
-                  ? "No Memory Match games played yet."
-                  : "No completed games yet for this level."}
-              </p>
-              <p className="text-sm mt-1">
-                Play Memory Match to claim the top spot!
-              </p>
+              <p className="font-medium">No Memory Match games played yet.</p>
+              <p className="text-sm mt-1">Play Memory Match to claim the top spot!</p>
             </div>
           ) : (
             <div className="divide-y">
               {data.map((entry, i) => {
                 const rank = i + 1;
-                const isMe =
-                  myProfileId !== undefined && entry.profileId === myProfileId;
-                const timeStr =
-                  entry.elapsedSeconds != null
-                    ? `${Math.floor(entry.elapsedSeconds / 60)}:${String(entry.elapsedSeconds % 60).padStart(2, "0")}`
-                    : null;
+                const isMe = myProfileId !== undefined && entry.profileId === myProfileId;
+                const isExpanded = expandedId === entry.profileId;
                 return (
-                  <div
-                    key={`${entry.profileId}-${i}`}
-                    className={`flex items-center justify-between px-5 py-4 transition-colors ${isMe ? "bg-primary/8 hover:bg-primary/12" : "hover:bg-muted/40"}`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <RankBadge rank={rank} />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p
-                            className={`font-semibold truncate ${isMe ? "text-primary" : ""}`}
-                          >
-                            {entry.username}
+                  <div key={`${entry.profileId}-${i}`}>
+                    <button
+                      onClick={() => setExpandedId((p) => p === entry.profileId ? null : entry.profileId)}
+                      className={`w-full flex items-center justify-between px-5 py-4 transition-colors text-left ${isMe ? "bg-primary/8 hover:bg-primary/12" : "hover:bg-muted/40"} ${isExpanded ? "bg-muted/30" : ""}`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <RankBadge rank={rank} />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className={`font-semibold truncate ${isMe ? "text-primary" : ""}`}>
+                              {entry.username}
+                            </p>
+                            {isMe && (
+                              <span className="text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-full px-2 py-0.5">You</span>
+                            )}
+                            {entry.profileXp != null && <LevelBadge xp={entry.profileXp} size="xs" />}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {(entry as any).gamesPlayed ?? 0} game{((entry as any).gamesPlayed ?? 0) !== 1 ? "s" : ""} across all levels
                           </p>
-                          {isMe && (
-                            <span className="text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-full px-2 py-0.5">
-                              You
-                            </span>
-                          )}
-                          {entry.profileXp != null && (
-                            <LevelBadge xp={entry.profileXp} size="xs" />
-                          )}
-                          {entry.xpEarned != null && entry.xpEarned > 0 && (
-                            <span className="text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200 rounded-full px-1.5 py-0.5">
-                              +{entry.xpEarned} XP
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
-                          {tab === "all" ? (
-                            <span>
-                              {(entry as any).gamesPlayed ?? 0} game
-                              {((entry as any).gamesPlayed ?? 0) !== 1
-                                ? "s"
-                                : ""}{" "}
-                              across all levels
-                            </span>
-                          ) : (
-                            <>
-                              {timeStr && (
-                                <span className="flex items-center gap-1">
-                                  <Timer className="w-3 h-3" />
-                                  {timeStr}
-                                </span>
-                              )}
-                              {entry.flips != null && (
-                                <span className="flex items-center gap-1">
-                                  <Repeat2 className="w-3 h-3" />
-                                  {entry.flips} flips
-                                </span>
-                              )}
-                            </>
-                          )}
-                          {entry.completedAt && (
-                            <span>
-                              {new Date(entry.completedAt).toLocaleDateString(
-                                undefined,
-                                { month: "short", day: "numeric" },
-                              )}
-                            </span>
-                          )}
                         </div>
                       </div>
-                    </div>
-                    <div className="text-right shrink-0 ml-4">
-                      <p
-                        className={`font-black text-xl tabular-nums ${isMe ? "text-primary" : "text-primary"}`}
-                      >
-                        {entry.points.toLocaleString()}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        pts
-                      </p>
-                    </div>
+                      <div className="flex items-center gap-3 shrink-0 ml-4">
+                        <div className="text-right">
+                          <p className="font-black text-xl tabular-nums text-violet-600">
+                            {entry.points.toLocaleString()}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">pts</p>
+                        </div>
+                        {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                      </div>
+                    </button>
+                    {isExpanded && (
+                      <PlayerDetailsPanel profileId={entry.profileId} game="memory" myProfileId={myProfileId} />
+                    )}
                   </div>
                 );
               })}
@@ -1274,7 +1207,6 @@ function MemoryBoard({ myProfileId }: { myProfileId?: number }) {
         </CardContent>
       </Card>
 
-      {/* Memory scoring guide */}
       <MemoryScoringGuide />
     </div>
   );
@@ -1283,7 +1215,12 @@ function MemoryBoard({ myProfileId }: { myProfileId?: number }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Leaderboard() {
-  const [tab, setTab] = useState<MainTab>("weekly");
+  const search = useSearch();
+  const initialTab = (() => {
+    const p = new URLSearchParams(search).get("tab") as MainTab | null;
+    return (p && ["weekly", "monthly", "alltime", "memory"].includes(p)) ? p : "weekly";
+  })();
+  const [tab, setTab] = useState<MainTab>(initialTab);
   const { profileId } = useAuth();
   const myProfileId = profileId ?? undefined;
 
