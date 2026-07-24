@@ -539,13 +539,15 @@ function BreakdownPanel({
   type,
   period,
   defaultGame,
+  onlyGame,
 }: {
   profileId: number;
   type: "weekly" | "monthly";
   period: string;
   defaultGame?: "sudoku" | "memory";
+  onlyGame?: "sudoku" | "memory";
 }) {
-  const [bdTab, setBdTab] = useState<"sudoku" | "memory">(defaultGame ?? "sudoku");
+  const [bdTab, setBdTab] = useState<"sudoku" | "memory">(onlyGame ?? defaultGame ?? "sudoku");
   const { data, isLoading } = useQuery<BreakdownData>({
     queryKey: ["tournament-breakdown", profileId, type, period],
     queryFn: () =>
@@ -566,21 +568,24 @@ function BreakdownPanel({
 
   return (
     <div className="px-5 pb-4 pt-1 border-t bg-muted/20">
-      {/* mini tabs */}
-      <div className="flex gap-1 mt-2 mb-3">
-        <button
-          onClick={() => setBdTab("sudoku")}
-          className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${bdTab === "sudoku" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
-        >
-          🔢 Sudoku
-        </button>
-        <button
-          onClick={() => setBdTab("memory")}
-          className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${bdTab === "memory" ? "bg-violet-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}
-        >
-          🃏 Memory
-        </button>
-      </div>
+      {/* mini tabs — hidden when a specific game is locked in */}
+      {!onlyGame && (
+        <div className="flex gap-1 mt-2 mb-3">
+          <button
+            onClick={() => setBdTab("sudoku")}
+            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${bdTab === "sudoku" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+          >
+            🔢 Sudoku
+          </button>
+          <button
+            onClick={() => setBdTab("memory")}
+            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${bdTab === "memory" ? "bg-violet-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+          >
+            🃏 Memory
+          </button>
+        </div>
+      )}
+      {onlyGame && <div className="mt-2" />}
 
       {bdTab === "sudoku" && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -685,9 +690,9 @@ function PlayerDetailsPanel({
         </div>
       </div>
 
-      {/* Grid / level breakdown for the current week */}
+      {/* Grid / level breakdown for the current week — locked to this board's game */}
       {weeklyPeriod && (
-        <BreakdownPanel profileId={profileId} type="weekly" period={weeklyPeriod} defaultGame={game} />
+        <BreakdownPanel profileId={profileId} type="weekly" period={weeklyPeriod} onlyGame={game} />
       )}
 
       {isMe && (
