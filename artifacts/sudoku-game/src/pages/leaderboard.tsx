@@ -663,45 +663,21 @@ function PlayerDetailsPanel({
   const isMe = myProfileId === profileId;
 
   return (
-    <div className="px-5 pb-4 pt-3 border-t bg-muted/10 space-y-3">
-      {/* Weekly / Monthly totals */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl border p-3 text-center bg-background">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
-            <CalendarDays className="w-3 h-3" /> This Week
-          </p>
-          <p className="text-xl font-black text-primary tabular-nums">
-            {weeklyEntry ? weeklyEntry.totalPoints.toLocaleString() : "—"}
-          </p>
-          {weeklyEntry && (
-            <p className="text-[10px] text-muted-foreground mt-0.5">rank #{weeklyEntry.rank}</p>
-          )}
-        </div>
-        <div className="rounded-xl border p-3 text-center bg-background">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
-            <Calendar className="w-3 h-3" /> This Month
-          </p>
-          <p className="text-xl font-black text-primary tabular-nums">
-            {monthlyEntry ? monthlyEntry.totalPoints.toLocaleString() : "—"}
-          </p>
-          {monthlyEntry && (
-            <p className="text-[10px] text-muted-foreground mt-0.5">rank #{monthlyEntry.rank}</p>
-          )}
-        </div>
-      </div>
-
+    <div className="border-t bg-muted/10">
       {/* Grid / level breakdown for the current week — locked to this board's game */}
       {weeklyPeriod && (
         <BreakdownPanel profileId={profileId} type="weekly" period={weeklyPeriod} onlyGame={game} />
       )}
 
       {isMe && (
-        <Link
-          href={`/profile?tab=${game}`}
-          className="flex items-center justify-center gap-1 text-xs font-semibold text-primary hover:underline pt-1"
-        >
-          View your full stats →
-        </Link>
+        <div className="px-5 pb-3">
+          <Link
+            href={`/profile?tab=${game}`}
+            className="flex items-center justify-center gap-1 text-xs font-semibold text-primary hover:underline"
+          >
+            View your full stats →
+          </Link>
+        </div>
       )}
     </div>
   );
