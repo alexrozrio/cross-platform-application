@@ -4,6 +4,7 @@ import { db, challengesTable, profilesTable, puzzlesTable, gamesTable } from "@w
 import { generatePuzzle } from "../lib/sudoku";
 import { sql } from "drizzle-orm";
 import { sendChallengeNotification } from "../lib/email";
+import { randomBytes } from "node:crypto";
 
 const router: IRouter = Router();
 
@@ -11,13 +12,16 @@ type Difficulty = "easy" | "medium" | "hard" | "expert";
 const VALID_DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard", "expert"];
 const VALID_GRID_SIZES = [3, 4, 6, 9, 16];
 
-function validateChallengeInput(body: unknown): { challengerId: number; challengedId: number; difficulty: Difficulty; gridSize: number } | null {
+function validateChallengeInput(body: unknown): { challengerId: number; challengedId: number | null; difficulty: Difficulty; gridSize: number } | null {
   if (!body || typeof body !== "object") return null;
   const b = body as Record<string, unknown>;
-  if (typeof b.challengerId !== "number" || typeof b.challengedId !== "number") return null;
+  if (typeof b.challengerId !== "number") return null;
+  // challengedId is optional — null means an open/shareable challenge
+  const challengedId = b.challengedId === null || b.challengedId === undefined ? null : b.challengedId;
+  if (challengedId !== null && typeof challengedId !== "number") return null;
   if (!VALID_DIFFICULTIES.includes(b.difficulty as Difficulty)) return null;
   if (!VALID_GRID_SIZES.includes(b.gridSize as number)) return null;
-  return { challengerId: b.challengerId, challengedId: b.challengedId, difficulty: b.difficulty as Difficulty, gridSize: b.gridSize as number };
+  return { challengerId: b.challengerId, challengedId: challengedId as number | null, difficulty: b.difficulty as Difficulty, gridSize: b.gridSize as number };
 }
 
 function validateChallengeResponse(body: unknown): { action: "accept" | "decline"; profileId?: number } | null {
@@ -30,7 +34,9 @@ function validateChallengeResponse(body: unknown): { action: "accept" | "decline
 async function formatChallenge(challenge: typeof challengesTable.$inferSelect) {
   const [challenger, challenged] = await Promise.all([
     db.select().from(profilesTable).where(eq(profilesTable.id, challenge.challengerId)).then((r) => r[0]),
-    db.select().from(profilesTable).where(eq(profilesTable.id, challenge.challengedId)).then((r) => r[0]),
+    challenge.challengedId
+      ? db.select().from(profilesTable).where(eq(profilesTable.id, challenge.challengedId)).then((r) => r[0])
+      : Promise.resolve(undefined),
   ]);
 
   const [puzzle] = await db.select().from(puzzlesTable).where(eq(puzzlesTable.id, challenge.puzzleId));
@@ -57,7 +63,7 @@ async function formatChallenge(challenge: typeof challengesTable.$inferSelect) {
     challengedGameId: challenge.challengedGameId ?? null,
     winnerId: challenge.winnerId ?? null,
     challengerUsername: challenger?.username ?? "Unknown",
-    challengedUsername: challenged?.username ?? "Unknown",
+    challengedUsername: challenged?.username ?? "Open Challenge",
     challengerAvatar: challenger?.avatar ?? null,
     challengedAvatar: challenged?.avatar ?? null,
     challengerXp: challenger?.xp ?? 0,
@@ -66,6 +72,7 @@ async function formatChallenge(challenge: typeof challengesTable.$inferSelect) {
     challengedPoints,
     difficulty: puzzle?.difficulty ?? "medium",
     gridSize: puzzle?.gridSize ?? 9,
+    shareToken: challenge.shareToken ?? null,
     createdAt: challenge.createdAt.toISOString(),
   };
 }
@@ -79,17 +86,21 @@ router.post("/challenges", async (req, res): Promise<void> => {
 
   const { challengerId, challengedId, difficulty, gridSize } = parsed;
 
-  if (challengerId === challengedId) {
+  if (challengedId !== null && challengerId === challengedId) {
     res.status(400).json({ error: "Cannot challenge yourself" });
     return;
   }
 
   const [challenger] = await db.select().from(profilesTable).where(eq(profilesTable.id, challengerId));
-  const [challenged] = await db.select().from(profilesTable).where(eq(profilesTable.id, challengedId));
-  if (!challenger || !challenged) {
-    res.status(404).json({ error: "Profile not found" });
-    return;
+  if (!challenger) { res.status(404).json({ error: "Challenger profile not found" }); return; }
+
+  let challenged: typeof profilesTable.$inferSelect | undefined;
+  if (challengedId !== null) {
+    [challenged] = await db.select().from(profilesTable).where(eq(profilesTable.id, challengedId));
+    if (!challenged) { res.status(404).json({ error: "Challenged profile not found" }); return; }
   }
+
+  const shareToken = randomBytes(16).toString("hex");
 
   const puzzleData = generatePuzzle(difficulty, gridSize);
   const [puzzle] = await db
@@ -114,9 +125,10 @@ router.post("/challenges", async (req, res): Promise<void> => {
     .insert(challengesTable)
     .values({
       challengerId,
-      challengedId,
+      challengedId: challengedId ?? null,
       puzzleId: puzzle.id,
       status: "pending",
+      shareToken,
       challengerGameId: challengerGame.id,
       challengedGameId: null,
       winnerId: null,
@@ -126,14 +138,16 @@ router.post("/challenges", async (req, res): Promise<void> => {
   const detail = await formatChallenge(challenge);
   res.status(201).json(detail);
 
-  // Fire-and-forget — email errors must never block the response
-  sendChallengeNotification({
-    challengedProfileId: challengedId,
-    challengerUsername: challenger.username,
-    difficulty,
-    gridSize,
-    challengeId: challenge.id,
-  }).catch(() => {});
+  // Fire-and-forget email — only for specific-user challenges
+  if (challengedId !== null) {
+    sendChallengeNotification({
+      challengedProfileId: challengedId,
+      challengerUsername: challenger.username,
+      difficulty,
+      gridSize,
+      challengeId: challenge.id,
+    }).catch(() => {});
+  }
 });
 
 router.get("/challenges/for/:profileId", async (req, res): Promise<void> => {

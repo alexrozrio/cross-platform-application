@@ -8,7 +8,8 @@ import { gamesTable } from "./games";
 export const challengesTable = pgTable("challenges", {
   id: serial("id").primaryKey(),
   challengerId: integer("challenger_id").notNull().references(() => profilesTable.id),
-  challengedId: integer("challenged_id").notNull().references(() => profilesTable.id),
+  challengedId: integer("challenged_id").references(() => profilesTable.id),
+  shareToken: text("share_token").unique(),
   puzzleId: integer("puzzle_id").notNull().references(() => puzzlesTable.id),
   status: text("status").notNull().default("pending"),
   challengerGameId: integer("challenger_game_id").references(() => gamesTable.id),

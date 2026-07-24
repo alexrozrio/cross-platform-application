@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { eq, or, and } from "drizzle-orm";
 import { db, memoryDuelsTable, memoryGamesTable, profilesTable } from "@workspace/db";
 import { sql } from "drizzle-orm";
+import { randomBytes } from "node:crypto";
 
 const router: IRouter = Router();
 
@@ -10,7 +11,9 @@ const VALID_GRID_SIZES = [2, 4, 6, 8];
 async function formatDuel(duel: typeof memoryDuelsTable.$inferSelect) {
   const [challenger, challenged] = await Promise.all([
     db.select().from(profilesTable).where(eq(profilesTable.id, duel.challengerId)).then((r) => r[0]),
-    db.select().from(profilesTable).where(eq(profilesTable.id, duel.challengedId)).then((r) => r[0]),
+    duel.challengedId
+      ? db.select().from(profilesTable).where(eq(profilesTable.id, duel.challengedId)).then((r) => r[0])
+      : Promise.resolve(undefined),
   ]);
 
   let challengerPoints: number | null = null;
@@ -36,40 +39,49 @@ async function formatDuel(duel: typeof memoryDuelsTable.$inferSelect) {
     challengedGameId: duel.challengedGameId ?? null,
     winnerId: duel.winnerId ?? null,
     challengerUsername: challenger?.username ?? "Unknown",
-    challengedUsername: challenged?.username ?? "Unknown",
+    challengedUsername: challenged?.username ?? "Open Challenge",
     challengerAvatar: challenger?.avatar ?? null,
     challengedAvatar: challenged?.avatar ?? null,
     challengerXp: challenger?.xp ?? 0,
     challengedXp: challenged?.xp ?? 0,
     challengerPoints,
     challengedPoints,
+    shareToken: duel.shareToken ?? null,
     createdAt: duel.createdAt.toISOString(),
   };
 }
 
 // POST /memory-duels — create
 router.post("/memory-duels", async (req, res): Promise<void> => {
-  const { challengerId, challengedId, gridSize } = req.body as Record<string, unknown>;
+  const { challengerId, gridSize } = req.body as Record<string, unknown>;
+  const rawChallengedId = (req.body as Record<string, unknown>).challengedId;
+  // challengedId is optional — null/undefined means an open/shareable challenge
+  const challengedId: number | null = (rawChallengedId === null || rawChallengedId === undefined)
+    ? null
+    : typeof rawChallengedId === "number" ? rawChallengedId : null;
 
-  if (typeof challengerId !== "number" || typeof challengedId !== "number") {
-    res.status(400).json({ error: "challengerId and challengedId must be numbers" });
+  if (typeof challengerId !== "number") {
+    res.status(400).json({ error: "challengerId must be a number" });
     return;
   }
   if (!VALID_GRID_SIZES.includes(gridSize as number)) {
     res.status(400).json({ error: "gridSize must be 2, 4, 6, or 8" });
     return;
   }
-  if (challengerId === challengedId) {
+  if (challengedId !== null && challengerId === challengedId) {
     res.status(400).json({ error: "Cannot challenge yourself" });
     return;
   }
 
   const [challenger] = await db.select().from(profilesTable).where(eq(profilesTable.id, challengerId));
-  const [challenged] = await db.select().from(profilesTable).where(eq(profilesTable.id, challengedId));
-  if (!challenger || !challenged) {
-    res.status(404).json({ error: "Profile not found" });
-    return;
+  if (!challenger) { res.status(404).json({ error: "Challenger profile not found" }); return; }
+
+  if (challengedId !== null) {
+    const [challenged] = await db.select().from(profilesTable).where(eq(profilesTable.id, challengedId));
+    if (!challenged) { res.status(404).json({ error: "Challenged profile not found" }); return; }
   }
+
+  const shareToken = randomBytes(16).toString("hex");
 
   // Create challenger's game immediately
   const [challengerGame] = await db
@@ -81,9 +93,10 @@ router.post("/memory-duels", async (req, res): Promise<void> => {
     .insert(memoryDuelsTable)
     .values({
       challengerId,
-      challengedId,
+      challengedId: challengedId ?? null,
       gridSize: gridSize as number,
       status: "pending",
+      shareToken,
       challengerGameId: challengerGame.id,
       challengedGameId: null,
       winnerId: null,

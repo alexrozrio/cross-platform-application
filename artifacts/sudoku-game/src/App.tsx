@@ -33,6 +33,7 @@ const TermsOfService = lazy(() => import("@/pages/terms-of-service"));
 const MemoryMatch = lazy(() => import("@/pages/memory"));
 const MemoryChallengePage = lazy(() => import("@/pages/memory-challenge"));
 const PublicProfilePage = lazy(() => import("@/pages/public-profile"));
+const ChallengeInvitePage = lazy(() => import("@/pages/challenge-invite"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 const queryClient = new QueryClient({
@@ -83,6 +84,9 @@ function Router() {
             <Route path="/memory-challenge" component={MemoryChallengePage} />
             <Route path="/players/:profileId">
               {(params) => <PublicProfilePage profileId={params.profileId} />}
+            </Route>
+            <Route path="/invite/:token">
+              {(params) => <ChallengeInvitePage token={params.token} />}
             </Route>
             <Route path="/about" component={About} />
             <Route path="/privacy" component={PrivacyPolicy} />

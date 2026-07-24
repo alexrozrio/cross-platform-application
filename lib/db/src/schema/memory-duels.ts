@@ -5,7 +5,8 @@ import { memoryGamesTable } from "./memory-games";
 export const memoryDuelsTable = pgTable("memory_duels", {
   id: serial("id").primaryKey(),
   challengerId: integer("challenger_id").notNull().references(() => profilesTable.id),
-  challengedId: integer("challenged_id").notNull().references(() => profilesTable.id),
+  challengedId: integer("challenged_id").references(() => profilesTable.id),
+  shareToken: text("share_token").unique(),
   gridSize: integer("grid_size").notNull().default(4),
   status: text("status").notNull().default("pending"),
   challengerGameId: integer("challenger_game_id").references(() => memoryGamesTable.id),

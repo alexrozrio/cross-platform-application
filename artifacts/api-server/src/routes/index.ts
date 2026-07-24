@@ -15,6 +15,7 @@ import memoryGamesRouter from "./memory-games";
 import memoryChallengesRouter from "./memory-challenges";
 import memoryDuelsRouter from "./memory-duels";
 import testEmailRouter from "./test-email";
+import inviteRouter from "./invite";
 
 const router: IRouter = Router();
 
@@ -34,5 +35,6 @@ router.use(memoryGamesRouter);
 router.use(memoryChallengesRouter);
 router.use(memoryDuelsRouter);
 router.use(testEmailRouter);
+router.use(inviteRouter);
 
 export default router;
