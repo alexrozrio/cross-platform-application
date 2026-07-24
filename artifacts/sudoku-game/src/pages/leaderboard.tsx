@@ -982,15 +982,15 @@ function MemoryScoringGuide() {
                 {
                   label: "Medium",
                   cls: "text-yellow-700",
-                  base: "1,200",
+                  base: "1,600",
                   par: "2:00",
                   xp: "2 XP",
                 },
                 {
                   label: "Hard",
                   cls: "text-orange-700",
-                  base: "2,500",
-                  par: "3:20",
+                  base: "5,000",
+                  par: "5:00",
                   xp: "3 XP",
                 },
               ].map((row, i) => (
@@ -1022,12 +1022,13 @@ function MemoryScoringGuide() {
               </span>
               <span>🔁 Per extra flip penalty</span>
               <span className="font-mono text-right text-red-500">
-                −2% each
+                −2% each (floor 50%)
               </span>
             </div>
             <p className="text-[10px] text-muted-foreground mt-2 italic">
               Speed bonus applies when you finish under par time. Minimum flips
-              = 2 × number of pairs.
+              = 2 × number of pairs. Hard always scores more than Medium at
+              every skill level.
             </p>
           </div>
           {/* Formula */}
