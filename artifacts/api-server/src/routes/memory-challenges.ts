@@ -157,7 +157,67 @@ router.post("/memory-challenges/complete", async (req, res): Promise<void> => {
     })
     .where(eq(profilesTable.id, profileId));
 
+  // Update memory streak — only for daily challenge completions
+  if (type === 'daily') {
+    const today = config.period; // todayString()
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const [profile] = await db.select().from(profilesTable).where(eq(profilesTable.id, profileId));
+    if (profile) {
+      const last = profile.lastMemoryDate as string | null;
+      let newStreak = profile.memoryStreak ?? 0;
+      if (last === yesterday) {
+        newStreak += 1;
+      } else if (last !== today) {
+        newStreak = 1;
+      }
+      const newLongest = Math.max(newStreak, profile.longestMemoryStreak ?? 0);
+      await db
+        .update(profilesTable)
+        .set({ memoryStreak: newStreak, longestMemoryStreak: newLongest, lastMemoryDate: today })
+        .where(eq(profilesTable.id, profileId));
+    }
+  }
+
   res.json({ alreadyClaimed: false, bonusXp: config.bonusXp, bonusGems: config.bonusGems });
+});
+
+// ─── GET /memory-challenges/history/:profileId ───────────────────────────────
+
+router.get("/memory-challenges/history/:profileId", async (req, res): Promise<void> => {
+  const profileId = parseInt(req.params.profileId, 10);
+  if (isNaN(profileId)) { res.status(400).json({ error: "Invalid profileId" }); return; }
+
+  const rawMonth = typeof req.query.month === "string" ? req.query.month : todayString().slice(0, 7);
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(rawMonth)) {
+    res.status(400).json({ error: "Invalid month — use YYYY-MM format" }); return;
+  }
+
+  const [year, mon] = rawMonth.split("-").map(Number);
+  const monthStart = `${year}-${String(mon).padStart(2, "0")}-01`;
+  const nextYear = mon === 12 ? year + 1 : year;
+  const nextMon  = mon === 12 ? 1 : mon + 1;
+  const monthEnd = `${nextYear}-${String(nextMon).padStart(2, "0")}-01`;
+
+  const rows = await db
+    .select({ period: memoryChallengeCompletionsTable.period })
+    .from(memoryChallengeCompletionsTable)
+    .where(
+      and(
+        eq(memoryChallengeCompletionsTable.profileId, profileId),
+        eq(memoryChallengeCompletionsTable.type, "daily"),
+        // period is a date string YYYY-MM-DD — compare lexicographically
+      )
+    );
+
+  const completedDates = [
+    ...new Set(
+      rows
+        .map(r => r.period)
+        .filter((p): p is string => !!p && p >= monthStart && p < monthEnd)
+    ),
+  ];
+
+  res.json({ month: rawMonth, completedDates });
 });
 
 // ─── GET /memory-challenges/leaderboard?type=daily|weekly ────────────────────
