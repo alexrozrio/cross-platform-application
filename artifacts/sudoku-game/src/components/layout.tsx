@@ -54,11 +54,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, [profile?.theme]);
 
   const navItems = [
-    { href: "/", label: "Home", shortLabel: "Home", icon: Home, badge: 0, tooltip: "Play Sudoku & Memory Match — earn XP and climb the ranks" },
-    { href: "/leaderboard", label: "Leaderboard", shortLabel: "Ranks", icon: Trophy, badge: 0, tooltip: "See the top players — complete games to rise up the rankings" },
-    { href: "/challenges", label: "Challenges", shortLabel: "Duels", icon: Swords, badge: pendingCount, tooltip: "Challenge others to a duel — win to earn 10 💎 gems" },
-    { href: "/themes", label: "Themes", shortLabel: "Themes", icon: Palette, badge: 0, tooltip: "Unlock new board themes and fonts with your gems" },
-    { href: "/profile", label: isSignedIn ? (replitUser?.firstName || "Account") : "Profile", shortLabel: isSignedIn ? "Account" : "Profile", icon: User, badge: 0, tooltip: "Your profile, XP rank, badges, and game settings" },
+    { href: "/", label: "Home", shortLabel: "Home", icon: Home, badge: 0, tooltip: "Play Sudoku & Memory Match — earn XP and climb the ranks",
+      iconCls: "text-sky-400", activeIconCls: "text-sky-600 dark:text-sky-400", activeBgCls: "bg-sky-100 dark:bg-sky-900/40" },
+    { href: "/leaderboard", label: "Leaderboard", shortLabel: "Ranks", icon: Trophy, badge: 0, tooltip: "See the top players — complete games to rise up the rankings",
+      iconCls: "text-amber-400", activeIconCls: "text-amber-600 dark:text-amber-400", activeBgCls: "bg-amber-100 dark:bg-amber-900/40" },
+    { href: "/challenges", label: "Challenges", shortLabel: "Duels", icon: Swords, badge: pendingCount, tooltip: "Challenge others to a duel — win to earn 10 💎 gems",
+      iconCls: "text-rose-400", activeIconCls: "text-rose-600 dark:text-rose-400", activeBgCls: "bg-rose-100 dark:bg-rose-900/40" },
+    { href: "/themes", label: "Themes", shortLabel: "Themes", icon: Palette, badge: 0, tooltip: "Unlock new board themes and fonts with your gems",
+      iconCls: "text-violet-400", activeIconCls: "text-violet-600 dark:text-violet-400", activeBgCls: "bg-violet-100 dark:bg-violet-900/40" },
+    { href: "/profile", label: isSignedIn ? (replitUser?.firstName || "Account") : "Profile", shortLabel: isSignedIn ? "Account" : "Profile", icon: User, badge: 0, tooltip: "Your profile, XP rank, badges, and game settings",
+      iconCls: "text-emerald-400", activeIconCls: "text-emerald-600 dark:text-emerald-400", activeBgCls: "bg-emerald-100 dark:bg-emerald-900/40" },
   ];
 
   const isActive = (href: string) =>
@@ -124,7 +129,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                           {isSignedIn && item.href === "/profile" && replitUser?.profileImageUrl ? (
                             <img src={replitUser.profileImageUrl} alt="" className="h-4 w-4 rounded-full object-cover" />
                           ) : (
-                            <item.icon className="h-4 w-4" />
+                            <item.icon className={`h-4 w-4 ${isActive(item.href) ? item.activeIconCls : item.iconCls}`} />
                           )}
                           <NotifBadge count={item.badge} />
                         </span>
@@ -147,11 +152,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <Button
                   variant={isSignedIn ? "ghost" : "outline"}
                   size="sm"
-                  className="gap-2 ml-1 text-muted-foreground"
+                  className="gap-2 ml-1"
                   onClick={handleSignInOut}
                 >
-                  {isSignedIn ? <LogOut className="h-4 w-4" /> : <LogIn className="h-4 w-4" />}
-                  {isSignedIn ? "Sign out" : "Sign in"}
+                  {isSignedIn
+                    ? <LogOut className="h-4 w-4 text-slate-400" />
+                    : <LogIn className="h-4 w-4 text-teal-500" />}
+                  <span className={isSignedIn ? "text-muted-foreground" : "text-teal-600 dark:text-teal-400"}>
+                    {isSignedIn ? "Sign out" : "Sign in"}
+                  </span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
@@ -182,7 +191,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             title={item.tooltip}
             className="flex flex-col items-center gap-0.5 text-xs min-w-[48px] py-1"
           >
-            <div className={`relative p-1.5 rounded-xl ${isActive(item.href) ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}>
+            <div className={`relative p-1.5 rounded-xl transition-colors ${isActive(item.href) ? `${item.activeBgCls} ${item.activeIconCls}` : `text-muted-foreground hover:${item.iconCls}`}`}>
               {isSignedIn && item.href === "/profile" && replitUser?.profileImageUrl ? (
                 <img src={replitUser.profileImageUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
               ) : (
@@ -190,7 +199,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               )}
               <NotifBadge count={item.badge} />
             </div>
-            <span className={`text-[10px] ${isActive(item.href) ? "font-semibold text-primary" : "text-muted-foreground"}`}>
+            <span className={`text-[10px] transition-colors ${isActive(item.href) ? `font-semibold ${item.activeIconCls}` : "text-muted-foreground"}`}>
               {item.shortLabel}
             </span>
           </Link>
