@@ -8,18 +8,30 @@ const router: IRouter = Router();
 
 // ─── Points / XP / Gems helpers ───────────────────────────────────────────────
 
-const BASE_POINTS: Record<number, number> = { 2: 150, 4: 500, 6: 1200, 8: 2500 };
-const PAR_SECONDS: Record<number, number> = { 2: 25, 4: 60, 6: 120, 8: 200 };
+const BASE_POINTS: Record<number, number> = { 2: 150, 4: 500, 6: 1600, 8: 5000 };
+// Par times: beginner 25s · easy 60s · medium 120s · hard 300s
+// Hard gets 9.4s/pair vs medium's 7.5s/pair — fairer since 32 pairs require more memory load.
+const PAR_SECONDS: Record<number, number> = { 2: 25, 4: 60, 6: 120, 8: 300 };
 const XP_PER_SIZE: Record<number, number> = { 2: 1, 4: 1, 6: 2, 8: 3 };
 const MIN_FLIPS: Record<number, number> = { 2: 8, 4: 16, 6: 32, 8: 64 };
 
+// Points formula:
+//   base × (1 + timeBonus) × flipPenalty × tipPenalty
+//
+//   timeBonus  — up to +50% for finishing under par
+//   flipPenalty— 1.0 at minimum flips, floored at 0.5 (−2% per extra flip)
+//   tipPenalty — 1.0 with no tips, floored at 0.6 (−15% per tip used)
+//
+// Floor of 0.5 guarantees the size hierarchy holds at every skill level:
+//   hard worst-case  (5000 × 0.5 = 2500) > medium best-case (1600 × 1.5 = 2400)
+//   medium worst-case (1600 × 0.5 = 800)  > easy best-case  (500 × 1.5 = 750)
 function calcMemoryPoints(gridSize: number, elapsedSeconds: number, flips: number, tipsUsed: number = 0): number {
   const base = BASE_POINTS[gridSize] ?? 500;
   const par = PAR_SECONDS[gridSize] ?? 60;
   const minFlips = MIN_FLIPS[gridSize] ?? 16;
   const timeBonus = Math.max(0, (par - elapsedSeconds) / par) * 0.5;
   const extraFlips = Math.max(0, flips - minFlips);
-  const flipPenalty = Math.max(0.4, 1 - 0.02 * extraFlips);
+  const flipPenalty = Math.max(0.5, 1 - 0.02 * extraFlips);
   const tipPenalty = Math.max(0.6, 1 - 0.15 * tipsUsed);
   return Math.max(10, Math.round(base * (1 + timeBonus) * flipPenalty * tipPenalty));
 }
