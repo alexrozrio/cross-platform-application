@@ -784,8 +784,7 @@ function NewChallengeDialog({
     onSuccess: (challenge) => {
       queryClient.invalidateQueries({ queryKey: ["challenges"] });
       toast.success(`Sudoku challenge sent to ${selected?.username}!`, {
-        description:
-          "You can start playing now — they'll join once they accept.",
+        description: "You can start playing now — they'll join once they accept.",
       });
       onClose();
       if (challenge.challengerGameId) {
@@ -801,24 +800,56 @@ function NewChallengeDialog({
       challengedId: number;
       gridSize: MemoryGridSize;
     }) =>
-      customFetch<MemoryDuelDetail>("/api/memory-duels", {
-        method: "POST",
-        data,
-      }),
+      customFetch<MemoryDuelDetail>("/api/memory-duels", { method: "POST", data }),
     onSuccess: (duel) => {
       queryClient.invalidateQueries({ queryKey: ["memory-duels"] });
       toast.success(`Memory Match challenge sent to ${selected?.username}!`, {
-        description:
-          "You can start playing now — they'll join once they accept.",
+        description: "You can start playing now — they'll join once they accept.",
       });
       onClose();
       if (duel.challengerGameId) {
-        setLocation(
-          `/memory?duelGameId=${duel.challengerGameId}&gridSize=${duel.gridSize}`,
-        );
+        setLocation(`/memory?duelGameId=${duel.challengerGameId}&gridSize=${duel.gridSize}`);
       }
     },
     onError: () => toast.error("Failed to send challenge"),
+  });
+
+  // Open (shareable) challenge mutations — no specific opponent
+  const openSudokuMutation = useMutation({
+    mutationFn: (data: { challengerId: number; difficulty: Difficulty; gridSize: SudokuGridSize }) =>
+      customFetch<ChallengeDetail>("/api/challenges", { method: "POST", data }),
+    onSuccess: (challenge) => {
+      queryClient.invalidateQueries({ queryKey: ["challenges"] });
+      onClose();
+      if (challenge.shareToken) {
+        onShareCreated?.({
+          token: challenge.shareToken,
+          gameId: challenge.challengerGameId!,
+          gameType: "sudoku",
+        });
+      }
+      if (challenge.challengerGameId) setLocation(`/game/${challenge.challengerGameId}`);
+    },
+    onError: () => toast.error("Failed to create challenge link"),
+  });
+
+  const openMemoryMutation = useMutation({
+    mutationFn: (data: { challengerId: number; gridSize: MemoryGridSize }) =>
+      customFetch<MemoryDuelDetail>("/api/memory-duels", { method: "POST", data }),
+    onSuccess: (duel) => {
+      queryClient.invalidateQueries({ queryKey: ["memory-duels"] });
+      onClose();
+      if (duel.shareToken) {
+        onShareCreated?.({
+          token: duel.shareToken,
+          gameId: duel.challengerGameId!,
+          gameType: "memory",
+          gridSize: duel.gridSize,
+        });
+      }
+      if (duel.challengerGameId) setLocation(`/memory?duelGameId=${duel.challengerGameId}&gridSize=${duel.gridSize}`);
+    },
+    onError: () => toast.error("Failed to create challenge link"),
   });
 
   const handleSend = () => {
@@ -845,13 +876,30 @@ function NewChallengeDialog({
     }
   };
 
+  const handleCreateLink = () => {
+    if (gameType === "sudoku") {
+      const validSize = sudokuSizes.some(o => o.value === sudokuGridSize)
+        ? sudokuGridSize
+        : (sudokuSizes[0]?.value ?? 9);
+      openSudokuMutation.mutate({ challengerId: myProfileId, difficulty, gridSize: validSize });
+    } else {
+      const validSize = memorySizes.some(o => o.value === memoryGridSize)
+        ? memoryGridSize
+        : (memorySizes[0]?.value ?? 4);
+      openMemoryMutation.mutate({ challengerId: myProfileId, gridSize: validSize });
+    }
+  };
+
   const isPending =
     createSudokuMutation.isPending || createMemoryMutation.isPending;
+  const isLinkPending =
+    openSudokuMutation.isPending || openMemoryMutation.isPending;
 
   const handleClose = () => {
     setSearch("");
     setSelected(null);
     setGameType("sudoku");
+    setDialogMode("player");
     onClose();
   };
 
@@ -861,12 +909,89 @@ function NewChallengeDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Swords className="w-5 h-5 text-primary" />
-            Challenge a Player
+            {dialogMode === "open" ? "Create Challenge Link" : "Challenge a Player"}
           </DialogTitle>
         </DialogHeader>
 
+        {/* Mode toggle */}
+        <div className="grid grid-cols-2 rounded-lg border overflow-hidden text-sm font-medium">
+          <button
+            className={`py-2 transition-colors ${dialogMode === "player" ? "bg-primary text-primary-foreground" : "hover:bg-muted/50 text-muted-foreground"}`}
+            onClick={() => { setDialogMode("player"); setSelected(null); setSearch(""); }}
+          >
+            Find Player
+          </button>
+          <button
+            className={`py-2 transition-colors flex items-center justify-center gap-1.5 ${dialogMode === "open" ? "bg-primary text-primary-foreground" : "hover:bg-muted/50 text-muted-foreground"}`}
+            onClick={() => { setDialogMode("open"); setSelected(null); }}
+          >
+            <Share2 className="w-3.5 h-3.5" /> Share Link
+          </button>
+        </div>
+
         <div className="space-y-4 py-2">
-          {!selected ? (
+          {dialogMode === "open" ? (
+            /* Open challenge — game settings only */
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Create a challenge link and share it with anyone via WhatsApp, Telegram, or copy it — the first person to click accepts and plays against you.
+              </p>
+              {/* Game type */}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setGameType("sudoku")}
+                  className={`flex flex-col items-center gap-1.5 rounded-xl border-2 p-3 transition-all text-sm font-medium ${gameType === "sudoku" ? "border-primary bg-primary/5 text-primary" : "border-border bg-muted/30 text-muted-foreground hover:border-primary/40"}`}
+                >
+                  <Grid2x2 className="w-5 h-5" />
+                  Sudoku
+                </button>
+                <button
+                  onClick={() => setGameType("memory")}
+                  className={`flex flex-col items-center gap-1.5 rounded-xl border-2 p-3 transition-all text-sm font-medium ${gameType === "memory" ? "border-violet-500 bg-violet-50 text-violet-700" : "border-border bg-muted/30 text-muted-foreground hover:border-violet-300"}`}
+                >
+                  <Brain className="w-5 h-5" />
+                  Memory
+                </button>
+              </div>
+              {gameType === "sudoku" && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium">Difficulty</label>
+                    <Select value={difficulty} onValueChange={(v) => setDifficulty(v as Difficulty)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {diffs.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium">Grid Size</label>
+                    <Select value={String(sudokuGridSize)} onValueChange={(v) => setSudokuGridSize(Number(v) as SudokuGridSize)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {sudokuSizes.map(o => <SelectItem key={o.value} value={String(o.value)}>{o.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+              {gameType === "memory" && (
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Grid Size</label>
+                  <Select value={String(memoryGridSize)} onValueChange={(v) => setMemoryGridSize(Number(v) as MemoryGridSize)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {memorySizes.map(o => <SelectItem key={o.value} value={String(o.value)}>{o.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 flex items-start gap-2">
+                <Trophy className="w-3.5 h-3.5 mt-0.5 shrink-0 text-amber-600" />
+                <span>Winner gets <strong>10 gems</strong> — whoever scores more points wins!</span>
+              </div>
+            </div>
+          ) : !selected ? (
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Search by username
@@ -1030,21 +1155,23 @@ function NewChallengeDialog({
           <Button variant="outline" onClick={handleClose}>
             Cancel
           </Button>
-          {selected && (
-            <Button onClick={handleSend} disabled={isPending} className="gap-2">
-              {isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Sending…
-                </>
+          {dialogMode === "open" ? (
+            <Button onClick={handleCreateLink} disabled={isLinkPending} className="gap-2">
+              {isLinkPending ? (
+                <><Loader2 className="w-4 h-4 animate-spin" />Creating…</>
               ) : (
-                <>
-                  <Swords className="w-4 h-4" />
-                  Send Challenge
-                </>
+                <><Share2 className="w-4 h-4" />Create Link</>
               )}
             </Button>
-          )}
+          ) : selected ? (
+            <Button onClick={handleSend} disabled={isPending} className="gap-2">
+              {isPending ? (
+                <><Loader2 className="w-4 h-4 animate-spin" />Sending…</>
+              ) : (
+                <><Swords className="w-4 h-4" />Send Challenge</>
+              )}
+            </Button>
+          ) : null}
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -1060,6 +1187,11 @@ export default function Challenges() {
   const [showNew, setShowNew] = useState(false);
   const [respondingId, setRespondingId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<GameType>("sudoku");
+  const [shareSheetData, setShareSheetData] = useState<{ token: string; label: string } | null>(null);
+
+  const handleShare = useCallback((token: string, label: string) => {
+    setShareSheetData({ token, label });
+  }, []);
 
   const { data: profile } = useGetProfile(profileId as number, {
     query: { enabled: !!profileId },
@@ -1355,6 +1487,7 @@ export default function Challenges() {
                   onAccept={handleAccept}
                   onDecline={handleDecline}
                   onPlay={handlePlay}
+                  onShare={handleShare}
                   isResponding={respondingId === c.id}
                 />
               ))}
@@ -1374,6 +1507,7 @@ export default function Challenges() {
                   onAccept={handleAccept}
                   onDecline={handleDecline}
                   onPlay={handlePlay}
+                  onShare={handleShare}
                   isResponding={respondingId === c.id}
                 />
               ))}
@@ -1393,6 +1527,7 @@ export default function Challenges() {
                   onAccept={handleAccept}
                   onDecline={handleDecline}
                   onPlay={handlePlay}
+                  onShare={handleShare}
                   isResponding={respondingId === c.id}
                 />
               ))}
@@ -1411,6 +1546,7 @@ export default function Challenges() {
                   onAccept={handleAccept}
                   onDecline={handleDecline}
                   onPlay={handlePlay}
+                  onShare={handleShare}
                   isResponding={false}
                 />
               ))}
@@ -1450,6 +1586,7 @@ export default function Challenges() {
                   onAccept={handleDuelAccept}
                   onDecline={handleDuelDecline}
                   onPlay={handleDuelPlay}
+                  onShare={handleShare}
                   isResponding={respondingId === d.id}
                 />
               ))}
@@ -1469,6 +1606,7 @@ export default function Challenges() {
                   onAccept={handleDuelAccept}
                   onDecline={handleDuelDecline}
                   onPlay={handleDuelPlay}
+                  onShare={handleShare}
                   isResponding={respondingId === d.id}
                 />
               ))}
@@ -1488,6 +1626,7 @@ export default function Challenges() {
                   onAccept={handleDuelAccept}
                   onDecline={handleDuelDecline}
                   onPlay={handleDuelPlay}
+                  onShare={handleShare}
                   isResponding={respondingId === d.id}
                 />
               ))}
@@ -1506,6 +1645,7 @@ export default function Challenges() {
                   onAccept={handleDuelAccept}
                   onDecline={handleDuelDecline}
                   onPlay={handleDuelPlay}
+                  onShare={handleShare}
                   isResponding={false}
                 />
               ))}
@@ -1539,7 +1679,24 @@ export default function Challenges() {
         onClose={() => setShowNew(false)}
         myProfileId={profileId}
         gameMode={gameMode}
+        onShareCreated={(data) => {
+          setShareSheetData({
+            token: data.token,
+            label: data.gameType === "sudoku"
+              ? "I challenge you to a Sudoku!"
+              : "I challenge you to a Memory Match!",
+          });
+        }}
       />
+
+      {shareSheetData && (
+        <ChallengeShareSheet
+          open={true}
+          onClose={() => setShareSheetData(null)}
+          shareToken={shareSheetData.token}
+          label={shareSheetData.label}
+        />
+      )}
     </div>
   );
 }
