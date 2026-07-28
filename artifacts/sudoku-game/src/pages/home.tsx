@@ -3,6 +3,7 @@ import { useLocation, useSearch } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { useImageTheme } from '@/hooks/use-image-theme';
 import { useCreateGame, useGetProfile, customFetch, generatePuzzle } from '@workspace/api-client-react';
+import { generateOfflinePuzzle } from '@/lib/sudoku-generator';
 import { ThemeIcon } from '@/components/theme-icons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -139,30 +140,42 @@ export default function SudokuHome() {
   const startInFlightRef = useRef(false);
 
   const doStart = async (size: GridSize, requestedMode: 'number' | 'alpha' | 'image', difficultyOverride?: Difficulty) => {
-    if (!profileId) return;
     if (startInFlightRef.current) return;
     startInFlightRef.current = true;
     const mode = modesForSize(size).includes(requestedMode) ? requestedMode : 'number';
     const effectiveDifficulty = difficultyOverride ?? difficulty;
     setPendingStart(null);
     setIsGenerating(true);
+    const modeQuery = mode !== 'number' ? `?mode=${mode}` : '';
     try {
-      const puzzle = await generatePuzzle({ difficulty: effectiveDifficulty, gridSize: size as any });
-      if (!puzzle) throw new Error('Failed to generate puzzle');
-      const game = await createGame.mutateAsync({
-        data: { profileId, puzzleId: puzzle.id, difficulty: effectiveDifficulty },
-      });
-      setActiveGame(null);
-      try {
-        localStorage.setItem(LAST_GRID_SIZE_KEY, String(size));
-        localStorage.setItem(LAST_DIFFICULTY_KEY, effectiveDifficulty);
-      } catch {
-        // ignore storage failures (e.g. private browsing)
+      if (profileId) {
+        const puzzle = await generatePuzzle({ difficulty: effectiveDifficulty, gridSize: size as any });
+        if (!puzzle) throw new Error('Failed to generate puzzle');
+        const game = await createGame.mutateAsync({
+          data: { profileId, puzzleId: puzzle.id, difficulty: effectiveDifficulty },
+        });
+        setActiveGame(null);
+        try {
+          localStorage.setItem(LAST_GRID_SIZE_KEY, String(size));
+          localStorage.setItem(LAST_DIFFICULTY_KEY, effectiveDifficulty);
+        } catch { /* ignore */ }
+        setLocation(`/game/${game.id}${modeQuery}`);
+        return; // success — done
       }
-      const modeQuery = mode !== 'number' ? `?mode=${mode}` : '';
-      setLocation(`/game/${game.id}${modeQuery}`);
+      throw new Error('Not signed in');
     } catch (err) {
-      console.error('Error starting game:', err);
+      // API is down or user not signed in — generate puzzle client-side
+      console.warn('API unavailable, starting offline game:', err);
+      try {
+        generateOfflinePuzzle(effectiveDifficulty, size);
+        try {
+          localStorage.setItem(LAST_GRID_SIZE_KEY, String(size));
+          localStorage.setItem(LAST_DIFFICULTY_KEY, effectiveDifficulty);
+        } catch { /* ignore */ }
+        setLocation(`/game/0${modeQuery}`);
+      } catch (offlineErr) {
+        console.error('Failed to generate offline puzzle:', offlineErr);
+      }
     } finally {
       setIsGenerating(false);
       startInFlightRef.current = false;

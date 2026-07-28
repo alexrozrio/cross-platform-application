@@ -10,6 +10,7 @@ import {
   customFetch,
   generatePuzzle,
 } from "@workspace/api-client-react";
+import { generateOfflinePuzzle, getOfflinePuzzle } from "@/lib/sudoku-generator";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useGameTimer } from "@/hooks/use-game-logic";
@@ -226,11 +227,36 @@ export default function Game({ id }: { id: string }) {
   const { data: profile } = useGetProfile(profileId as number, {
     query: { enabled: !!profileId },
   });
+  // gameId === 0 means offline mode (API was unavailable when game was started)
+  const isOffline = gameId === 0;
   const {
-    data: game,
-    isLoading,
-    error,
-  } = useGetGame(gameId, { query: { enabled: !!gameId } });
+    data: apiGame,
+    isLoading: apiLoading,
+    error: apiError,
+  } = useGetGame(gameId, { query: { enabled: !isOffline && !!gameId } });
+  const offlinePuzzleData = isOffline ? getOfflinePuzzle() : null;
+  const game = isOffline
+    ? (offlinePuzzleData
+        ? ({
+            id: 0,
+            status: "active",
+            currentGrid: offlinePuzzleData.grid,
+            elapsedSeconds: 0,
+            mistakeCount: 0,
+            hintsUsed: 0,
+            puzzle: {
+              id: 0,
+              grid: offlinePuzzleData.grid,
+              solution: offlinePuzzleData.solution,
+              gridSize: offlinePuzzleData.gridSize,
+              difficulty: offlinePuzzleData.difficulty,
+              createdAt: "",
+            },
+          } as any)
+        : null)
+    : apiGame;
+  const isLoading = isOffline ? false : apiLoading;
+  const error = isOffline ? null : apiError;
 
   const saveGame = useSaveGame();
   const completeGame = useCompleteGame();
@@ -394,23 +420,32 @@ export default function Game({ id }: { id: string }) {
   const handleNewGame = async (sizeOverride?: 3 | 4 | 6 | 9 | 16, diffOverride?: "easy" | "medium" | "hard" | "expert") => {
     const size = sizeOverride ?? newSize;
     const diff = diffOverride ?? newDiff;
-    if (!profileId || newGameLoading) return;
+    if (newGameLoading) return;
     setNewGameFetching(true);
     setShowMobileControls(false);
-    try {
-      const puzzle = await generatePuzzle({ difficulty: diff, gridSize: size as any });
-      if (!puzzle) return;
-      const newGameResult = await createNewGame.mutateAsync({
-        data: { profileId, puzzleId: puzzle.id, difficulty: diff },
-      });
-      // Clear old game's local storage so it can't bleed into the new one
+    const modeQuery = mode !== "number" ? `?mode=${mode}` : "";
+    const clearStorage = () => {
       localStorage.removeItem(storageKeyGrid);
       localStorage.removeItem(storageKeyNotes);
       localStorage.removeItem(storageKeyElapsed);
-      const modeQuery = mode !== "number" ? `?mode=${mode}` : "";
-      setLocation(`/game/${newGameResult.id}${modeQuery}`);
+    };
+    try {
+      if (profileId) {
+        const puzzle = await generatePuzzle({ difficulty: diff, gridSize: size as any });
+        if (!puzzle) throw new Error("No puzzle");
+        const newGameResult = await createNewGame.mutateAsync({
+          data: { profileId, puzzleId: puzzle.id, difficulty: diff },
+        });
+        clearStorage();
+        setLocation(`/game/${newGameResult.id}${modeQuery}`);
+        return;
+      }
+      throw new Error("Not signed in");
     } catch (err) {
-      console.error("Error starting new game:", err);
+      console.warn("API unavailable, starting offline game:", err);
+      generateOfflinePuzzle(diff, size);
+      clearStorage();
+      setLocation(`/game/0${modeQuery}`);
     } finally {
       setNewGameFetching(false);
     }
@@ -421,23 +456,32 @@ export default function Game({ id }: { id: string }) {
   const quickDifficultyInFlightRef = useRef(false);
   const [quickDifficultyLoading, setQuickDifficultyLoading] = useState(false);
   const handleQuickDifficultyChange = async (nextDifficulty: "easy" | "medium" | "hard" | "expert") => {
-    if (!profileId || quickDifficultyInFlightRef.current) return;
+    if (quickDifficultyInFlightRef.current) return;
     quickDifficultyInFlightRef.current = true;
     setQuickDifficultyLoading(true);
-    try {
-      const puzzle = await generatePuzzle({ difficulty: nextDifficulty, gridSize: gridSize as any });
-      if (!puzzle) throw new Error("Failed to generate puzzle");
-      const newGame = await createNewGame.mutateAsync({
-        data: { profileId, puzzleId: puzzle.id, difficulty: nextDifficulty },
-      });
-      // Clear old game's local storage before navigating
+    const modeQuery = mode !== "number" ? `?mode=${mode}` : "";
+    const clearStorage = () => {
       localStorage.removeItem(storageKeyGrid);
       localStorage.removeItem(storageKeyNotes);
       localStorage.removeItem(storageKeyElapsed);
-      const modeQuery = mode !== "number" ? `?mode=${mode}` : "";
-      setLocation(`/game/${newGame.id}${modeQuery}`);
+    };
+    try {
+      if (profileId) {
+        const puzzle = await generatePuzzle({ difficulty: nextDifficulty, gridSize: gridSize as any });
+        if (!puzzle) throw new Error("Failed to generate puzzle");
+        const newGame = await createNewGame.mutateAsync({
+          data: { profileId, puzzleId: puzzle.id, difficulty: nextDifficulty },
+        });
+        clearStorage();
+        setLocation(`/game/${newGame.id}${modeQuery}`);
+        return;
+      }
+      throw new Error("Not signed in");
     } catch (err) {
-      console.error("Error starting new game:", err);
+      console.warn("API unavailable, starting offline game:", err);
+      generateOfflinePuzzle(nextDifficulty, gridSize);
+      clearStorage();
+      setLocation(`/game/0${modeQuery}`);
     } finally {
       setQuickDifficultyLoading(false);
       quickDifficultyInFlightRef.current = false;
@@ -491,8 +535,8 @@ export default function Game({ id }: { id: string }) {
       // Prefer localStorage grid if it has more filled cells (handles quick-refresh data loss)
       const savedGrid = localStorage.getItem(storageKeyGrid);
       const localGrid = savedGrid && savedGrid.length === serverGrid.length ? savedGrid.split("") : null;
-      const serverFilled = serverGrid.filter((c) => c !== "0").length;
-      const localFilled = localGrid ? localGrid.filter((c) => c !== "0").length : -1;
+      const serverFilled = serverGrid.filter((c: string) => c !== "0").length;
+      const localFilled = localGrid ? localGrid.filter((c: string) => c !== "0").length : -1;
       const loadedGrid = localFilled > serverFilled ? localGrid! : serverGrid;
 
       setGrid(loadedGrid);
@@ -527,7 +571,7 @@ export default function Game({ id }: { id: string }) {
       }
       if (loadedMistakes >= MAX_MISTAKES) {
         setIsGameOver(true);
-        customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }).catch(() => {});
+        if (!isOffline) customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }).catch(() => {});
       }
     }
   }, [game, isCompleted, isGameOver, totalCells, storageKeyGrid, storageKeyNotes]);
@@ -558,7 +602,7 @@ export default function Game({ id }: { id: string }) {
   }, [notes, storageKeyNotes]);
 
   useEffect(() => {
-    if (isCompleted || !game || grid.join("") === game.currentGrid) return;
+    if (isOffline || isCompleted || !game || grid.join("") === game.currentGrid) return;
     if (saveTimeoutRef.current) window.clearTimeout(saveTimeoutRef.current);
     saveTimeoutRef.current = window.setTimeout(() => {
       saveGame.mutate({
@@ -586,6 +630,19 @@ export default function Game({ id }: { id: string }) {
       if (currentGrid.join("") === solution) {
         sounds.complete();
         setIsCompleted(true);
+        if (isOffline) {
+          // Offline mode — show completion UI without any server call
+          localStorage.removeItem(storageKeyGrid);
+          localStorage.removeItem(storageKeyNotes);
+          localStorage.removeItem(storageKeyElapsed);
+          const msg = pickCompletionMessage(game?.puzzle?.difficulty, game?.puzzle?.gridSize);
+          setCompletionMessage(msg);
+          setPointsEarned(null);
+          toast.success(`${msg.headline} ${msg.emoji}`, {
+            description: `Time: ${formattedTime} • Mistakes: ${mistakes} • Offline`,
+          });
+          return;
+        }
         completeGame.mutate(
           {
             id: gameId,
@@ -705,7 +762,7 @@ export default function Game({ id }: { id: string }) {
         if (newMistakes >= MAX_MISTAKES) {
           sounds.gameover();
           setIsGameOver(true);
-          customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }).catch(() => {});
+          if (!isOffline) customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }).catch(() => {});
           toast.error("Game Over! 3 mistakes reached.", { duration: 5000 });
         } else {
           toast.error(`Wrong! ${MAX_MISTAKES - newMistakes} mistake${MAX_MISTAKES - newMistakes !== 1 ? "s" : ""} left.`, { duration: 1200 });
@@ -1294,7 +1351,7 @@ export default function Game({ id }: { id: string }) {
                 Keep Playing
               </Button>
               <Button className="flex-1" onClick={async () => {
-                try { await customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }); } catch {}
+                if (!isOffline) { try { await customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }); } catch {} }
                 setLocation("/sudoku");
               }}>
                 Leave Game
