@@ -431,7 +431,17 @@ export default function Game({ id }: { id: string }) {
     };
     try {
       if (profileId) {
-        const puzzle = await generatePuzzle({ difficulty: diff, gridSize: size as any });
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
+        let puzzle: Awaited<ReturnType<typeof generatePuzzle>>;
+        try {
+          puzzle = await generatePuzzle(
+            { difficulty: diff, gridSize: size as any },
+            { signal: controller.signal },
+          );
+        } finally {
+          clearTimeout(timeoutId);
+        }
         if (!puzzle) throw new Error("No puzzle");
         const newGameResult = await createNewGame.mutateAsync({
           data: { profileId, puzzleId: puzzle.id, difficulty: diff },
@@ -467,7 +477,17 @@ export default function Game({ id }: { id: string }) {
     };
     try {
       if (profileId) {
-        const puzzle = await generatePuzzle({ difficulty: nextDifficulty, gridSize: gridSize as any });
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
+        let puzzle: Awaited<ReturnType<typeof generatePuzzle>>;
+        try {
+          puzzle = await generatePuzzle(
+            { difficulty: nextDifficulty, gridSize: gridSize as any },
+            { signal: controller.signal },
+          );
+        } finally {
+          clearTimeout(timeoutId);
+        }
         if (!puzzle) throw new Error("Failed to generate puzzle");
         const newGame = await createNewGame.mutateAsync({
           data: { profileId, puzzleId: puzzle.id, difficulty: nextDifficulty },

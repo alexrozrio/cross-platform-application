@@ -1,6 +1,8 @@
 // Client-side Sudoku puzzle generator — exact port of the server's sudoku.ts
 // Used as a fallback when the API server is unavailable.
 
+import { pickDefaultPuzzle } from '@/lib/default-puzzles';
+
 type Grid = number[];
 
 // ─── Encoding helpers ────────────────────────────────────────────────────────
@@ -155,8 +157,23 @@ export interface OfflinePuzzle {
 
 export const OFFLINE_PUZZLE_KEY = "sudoku-offline-puzzle";
 
-/** Generate a puzzle entirely client-side. Saves it to localStorage and returns it. */
+/** Generate a puzzle entirely client-side. Saves it to localStorage and returns it.
+ *  First tries the pre-built default bank (instant), then falls back to live generation. */
 export function generateOfflinePuzzle(difficulty: string, gridSize: number): OfflinePuzzle {
+  // ── Fast path: use a pre-built puzzle (zero generation time) ──────────────
+  const defaults = pickDefaultPuzzle(gridSize, difficulty);
+  if (defaults) {
+    const result: OfflinePuzzle = {
+      grid: defaults.grid,
+      solution: defaults.solution,
+      gridSize: defaults.gridSize,
+      difficulty: defaults.difficulty,
+    };
+    try { localStorage.setItem(OFFLINE_PUZZLE_KEY, JSON.stringify(result)); } catch { /* ignore */ }
+    return result;
+  }
+
+  // ── Slow path: generate live (fallback if default bank is missing) ────────
   let grid: string;
   let solution: string;
 

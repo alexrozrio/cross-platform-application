@@ -149,7 +149,18 @@ export default function SudokuHome() {
     const modeQuery = mode !== 'number' ? `?mode=${mode}` : '';
     try {
       if (profileId) {
-        const puzzle = await generatePuzzle({ difficulty: effectiveDifficulty, gridSize: size as any });
+        // Short timeout so a down API fails fast instead of hanging for 30s+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
+        let puzzle: Awaited<ReturnType<typeof generatePuzzle>>;
+        try {
+          puzzle = await generatePuzzle(
+            { difficulty: effectiveDifficulty, gridSize: size as any },
+            { signal: controller.signal },
+          );
+        } finally {
+          clearTimeout(timeoutId);
+        }
         if (!puzzle) throw new Error('Failed to generate puzzle');
         const game = await createGame.mutateAsync({
           data: { profileId, puzzleId: puzzle.id, difficulty: effectiveDifficulty },
@@ -164,7 +175,7 @@ export default function SudokuHome() {
       }
       throw new Error('Not signed in');
     } catch (err) {
-      // API is down or user not signed in — generate puzzle client-side
+      // API is down or user not signed in — generate puzzle client-side (uses default bank: instant)
       console.warn('API unavailable, starting offline game:', err);
       try {
         generateOfflinePuzzle(effectiveDifficulty, size);
