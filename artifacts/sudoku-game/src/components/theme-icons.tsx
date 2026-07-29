@@ -2105,6 +2105,13 @@ export function NewMoonIcon({ size = 48 }: IconProps) {
 // ─── LOOKUP TABLE (SVG fallbacks) ────────────────────────────────────────────
 
 import { type ThemeId } from '@/lib/themes';
+import iconSetsConfig from '@/config/icon-sets.json';
+
+// Pre-build a symbol lookup: themeId → value (1-based) → emoji string
+const _emojiMap: Record<string, string[]> = {};
+for (const set of iconSetsConfig) {
+  if (set.symbols?.length) _emojiMap[set.id] = set.symbols;
+}
 
 const ICON_MAP: Record<ThemeId, React.FC<IconProps>[]> = {
   shapes:    [Shape1Icon, Shape2Icon, Shape3Icon, Shape4Icon, Shape5Icon, Shape6Icon, Shape7Icon, Shape8Icon, Shape9Icon, Shape10Icon, Shape11Icon, Shape12Icon, Shape13Icon, Shape14Icon, Shape15Icon, Shape16Icon],
@@ -2200,8 +2207,22 @@ export function ThemeIcon({ themeId, value, size = 40 }: { themeId: ThemeId; val
     );
   }
 
-  // While probing (undefined) or failed (null) → SVG fallback
-  const icons = ICON_MAP[themeId as ThemeId] ?? ICON_MAP.shapes;
-  const Icon = icons[(value - 1) % icons.length];
-  return Icon ? <Icon size={size} /> : null;
+  // While probing (undefined) or failed (null) → SVG fallback if available
+  const icons = ICON_MAP[themeId as ThemeId];
+  if (icons) {
+    const Icon = icons[(value - 1) % icons.length];
+    if (Icon) return <Icon size={size} />;
+  }
+
+  // Emoji fallback for icon sets that have no SVG map (e.g. princess, vehicles, etc.)
+  const emojis = _emojiMap[themeId];
+  if (emojis?.length) {
+    const sym = emojis[(value - 1) % emojis.length];
+    return <span style={{ fontSize: size * 0.8, lineHeight: 1, userSelect: 'none' }}>{sym}</span>;
+  }
+
+  // Last resort: shapes
+  const fallback = ICON_MAP.shapes;
+  const FallbackIcon = fallback[(value - 1) % fallback.length];
+  return FallbackIcon ? <FallbackIcon size={size} /> : null;
 }
