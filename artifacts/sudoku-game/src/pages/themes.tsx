@@ -1,7 +1,7 @@
 import React from 'react';
 import { useImageTheme } from '@/hooks/use-image-theme';
 import { ThemeIcon, useThemeImageSrc } from '@/components/theme-icons';
-import { IMAGE_THEMES, getTheme } from '@/lib/themes';
+import { IMAGE_THEMES, getTheme, getSymbol } from '@/lib/themes';
 import { Check, Lock, Gem, LayoutGrid, Eye } from 'lucide-react';
 import { type ThemeId } from '@/lib/themes';
 import { useAuth } from '@/hooks/use-auth';
@@ -328,7 +328,7 @@ export default function Themes() {
                     <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">9×9</p>
                     <div className="grid grid-cols-9 gap-0.5">
                       {Array.from({ length: 9 }, (_, i) => i + 1).map(n => (
-                        <ThemeIcon key={n} themeId={theme.id} value={n} size={28} />
+                        <ThemeIconWithEmojiFallback key={n} themeId={theme.id} value={n} sym={getSymbol(theme, n)} size={28} />
                       ))}
                     </div>
                   </div>
@@ -337,7 +337,7 @@ export default function Themes() {
                     <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">16×16 extras</p>
                     <div className="grid grid-cols-7 gap-0.5">
                       {Array.from({ length: 7 }, (_, i) => i + 10).map(n => (
-                        <ThemeIcon key={n} themeId={theme.id} value={n} size={28} />
+                        <ThemeIconWithEmojiFallback key={n} themeId={theme.id} value={n} sym={getSymbol(theme, n)} size={28} />
                       ))}
                     </div>
                   </div>
@@ -345,7 +345,7 @@ export default function Themes() {
                   <div className="grid grid-cols-2 gap-x-3 gap-y-1">
                     {names.map((name, i) => (
                       <div key={i} className="flex items-center gap-1.5">
-                        <ThemeIcon themeId={theme.id} value={i + 1} size={14} />
+                        <ThemeIconWithEmojiFallback themeId={theme.id} value={i + 1} sym={getSymbol(theme, i + 1)} size={14} />
                         <span className="text-[10px] text-muted-foreground truncate">{name}</span>
                       </div>
                     ))}
@@ -669,7 +669,7 @@ export default function Themes() {
 /** Shows a real image if one has been placed in /public/themes/<id>/<value>.<ext>,
  *  otherwise falls back to the emoji symbol from the config.
  *  Used in the "All symbols" dialog so images always take precedence over text. */
-function ThemeIconWithEmojiFallback({ themeId, value, sym }: { themeId: ThemeId; value: number; sym: string }) {
+function ThemeIconWithEmojiFallback({ themeId, value, sym, size = 28 }: { themeId: ThemeId; value: number; sym: string; size?: number }) {
   const imageSrc = useThemeImageSrc(themeId, value);
 
   if (imageSrc) {
@@ -678,23 +678,34 @@ function ThemeIconWithEmojiFallback({ themeId, value, sym }: { themeId: ThemeId;
         src={imageSrc}
         alt={sym}
         draggable={false}
-        style={{ width: 28, height: 28, objectFit: 'contain', display: 'block', userSelect: 'none' }}
+        style={{ width: size, height: size, objectFit: 'contain', display: 'block', userSelect: 'none' }}
       />
     );
   }
 
   // While probing (undefined) show emoji; if probe fails (null) also show emoji.
-  return <span className="text-xl leading-none">{sym}</span>;
+  return <span style={{ fontSize: size * 0.75, lineHeight: 1 }}>{sym}</span>;
 }
 
 function getCharacterNames(themeId: ThemeId): string[] {
-  const names: Record<ThemeId, string[]> = {
-    shapes:    ['Circle', 'Square', 'Triangle', 'Diamond', 'Star', 'Hexagon', 'Heart', 'Cross', 'Ring', 'Cyan Diamond', 'Spiral', 'Crescent', 'Arrow', 'Gear', 'Lightning', 'Infinity'],
-    adventure: ['Explorer', 'Fox', 'Map', 'Backpack', 'Flower', 'Telescope', 'Key', 'Rainbow', 'Trophy', 'Compass', 'Campfire', 'Lantern', 'Butterfly', 'Mushroom', 'Magic Wand', 'Dartboard'],
-    superhero: ['Spider-Man', 'Superman', 'Batman', 'Wonder Woman', 'Iron Man', 'Cap America', 'Thor', 'Hulk', 'The Flash', 'Villain', 'Tornado', 'Sparkle', 'Eagle', 'Crossed Swords', 'Magnet', 'Bullseye'],
-    ocean:     ['Dolphin', 'Octopus', 'Shark', 'Clownfish', 'Crab', 'Pufferfish', 'Squid', 'Turtle', 'Lobster', 'Whale', 'Seal', 'Seashell', 'Coral', 'Shrimp', 'Fish', 'Wave'],
-    jungle:    ['Monkey', 'Lion', 'Elephant', 'Giraffe', 'Zebra', 'Rhino', 'Leopard', 'Gorilla', 'Parrot', 'Crocodile', 'Lizard', 'Butterfly', 'Leaf Cluster', 'Palm Tree', 'Hibiscus', 'Caterpillar'],
-    space:     ['Rocket', 'Star', 'Moon', 'Comet', 'Saturn', 'Earth', 'Alien', 'UFO', 'Astronaut', 'Galaxy', 'Telescope', 'Shooting Star', 'Satellite', 'Sun', 'New Moon', 'Mars'],
+  const names: Record<string, string[]> = {
+    shapes:       ['Circle', 'Square', 'Triangle', 'Diamond', 'Star', 'Hexagon', 'Heart', 'Cross', 'Ring', 'Cyan Diamond', 'Spiral', 'Crescent', 'Arrow', 'Gear', 'Lightning', 'Infinity'],
+    adventure:    ['Explorer', 'Fox', 'Map', 'Backpack', 'Flower', 'Telescope', 'Key', 'Rainbow', 'Trophy', 'Compass', 'Campfire', 'Lantern', 'Butterfly', 'Mushroom', 'Magic Wand', 'Dartboard'],
+    superhero:    ['Spider-Man', 'Superman', 'Batman', 'Wonder Woman', 'Iron Man', 'Cap America', 'Thor', 'Hulk', 'The Flash', 'Villain', 'Tornado', 'Sparkle', 'Eagle', 'Crossed Swords', 'Magnet', 'Bullseye'],
+    ocean:        ['Dolphin', 'Octopus', 'Shark', 'Clownfish', 'Crab', 'Pufferfish', 'Squid', 'Turtle', 'Lobster', 'Whale', 'Seal', 'Seashell', 'Coral', 'Shrimp', 'Fish', 'Wave'],
+    jungle:       ['Monkey', 'Lion', 'Elephant', 'Giraffe', 'Zebra', 'Rhino', 'Leopard', 'Gorilla', 'Parrot', 'Crocodile', 'Lizard', 'Butterfly', 'Leaf Cluster', 'Palm Tree', 'Hibiscus', 'Caterpillar'],
+    space:        ['Rocket', 'Star', 'Moon', 'Comet', 'Saturn', 'Earth', 'Alien', 'UFO', 'Astronaut', 'Galaxy', 'Telescope', 'Shooting Star', 'Satellite', 'Sun', 'New Moon', 'Mars'],
+    princess:     ['Princess', 'Crown', 'Castle', 'Diamond', 'Unicorn', 'Magic Wand', 'Rainbow', 'Sparkle', 'Bow', 'Tulip', 'Stars', 'Blossom', 'Butterfly', 'Bouquet', 'Flower', 'Candle'],
+    vehicles:     ['Car', 'Taxi', 'SUV', 'Bus', 'Race Car', 'Police Car', 'Ambulance', 'Fire Truck', 'Van', 'Truck', 'Semi', 'Pickup', 'Motorbike', 'Bicycle', 'Scooter', 'Tuk-tuk'],
+    peppa_pig:    ['Peppa', 'Pig Snout', 'Frog', 'Rabbit', 'Sheep', 'Bear', 'Fox', 'Dog', 'Chick', 'Lion', 'Cow', 'Hamster', 'Rain', 'Cloud', 'House', 'Sunflower'],
+    paw_patrol:   ['Paw Print', 'Ryder', 'Chase', 'Marshall', 'Skye', 'Rocky', 'Rubble', 'Mountain', 'Vest', 'Torch', 'Zuma', 'Everest', 'Star', 'Medal', 'Shield', 'Bell'],
+    sheriff:      ['Sheriff', 'Badge', 'Labrador', 'Desert', 'Cactus', 'Horse', 'Coin', 'Eagle', 'Wheat', 'Bucket', 'Sunrise', 'Cattle', 'Bell', 'Hook', 'Target', 'Boomerang'],
+    doraemon:     ['Doraemon', 'Blue Bell', 'Swirl', 'Bag', 'Pocket', 'Anywhere Door', 'Lantern', 'Dango', 'Gear', 'Gift', 'Star', 'Crystal Ball', 'Balloon', 'Donut', 'Magic Wand', 'Wave'],
+    chotta_bheem: ['Bheem', 'Wrestler', 'Laddoo', 'Laddu', 'Elephant', 'Flower', 'Palace', 'Sword', 'Leaf', 'Tiger', 'Lion', 'Trumpet', 'Gloves', 'Trophy', 'Gold Medal', 'Blossom'],
+    shinchan:     ['Shin-chan', 'Bus', 'Shiro', 'Mask', 'Action', 'House', 'Cherry', 'Circus', 'Cake', 'Elephant', 'Clown', 'Balloon', 'Target', 'Rainbow', 'Wheel', 'Magic'],
+    bluey:        ['Bluey', 'Paw Print', 'Blossom', 'Home', 'Game', 'Rainbow', 'Puzzle', 'Art', 'Leaf', 'Carnival', 'Sunflower', 'Star', 'Ferris Wheel', 'Carousel', 'Stage', 'Hibiscus'],
+    tom_jerry:    ['Tom', 'Jerry', 'Cheese', 'Cake', 'Mallet', 'Fishing', 'House', 'Chase', 'Lightning', 'Guitar', 'Boxing Glove', 'Drama', 'Pizza', 'Carrot', 'Eagle', 'Whirlwind'],
+    mickey_mouse: ['Mickey Hat', 'Mickey', 'Star', 'Sparkle', 'Carousel', 'Ferris Wheel', 'Roller Coaster', 'Castle', 'Stage', 'Circus', 'Balloon', 'Rainbow', 'Magic', 'Confetti', 'Gift', 'Ribbon'],
   };
   return names[themeId] ?? [];
 }
