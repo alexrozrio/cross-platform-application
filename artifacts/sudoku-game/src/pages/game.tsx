@@ -316,6 +316,7 @@ export default function Game({ id }: { id: string }) {
   const [showNewGameDialog, setShowNewGameDialog] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [wrongCells, setWrongCells] = useState<Set<number>>(new Set());
+  const [flashCells, setFlashCells] = useState<Set<number>>(new Set());
   const [highlightedNumber, setHighlightedNumber] = useState<string | null>(null);
   const [history, setHistory] = useState<Array<{
     grid: string[];
@@ -795,6 +796,55 @@ export default function Game({ id }: { id: string }) {
           s.delete(selectedCell);
           return s;
         });
+
+        // ── Check for newly completed row / column / box ──────────────────
+        // Only fire when the puzzle is not about to fully complete (that has its own animation)
+        if (solution && newGrid.join("") !== solution) {
+          const effectiveWrong = new Set(wrongCells);
+          effectiveWrong.delete(selectedCell);
+
+          const cellRow = Math.floor(selectedCell / gridSize);
+          const cellCol = selectedCell % gridSize;
+
+          const regionFull = (cells: number[]) =>
+            cells.every(i => newGrid[i] !== "0" && !effectiveWrong.has(i));
+          const wasEmpty = (cells: number[]) =>
+            cells.some(i => grid[i] === "0");
+
+          const rowCells = Array.from({ length: gridSize }, (_, c) => cellRow * gridSize + c);
+          const colCells = Array.from({ length: gridSize }, (_, r) => r * gridSize + cellCol);
+          const boxCells: number[] = [];
+          if (boxRows > 0 && boxCols > 0) {
+            const br = Math.floor(cellRow / boxRows) * boxRows;
+            const bc = Math.floor(cellCol / boxCols) * boxCols;
+            for (let r = br; r < br + boxRows; r++)
+              for (let c = bc; c < bc + boxCols; c++)
+                boxCells.push(r * gridSize + c);
+          }
+
+          const newFlash = new Set<number>();
+          const labels: string[] = [];
+
+          if (wasEmpty(rowCells) && regionFull(rowCells)) {
+            rowCells.forEach(i => newFlash.add(i));
+            labels.push("Row");
+          }
+          if (wasEmpty(colCells) && regionFull(colCells)) {
+            colCells.forEach(i => newFlash.add(i));
+            labels.push("Column");
+          }
+          if (boxCells.length > 0 && wasEmpty(boxCells) && regionFull(boxCells)) {
+            boxCells.forEach(i => newFlash.add(i));
+            labels.push("Box");
+          }
+
+          if (newFlash.size > 0) {
+            setFlashCells(newFlash);
+            toast.success(`✨ ${labels.join(" + ")} complete!`, { duration: 1400 });
+            setTimeout(() => setFlashCells(new Set()), 1600);
+          }
+        }
+
         checkCompletion(newGrid, solution);
       }
     },
@@ -808,6 +858,10 @@ export default function Game({ id }: { id: string }) {
       game,
       grid,
       mistakes,
+      wrongCells,
+      gridSize,
+      boxRows,
+      boxCols,
       checkCompletion,
     ],
   );
@@ -1627,6 +1681,7 @@ export default function Game({ id }: { id: string }) {
                   activeHighlight && val === activeHighlight && !isSelected;
                 const isInitial = initialGrid[index] !== "0";
                 const isWrong = wrongCells.has(index);
+                const isFlashing = flashCells.has(index) && !isWrong && !isSelected;
                 const rightBorder =
                   boxCols > 0 && (col + 1) % boxCols === 0 && col !== gridSize - 1;
                 const bottomBorder =
@@ -1650,11 +1705,12 @@ export default function Game({ id }: { id: string }) {
                       !isWrong && isSelected
                         ? "bg-primary/20 ring-2 ring-inset ring-primary"
                         : "",
-                      !isWrong && !isSelected && isSameValue ? "bg-primary/15" : "",
-                      !isWrong && !isSelected && !isSameValue && isRelated
+                      !isWrong && !isSelected && isFlashing ? "bg-emerald-100 dark:bg-emerald-900/40" : "",
+                      !isWrong && !isSelected && !isFlashing && isSameValue ? "bg-primary/15" : "",
+                      !isWrong && !isSelected && !isFlashing && !isSameValue && isRelated
                         ? "bg-primary/5"
                         : "",
-                      !isWrong && !isSelected && !isRelated && !isSameValue
+                      !isWrong && !isSelected && !isFlashing && !isRelated && !isSameValue
                         ? "bg-background"
                         : "",
                       isInitial && !isSelected ? "font-bold text-foreground" : "",
