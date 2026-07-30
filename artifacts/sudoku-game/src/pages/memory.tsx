@@ -590,7 +590,7 @@ export default function MemoryMatchPage() {
                 <div>
                   <p className="font-semibold">{opt.desc}</p>
                   <p className="text-xs text-muted-foreground">
-                    {opt.size === 2 || opt.size === 4 ? '+1 XP · min 1 💎' : opt.size === 6 ? '+2 XP · min 1 💎' : '+3 XP · min 1 💎'}
+                    {opt.size === 2 || opt.size === 4 ? '+1 XP · 1 💎' : opt.size === 6 ? '+2 XP · 2 💎' : '+3 XP · 3 💎'}
                   </p>
                 </div>
               </div>

@@ -1110,7 +1110,9 @@ export default function Game({ id }: { id: string }) {
   const diff = game?.puzzle?.difficulty ?? "";
   const diffLabel = diff.charAt(0).toUpperCase() + diff.slice(1);
   const sizeLabel = `${gridSize}×${gridSize}`;
-  const gemsEarned = pointsEarned !== null ? Math.max(1, Math.floor(pointsEarned / 5000)) : null;
+  const gemsEarned = pointsEarned !== null
+    ? ({ easy: 1, medium: 2, hard: 3, expert: 3 }[diff] ?? 1)
+    : null;
 
   // ── Full-page Game Over result screen ────────────────────────────────────────
   if (isGameOver) {

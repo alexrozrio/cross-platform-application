@@ -237,7 +237,7 @@ router.post("/games/:id/complete", async (req, res): Promise<void> => {
   const points = puzzle
     ? calcPoints(puzzle.gridSize, puzzle.difficulty, elapsed, mistakes, hints)
     : 0;
-  const gemsEarned = calcGems(points);
+  const gemsEarned = puzzle ? calcGems(puzzle.difficulty) : 1;
   const xpEarned = puzzle ? (XP_PER_DIFFICULTY[puzzle.difficulty] ?? 1) : 1;
 
   const [game] = await db

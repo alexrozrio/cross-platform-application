@@ -36,8 +36,11 @@ function calcMemoryPoints(gridSize: number, elapsedSeconds: number, flips: numbe
   return Math.max(10, Math.round(base * (1 + timeBonus) * flipPenalty * tipPenalty));
 }
 
-function calcMemoryGems(points: number): number {
-  return Math.max(1, Math.floor(points / 5000));
+/** Gems per memory game: 1 for beginner/easy (2×4, 4×4), 2 for medium (6×6), 3 for hard (8×8) */
+function calcMemoryGems(gridSize: number): number {
+  if (gridSize <= 4) return 1;
+  if (gridSize === 6) return 2;
+  return 3;
 }
 
 // ─── POST /memory-games  (create) ────────────────────────────────────────────
@@ -108,7 +111,7 @@ router.post("/memory-games/:id/complete", async (req, res): Promise<void> => {
 
   const points = calcMemoryPoints(existing.gridSize, elapsedSeconds, flips, tips);
   const xpEarned = XP_PER_SIZE[existing.gridSize] ?? 1;
-  const gemsEarned = calcMemoryGems(points);
+  const gemsEarned = calcMemoryGems(existing.gridSize);
 
   const [game] = await db
     .update(memoryGamesTable)

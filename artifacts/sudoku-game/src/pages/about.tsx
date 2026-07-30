@@ -19,7 +19,7 @@ const MEMORY_FEATURES = [
 const SHARED_FEATURES = [
   { icon: Trophy, label: "Leaderboards & badges", desc: "Weekly and monthly tournaments with shareable winner badges." },
   { icon: BarChart2, label: "Personal stats", desc: "Track your win rate, average time, and progress across difficulties." },
-  { icon: Gem, label: "Gem rewards", desc: "Earn gems by completing puzzles and logging in daily." },
+  { icon: Gem, label: "Gem rewards", desc: "Earn 1–3 💎 per puzzle based on difficulty, plus daily login bonuses." },
 ];
 
 export default function About() {

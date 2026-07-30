@@ -29,8 +29,13 @@ const SUDOKU_PAR: Record<number, number> = {
   16: 2700,
 };
 
-// Gems earned per 5000 points (rounded down per game)
-const GEMS_PER_POINTS = 5000;
+// Gems earned per difficulty tier
+const GEMS_BY_DIFFICULTY: Record<string, number> = {
+  easy: 1,
+  medium: 2,
+  hard: 3,
+  expert: 3,
+};
 
 export function calcPoints(
   gridSize: number,
@@ -52,7 +57,7 @@ export function calcPoints(
   return Math.max(10, Math.round(base * (1 + timeBonus) * mistakePenalty * hintPenalty));
 }
 
-/** How many gems a game completion is worth */
-export function calcGems(points: number): number {
-  return Math.max(1, Math.floor(points / GEMS_PER_POINTS));
+/** How many gems a sudoku game completion is worth — based on difficulty */
+export function calcGems(difficulty: string): number {
+  return GEMS_BY_DIFFICULTY[difficulty] ?? 1;
 }
