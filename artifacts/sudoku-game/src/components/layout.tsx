@@ -191,7 +191,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             title={item.tooltip}
             className="flex flex-col items-center gap-0.5 text-xs min-w-[48px] py-1"
           >
-            <div className={`relative p-1.5 rounded-xl transition-colors ${isActive(item.href) ? `${item.activeBgCls} ${item.activeIconCls}` : `text-muted-foreground hover:${item.iconCls}`}`}>
+            <div className={`relative p-1.5 rounded-xl transition-colors ${isActive(item.href) ? `${item.activeBgCls} ${item.activeIconCls}` : item.iconCls}`}>
               {isSignedIn && item.href === "/profile" && replitUser?.profileImageUrl ? (
                 <img src={replitUser.profileImageUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
               ) : (
@@ -199,7 +199,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               )}
               <NotifBadge count={item.badge} />
             </div>
-            <span className={`text-[10px] transition-colors ${isActive(item.href) ? `font-semibold ${item.activeIconCls}` : "text-muted-foreground"}`}>
+            <span className={`text-[10px] transition-colors ${isActive(item.href) ? `font-semibold ${item.activeIconCls}` : item.iconCls}`}>
               {item.shortLabel}
             </span>
           </Link>
