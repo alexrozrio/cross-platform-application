@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useImageTheme } from '@/hooks/use-image-theme';
 import { ThemeIcon } from '@/components/theme-icons';
 import { Badge } from '@/components/ui/badge';
-import { Grid3x2 as Grid3X3, Sparkles, Loader as Loader2, RotateCcw } from 'lucide-react';
+import { Grid3x2 as Grid3X3, Sparkles, Loader as Loader2, RotateCcw, Flame } from 'lucide-react';
 import { customFetch, useGetProfile } from '@workspace/api-client-react';
 import { getLevelFromXp } from '@/lib/levels';
 import { getTheme } from '@/lib/themes';
@@ -37,7 +37,7 @@ const GRID_QUICK_START = [
 ];
 
 export default function Portal() {
-  const [location, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
   const { profileId, isReady } = useAuth();
   const { themeId } = useImageTheme();
   const [loadingSize, setLoadingSize] = useState<number | null>(null);
@@ -69,15 +69,13 @@ export default function Portal() {
   const [activeGame, setActiveGame] = useState<ActiveGame | null>(null);
   const [memorySession, setMemorySession] = useState<MemorySession | null>(null);
 
-  // Fetch active Sudoku game
   useEffect(() => {
     if (!profileId || !isReady) return;
     customFetch<ActiveGame>(`/api/games/active/${profileId}`)
       .then(g => setActiveGame(g))
       .catch(() => setActiveGame(null));
-  }, [profileId, isReady, location]);
+  }, [profileId, isReady]);
 
-  // Read Memory Match localStorage session
   useEffect(() => {
     try {
       const raw = localStorage.getItem('brain-games-memory-session');
@@ -92,12 +90,11 @@ export default function Portal() {
     } catch {
       setMemorySession(null);
     }
-  }, [location]);
+  }, []);
 
   const handleQuickStart = async (size: number) => {
     if (!isReady || !profileId || loadingSize !== null) return;
     setLoadingSize(size);
-    // Use the difficulty the player last chose (persisted by home.tsx), defaulting to easy.
     const difficulty = (() => {
       try {
         const stored = localStorage.getItem('sudoku-last-difficulty');
@@ -123,252 +120,457 @@ export default function Portal() {
     }
   };
 
+  const sudokuGridCols = visibleSudokuSizes.length <= 2 ? 'grid-cols-2' : visibleSudokuSizes.length === 3 ? 'grid-cols-3' : visibleSudokuSizes.length === 4 ? 'grid-cols-4' : 'grid-cols-5';
+  const memoryGridCols = visibleMemoryOptions.length <= 2 ? 'grid-cols-2' : visibleMemoryOptions.length === 3 ? 'grid-cols-3' : 'grid-cols-4';
+
   return (
-    <div className="space-y-10 animate-in fade-in duration-500 pb-8">
-      <div className="text-center space-y-2 pt-4">
-        <h1 className="text-4xl font-serif font-bold tracking-tight">Brain Games 4 All</h1>
-        <p className="text-muted-foreground text-lg">Choose your game and play</p>
-        {!profileId && isReady && (
-          <p className="text-sm text-muted-foreground">
-            <button className="underline underline-offset-2 hover:text-foreground transition-colors" onClick={() => setLocation('/sign-in')}>
-              Sign in
-            </button>{' '}to sync progress across devices
-          </p>
-        )}
-      </div>
+    <div className="animate-in fade-in duration-500 pb-8">
 
-      {/* Rank quick-stats banner */}
-      {profile && (() => {
-        const xp = profile.xp ?? 0;
-        const level = getLevelFromXp(xp);
-        return (
-          <button
-            onClick={() => setLocation('/profile')}
-            className="w-full text-left rounded-2xl px-4 py-3 flex items-center gap-4 transition-all hover:opacity-90 active:scale-[0.99]"
-            style={{
-              background: `linear-gradient(135deg, ${level.color}22 0%, ${level.ring}18 100%)`,
-              border: `1.5px solid ${level.ring}55`,
-            }}
-          >
-            <div
-              className="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm shrink-0"
-              style={{ backgroundColor: level.color, color: level.textColor, boxShadow: `0 0 0 2.5px ${level.ring}` }}
-            >
-              {level.index + 1}
-            </div>
-            <div className="flex-1 min-w-0 space-y-1.5">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-black" style={{ color: level.color }}>{level.name}</span>
-                <span className="text-xs text-muted-foreground tabular-nums">{xp.toLocaleString()} XP</span>
-              </div>
-              {level.nextTier ? (
-                <>
-                  <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: `${level.color}22` }}>
-                    <div
-                      className="h-full rounded-full transition-all"
-                      style={{ width: `${level.progress}%`, backgroundColor: level.color }}
-                    />
-                  </div>
-                  <p className="text-[10px] text-muted-foreground">
-                    {(level.nextTier.minXp - xp).toLocaleString()} XP to <span style={{ color: level.nextTier.color, fontWeight: 700 }}>{level.nextTier.name}</span>
-                  </p>
-                </>
-              ) : (
-                <p className="text-xs font-semibold" style={{ color: level.color }}>🏆 Max Rank</p>
-              )}
-            </div>
-          </button>
-        );
-      })()}
+      {/* ═══════════════════════════════════════════════════════════
+          MOBILE QUICK LAUNCH — shown only on mobile (top of screen)
+          ═══════════════════════════════════════════════════════════ */}
+      <div className="md:hidden space-y-3 mb-6">
 
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Available Games</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Sudoku Card */}
-          <div className="group relative rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 overflow-hidden">
-            {/* Clickable card body → goes to /sudoku */}
+        {/* Resume strips */}
+        {activeGame && (() => {
+          const gs = activeGame.puzzle?.gridSize;
+          const validForMode =
+            gameMode === 'children' ? [3, 4, 6].includes(gs!) :
+            gameMode === 'adult'    ? [9, 16].includes(gs!) : true;
+          return validForMode ? (
             <button
-              onClick={() => setLocation('/sudoku')}
-              className="w-full text-left p-6 space-y-4 hover:from-primary/15 hover:to-primary/10 hover:border-primary/40 transition-all duration-200"
+              onClick={() => setLocation(`/game/${activeGame.id}`)}
+              className="w-full flex items-center gap-3 rounded-xl border-2 border-primary/30 bg-primary/5 px-4 py-2.5 text-left hover:bg-primary/10 transition-all"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center ring-1 ring-primary/20">
-                  <Grid3X3 className="w-7 h-7 text-primary" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold font-serif">Sudoku</h2>
-                  <p className="text-xs text-muted-foreground">Number puzzle</p>
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Fill the grid so every row, column, and box contains each symbol exactly once.
-              </p>
-              <div className="flex gap-1">
-                {[1, 2, 3, 4].map(n => (
-                  <div key={n} className="opacity-80 group-hover:opacity-100 transition-opacity">
-                    <ThemeIcon themeId={themeId} value={n} size={22} />
-                  </div>
-                ))}
-                <span className="text-muted-foreground/60 text-xs self-end pb-0.5">…</span>
-              </div>
-            </button>
-
-            {/* Resume strip — only show if the game's grid size is valid for the current mode */}
-            {activeGame && (() => {
-              const gs = activeGame.puzzle?.gridSize;
-              const validForMode =
-                gameMode === 'children' ? [3, 4, 6].includes(gs!) :
-                gameMode === 'adult'    ? [9, 16].includes(gs!) :
-                true;
-              return validForMode;
-            })() && (
-              <button
-                onClick={() => setLocation(`/game/${activeGame.id}`)}
-                className="mx-6 mb-3 flex items-center gap-2 rounded-lg bg-primary/10 border border-primary/25 px-3 py-2 text-left hover:bg-primary/20 transition-colors w-[calc(100%-3rem)]"
-              >
-                <RotateCcw className="w-3.5 h-3.5 text-primary shrink-0" />
-                <span className="text-xs font-semibold text-primary">Resume in progress</span>
+              <RotateCcw className="w-4 h-4 text-primary shrink-0" />
+              <div className="flex-1 min-w-0">
+                <span className="text-sm font-semibold text-primary">Resume Sudoku</span>
                 {activeGame.puzzle && (
-                  <span className="text-[10px] text-muted-foreground capitalize ml-auto">
+                  <span className="text-xs text-muted-foreground capitalize ml-2">
                     {activeGame.puzzle.gridSize}×{activeGame.puzzle.gridSize} · {activeGame.puzzle.difficulty}
                   </span>
                 )}
-              </button>
-            )}
-
-            {/* Quick-start grid: each badge directly starts a game */}
-            <div className="px-6 pb-2">
-              <p className="text-[10px] text-muted-foreground mb-2">Tap a size to jump right in</p>
-              <div className={`grid gap-1.5 ${visibleSudokuSizes.length === 2 ? 'grid-cols-2' : 'grid-cols-4'}`}>
-                {visibleSudokuSizes.map(opt => (
-                  <button
-                    key={opt.size}
-                    onClick={() => handleQuickStart(opt.size)}
-                    disabled={loadingSize !== null || !isReady}
-                    className="flex flex-col items-center justify-center rounded-lg border border-primary/20 bg-primary/5 hover:bg-primary/15 hover:border-primary/40 transition-all py-2 px-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-h-[52px]"
-                  >
-                    {loadingSize === opt.size ? (
-                      <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                    ) : (
-                      <>
-                        <span className="font-bold text-xs leading-none text-primary">{opt.label}</span>
-                        <span className="text-[10px] text-muted-foreground mt-0.5 leading-none">{opt.sublabel}</span>
-                      </>
-                    )}
-                  </button>
-                ))}
               </div>
-            </div>
-            <div className="px-6 pb-5 pt-1">
-              <button
-                onClick={() => setLocation('/sudoku')}
-                className="text-[10px] text-primary/70 hover:text-primary underline underline-offset-2 transition-colors"
-              >
-                More options (difficulty, play style) →
-              </button>
-            </div>
+              <span className="text-primary text-sm shrink-0">→</span>
+            </button>
+          ) : null;
+        })()}
 
-            <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-green-400" title="Available" />
+        {memorySession && (() => {
+          const gs = memorySession.gridSize;
+          const validForMode =
+            gameMode === 'children' ? [2, 4].includes(gs) :
+            gameMode === 'adult'    ? [6, 8].includes(gs) : true;
+          if (!validForMode) return null;
+          const matched = memorySession.cards.filter(c => c.matched).length;
+          const total = memorySession.cards.length / 2;
+          const sizeLabel = gs === 2 ? '2×4' : gs === 4 ? '4×4' : gs === 6 ? '4×8' : '8×8';
+          return (
+            <button
+              onClick={() => setLocation('/memory')}
+              className="w-full flex items-center gap-3 rounded-xl border-2 border-violet-400/30 bg-violet-500/5 px-4 py-2.5 text-left hover:bg-violet-500/10 transition-all"
+            >
+              <RotateCcw className="w-4 h-4 text-violet-600 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <span className="text-sm font-semibold text-violet-700 dark:text-violet-400">Resume Memory Match</span>
+                <span className="text-xs text-muted-foreground ml-2">{sizeLabel} · {matched}/{total} pairs</span>
+              </div>
+              <span className="text-violet-500 text-sm shrink-0">→</span>
+            </button>
+          );
+        })()}
+
+        {/* Sudoku quick launch */}
+        <div className="rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/8 to-primary/3 p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Grid3X3 className="w-4 h-4 text-primary" />
+              <span className="font-bold text-sm">Sudoku</span>
+            </div>
+            <button
+              onClick={() => setLocation('/sudoku')}
+              className="text-xs text-primary/70 hover:text-primary transition-colors underline underline-offset-2"
+            >
+              More options →
+            </button>
           </div>
+          <div className={`grid gap-2 ${sudokuGridCols}`}>
+            {visibleSudokuSizes.map(opt => (
+              <button
+                key={opt.size}
+                onClick={() => handleQuickStart(opt.size)}
+                disabled={loadingSize !== null || !isReady}
+                className="flex flex-col items-center justify-center rounded-xl border-2 border-primary/25 bg-background hover:bg-primary/10 hover:border-primary/50 transition-all py-3 px-2 disabled:opacity-50 disabled:cursor-not-allowed min-h-[60px]"
+              >
+                {loadingSize === opt.size ? (
+                  <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                ) : (
+                  <>
+                    <span className="font-black text-sm leading-none text-primary">{opt.label}</span>
+                    <span className="text-[11px] text-muted-foreground mt-1 leading-none">{opt.sublabel}</span>
+                  </>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
 
-          {/* Memory Match Card */}
-          {(() => {
-            const theme = getTheme(themeId as any);
-            const previewSymbols = theme.symbols.slice(0, 4);
-            return (
-              <div className="group relative rounded-2xl border-2 border-violet-400/25 bg-gradient-to-br from-violet-500/10 to-purple-500/5 overflow-hidden">
-                <button
-                  onClick={() => setLocation('/memory')}
-                  className="w-full text-left p-6 space-y-4 hover:from-violet-500/15 hover:to-purple-500/10 hover:border-violet-400/40 transition-all duration-200"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-xl bg-violet-500/10 flex items-center justify-center ring-1 ring-violet-400/20 text-3xl">
-                      🃏
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-bold font-serif">Memory Match</h2>
-                      <p className="text-xs text-muted-foreground">Card matching game</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Flip cards to find matching pairs. Beat the clock and minimise your flips to maximise your score.
-                  </p>
-                  <div className="flex gap-1 items-center">
-                    {previewSymbols.map((sym, i) => (
-                      <span key={i} className="text-xl leading-none opacity-80 group-hover:opacity-100 transition-opacity">{sym}</span>
-                    ))}
-                    <span className="text-muted-foreground/60 text-xs self-end pb-0.5 ml-1">…</span>
-                  </div>
-                </button>
-                {/* Memory resume strip — only show if session grid size is valid for the current mode */}
-                {memorySession && (() => {
-                  const gs = memorySession.gridSize;
-                  const validForMode =
-                    gameMode === 'children' ? [2, 4].includes(gs) :
-                    gameMode === 'adult'    ? [6, 8].includes(gs) :
-                    true;
-                  if (!validForMode) return null;
-                  const matched = memorySession.cards.filter(c => c.matched).length;
-                  const total = memorySession.cards.length / 2;
-                  const sizeLabel = gs === 2 ? '2×4' : gs === 4 ? '4×4' : gs === 6 ? '4×8' : '8×8';
-                  return (
-                    <button
-                      onClick={() => setLocation('/memory')}
-                      className="mx-6 mb-3 flex items-center gap-2 rounded-lg bg-violet-500/10 border border-violet-400/25 px-3 py-2 text-left hover:bg-violet-500/20 transition-colors w-[calc(100%-3rem)]"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5 text-violet-600 shrink-0" />
-                      <span className="text-xs font-semibold text-violet-700 dark:text-violet-400">Resume in progress</span>
-                      <span className="text-[10px] text-muted-foreground ml-auto">
-                        {sizeLabel} · {matched}/{total} pairs
-                      </span>
-                    </button>
-                  );
-                })()}
+        {/* Memory Match quick launch */}
+        <div className="rounded-2xl border-2 border-violet-400/25 bg-gradient-to-br from-violet-500/8 to-purple-500/3 p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-base leading-none">🃏</span>
+              <span className="font-bold text-sm">Memory Match</span>
+            </div>
+            <button
+              onClick={() => setLocation('/memory')}
+              className="text-xs text-violet-500/70 hover:text-violet-600 transition-colors underline underline-offset-2"
+            >
+              More options →
+            </button>
+          </div>
+          <div className={`grid gap-2 ${memoryGridCols}`}>
+            {visibleMemoryOptions.map(opt => (
+              <button
+                key={opt.size}
+                onClick={() => setLocation(`/memory?size=${opt.size}`)}
+                className="flex flex-col items-center justify-center rounded-xl border-2 border-violet-400/20 bg-background hover:bg-violet-500/10 hover:border-violet-400/50 transition-all py-3 px-2 min-h-[60px]"
+              >
+                <span className="font-black text-sm leading-none text-violet-600">{opt.label}</span>
+                <span className="text-[11px] text-muted-foreground mt-1 leading-none">{opt.sub}</span>
+              </button>
+            ))}
+          </div>
+        </div>
 
-                <div className="px-6 pb-5 pt-1">
-                  <div className={`grid gap-1.5 ${visibleMemoryOptions.length === 2 ? 'grid-cols-2' : 'grid-cols-4'}`}>
-                    {visibleMemoryOptions.map(opt => (
-                      <button
-                        key={opt.size}
-                        onClick={() => setLocation(`/memory?size=${opt.size}`)}
-                        className="flex flex-col items-center justify-center rounded-lg border border-violet-400/20 bg-violet-500/5 hover:bg-violet-500/15 hover:border-violet-400/40 transition-all py-2 px-1 cursor-pointer min-h-[52px]"
-                      >
-                        <span className="font-bold text-xs leading-none text-violet-600">{opt.label}</span>
-                        <span className="text-[10px] text-muted-foreground mt-0.5 leading-none">{opt.sub}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-green-400" title="Available" />
+        {/* Daily Challenge */}
+        <button
+          onClick={() => setLocation('/daily-challenge')}
+          className="w-full flex items-center gap-3 rounded-xl border-2 border-orange-200/70 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 dark:border-orange-800/30 px-4 py-3 hover:border-orange-300 transition-all text-left"
+        >
+          <Flame className="w-5 h-5 text-orange-500 shrink-0" />
+          <div className="flex-1">
+            <p className="font-semibold text-sm">Daily Challenge</p>
+            <p className="text-xs text-muted-foreground">Same puzzle for everyone · Resets at midnight</p>
+          </div>
+          <span className="text-orange-400 text-sm shrink-0">→</span>
+        </button>
+
+        {/* Level banner (mobile) */}
+        {profile && (() => {
+          const xp = profile.xp ?? 0;
+          const level = getLevelFromXp(xp);
+          return (
+            <button
+              onClick={() => setLocation('/profile')}
+              className="w-full text-left rounded-2xl px-4 py-3 flex items-center gap-3 transition-all hover:opacity-90 active:scale-[0.99]"
+              style={{
+                background: `linear-gradient(135deg, ${level.color}22 0%, ${level.ring}18 100%)`,
+                border: `1.5px solid ${level.ring}55`,
+              }}
+            >
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center font-black text-xs shrink-0"
+                style={{ backgroundColor: level.color, color: level.textColor, boxShadow: `0 0 0 2.5px ${level.ring}` }}
+              >
+                {level.index + 1}
               </div>
-            );
-          })()}
+              <div className="flex-1 min-w-0 space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-black" style={{ color: level.color }}>{level.name}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums">{xp.toLocaleString()} XP</span>
+                </div>
+                {level.nextTier && (
+                  <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: `${level.color}22` }}>
+                    <div className="h-full rounded-full" style={{ width: `${level.progress}%`, backgroundColor: level.color }} />
+                  </div>
+                )}
+              </div>
+            </button>
+          );
+        })()}
+
+        {/* Title / sign-in note (mobile, at bottom of this section) */}
+        <div className="pt-1 space-y-1">
+          <h1 className="text-2xl font-serif font-bold tracking-tight">Brain Games 4 All</h1>
+          <p className="text-sm text-muted-foreground">Two classic brain games, endlessly replayable</p>
+          {!profileId && isReady && (
+            <p className="text-xs text-muted-foreground">
+              <button className="underline underline-offset-2 hover:text-foreground transition-colors" onClick={() => setLocation('/sign-in')}>
+                Sign in
+              </button>{' '}to sync progress across devices
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Coming soon */}
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
-          <Sparkles className="w-3.5 h-3.5" /> Coming Soon
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {COMING_SOON.map(game => (
-            <div
-              key={game.title}
-              className={`rounded-2xl border bg-gradient-to-br ${game.color} p-6 space-y-3 opacity-60 cursor-not-allowed select-none`}
+      {/* ═══════════════════════════════════════════════════════════
+          DESKTOP LAYOUT — full cards with embedded quick-start
+          ═══════════════════════════════════════════════════════════ */}
+      <div className="hidden md:block space-y-10">
+        {/* Title */}
+        <div className="text-center space-y-2 pt-4">
+          <h1 className="text-4xl font-serif font-bold tracking-tight">Brain Games 4 All</h1>
+          <p className="text-muted-foreground text-lg">Choose your game and play</p>
+          {!profileId && isReady && (
+            <p className="text-sm text-muted-foreground">
+              <button className="underline underline-offset-2 hover:text-foreground transition-colors" onClick={() => setLocation('/sign-in')}>
+                Sign in
+              </button>{' '}to sync progress across devices
+            </p>
+          )}
+        </div>
+
+        {/* Level banner */}
+        {profile && (() => {
+          const xp = profile.xp ?? 0;
+          const level = getLevelFromXp(xp);
+          return (
+            <button
+              onClick={() => setLocation('/profile')}
+              className="w-full text-left rounded-2xl px-4 py-3 flex items-center gap-4 transition-all hover:opacity-90 active:scale-[0.99]"
+              style={{
+                background: `linear-gradient(135deg, ${level.color}22 0%, ${level.ring}18 100%)`,
+                border: `1.5px solid ${level.ring}55`,
+              }}
             >
-              <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-xl bg-white/40 flex items-center justify-center text-3xl">
-                  {game.icon}
+              <div
+                className="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm shrink-0"
+                style={{ backgroundColor: level.color, color: level.textColor, boxShadow: `0 0 0 2.5px ${level.ring}` }}
+              >
+                {level.index + 1}
+              </div>
+              <div className="flex-1 min-w-0 space-y-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-black" style={{ color: level.color }}>{level.name}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums">{xp.toLocaleString()} XP</span>
                 </div>
+                {level.nextTier ? (
+                  <>
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: `${level.color}22` }}>
+                      <div className="h-full rounded-full transition-all" style={{ width: `${level.progress}%`, backgroundColor: level.color }} />
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      {(level.nextTier.minXp - xp).toLocaleString()} XP to <span style={{ color: level.nextTier.color, fontWeight: 700 }}>{level.nextTier.name}</span>
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-xs font-semibold" style={{ color: level.color }}>🏆 Max Rank</p>
+                )}
+              </div>
+            </button>
+          );
+        })()}
+
+        {/* Game cards */}
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Available Games</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+            {/* Sudoku Card */}
+            <div className="group relative rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 overflow-hidden">
+              <button onClick={() => setLocation('/sudoku')} className="w-full text-left p-6 space-y-4 hover:from-primary/15 hover:to-primary/10 hover:border-primary/40 transition-all duration-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center ring-1 ring-primary/20">
+                    <Grid3X3 className="w-7 h-7 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold font-serif">Sudoku</h2>
+                    <p className="text-xs text-muted-foreground">Number puzzle</p>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Fill the grid so every row, column, and box contains each symbol exactly once.
+                </p>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4].map(n => (
+                    <div key={n} className="opacity-80 group-hover:opacity-100 transition-opacity">
+                      <ThemeIcon themeId={themeId} value={n} size={22} />
+                    </div>
+                  ))}
+                  <span className="text-muted-foreground/60 text-xs self-end pb-0.5">…</span>
+                </div>
+              </button>
+
+              {activeGame && (() => {
+                const gs = activeGame.puzzle?.gridSize;
+                const validForMode =
+                  gameMode === 'children' ? [3, 4, 6].includes(gs!) :
+                  gameMode === 'adult'    ? [9, 16].includes(gs!) : true;
+                return validForMode ? (
+                  <button
+                    onClick={() => setLocation(`/game/${activeGame.id}`)}
+                    className="mx-6 mb-3 flex items-center gap-2 rounded-lg bg-primary/10 border border-primary/25 px-3 py-2 text-left hover:bg-primary/20 transition-colors w-[calc(100%-3rem)]"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 text-primary shrink-0" />
+                    <span className="text-xs font-semibold text-primary">Resume in progress</span>
+                    {activeGame.puzzle && (
+                      <span className="text-[10px] text-muted-foreground capitalize ml-auto">
+                        {activeGame.puzzle.gridSize}×{activeGame.puzzle.gridSize} · {activeGame.puzzle.difficulty}
+                      </span>
+                    )}
+                  </button>
+                ) : null;
+              })()}
+
+              <div className="px-6 pb-2">
+                <p className="text-[10px] text-muted-foreground mb-2">Tap a size to jump right in</p>
+                <div className={`grid gap-1.5 ${visibleSudokuSizes.length === 2 ? 'grid-cols-2' : 'grid-cols-4'}`}>
+                  {visibleSudokuSizes.map(opt => (
+                    <button
+                      key={opt.size}
+                      onClick={() => handleQuickStart(opt.size)}
+                      disabled={loadingSize !== null || !isReady}
+                      className="flex flex-col items-center justify-center rounded-lg border border-primary/20 bg-primary/5 hover:bg-primary/15 hover:border-primary/40 transition-all py-2 px-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-h-[52px]"
+                    >
+                      {loadingSize === opt.size ? (
+                        <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                      ) : (
+                        <>
+                          <span className="font-bold text-xs leading-none text-primary">{opt.label}</span>
+                          <span className="text-[10px] text-muted-foreground mt-0.5 leading-none">{opt.sublabel}</span>
+                        </>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="px-6 pb-5 pt-1">
+                <button onClick={() => setLocation('/sudoku')} className="text-[10px] text-primary/70 hover:text-primary underline underline-offset-2 transition-colors">
+                  More options (difficulty, play style) →
+                </button>
+              </div>
+              <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-green-400" title="Available" />
+            </div>
+
+            {/* Memory Match Card */}
+            {(() => {
+              const theme = getTheme(themeId as any);
+              const previewSymbols = theme.symbols.slice(0, 4);
+              return (
+                <div className="group relative rounded-2xl border-2 border-violet-400/25 bg-gradient-to-br from-violet-500/10 to-purple-500/5 overflow-hidden">
+                  <button onClick={() => setLocation('/memory')} className="w-full text-left p-6 space-y-4 hover:from-violet-500/15 hover:to-purple-500/10 hover:border-violet-400/40 transition-all duration-200">
+                    <div className="flex items-center gap-3">
+                      <div className="w-14 h-14 rounded-xl bg-violet-500/10 flex items-center justify-center ring-1 ring-violet-400/20 text-3xl">🃏</div>
+                      <div>
+                        <h2 className="text-xl font-bold font-serif">Memory Match</h2>
+                        <p className="text-xs text-muted-foreground">Card matching game</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Flip cards to find matching pairs. Beat the clock and minimise your flips to maximise your score.
+                    </p>
+                    <div className="flex gap-1 items-center">
+                      {previewSymbols.map((sym, i) => (
+                        <span key={i} className="text-xl leading-none opacity-80 group-hover:opacity-100 transition-opacity">{sym}</span>
+                      ))}
+                      <span className="text-muted-foreground/60 text-xs self-end pb-0.5 ml-1">…</span>
+                    </div>
+                  </button>
+                  {memorySession && (() => {
+                    const gs = memorySession.gridSize;
+                    const validForMode =
+                      gameMode === 'children' ? [2, 4].includes(gs) :
+                      gameMode === 'adult'    ? [6, 8].includes(gs) : true;
+                    if (!validForMode) return null;
+                    const matched = memorySession.cards.filter(c => c.matched).length;
+                    const total = memorySession.cards.length / 2;
+                    const sizeLabel = gs === 2 ? '2×4' : gs === 4 ? '4×4' : gs === 6 ? '4×8' : '8×8';
+                    return (
+                      <button
+                        onClick={() => setLocation('/memory')}
+                        className="mx-6 mb-3 flex items-center gap-2 rounded-lg bg-violet-500/10 border border-violet-400/25 px-3 py-2 text-left hover:bg-violet-500/20 transition-colors w-[calc(100%-3rem)]"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5 text-violet-600 shrink-0" />
+                        <span className="text-xs font-semibold text-violet-700 dark:text-violet-400">Resume in progress</span>
+                        <span className="text-[10px] text-muted-foreground ml-auto">{sizeLabel} · {matched}/{total} pairs</span>
+                      </button>
+                    );
+                  })()}
+                  <div className="px-6 pb-5 pt-1">
+                    <div className={`grid gap-1.5 ${visibleMemoryOptions.length === 2 ? 'grid-cols-2' : 'grid-cols-4'}`}>
+                      {visibleMemoryOptions.map(opt => (
+                        <button
+                          key={opt.size}
+                          onClick={() => setLocation(`/memory?size=${opt.size}`)}
+                          className="flex flex-col items-center justify-center rounded-lg border border-violet-400/20 bg-violet-500/5 hover:bg-violet-500/15 hover:border-violet-400/40 transition-all py-2 px-1 cursor-pointer min-h-[52px]"
+                        >
+                          <span className="font-bold text-xs leading-none text-violet-600">{opt.label}</span>
+                          <span className="text-[10px] text-muted-foreground mt-0.5 leading-none">{opt.sub}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-green-400" title="Available" />
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+
+        {/* Coming soon (desktop) */}
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
+            <Sparkles className="w-3.5 h-3.5" /> Coming Soon
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {COMING_SOON.map(game => (
+              <div key={game.title} className={`rounded-2xl border bg-gradient-to-br ${game.color} p-6 space-y-3 opacity-60 cursor-not-allowed select-none`}>
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-xl bg-white/40 flex items-center justify-center text-3xl">{game.icon}</div>
+                  <div>
+                    <h2 className="text-xl font-bold font-serif">{game.title}</h2>
+                    <Badge variant="outline" className="text-xs mt-0.5 border-current/30">Soon</Badge>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed">{game.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════
+          GAME INFO CARDS — mobile only (descriptions / discovery)
+          shown below the quick launch section
+          ═══════════════════════════════════════════════════════════ */}
+      <div className="md:hidden space-y-6 mt-2">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">About the games</p>
+          <div className="space-y-3">
+            <div className="rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/5 to-transparent p-4 flex gap-3 items-start">
+              <Grid3X3 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+              <div>
+                <p className="font-semibold text-sm">Sudoku</p>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">Fill the grid so every row, column, and box contains each symbol exactly once. 5 grid sizes, 4 difficulty levels.</p>
+              </div>
+            </div>
+            <div className="rounded-2xl border border-violet-400/15 bg-gradient-to-br from-violet-500/5 to-transparent p-4 flex gap-3 items-start">
+              <span className="text-lg mt-0.5 shrink-0">🃏</span>
+              <div>
+                <p className="font-semibold text-sm">Memory Match</p>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">Flip cards to find matching pairs. Beat the clock and minimise your flips to maximise your score.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Coming soon (mobile) */}
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
+            <Sparkles className="w-3.5 h-3.5" /> Coming Soon
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            {COMING_SOON.map(game => (
+              <div key={game.title} className={`rounded-2xl border bg-gradient-to-br ${game.color} p-4 space-y-1.5 opacity-60 cursor-not-allowed select-none`}>
+                <span className="text-2xl">{game.icon}</span>
                 <div>
-                  <h2 className="text-xl font-bold font-serif">{game.title}</h2>
+                  <p className="font-bold text-sm">{game.title}</p>
                   <Badge variant="outline" className="text-xs mt-0.5 border-current/30">Soon</Badge>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">{game.description}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
