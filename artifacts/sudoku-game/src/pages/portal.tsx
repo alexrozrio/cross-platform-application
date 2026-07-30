@@ -243,18 +243,36 @@ export default function Portal() {
           </div>
         </div>
 
-        {/* Daily Challenge */}
-        <button
-          onClick={() => setLocation('/daily-challenge')}
-          className="w-full flex items-center gap-3 rounded-xl border-2 border-orange-200/70 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 dark:border-orange-800/30 px-4 py-3 hover:border-orange-300 transition-all text-left"
-        >
-          <Flame className="w-5 h-5 text-orange-500 shrink-0" />
-          <div className="flex-1">
-            <p className="font-semibold text-sm">Daily Challenge</p>
-            <p className="text-xs text-muted-foreground">Same puzzle for everyone · Resets at midnight</p>
+        {/* Daily Challenges */}
+        <div className="rounded-2xl border-2 border-orange-200/70 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 dark:border-orange-800/30 p-4 space-y-2">
+          <div className="flex items-center gap-2 mb-1">
+            <Flame className="w-4 h-4 text-orange-500 shrink-0" />
+            <span className="font-bold text-sm">Daily Challenges</span>
+            <span className="text-xs text-muted-foreground ml-auto">Resets at midnight</span>
           </div>
-          <span className="text-orange-400 text-sm shrink-0">→</span>
-        </button>
+          <button
+            onClick={() => setLocation('/daily-challenge')}
+            className="w-full flex items-center gap-3 rounded-xl border border-orange-200 bg-white/60 dark:bg-orange-950/30 px-3 py-2.5 text-left hover:bg-white/90 dark:hover:bg-orange-950/50 transition-all"
+          >
+            <span className="text-lg leading-none shrink-0">🔢</span>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sm">Sudoku</p>
+              <p className="text-xs text-muted-foreground">One shared puzzle per day</p>
+            </div>
+            <span className="text-orange-400 text-sm shrink-0">→</span>
+          </button>
+          <button
+            onClick={() => setLocation('/memory-challenge')}
+            className="w-full flex items-center gap-3 rounded-xl border border-orange-200 bg-white/60 dark:bg-orange-950/30 px-3 py-2.5 text-left hover:bg-white/90 dark:hover:bg-orange-950/50 transition-all"
+          >
+            <span className="text-lg leading-none shrink-0">🃏</span>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sm">Memory Match</p>
+              <p className="text-xs text-muted-foreground">Daily + weekly challenge</p>
+            </div>
+            <span className="text-orange-400 text-sm shrink-0">→</span>
+          </button>
+        </div>
 
         {/* Level banner (mobile) */}
         {profile && (() => {
@@ -505,6 +523,39 @@ export default function Portal() {
                 </div>
               );
             })()}
+          </div>
+        </div>
+
+        {/* Daily Challenges (desktop) */}
+        <div className="rounded-2xl border-2 border-orange-200/70 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 dark:border-orange-800/30 p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Flame className="w-5 h-5 text-orange-500" />
+            <span className="font-bold">Daily Challenges</span>
+            <span className="text-xs text-muted-foreground ml-auto">Same puzzle for everyone · Resets at midnight</span>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => setLocation('/daily-challenge')}
+              className="flex items-center gap-3 rounded-xl border border-orange-200 bg-white/60 dark:bg-orange-950/30 px-4 py-3 text-left hover:bg-white/90 dark:hover:bg-orange-950/50 transition-all"
+            >
+              <span className="text-2xl leading-none shrink-0">🔢</span>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm">Sudoku</p>
+                <p className="text-xs text-muted-foreground">One shared puzzle per day</p>
+              </div>
+              <span className="text-orange-400 shrink-0">→</span>
+            </button>
+            <button
+              onClick={() => setLocation('/memory-challenge')}
+              className="flex items-center gap-3 rounded-xl border border-orange-200 bg-white/60 dark:bg-orange-950/30 px-4 py-3 text-left hover:bg-white/90 dark:hover:bg-orange-950/50 transition-all"
+            >
+              <span className="text-2xl leading-none shrink-0">🃏</span>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm">Memory Match</p>
+                <p className="text-xs text-muted-foreground">Daily + weekly challenge</p>
+              </div>
+              <span className="text-orange-400 shrink-0">→</span>
+            </button>
           </div>
         </div>
 
