@@ -1426,8 +1426,13 @@ export default function Game({ id }: { id: string }) {
               <Button variant="outline" className="flex-1" onClick={() => setShowLeaveDialog(false)}>
                 Keep Playing
               </Button>
-              <Button className="flex-1" onClick={async () => {
-                if (!isOffline) { try { await customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }); } catch {} }
+              <Button className="flex-1" onClick={() => {
+                // Mark locally as abandoned so the home screen suppresses
+                // the resume banner even if the API call hasn't landed yet.
+                try { sessionStorage.setItem('sudoku-abandoned-game-id', String(gameId)); } catch {}
+                // Fire abandon in the background — don't await so navigation
+                // is instant on mobile. Home screen will retry if it fails.
+                if (!isOffline) customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }).catch(() => {});
                 setLocation("/sudoku");
               }}>
                 Leave Game

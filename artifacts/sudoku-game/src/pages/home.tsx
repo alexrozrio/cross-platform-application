@@ -124,8 +124,25 @@ export default function SudokuHome() {
   useEffect(() => {
     if (!profileId || !isReady) return;
     customFetch<ActiveGame>(`/api/games/active/${profileId}`)
-      .then(g => setActiveGame(g))
-      .catch(() => setActiveGame(null));
+      .then(g => {
+        // Check if this game was locally marked as abandoned (e.g. the API
+        // call in game.tsx failed on a slow mobile network).
+        try {
+          const abandonedId = Number(sessionStorage.getItem('sudoku-abandoned-game-id'));
+          if (abandonedId && g.id === abandonedId) {
+            // Suppress the resume banner and retry the abandon API call.
+            customFetch(`/api/games/${g.id}/abandon`, { method: 'POST' }).catch(() => {});
+            sessionStorage.removeItem('sudoku-abandoned-game-id');
+            setActiveGame(null);
+            return;
+          }
+        } catch {}
+        setActiveGame(g);
+      })
+      .catch(() => {
+        try { sessionStorage.removeItem('sudoku-abandoned-game-id'); } catch {}
+        setActiveGame(null);
+      });
   }, [profileId, isReady, location]);
 
   const modesForSize = (size: GridSize): Array<'number' | 'alpha' | 'image'> => {
