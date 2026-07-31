@@ -441,7 +441,102 @@ export default function Themes() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Mobile carousel — 1 per page */}
+        <MobileCarousel
+          items={IMAGE_THEMES}
+          perPage={1}
+          cols={1}
+          renderItem={(item) => {
+            const theme = item as typeof IMAGE_THEMES[0];
+            const isSelected = themeId === theme.id;
+            const unlocked = isUnlocked('icon_set', theme.id);
+            const cost = getItemCost('icon_set', theme.id);
+            const names = getCharacterNames(theme.id);
+            return (
+              <div
+                key={theme.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => handleIconSet(theme.id)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleIconSet(theme.id); }}
+                className={[
+                  'relative text-left rounded-2xl border-2 p-5 transition-all duration-200 cursor-pointer',
+                  isSelected
+                    ? 'border-primary bg-primary/6 shadow-md ring-1 ring-primary/20'
+                    : unlocked
+                      ? 'border-border hover:border-primary/40 hover:bg-muted/50 hover:shadow-sm'
+                      : 'border-border hover:border-amber-400/60 hover:bg-amber-50/40 dark:hover:bg-amber-950/20 hover:shadow-sm',
+                ].join(' ')}
+              >
+                {isSelected && (
+                  <span className="absolute top-3 right-3 bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center shadow">
+                    <Check className="w-3.5 h-3.5" />
+                  </span>
+                )}
+                {!unlocked && !isSelected && (
+                  <span className="absolute top-3 right-3 flex items-center gap-1 bg-amber-100 dark:bg-amber-900/50 border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 rounded-full px-2 py-0.5 text-[11px] font-semibold">
+                    <Gem className="w-3 h-3" />{cost}
+                  </span>
+                )}
+
+                <div className={['space-y-3', !unlocked ? 'opacity-60' : ''].join(' ')}>
+                  <div className="flex items-center gap-2">
+                    <h3 className={['text-lg font-bold', isSelected ? 'text-primary' : ''].join(' ')}>
+                      {theme.name}
+                    </h3>
+                    {!unlocked && <Lock className="w-4 h-4 text-amber-500" />}
+                  </div>
+
+                  <div>
+                    <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">9×9</p>
+                    <div className="grid grid-cols-9 gap-0.5">
+                      {Array.from({ length: 9 }, (_, i) => i + 1).map(n => (
+                        <ThemeIconWithEmojiFallback key={n} themeId={theme.id} value={n} sym={getSymbol(theme, n)} size={28} />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">16×16 extras</p>
+                    <div className="grid grid-cols-7 gap-0.5">
+                      {Array.from({ length: 7 }, (_, i) => i + 10).map(n => (
+                        <ThemeIconWithEmojiFallback key={n} themeId={theme.id} value={n} sym={getSymbol(theme, n)} size={28} />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                    {names.map((name, i) => (
+                      <div key={i} className="flex items-center gap-1.5">
+                        <ThemeIconWithEmojiFallback themeId={theme.id} value={i + 1} sym={getSymbol(theme, i + 1)} size={14} />
+                        <span className="text-[10px] text-muted-foreground truncate">{name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between">
+                  {!unlocked ? (
+                    <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                      Tap to unlock for {cost} gems
+                    </span>
+                  ) : <span />}
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setOverviewThemeId(theme.id); }}
+                    className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground border border-border rounded-lg px-2.5 py-1 hover:bg-muted/50 transition-colors"
+                  >
+                    <LayoutGrid className="w-3 h-3" />
+                    All symbols
+                  </button>
+                </div>
+              </div>
+            );
+          }}
+        />
+
+        {/* Desktop grid */}
+        <div className="hidden sm:grid grid-cols-2 gap-4">
           {IMAGE_THEMES.map(theme => {
             const isSelected = themeId === theme.id;
             const unlocked = isUnlocked('icon_set', theme.id);
