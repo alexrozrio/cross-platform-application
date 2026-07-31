@@ -2,7 +2,7 @@ import React from 'react';
 import { useImageTheme } from '@/hooks/use-image-theme';
 import { ThemeIcon, useThemeImageSrc } from '@/components/theme-icons';
 import { IMAGE_THEMES, getTheme, getSymbol } from '@/lib/themes';
-import { Check, Lock, Gem, LayoutGrid, Eye } from 'lucide-react';
+import { Check, Lock, Gem, LayoutGrid, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { type ThemeId } from '@/lib/themes';
 import { useAuth } from '@/hooks/use-auth';
 import { useGetProfile, useUpdateProfile } from '@workspace/api-client-react';
@@ -30,6 +30,91 @@ interface PendingUnlock {
   id: string;
   label: string;
   cost: number;
+}
+
+// ── Generic mobile carousel ──────────────────────────────────────────────────
+function MobileCarousel({
+  items,
+  perPage,
+  renderItem,
+  cols = perPage,
+  pageKey,
+}: {
+  items: React.ReactNode[];
+  perPage: number;
+  renderItem?: never;
+  cols?: number;
+  pageKey?: string;
+} | {
+  items: unknown[];
+  perPage: number;
+  renderItem: (item: unknown, idx: number) => React.ReactNode;
+  cols?: number;
+  pageKey?: string;
+}) {
+  const [page, setPage] = React.useState(0);
+  const pageCount = Math.ceil(items.length / perPage);
+  const start = page * perPage;
+  const visible = items.slice(start, start + perPage);
+  const useDots = pageCount <= 8;
+
+  // Reset to page 0 when pageKey changes (e.g. section re-renders)
+  React.useEffect(() => { setPage(0); }, [pageKey]);
+
+  const nodes = renderItem
+    ? (visible as unknown[]).map((item, i) => renderItem(item, start + i))
+    : (visible as React.ReactNode[]);
+
+  return (
+    <div className="sm:hidden">
+      <div
+        className="grid gap-2"
+        style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+      >
+        {nodes}
+      </div>
+      {pageCount > 1 && (
+        <div className="flex items-center justify-between mt-3 px-1">
+          <button
+            onClick={() => setPage(p => Math.max(0, p - 1))}
+            disabled={page === 0}
+            className="flex items-center justify-center w-8 h-8 rounded-full border border-border bg-background disabled:opacity-30 hover:bg-muted transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          {useDots ? (
+            <div className="flex gap-1.5">
+              {Array.from({ length: pageCount }, (_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setPage(i)}
+                  className={[
+                    'rounded-full transition-all',
+                    i === page
+                      ? 'w-4 h-2 bg-primary'
+                      : 'w-2 h-2 bg-muted-foreground/30 hover:bg-muted-foreground/50',
+                  ].join(' ')}
+                />
+              ))}
+            </div>
+          ) : (
+            <span className="text-xs text-muted-foreground font-medium">
+              {page + 1} / {pageCount}
+            </span>
+          )}
+
+          <button
+            onClick={() => setPage(p => Math.min(pageCount - 1, p + 1))}
+            disabled={page === pageCount - 1}
+            className="flex items-center justify-center w-8 h-8 rounded-full border border-border bg-background disabled:opacity-30 hover:bg-muted transition-colors"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function Themes() {
@@ -149,7 +234,58 @@ export default function Themes() {
           </p>
         </div>
 
-        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+        {/* Mobile carousel — 6 per page (2 rows × 3 cols) */}
+        <MobileCarousel
+          items={APP_THEMES}
+          perPage={6}
+          cols={3}
+          renderItem={(item) => {
+            const t = item as typeof APP_THEMES[0];
+            const selected = activeAppTheme === t.id;
+            const unlocked = isUnlocked('color_theme', t.id);
+            const free = isFreeItem('color_theme', t.id);
+            const cost = getItemCost('color_theme', t.id);
+            return (
+              <div
+                key={t.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => handleAppTheme(t.id)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleAppTheme(t.id); }}
+                className={[
+                  'relative rounded-xl border-2 p-2 flex flex-col items-center gap-1.5 transition-all duration-150 cursor-pointer',
+                  selected ? 'border-primary ring-2 ring-primary/30 shadow-sm'
+                    : unlocked ? 'border-border hover:border-primary/40'
+                    : 'border-border hover:border-amber-400/60',
+                ].join(' ')}
+              >
+                <div className="w-full h-9 rounded-lg flex items-center justify-center gap-1" style={{ background: t.bg }}>
+                  <div className="w-3 h-3 rounded-full shadow-sm" style={{ background: t.primary }} />
+                  <div className="w-3 h-3 rounded-full shadow-sm" style={{ background: t.accent }} />
+                </div>
+                <span className="text-[10px] font-medium leading-none text-center">{t.label}</span>
+                {selected ? (
+                  <span className="w-3.5 h-3.5 rounded-full bg-primary flex items-center justify-center">
+                    <Check className="w-2 h-2 text-primary-foreground" />
+                  </span>
+                ) : !unlocked ? (
+                  <span className="flex items-center gap-0.5 text-[9px] font-semibold text-amber-600 dark:text-amber-400">
+                    <Gem className="w-2.5 h-2.5" />{cost}
+                  </span>
+                ) : null}
+                {!unlocked && <Lock className="absolute top-1.5 right-1.5 w-2.5 h-2.5 text-amber-500/80" />}
+                {free && !unlocked && <span className="absolute top-1 left-1 bg-emerald-500 text-white text-[7px] font-bold px-0.5 rounded">FREE</span>}
+                <button type="button" onClick={(e) => { e.stopPropagation(); setPreviewColourId(t.id); }}
+                  className="absolute bottom-1 right-1 p-0.5 rounded text-muted-foreground/60 hover:text-foreground hover:bg-black/10" title="Preview">
+                  <Eye className="w-2.5 h-2.5" />
+                </button>
+              </div>
+            );
+          }}
+        />
+
+        {/* Desktop grid */}
+        <div className="hidden sm:grid grid-cols-6 gap-2">
           {APP_THEMES.map(t => {
             const selected = activeAppTheme === t.id;
             const unlocked = isUnlocked('color_theme', t.id);
@@ -164,17 +300,12 @@ export default function Themes() {
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleAppTheme(t.id); }}
                 className={[
                   'relative rounded-xl border-2 p-2 flex flex-col items-center gap-1.5 transition-all duration-150 cursor-pointer',
-                  selected
-                    ? 'border-primary ring-2 ring-primary/30 shadow-sm'
-                    : unlocked
-                      ? 'border-border hover:border-primary/40 hover:shadow-sm'
-                      : 'border-border hover:border-amber-400/60 hover:shadow-sm',
+                  selected ? 'border-primary ring-2 ring-primary/30 shadow-sm'
+                    : unlocked ? 'border-border hover:border-primary/40 hover:shadow-sm'
+                    : 'border-border hover:border-amber-400/60 hover:shadow-sm',
                 ].join(' ')}
               >
-                <div
-                  className="w-full h-10 rounded-lg flex items-center justify-center gap-1"
-                  style={{ background: t.bg }}
-                >
+                <div className="w-full h-10 rounded-lg flex items-center justify-center gap-1" style={{ background: t.bg }}>
                   <div className="w-3.5 h-3.5 rounded-full shadow-sm" style={{ background: t.primary }} />
                   <div className="w-3.5 h-3.5 rounded-full shadow-sm" style={{ background: t.accent }} />
                 </div>
@@ -188,18 +319,10 @@ export default function Themes() {
                     <Gem className="w-2.5 h-2.5" />{cost}
                   </span>
                 ) : null}
-                {!unlocked && (
-                  <Lock className="absolute top-1.5 right-1.5 w-3 h-3 text-amber-500/80" />
-                )}
-                {free && !unlocked && (
-                  <span className="absolute top-1 left-1 bg-emerald-500 text-white text-[8px] font-bold px-1 rounded">FREE</span>
-                )}
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); setPreviewColourId(t.id); }}
-                  className="absolute bottom-1 right-1 p-0.5 rounded text-muted-foreground/60 hover:text-foreground hover:bg-black/10 transition-colors"
-                  title="Preview"
-                >
+                {!unlocked && <Lock className="absolute top-1.5 right-1.5 w-3 h-3 text-amber-500/80" />}
+                {free && !unlocked && <span className="absolute top-1 left-1 bg-emerald-500 text-white text-[8px] font-bold px-1 rounded">FREE</span>}
+                <button type="button" onClick={(e) => { e.stopPropagation(); setPreviewColourId(t.id); }}
+                  className="absolute bottom-1 right-1 p-0.5 rounded text-muted-foreground/60 hover:text-foreground hover:bg-black/10 transition-colors" title="Preview">
                   <Eye className="w-2.5 h-2.5" />
                 </button>
               </div>
@@ -220,7 +343,53 @@ export default function Themes() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {/* Mobile carousel — 2 per page */}
+        <MobileCarousel
+          items={FONT_THEMES}
+          perPage={2}
+          cols={2}
+          renderItem={(item) => {
+            const f = item as typeof FONT_THEMES[0];
+            const selected = fontId === f.id;
+            const unlocked = isUnlocked('font', f.id);
+            const cost = getItemCost('font', f.id);
+            return (
+              <div
+                key={f.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => handleFont(f.id)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleFont(f.id); }}
+                className={[
+                  'relative rounded-xl border-2 p-3 flex flex-col items-center gap-2 transition-all duration-150 cursor-pointer',
+                  selected ? 'border-primary ring-2 ring-primary/30 shadow-sm bg-primary/5'
+                    : unlocked ? 'border-border hover:border-primary/40 hover:shadow-sm'
+                    : 'border-border hover:border-amber-400/60 hover:shadow-sm',
+                ].join(' ')}
+              >
+                {!unlocked && <Lock className="absolute top-2 right-2 w-3 h-3 text-amber-500/80" />}
+                <span className={['text-3xl font-bold leading-none', !unlocked ? 'opacity-50' : ''].join(' ')} style={f.style}>Aa</span>
+                <span className="text-[11px] font-medium">{f.label}</span>
+                {selected ? (
+                  <span className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                    <Check className="w-2.5 h-2.5 text-primary-foreground" />
+                  </span>
+                ) : !unlocked ? (
+                  <span className="flex items-center gap-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                    <Gem className="w-2.5 h-2.5" />{cost} gems
+                  </span>
+                ) : null}
+                <button type="button" onClick={(e) => { e.stopPropagation(); setPreviewFontId(f.id); }}
+                  className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-foreground border border-border rounded-md px-2 py-0.5 hover:bg-muted/50 transition-colors mt-0.5">
+                  <Eye className="w-2.5 h-2.5" /> Preview
+                </button>
+              </div>
+            );
+          }}
+        />
+
+        {/* Desktop grid */}
+        <div className="hidden sm:grid grid-cols-4 gap-3">
           {FONT_THEMES.map(f => {
             const selected = fontId === f.id;
             const unlocked = isUnlocked('font', f.id);
@@ -234,20 +403,13 @@ export default function Themes() {
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleFont(f.id); }}
                 className={[
                   'relative rounded-xl border-2 p-3 flex flex-col items-center gap-2 transition-all duration-150 cursor-pointer',
-                  selected
-                    ? 'border-primary ring-2 ring-primary/30 shadow-sm bg-primary/5'
-                    : unlocked
-                      ? 'border-border hover:border-primary/40 hover:shadow-sm'
-                      : 'border-border hover:border-amber-400/60 hover:shadow-sm',
+                  selected ? 'border-primary ring-2 ring-primary/30 shadow-sm bg-primary/5'
+                    : unlocked ? 'border-border hover:border-primary/40 hover:shadow-sm'
+                    : 'border-border hover:border-amber-400/60 hover:shadow-sm',
                 ].join(' ')}
               >
                 {!unlocked && <Lock className="absolute top-2 right-2 w-3 h-3 text-amber-500/80" />}
-                <span
-                  className={['text-3xl font-bold leading-none', !unlocked ? 'opacity-50' : ''].join(' ')}
-                  style={f.style}
-                >
-                  Aa
-                </span>
+                <span className={['text-3xl font-bold leading-none', !unlocked ? 'opacity-50' : ''].join(' ')} style={f.style}>Aa</span>
                 <span className="text-[11px] font-medium">{f.label}</span>
                 {selected ? (
                   <span className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
@@ -258,13 +420,9 @@ export default function Themes() {
                     <Gem className="w-2.5 h-2.5" />{cost} gems
                   </span>
                 ) : null}
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); setPreviewFontId(f.id); }}
-                  className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-foreground border border-border rounded-md px-2 py-0.5 hover:bg-muted/50 transition-colors mt-0.5"
-                >
-                  <Eye className="w-2.5 h-2.5" />
-                  Preview
+                <button type="button" onClick={(e) => { e.stopPropagation(); setPreviewFontId(f.id); }}
+                  className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-foreground border border-border rounded-md px-2 py-0.5 hover:bg-muted/50 transition-colors mt-0.5">
+                  <Eye className="w-2.5 h-2.5" /> Preview
                 </button>
               </div>
             );
