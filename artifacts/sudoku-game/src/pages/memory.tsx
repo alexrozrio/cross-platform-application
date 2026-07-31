@@ -512,130 +512,152 @@ export default function MemoryMatchPage() {
 
   // ── Setup screen ─────────────────────────────────────────────────────────────
   if (phase === 'setup') {
+    const sizeEmoji: Record<number, string> = { 2: '🟢', 4: '🔵', 6: '🟠', 8: '🔴' };
+    const sizeDiff: Record<number, string> = { 2: 'Beginner', 4: 'Easy', 6: 'Medium', 8: 'Hard' };
+    const sizeReward: Record<number, string> = { 2: '1 💎', 4: '1 💎', 6: '2 💎', 8: '3 💎' };
+
     return (
-      <div className="max-w-lg mx-auto w-full space-y-8 animate-in fade-in duration-500">
-        <button
-          onClick={() => setLocation('/')}
-          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" /> Brain Games 4 All
-        </button>
+      <div className="max-w-lg mx-auto w-full animate-in fade-in duration-500 flex flex-col gap-4 sm:gap-6">
 
-        <div>
-          <h1 className="text-3xl font-serif font-bold tracking-tight">Memory Match 4 All</h1>
-          {profile ? (
-            <p className="text-muted-foreground mt-0.5">Welcome back, {profile.username}</p>
-          ) : (
-            <p className="text-muted-foreground mt-0.5">Flip cards to find matching pairs</p>
-          )}
+        {/* Top bar: back + title */}
+        <div className="flex items-center justify-between gap-3 pt-1">
+          <button
+            onClick={() => setLocation('/')}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
+          >
+            <ArrowLeft className="w-4 h-4" /> Home
+          </button>
+          <div className="text-right">
+            <h1 className="text-xl sm:text-3xl font-serif font-bold tracking-tight leading-tight">Memory Match</h1>
+            <p className="text-xs text-muted-foreground hidden sm:block">
+              {profile ? `Welcome back, ${profile.username}` : 'Flip cards to find matching pairs'}
+            </p>
+          </div>
         </div>
 
-        {/* Theme / mode preview */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {displayMode === 'image'
-            ? theme.symbols.slice(0, 8).map((sym, i) => (
-                <MemoryThemeSymbol key={i} themeId={themeId} value={i + 1} sym={sym} />
-              ))
-            : (displayMode === 'number'
-                ? Array.from({ length: 8 }, (_, i) => String(i + 1))
-                : ALPHA_LABELS.slice(0, 8)
-              ).map((lbl, i) => (
-                <span key={i} className={`text-xl font-black leading-none ${displayMode === 'alpha' ? 'font-mono' : ''}`}>{lbl}</span>
-              ))
-          }
-          <span className="text-muted-foreground text-sm">
-            {displayMode === 'image' ? `… using ${theme.name} theme` : displayMode === 'number' ? '… 1 – 32' : '… A – Z + a – f'}
-          </span>
-        </div>
-
-        {/* Display Mode selector */}
-        <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Card Display Mode</p>
-          <div className="grid grid-cols-3 gap-2">
+        {/* Theme preview strip + display mode toggle — one row */}
+        <div className="flex items-center gap-2">
+          {/* 5 symbol preview */}
+          <div className="flex items-center gap-1 shrink-0">
+            {displayMode === 'image'
+              ? theme.symbols.slice(0, 5).map((sym, i) => (
+                  <MemoryThemeSymbol key={i} themeId={themeId} value={i + 1} sym={sym} />
+                ))
+              : (displayMode === 'number'
+                  ? ['1','2','3','4','5']
+                  : ALPHA_LABELS.slice(0, 5)
+                ).map((lbl, i) => (
+                  <span key={i} className={`text-xl font-black leading-none ${displayMode === 'alpha' ? 'font-mono' : ''}`}>{lbl}</span>
+                ))
+            }
+          </div>
+          {/* Pill toggle */}
+          <div className="ml-auto flex items-center gap-1 rounded-full border bg-muted/50 p-0.5">
             {([
-              { id: 'image'  as DisplayMode, label: '🎴 Image',  sub: 'Theme symbols' },
-              { id: 'number' as DisplayMode, label: '1 2 3 Numbers', sub: '1 – 32' },
-              { id: 'alpha'  as DisplayMode, label: 'A B C Alpha',   sub: 'A–Z + a–f' },
+              { id: 'image'  as DisplayMode, label: '🎴' , title: 'Images' },
+              { id: 'number' as DisplayMode, label: '123', title: 'Numbers' },
+              { id: 'alpha'  as DisplayMode, label: 'ABC', title: 'Letters' },
             ] as const).map(m => (
               <button
                 key={m.id}
                 type="button"
+                title={m.title}
                 onClick={() => setDisplayMode(m.id)}
                 className={[
-                  'flex flex-col items-center gap-1 rounded-xl border-2 py-3 px-2 text-center transition-all',
+                  'rounded-full px-2.5 py-1 text-xs font-bold transition-all',
                   displayMode === m.id
-                    ? 'border-primary bg-primary/8 shadow-sm'
-                    : 'border-border hover:border-primary/40 hover:bg-muted/50',
+                    ? 'bg-background shadow text-foreground'
+                    : 'text-muted-foreground hover:text-foreground',
                 ].join(' ')}
               >
-                <span className="text-sm font-bold leading-tight">{m.label}</span>
-                <span className="text-[10px] text-muted-foreground">{m.sub}</span>
+                {m.label}
               </button>
             ))}
           </div>
         </div>
 
-        <div className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Choose Grid Size</p>
-          {renderGridOptions.map(opt => (
-            <button
-              key={opt.size}
-              onClick={() => startGame(opt.size)}
-              className="w-full flex items-center justify-between rounded-xl border-2 transition-all p-4 text-left group border-primary/15 bg-gradient-to-r from-primary/5 to-primary/3 hover:border-primary/40 hover:from-primary/10 hover:to-primary/8"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center font-black text-lg transition-colors bg-primary/10 text-primary group-hover:bg-primary/20">
-                  {opt.label}
+        {/* ── Grid size cards: 2×2 on mobile, row on desktop ── */}
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2.5">Choose Grid Size</p>
+
+          {/* Mobile: 2×2 grid */}
+          <div className="grid grid-cols-2 gap-2.5 sm:hidden">
+            {renderGridOptions.map(opt => (
+              <button
+                key={opt.size}
+                onClick={() => startGame(opt.size)}
+                className="group relative flex flex-col items-center justify-center rounded-2xl border-2 border-primary/15 bg-gradient-to-br from-primary/8 to-primary/4 hover:border-primary/40 hover:from-primary/14 hover:to-primary/8 active:scale-[0.97] transition-all p-4 gap-1.5 min-h-[110px]"
+              >
+                <span className="text-xl leading-none">{sizeEmoji[opt.size]}</span>
+                <span className="text-2xl font-black text-primary leading-none tabular-nums">{opt.label}</span>
+                <span className="text-xs font-semibold text-foreground/80">{sizeDiff[opt.size]}</span>
+                <span className="text-[10px] text-muted-foreground">{opt.pairs} pairs · {sizeReward[opt.size]}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Desktop: original full-width rows */}
+          <div className="hidden sm:flex flex-col gap-3">
+            {renderGridOptions.map(opt => (
+              <button
+                key={opt.size}
+                onClick={() => startGame(opt.size)}
+                className="w-full flex items-center justify-between rounded-xl border-2 transition-all p-4 text-left group border-primary/15 bg-gradient-to-r from-primary/5 to-primary/3 hover:border-primary/40 hover:from-primary/10 hover:to-primary/8"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center font-black text-lg transition-colors bg-primary/10 text-primary group-hover:bg-primary/20">
+                    {opt.label}
+                  </div>
+                  <div>
+                    <p className="font-semibold">{opt.desc}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {opt.size === 2 || opt.size === 4 ? '+1 XP · 1 💎' : opt.size === 6 ? '+2 XP · 2 💎' : '+3 XP · 3 💎'}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-semibold">{opt.desc}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {opt.size === 2 || opt.size === 4 ? '+1 XP · 1 💎' : opt.size === 6 ? '+2 XP · 2 💎' : '+3 XP · 3 💎'}
-                  </p>
-                </div>
-              </div>
-              <span className="text-primary text-lg">→</span>
-            </button>
-          ))}
+                <span className="text-primary text-lg">→</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Challenge banner */}
         <button
           onClick={() => setLocation('/memory-challenge')}
-          className="w-full flex items-center justify-between rounded-xl border-2 border-violet-300/50 bg-gradient-to-r from-violet-50 to-purple-50 hover:border-violet-400/60 hover:from-violet-100 hover:to-purple-100 transition-all px-4 py-3 text-left"
+          className="w-full flex items-center justify-between rounded-xl border-2 border-violet-300/50 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/20 dark:to-purple-950/20 dark:border-violet-800/30 hover:border-violet-400/60 hover:from-violet-100 hover:to-purple-100 dark:hover:from-violet-950/30 dark:hover:to-purple-950/30 transition-all px-4 py-3 text-left"
         >
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-violet-500/15 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-lg bg-violet-500/15 flex items-center justify-center shrink-0">
               <Brain className="w-4 h-4 text-violet-600" />
             </div>
             <div>
-              <p className="font-semibold text-sm text-violet-900">Daily &amp; Weekly Challenges</p>
-              <p className="text-xs text-violet-600">Earn bonus XP and gems for completing challenges</p>
+              <p className="font-semibold text-sm">Daily &amp; Weekly Challenges</p>
+              <p className="text-xs text-muted-foreground">Earn bonus XP and gems</p>
             </div>
           </div>
-          <span className="text-violet-500 font-bold">→</span>
+          <span className="text-violet-500 font-bold shrink-0">→</span>
         </button>
 
         {/* Quick links — Stats & Leaderboard */}
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => setLocation('/stats?tab=memory')}
-            className="flex items-center gap-3 rounded-xl border bg-card p-4 hover:bg-muted/50 hover:border-primary/30 transition-all text-left"
+            className="flex items-center gap-3 rounded-xl border bg-card p-3 sm:p-4 hover:bg-muted/50 hover:border-primary/30 transition-all text-left"
           >
             <BarChart2 className="w-5 h-5 text-primary shrink-0" />
             <div>
               <p className="font-semibold text-sm">My Stats</p>
-              <p className="text-xs text-muted-foreground">Wins &amp; best times</p>
+              <p className="text-xs text-muted-foreground hidden sm:block">Wins &amp; best times</p>
             </div>
           </button>
           <button
             onClick={() => setLocation('/leaderboard')}
-            className="flex items-center gap-3 rounded-xl border bg-card p-4 hover:bg-muted/50 hover:border-primary/30 transition-all text-left"
+            className="flex items-center gap-3 rounded-xl border bg-card p-3 sm:p-4 hover:bg-muted/50 hover:border-primary/30 transition-all text-left"
           >
             <Trophy className="w-5 h-5 text-primary shrink-0" />
             <div>
               <p className="font-semibold text-sm">Leaderboard</p>
-              <p className="text-xs text-muted-foreground">Top players</p>
+              <p className="text-xs text-muted-foreground hidden sm:block">Top players</p>
             </div>
           </button>
         </div>
