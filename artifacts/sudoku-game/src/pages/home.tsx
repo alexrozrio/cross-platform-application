@@ -233,23 +233,42 @@ export default function SudokuHome() {
     return 'grid-cols-5'; // 5 grids - all in one row
   };
 
-  return (
-    <div className="max-w-lg mx-auto w-full space-y-8 animate-in fade-in duration-500">
-      <button
-        onClick={() => setLocation('/')}
-        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" /> Brain Games 4 All
-      </button>
+  // Difficulty pill colours
+  const difficultyMeta: Record<Difficulty, { label: string; color: string }> = {
+    easy:   { label: 'Easy',   color: 'text-green-600'  },
+    medium: { label: 'Medium', color: 'text-amber-600'  },
+    hard:   { label: 'Hard',   color: 'text-orange-600' },
+    expert: { label: 'Expert', color: 'text-red-600'    },
+  };
 
-      <div>
-        <h1 className="text-3xl font-serif font-bold tracking-tight">Sudoku 4 All</h1>
-        {profile && (
-          <p className="text-muted-foreground mt-0.5">Welcome back, {profile.username}</p>
-        )}
+  // Mobile grid-size cols
+  const getMobileGridCols = () => {
+    const count = filteredGridOptions.length;
+    if (count <= 2) return 'grid-cols-2';
+    if (count === 3) return 'grid-cols-3';
+    return 'grid-cols-3'; // 4–5: 3+1 or 3+2, last row left-aligned
+  };
+
+  return (
+    <div className="max-w-lg mx-auto w-full animate-in fade-in duration-500 flex flex-col gap-4 sm:gap-8">
+
+      {/* ── Top bar ── */}
+      <div className="flex items-center justify-between gap-3 pt-1">
+        <button
+          onClick={() => setLocation('/')}
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
+        >
+          <ArrowLeft className="w-4 h-4" /> Home
+        </button>
+        <div className="text-right">
+          <h1 className="text-xl sm:text-3xl font-serif font-bold tracking-tight leading-tight">Sudoku</h1>
+          {profile && (
+            <p className="text-xs text-muted-foreground hidden sm:block">Welcome back, {profile.username}</p>
+          )}
+        </div>
       </div>
 
-      {/* Resume active game card — hide if the game's grid size is outside current mode */}
+      {/* ── Resume active game ── */}
       {activeGame && (() => {
         const gs = activeGame.puzzle?.gridSize;
         const validForMode =
@@ -260,10 +279,10 @@ export default function SudokuHome() {
       })() && (
         <button
           onClick={() => setLocation(`/game/${activeGame.id}`)}
-          className="w-full flex items-center gap-4 rounded-xl border-2 border-primary/40 bg-primary/5 p-4 hover:bg-primary/10 hover:border-primary/60 transition-all text-left"
+          className="w-full flex items-center gap-3 rounded-xl border-2 border-primary/40 bg-primary/5 p-3 sm:p-4 hover:bg-primary/10 hover:border-primary/60 transition-all text-left"
         >
-          <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
-            <RotateCcw className="w-5 h-5 text-primary" />
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+            <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-sm text-primary">Resume Last Game</p>
@@ -276,7 +295,114 @@ export default function SudokuHome() {
         </button>
       )}
 
-      <Card className="shadow-md border-primary/15">
+      {/* ══════════════════════════════════════════
+          MOBILE new-game section (< sm)
+          compact: no Card, pill difficulty, 2-3 col grid
+          ══════════════════════════════════════════ */}
+      <div className="sm:hidden flex flex-col gap-4">
+
+        {/* Difficulty pills */}
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Difficulty</p>
+          <div className="grid grid-cols-4 gap-1.5">
+            {allDifficulties.map(d => (
+              <button
+                key={d}
+                disabled={isLoading}
+                onClick={() => availableModes.length === 1 ? handleDifficultyAutoStart(d) : setDifficulty(d)}
+                className={[
+                  'rounded-xl border-2 py-2 text-xs font-bold transition-all',
+                  difficulty === d
+                    ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                    : 'border-border bg-background hover:border-primary/40 hover:bg-muted/50',
+                ].join(' ')}
+              >
+                <span className={difficulty === d ? '' : difficultyMeta[d].color}>{difficultyMeta[d].label}</span>
+              </button>
+            ))}
+          </div>
+          {availableModes.length === 1 && (
+            <p className="text-[10px] text-muted-foreground mt-1.5">Tap a difficulty to start a new {gridSize}×{gridSize} game</p>
+          )}
+        </div>
+
+        {/* Play style pills — only shown when multiple modes available (small grids) */}
+        {availableModes.length > 1 && (
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Play Style</p>
+            <div className="flex gap-2 flex-wrap">
+              <button
+                disabled={isLoading}
+                onClick={() => setSelectedMode('number')}
+                className={[
+                  'flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-xs font-semibold transition-all',
+                  selectedMode === 'number' ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:border-primary/40',
+                ].join(' ')}
+              >
+                <Hash className="w-3 h-3" /> Numbers
+              </button>
+              {availableModes.includes('alpha') && (
+                <button
+                  disabled={isLoading}
+                  onClick={() => setSelectedMode('alpha')}
+                  className={[
+                    'flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-xs font-semibold transition-all',
+                    selectedMode === 'alpha' ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:border-primary/40',
+                  ].join(' ')}
+                >
+                  <Type className="w-3 h-3" /> Letters
+                </button>
+              )}
+              {availableModes.includes('image') && (
+                <button
+                  disabled={isLoading}
+                  onClick={() => setSelectedMode('image')}
+                  className={[
+                    'flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-xs font-semibold transition-all',
+                    selectedMode === 'image' ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:border-primary/40',
+                  ].join(' ')}
+                >
+                  <ThemeIcon themeId={themeId} value={1} size={12} /> {activeTheme.name}
+                </button>
+              )}
+              {availableModes.includes('image') && (
+                <button onClick={() => setLocation('/themes')} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2 ml-auto">
+                  <Palette className="w-3 h-3" /> Change theme
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Grid size — 2-3 col card grid */}
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Grid Size</p>
+          <div className={`grid gap-2 ${getMobileGridCols()}`}>
+            {filteredGridOptions.map(opt => (
+              <button
+                key={opt.size}
+                disabled={isLoading}
+                onClick={() => handleSelectSize(opt.size)}
+                className={[
+                  'flex flex-col items-center justify-center rounded-2xl border-2 py-3.5 gap-0.5 transition-all active:scale-[0.97]',
+                  gridSize === opt.size
+                    ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                    : 'border-primary/15 bg-gradient-to-br from-primary/8 to-primary/4 hover:border-primary/40',
+                ].join(' ')}
+              >
+                <span className="font-black text-base leading-none">{opt.label}</span>
+                <span className={`text-[10px] leading-none ${gridSize === opt.size ? 'opacity-80' : 'text-muted-foreground'}`}>{opt.sublabel}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════
+          DESKTOP new-game section (≥ sm)
+          original Card layout unchanged
+          ══════════════════════════════════════════ */}
+      <Card className="hidden sm:block shadow-md border-primary/15">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2">
             <Play className="w-5 h-5 text-primary" /> New Game
@@ -289,37 +415,22 @@ export default function SudokuHome() {
         </CardHeader>
         <CardContent className="space-y-6">
 
-          {/* Play mode selector — hidden entirely when only Numbers is available */}
           {availableModes.length > 1 && (
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Play Style
-            </label>
-
-            {/* Numbers */}
-            <Button
-              size="lg"
-              variant={selectedMode === 'number' ? 'default' : 'outline'}
+            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Play Style</label>
+            <Button size="lg" variant={selectedMode === 'number' ? 'default' : 'outline'}
               className="w-full h-13 text-base font-medium flex items-center justify-start gap-3"
-              onClick={() => setSelectedMode('number')}
-              disabled={isLoading}
-            >
+              onClick={() => setSelectedMode('number')} disabled={isLoading}>
               <Hash className="w-5 h-5 shrink-0" />
               <div className="text-left flex-1 min-w-0">
                 <div className="font-semibold">Numbers</div>
                 <div className="text-xs opacity-80">Classic 1, 2, 3 … style</div>
               </div>
             </Button>
-
-            {/* Alphabets — always available for 3×3/4×4; gated by config for 9×9/16×16 */}
             {availableModes.includes('alpha') && (
-            <Button
-              size="lg"
-              variant={selectedMode === 'alpha' ? 'default' : 'outline'}
+            <Button size="lg" variant={selectedMode === 'alpha' ? 'default' : 'outline'}
               className="w-full h-13 text-base font-medium flex items-center gap-3"
-              onClick={() => setSelectedMode('alpha')}
-              disabled={isLoading}
-            >
+              onClick={() => setSelectedMode('alpha')} disabled={isLoading}>
               <Type className="w-5 h-5 shrink-0 text-primary" />
               <div className="text-left flex-1 min-w-0">
                 <div className="font-semibold">Letters</div>
@@ -329,16 +440,10 @@ export default function SudokuHome() {
               </div>
             </Button>
             )}
-
-            {/* Image theme — always available for 3×3/4×4; gated by config for 9×9/16×16 */}
             {availableModes.includes('image') && (
-            <Button
-              size="lg"
-              variant={selectedMode === 'image' ? 'default' : 'outline'}
+            <Button size="lg" variant={selectedMode === 'image' ? 'default' : 'outline'}
               className="w-full h-13 text-base font-medium flex items-center gap-3"
-              onClick={() => setSelectedMode('image')}
-              disabled={isLoading}
-            >
+              onClick={() => setSelectedMode('image')} disabled={isLoading}>
               <ThemeIcon themeId={themeId} value={1} size={24} />
               <div className="text-left flex-1 min-w-0">
                 <div className="font-semibold">{activeTheme.name}</div>
@@ -351,30 +456,20 @@ export default function SudokuHome() {
               </div>
             </Button>
             )}
-
             {availableModes.includes('image') && (
-            <button
-              onClick={() => setLocation('/themes')}
-              className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors pt-0.5 underline underline-offset-2"
-            >
-              <Palette className="w-3 h-3 inline mr-1" />
-              Change image theme
+            <button onClick={() => setLocation('/themes')}
+              className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors pt-0.5 underline underline-offset-2">
+              <Palette className="w-3 h-3 inline mr-1" /> Change image theme
             </button>
             )}
           </div>
           )}
 
-          {/* On 9×9/16×16 (only Numbers available), the Play Style slot is replaced by a
-              Difficulty picker that starts a new game immediately on change. */}
           {availableModes.length === 1 && (
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Difficulty
-            </label>
+            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Difficulty</label>
             <Select value={difficulty} onValueChange={v => handleDifficultyAutoStart(v as Difficulty)} disabled={isLoading}>
-              <SelectTrigger className="h-11">
-                <SelectValue />
-              </SelectTrigger>
+              <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {allDifficulties.map(d => (
                   <SelectItem key={d} value={d} className="capitalize">{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
@@ -385,17 +480,11 @@ export default function SudokuHome() {
           </div>
           )}
 
-          {/* Difficulty dropdown — 3×3/4×4 only; picking difficulty here doesn't start the game,
-              a grid-size tap does. */}
           {availableModes.length > 1 && (
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Difficulty
-            </label>
+            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Difficulty</label>
             <Select value={difficulty} onValueChange={v => setDifficulty(v as Difficulty)} disabled={isLoading}>
-              <SelectTrigger className="h-11">
-                <SelectValue />
-              </SelectTrigger>
+              <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {allDifficulties.map(d => (
                   <SelectItem key={d} value={d} className="capitalize">{d.charAt(0).toUpperCase() + d.slice(1)}</SelectItem>
@@ -405,20 +494,13 @@ export default function SudokuHome() {
           </div>
           )}
 
-          {/* Grid size — tapping a size starts the game immediately with the selected style */}
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Grid Size
-            </label>
+            <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Grid Size</label>
             <div className={`grid gap-2 ${getGridCols()}`}>
               {filteredGridOptions.map(opt => (
-                <Button
-                  key={opt.size}
-                  variant={gridSize === opt.size ? 'default' : 'outline'}
+                <Button key={opt.size} variant={gridSize === opt.size ? 'default' : 'outline'}
                   className="h-14 flex-col gap-0.5"
-                  onClick={() => handleSelectSize(opt.size)}
-                  disabled={isLoading}
-                >
+                  onClick={() => handleSelectSize(opt.size)} disabled={isLoading}>
                   <span className="font-bold text-base leading-none">{opt.label}</span>
                   <span className="text-[11px] opacity-70 leading-none">{opt.sublabel}</span>
                 </Button>
@@ -428,13 +510,13 @@ export default function SudokuHome() {
         </CardContent>
       </Card>
 
-      {/* Daily Challenge banner */}
+      {/* ── Daily Challenge banner ── */}
       <button
         onClick={() => setLocation('/daily-challenge')}
-        className="w-full flex items-center gap-4 rounded-xl border-2 border-orange-200/70 bg-gradient-to-r from-orange-50 to-amber-50 p-4 hover:border-orange-300 hover:from-orange-100 hover:to-amber-100 transition-all text-left"
+        className="w-full flex items-center gap-3 sm:gap-4 rounded-xl border-2 border-orange-200/70 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 dark:border-orange-800/30 p-3 sm:p-4 hover:border-orange-300 hover:from-orange-100 hover:to-amber-100 dark:hover:from-orange-950/30 dark:hover:to-amber-950/30 transition-all text-left"
       >
-        <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center shrink-0 ring-1 ring-orange-200">
-          <Flame className="w-5 h-5 text-orange-500" />
+        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center shrink-0 ring-1 ring-orange-200 dark:ring-orange-800">
+          <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-sm">Daily Challenge</p>
@@ -443,50 +525,41 @@ export default function SudokuHome() {
         <div className="text-orange-400 text-lg shrink-0">→</div>
       </button>
 
-      {/* Quick links */}
+      {/* ── Quick links ── */}
       <div className="grid grid-cols-2 gap-3">
         <button
           onClick={() => setLocation('/stats')}
-          className="flex items-center gap-3 rounded-xl border bg-card p-4 hover:bg-muted/50 hover:border-primary/30 transition-all text-left"
+          className="flex items-center gap-3 rounded-xl border bg-card p-3 sm:p-4 hover:bg-muted/50 hover:border-primary/30 transition-all text-left"
         >
           <BarChart2 className="w-5 h-5 text-primary shrink-0" />
           <div>
             <p className="font-semibold text-sm">My Stats</p>
-            <p className="text-xs text-muted-foreground">Wins & best times</p>
+            <p className="text-xs text-muted-foreground hidden sm:block">Wins &amp; best times</p>
           </div>
         </button>
         <button
           onClick={() => setLocation('/leaderboard')}
-          className="flex items-center gap-3 rounded-xl border bg-card p-4 hover:bg-muted/50 hover:border-primary/30 transition-all text-left"
+          className="flex items-center gap-3 rounded-xl border bg-card p-3 sm:p-4 hover:bg-muted/50 hover:border-primary/30 transition-all text-left"
         >
           <Trophy className="w-5 h-5 text-primary shrink-0" />
           <div>
             <p className="font-semibold text-sm">Leaderboard</p>
-            <p className="text-xs text-muted-foreground">Top players</p>
+            <p className="text-xs text-muted-foreground hidden sm:block">Top players</p>
           </div>
         </button>
       </div>
 
-      {/* Info links */}
+      {/* ── Info links ── */}
       <div className="flex items-center justify-center gap-6 pb-4">
-        <button
-          onClick={() => setInfoModal('rules')}
-          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
+        <button onClick={() => setInfoModal('rules')} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <BookOpen className="w-3.5 h-3.5" /> Rules
         </button>
         <span className="text-border">·</span>
-        <button
-          onClick={() => setInfoModal('controls')}
-          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
+        <button onClick={() => setInfoModal('controls')} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <Keyboard className="w-3.5 h-3.5" /> Controls
         </button>
         <span className="text-border">·</span>
-        <button
-          onClick={() => setInfoModal('backstory')}
-          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
+        <button onClick={() => setInfoModal('backstory')} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <Scroll className="w-3.5 h-3.5" /> Backstory
         </button>
       </div>
