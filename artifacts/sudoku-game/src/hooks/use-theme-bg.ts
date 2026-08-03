@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 const STORAGE_PREFIX = 'brain-games-bg-custom-';
 const ENABLED_KEY = 'brain-games-bg-enabled';
@@ -25,6 +25,12 @@ export const THEME_BG_DEFAULTS: Record<string, string> = {
   crimson:   'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=1920&q=80&auto=format&fit=crop',
 };
 
+// ── Module-level sync so all hook instances react to each other ──────────────
+const _emitter = new EventTarget();
+const BG_CHANGE = 'bg-change';
+
+function _emit() { _emitter.dispatchEvent(new Event(BG_CHANGE)); }
+
 function readCustomImages(): Record<string, string> {
   const result: Record<string, string> = {};
   try {
@@ -48,10 +54,21 @@ function readEnabled(): boolean {
   }
 }
 
-/** Manages per-theme custom background images stored in localStorage. */
+/** Manages per-theme custom background images stored in localStorage.
+ *  All instances of this hook in the same page stay in sync via a shared emitter. */
 export function useThemeBg(themeId: string) {
   const [customImages, setCustomImages] = useState<Record<string, string>>(readCustomImages);
   const [enabled, setEnabledState] = useState<boolean>(readEnabled);
+
+  // Keep all hook instances in sync when any instance writes
+  useEffect(() => {
+    const handler = () => {
+      setEnabledState(readEnabled());
+      setCustomImages(readCustomImages());
+    };
+    _emitter.addEventListener(BG_CHANGE, handler);
+    return () => _emitter.removeEventListener(BG_CHANGE, handler);
+  }, []);
 
   const hasCustom = !!customImages[themeId];
   const defaultUrl = THEME_BG_DEFAULTS[themeId] ?? null;
@@ -64,6 +81,7 @@ export function useThemeBg(themeId: string) {
   const setCustomImage = useCallback((id: string, dataUrl: string) => {
     try { localStorage.setItem(STORAGE_PREFIX + id, dataUrl); } catch { /* ignore */ }
     setCustomImages(prev => ({ ...prev, [id]: dataUrl }));
+    _emit();
   }, []);
 
   const resetCustomImage = useCallback((id: string) => {
@@ -73,11 +91,13 @@ export function useThemeBg(themeId: string) {
       delete next[id];
       return next;
     });
+    _emit();
   }, []);
 
   const setEnabled = useCallback((v: boolean) => {
     try { localStorage.setItem(ENABLED_KEY, String(v)); } catch { /* ignore */ }
     setEnabledState(v);
+    _emit();
   }, []);
 
   return {
@@ -88,7 +108,6 @@ export function useThemeBg(themeId: string) {
     defaultUrl,
     setCustomImage,
     resetCustomImage,
-    /** Call this to get the custom image URL for any theme (for the settings UI). */
     getCustomImage: (id: string) => customImages[id] ?? null,
   };
 }

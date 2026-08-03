@@ -44,7 +44,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { profileId, isSignedIn, replitUser } = useAuth();
   const { data: profile } = useGetProfile(profileId as number, { query: { enabled: !!profileId } });
   const pendingCount = usePendingChallengeCount(profileId);
-  const { effectiveBg } = useThemeBg(profile?.theme ?? 'light');
+
+  // Track the active colour theme; updated immediately on selection (before profile refetch)
+  const [activeBgTheme, setActiveBgTheme] = React.useState(profile?.theme ?? 'light');
+  React.useEffect(() => {
+    if (profile?.theme) setActiveBgTheme(profile.theme);
+  }, [profile?.theme]);
+  React.useEffect(() => {
+    const handler = (e: Event) => {
+      const id = (e as CustomEvent<string>).detail;
+      if (id) setActiveBgTheme(id);
+    };
+    window.addEventListener('brain-games-theme-selected', handler);
+    return () => window.removeEventListener('brain-games-theme-selected', handler);
+  }, []);
+
+  const { effectiveBg } = useThemeBg(activeBgTheme);
 
   useFontTheme();
   useChallengeNotifications(profileId);

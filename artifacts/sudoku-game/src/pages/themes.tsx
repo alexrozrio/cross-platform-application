@@ -177,6 +177,7 @@ export default function Themes() {
     }
     setActiveAppTheme(id);
     applyAppTheme(id);
+    window.dispatchEvent(new CustomEvent('brain-games-theme-selected', { detail: id }));
     if (profileId) updateProfile.mutate({ id: profileId, data: { theme: id } });
   };
 
