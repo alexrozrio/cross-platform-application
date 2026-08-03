@@ -2,7 +2,7 @@ import React from 'react';
 import { useImageTheme } from '@/hooks/use-image-theme';
 import { ThemeIcon, useThemeImageSrc } from '@/components/theme-icons';
 import { IMAGE_THEMES, getTheme, getSymbol } from '@/lib/themes';
-import { Check, Lock, Gem, LayoutGrid, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Check, Lock, Gem, LayoutGrid, Eye, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import { type ThemeId } from '@/lib/themes';
 import { useAuth } from '@/hooks/use-auth';
 import { useGetProfile, useUpdateProfile } from '@workspace/api-client-react';
@@ -134,6 +134,7 @@ export default function Themes() {
   const previewColour = previewColourId ? APP_THEMES.find(t => t.id === previewColourId) ?? null : null;
   const [previewFontId, setPreviewFontId] = React.useState<string | null>(null);
   const previewFont = previewFontId ? FONT_THEMES.find(f => f.id === previewFontId) ?? null : null;
+  const [showAll, setShowAll] = React.useState<'colors' | 'fonts' | 'icons' | null>(null);
 
   React.useEffect(() => {
     if (profile?.theme) setActiveAppTheme(profile.theme);
@@ -284,6 +285,16 @@ export default function Themes() {
           }}
         />
 
+        {/* Show all — mobile only */}
+        <div className="sm:hidden flex justify-end">
+          <button
+            onClick={() => setShowAll('colors')}
+            className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+          >
+            Show all themes <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
         {/* Desktop grid */}
         <div className="hidden sm:grid grid-cols-6 gap-2">
           {APP_THEMES.map(t => {
@@ -387,6 +398,16 @@ export default function Themes() {
             );
           }}
         />
+
+        {/* Show all — mobile only */}
+        <div className="sm:hidden flex justify-end">
+          <button
+            onClick={() => setShowAll('fonts')}
+            className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+          >
+            Show all fonts <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
 
         {/* Desktop grid */}
         <div className="hidden sm:grid grid-cols-4 gap-3">
@@ -535,6 +556,16 @@ export default function Themes() {
           }}
         />
 
+        {/* Show all — mobile only */}
+        <div className="sm:hidden flex justify-end">
+          <button
+            onClick={() => setShowAll('icons')}
+            className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+          >
+            Show all icon sets <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
         {/* Desktop grid */}
         <div className="hidden sm:grid grid-cols-2 gap-4">
           {IMAGE_THEMES.map(theme => {
@@ -629,6 +660,205 @@ export default function Themes() {
       <p className="text-xs text-center text-muted-foreground pb-4">
         Free selections save automatically. Unlocks are permanent.
       </p>
+
+      {/* ── Show All Sub-pages (mobile overlay) ──────────────────────── */}
+      {showAll !== null && (
+        <div className="sm:hidden fixed inset-0 z-40 bg-background overflow-y-auto animate-in slide-in-from-right duration-200">
+          <div className="max-w-2xl mx-auto px-4 pb-8 space-y-5">
+            {/* Header */}
+            <div className="sticky top-0 bg-background/95 backdrop-blur-sm pt-4 pb-3 flex items-center gap-3 border-b border-border z-10">
+              <button
+                onClick={() => setShowAll(null)}
+                className="flex items-center justify-center w-9 h-9 rounded-full border border-border bg-background hover:bg-muted transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+              <div>
+                <h2 className="text-lg font-serif font-semibold">
+                  {showAll === 'colors' ? 'All Colour Themes' : showAll === 'fonts' ? 'All Font Styles' : 'All Icon Sets'}
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  {showAll === 'colors' ? `${APP_THEMES.length} themes` : showAll === 'fonts' ? `${FONT_THEMES.length} fonts` : `${IMAGE_THEMES.length} icon sets`}
+                </p>
+              </div>
+            </div>
+
+            {/* All Colour Themes */}
+            {showAll === 'colors' && (
+              <div className="grid grid-cols-3 gap-2 pt-1">
+                {APP_THEMES.map(t => {
+                  const selected = activeAppTheme === t.id;
+                  const unlocked = isUnlocked('color_theme', t.id);
+                  const free = isFreeItem('color_theme', t.id);
+                  const cost = getItemCost('color_theme', t.id);
+                  return (
+                    <div
+                      key={t.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => handleAppTheme(t.id)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleAppTheme(t.id); }}
+                      className={[
+                        'relative rounded-xl border-2 p-2 flex flex-col items-center gap-1.5 transition-all duration-150 cursor-pointer',
+                        selected ? 'border-primary ring-2 ring-primary/30 shadow-sm'
+                          : unlocked ? 'border-border hover:border-primary/40'
+                          : 'border-border hover:border-amber-400/60',
+                      ].join(' ')}
+                    >
+                      <div className="w-full h-9 rounded-lg flex items-center justify-center gap-1" style={{ background: t.bg }}>
+                        <div className="w-3 h-3 rounded-full shadow-sm" style={{ background: t.primary }} />
+                        <div className="w-3 h-3 rounded-full shadow-sm" style={{ background: t.accent }} />
+                      </div>
+                      <span className="text-[10px] font-medium leading-none text-center">{t.label}</span>
+                      {selected ? (
+                        <span className="w-3.5 h-3.5 rounded-full bg-primary flex items-center justify-center">
+                          <Check className="w-2 h-2 text-primary-foreground" />
+                        </span>
+                      ) : !unlocked ? (
+                        <span className="flex items-center gap-0.5 text-[9px] font-semibold text-amber-600 dark:text-amber-400">
+                          <Gem className="w-2.5 h-2.5" />{cost}
+                        </span>
+                      ) : null}
+                      {!unlocked && <Lock className="absolute top-1.5 right-1.5 w-2.5 h-2.5 text-amber-500/80" />}
+                      {free && !unlocked && <span className="absolute top-1 left-1 bg-emerald-500 text-white text-[7px] font-bold px-0.5 rounded">FREE</span>}
+                      <button type="button" onClick={(e) => { e.stopPropagation(); setPreviewColourId(t.id); }}
+                        className="absolute bottom-1 right-1 p-0.5 rounded text-muted-foreground/60 hover:text-foreground hover:bg-black/10" title="Preview">
+                        <Eye className="w-2.5 h-2.5" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* All Font Styles */}
+            {showAll === 'fonts' && (
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                {FONT_THEMES.map(f => {
+                  const selected = fontId === f.id;
+                  const unlocked = isUnlocked('font', f.id);
+                  const cost = getItemCost('font', f.id);
+                  return (
+                    <div
+                      key={f.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => handleFont(f.id)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleFont(f.id); }}
+                      className={[
+                        'relative rounded-xl border-2 p-3 flex flex-col items-center gap-2 transition-all duration-150 cursor-pointer',
+                        selected ? 'border-primary ring-2 ring-primary/30 shadow-sm bg-primary/5'
+                          : unlocked ? 'border-border hover:border-primary/40 hover:shadow-sm'
+                          : 'border-border hover:border-amber-400/60 hover:shadow-sm',
+                      ].join(' ')}
+                    >
+                      {!unlocked && <Lock className="absolute top-2 right-2 w-3 h-3 text-amber-500/80" />}
+                      <span className={['text-3xl font-bold leading-none', !unlocked ? 'opacity-50' : ''].join(' ')} style={f.style}>Aa</span>
+                      <span className="text-[11px] font-medium">{f.label}</span>
+                      {selected ? (
+                        <span className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                          <Check className="w-2.5 h-2.5 text-primary-foreground" />
+                        </span>
+                      ) : !unlocked ? (
+                        <span className="flex items-center gap-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                          <Gem className="w-2.5 h-2.5" />{cost} gems
+                        </span>
+                      ) : null}
+                      <button type="button" onClick={(e) => { e.stopPropagation(); setPreviewFontId(f.id); }}
+                        className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-foreground border border-border rounded-md px-2 py-0.5 hover:bg-muted/50 transition-colors mt-0.5">
+                        <Eye className="w-2.5 h-2.5" /> Preview
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* All Icon Sets */}
+            {showAll === 'icons' && (
+              <div className="grid grid-cols-1 gap-4 pt-1">
+                {IMAGE_THEMES.map(theme => {
+                  const isSelected = themeId === theme.id;
+                  const unlocked = isUnlocked('icon_set', theme.id);
+                  const cost = getItemCost('icon_set', theme.id);
+                  const names = getCharacterNames(theme.id);
+                  return (
+                    <div
+                      key={theme.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => handleIconSet(theme.id)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleIconSet(theme.id); }}
+                      className={[
+                        'relative text-left rounded-2xl border-2 p-5 transition-all duration-200 cursor-pointer',
+                        isSelected
+                          ? 'border-primary bg-primary/6 shadow-md ring-1 ring-primary/20'
+                          : unlocked
+                            ? 'border-border hover:border-primary/40 hover:bg-muted/50 hover:shadow-sm'
+                            : 'border-border hover:border-amber-400/60 hover:bg-amber-50/40 dark:hover:bg-amber-950/20 hover:shadow-sm',
+                      ].join(' ')}
+                    >
+                      {isSelected && (
+                        <span className="absolute top-3 right-3 bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center shadow">
+                          <Check className="w-3.5 h-3.5" />
+                        </span>
+                      )}
+                      {!unlocked && !isSelected && (
+                        <span className="absolute top-3 right-3 flex items-center gap-1 bg-amber-100 dark:bg-amber-900/50 border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 rounded-full px-2 py-0.5 text-[11px] font-semibold">
+                          <Gem className="w-3 h-3" />{cost}
+                        </span>
+                      )}
+                      <div className={['space-y-3', !unlocked ? 'opacity-60' : ''].join(' ')}>
+                        <div className="flex items-center gap-2">
+                          <h3 className={['text-lg font-bold', isSelected ? 'text-primary' : ''].join(' ')}>{theme.name}</h3>
+                          {!unlocked && <Lock className="w-4 h-4 text-amber-500" />}
+                        </div>
+                        <div>
+                          <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">9×9</p>
+                          <div className="grid grid-cols-9 gap-0.5">
+                            {Array.from({ length: 9 }, (_, i) => i + 1).map(n => (
+                              <ThemeIconWithEmojiFallback key={n} themeId={theme.id} value={n} sym={getSymbol(theme, n)} size={28} />
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">16×16 extras</p>
+                          <div className="grid grid-cols-7 gap-0.5">
+                            {Array.from({ length: 7 }, (_, i) => i + 10).map(n => (
+                              <ThemeIconWithEmojiFallback key={n} themeId={theme.id} value={n} sym={getSymbol(theme, n)} size={28} />
+                            ))}
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                          {names.map((name, i) => (
+                            <div key={i} className="flex items-center gap-1.5">
+                              <ThemeIconWithEmojiFallback themeId={theme.id} value={i + 1} sym={getSymbol(theme, i + 1)} size={14} />
+                              <span className="text-[10px] text-muted-foreground truncate">{name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between">
+                        {!unlocked ? (
+                          <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">Tap to unlock for {cost} gems</span>
+                        ) : <span />}
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setOverviewThemeId(theme.id); }}
+                          className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground border border-border rounded-lg px-2.5 py-1 hover:bg-muted/50 transition-colors"
+                        >
+                          <LayoutGrid className="w-3 h-3" />
+                          All symbols
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── Colour Theme Preview Dialog ──────────────────────────────── */}
       {(() => {
