@@ -2,7 +2,7 @@ import React from 'react';
 import { useImageTheme } from '@/hooks/use-image-theme';
 import { ThemeIcon, useThemeImageSrc } from '@/components/theme-icons';
 import { IMAGE_THEMES, getTheme, getSymbol } from '@/lib/themes';
-import { Check, Lock, Gem, LayoutGrid, Eye, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Check, Lock, Gem, LayoutGrid, Eye, ChevronLeft, ChevronRight, ArrowLeft, ImageIcon, Upload, RotateCcw, EyeOff } from 'lucide-react';
 import { type ThemeId } from '@/lib/themes';
 import { useAuth } from '@/hooks/use-auth';
 import { useGetProfile, useUpdateProfile } from '@workspace/api-client-react';
@@ -10,6 +10,7 @@ import { applyAppTheme } from '@/components/layout';
 import { useFontTheme, FONT_THEMES, type FontThemeId } from '@/hooks/use-font-theme';
 import { useUnlockedItems, useUnlockItem } from '@/hooks/use-unlocked-items';
 import { getItemCost, isFreeItem, type ItemType } from '@/lib/item-catalog';
+import { useThemeBg, THEME_BG_DEFAULTS } from '@/hooks/use-theme-bg';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -135,6 +136,28 @@ export default function Themes() {
   const [previewFontId, setPreviewFontId] = React.useState<string | null>(null);
   const previewFont = previewFontId ? FONT_THEMES.find(f => f.id === previewFontId) ?? null : null;
   const [showAll, setShowAll] = React.useState<'colors' | 'fonts' | 'icons' | null>(null);
+
+  // Background image
+  const bgThemeId = activeAppTheme || 'light';
+  const { effectiveBg, enabled: bgEnabled, setEnabled: setBgEnabled, hasCustom, defaultUrl: bgDefaultUrl, setCustomImage, resetCustomImage } = useThemeBg(bgThemeId);
+  const bgFileRef = React.useRef<HTMLInputElement>(null);
+
+  const handleBgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast.error('Please select an image file'); return; }
+    if (file.size > 10 * 1024 * 1024) { toast.error('Image must be under 10 MB'); return; }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      if (dataUrl) {
+        setCustomImage(bgThemeId, dataUrl);
+        toast.success('Background image updated!');
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
 
   React.useEffect(() => {
     if (profile?.theme) setActiveAppTheme(profile.theme);
@@ -341,6 +364,115 @@ export default function Themes() {
           })}
         </div>
         <p className="text-xs text-muted-foreground">Classic and Dark are always free. Others unlock with gems.</p>
+      </section>
+
+      <div className="border-t" />
+
+      {/* ── Background Image ─────────────────────────────────────────── */}
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-xl font-serif font-semibold">Background Image</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Each colour theme has a matching default background image. Upload your own or turn it off.
+          </p>
+        </div>
+
+        {/* Enable / disable toggle */}
+        <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-3">
+          <div className="flex items-center gap-2.5">
+            {bgEnabled ? <ImageIcon className="w-4 h-4 text-primary shrink-0" /> : <EyeOff className="w-4 h-4 text-muted-foreground shrink-0" />}
+            <div>
+              <p className="text-sm font-medium leading-none">{bgEnabled ? 'Background image on' : 'Background image off'}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{bgEnabled ? 'Showing behind the UI' : 'Plain colour theme only'}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={bgEnabled}
+            onClick={() => setBgEnabled(!bgEnabled)}
+            className={[
+              'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              bgEnabled ? 'bg-primary' : 'bg-muted-foreground/30',
+            ].join(' ')}
+          >
+            <span
+              className={[
+                'inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform',
+                bgEnabled ? 'translate-x-6' : 'translate-x-1',
+              ].join(' ')}
+            />
+          </button>
+        </div>
+
+        {/* Image preview + controls */}
+        <div className="rounded-2xl border-2 border-border overflow-hidden">
+          {/* Preview strip */}
+          <div
+            className="relative w-full h-36 bg-muted/50 bg-cover bg-center"
+            style={{ backgroundImage: bgEnabled && effectiveBg ? `url(${effectiveBg})` : 'none' }}
+          >
+            {(!bgEnabled || !effectiveBg) && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-1.5 text-muted-foreground/50">
+                  <ImageIcon className="w-8 h-8" />
+                  <span className="text-xs">No background image</span>
+                </div>
+              </div>
+            )}
+            {bgEnabled && effectiveBg && (
+              <div className="absolute inset-0" style={{ background: 'var(--background)', opacity: 0.5 }} />
+            )}
+            {hasCustom && (
+              <span className="absolute top-2 left-2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
+                Custom
+              </span>
+            )}
+            {!hasCustom && bgEnabled && bgDefaultUrl && (
+              <span className="absolute top-2 left-2 bg-black/50 text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
+                Default
+              </span>
+            )}
+          </div>
+
+          {/* Controls row */}
+          <div className="flex items-center gap-2 p-3 bg-card border-t border-border">
+            {/* Upload custom image */}
+            <input
+              ref={bgFileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleBgUpload}
+            />
+            <button
+              type="button"
+              onClick={() => bgFileRef.current?.click()}
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              Upload image
+            </button>
+
+            {/* Reset to default (only shown when custom is set) */}
+            {hasCustom && (
+              <button
+                type="button"
+                onClick={() => { resetCustomImage(bgThemeId); toast.success('Reset to default image'); }}
+                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted transition-colors"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Reset to default
+              </button>
+            )}
+
+            <span className="ml-auto text-[10px] text-muted-foreground capitalize">{bgThemeId} theme</span>
+          </div>
+        </div>
+
+        <p className="text-xs text-muted-foreground">
+          Custom images are stored locally on this device. Upload a new one any time — it replaces the previous custom image for this theme.
+        </p>
       </section>
 
       <div className="border-t" />

@@ -13,6 +13,7 @@ import { useAchievementNotifier } from "@/hooks/use-achievement-notifier";
 import { useBadgeNotifier } from "@/hooks/use-badge-notifier";
 import { AchievementUnlockModal } from "@/components/achievement-unlock-modal";
 import { TournamentWinModal } from "@/components/tournament-win-modal";
+import { useThemeBg } from "@/hooks/use-theme-bg";
 
 export function applyAppTheme(theme: string) {
   document.documentElement.setAttribute("data-theme", theme);
@@ -43,6 +44,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { profileId, isSignedIn, replitUser } = useAuth();
   const { data: profile } = useGetProfile(profileId as number, { query: { enabled: !!profileId } });
   const pendingCount = usePendingChallengeCount(profileId);
+  const { effectiveBg } = useThemeBg(profile?.theme ?? 'light');
 
   useFontTheme();
   useChallengeNotifications(profileId);
@@ -80,7 +82,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex flex-col bg-background text-foreground transition-colors duration-200" style={{ minHeight: "100dvh" }}>
+    <div className="flex flex-col text-foreground transition-colors duration-200" style={{ minHeight: "100dvh", backgroundColor: effectiveBg ? 'transparent' : 'var(--background)' }}>
+      {/* Theme background image layers — fixed behind all content */}
+      {effectiveBg && (
+        <>
+          <div
+            aria-hidden
+            className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ zIndex: -2, backgroundImage: `url(${effectiveBg})` }}
+          />
+          {/* Theme-coloured wash so the image is subtle and UI stays readable */}
+          <div
+            aria-hidden
+            className="fixed inset-0"
+            style={{ zIndex: -1, background: 'var(--background)', opacity: 0.82 }}
+          />
+        </>
+      )}
       <TournamentWinModal badges={pendingBadges} onDismiss={dismissBadge} />
       <AchievementUnlockModal achievements={newlyUnlocked} onDismiss={dismiss} profileId={profileId} />
       <header className={[
