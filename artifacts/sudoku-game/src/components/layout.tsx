@@ -208,7 +208,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       <main
         className={[
-          "flex-1 w-full max-w-4xl mx-auto flex flex-col",
+          "flex-1 w-full max-w-4xl mx-auto flex flex-col bg-background",
           isGameRoute
             ? "px-2 py-2 sm:px-4 md:px-8 md:py-8 md:pb-8"
             : "px-2 py-4 sm:px-4 md:px-8 md:py-8 md:pb-8",
