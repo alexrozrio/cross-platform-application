@@ -162,51 +162,62 @@ export default function SudokuHome() {
     const mode = modesForSize(size).includes(requestedMode) ? requestedMode : 'number';
     const effectiveDifficulty = difficultyOverride ?? difficulty;
     setPendingStart(null);
-    setIsGenerating(true);
     const modeQuery = mode !== 'number' ? `?mode=${mode}` : '';
+
+    // Always pre-generate an offline puzzle synchronously (instant from the
+    // default bank) so the user can play immediately no matter what.
     try {
-      if (profileId) {
-        // Short timeout so a down API fails fast instead of hanging for 30s+
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2500);
-        let puzzle: Awaited<ReturnType<typeof generatePuzzle>>;
-        try {
-          puzzle = await generatePuzzle(
-            { difficulty: effectiveDifficulty, gridSize: size as any },
-            { signal: controller.signal },
-          );
-        } finally {
-          clearTimeout(timeoutId);
-        }
-        if (!puzzle) throw new Error('Failed to generate puzzle');
-        const game = await createGame.mutateAsync({
-          data: { profileId, puzzleId: puzzle.id, difficulty: effectiveDifficulty },
-        });
-        setActiveGame(null);
-        try {
-          localStorage.setItem(LAST_GRID_SIZE_KEY, String(size));
-          localStorage.setItem(LAST_DIFFICULTY_KEY, effectiveDifficulty);
-        } catch { /* ignore */ }
-        setLocation(`/game/${game.id}${modeQuery}`);
-        return; // success — done
-      }
-      throw new Error('Not signed in');
-    } catch (err) {
-      // API is down or user not signed in — generate puzzle client-side (uses default bank: instant)
-      console.warn('API unavailable, starting offline game:', err);
-      try {
-        generateOfflinePuzzle(effectiveDifficulty, size);
-        try {
-          localStorage.setItem(LAST_GRID_SIZE_KEY, String(size));
-          localStorage.setItem(LAST_DIFFICULTY_KEY, effectiveDifficulty);
-        } catch { /* ignore */ }
-        setLocation(`/game/0${modeQuery}`);
-      } catch (offlineErr) {
-        console.error('Failed to generate offline puzzle:', offlineErr);
-      }
-    } finally {
+      generateOfflinePuzzle(effectiveDifficulty, size);
+      localStorage.setItem(LAST_GRID_SIZE_KEY, String(size));
+      localStorage.setItem(LAST_DIFFICULTY_KEY, effectiveDifficulty);
+    } catch { /* ignore */ }
+
+    if (!profileId) {
+      // Guest — go offline right away, no API involved.
+      setLocation(`/game/0${modeQuery}`);
+      startInFlightRef.current = false;
+      return;
+    }
+
+    // Signed-in: race the API against a short timeout.
+    // If the API wins → go to the tracked online game.
+    // If the timer fires first → go to the offline game immediately.
+    setIsGenerating(true);
+    let settled = false;
+
+    const goOffline = () => {
+      if (settled) return;
+      settled = true;
       setIsGenerating(false);
       startInFlightRef.current = false;
+      setActiveGame(null);
+      setLocation(`/game/0${modeQuery}`);
+    };
+
+    // User waits at most 1.5 s; a working API typically responds in <300 ms.
+    const fallbackTimer = setTimeout(goOffline, 1500);
+
+    try {
+      const controller = new AbortController();
+      const puzzle = await generatePuzzle(
+        { difficulty: effectiveDifficulty, gridSize: size as any },
+        { signal: controller.signal },
+      );
+      if (!puzzle) throw new Error('no puzzle');
+      const game = await createGame.mutateAsync({
+        data: { profileId, puzzleId: puzzle.id, difficulty: effectiveDifficulty },
+      });
+      clearTimeout(fallbackTimer);
+      if (!settled) {
+        settled = true;
+        setIsGenerating(false);
+        startInFlightRef.current = false;
+        setActiveGame(null);
+        setLocation(`/game/${game.id}${modeQuery}`);
+      }
+    } catch {
+      clearTimeout(fallbackTimer);
+      goOffline();
     }
   };
 

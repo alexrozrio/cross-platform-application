@@ -67,7 +67,10 @@ export function AuthProvider({
   };
 
   useEffect(() => {
-    fetch(apiUrl('/api/auth/user'), { credentials: 'include' })
+    const controller = new AbortController();
+    // Cap the auth check at 3 s so a hung API never blocks the UI indefinitely.
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    fetch(apiUrl('/api/auth/user'), { credentials: 'include', signal: controller.signal })
       .then((res) => {
         if (res.status === 401) return null;
         if (!res.ok) return null;
@@ -79,7 +82,8 @@ export function AuthProvider({
       })
       .catch(() => {
         setIsLoaded(true);
-      });
+      })
+      .finally(() => clearTimeout(timeoutId));
   }, []);
 
   useEffect(() => {

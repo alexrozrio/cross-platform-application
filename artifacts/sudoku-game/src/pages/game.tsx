@@ -233,8 +233,19 @@ export default function Game({ id }: { id: string }) {
     data: apiGame,
     isLoading: apiLoading,
     error: apiError,
-  } = useGetGame(gameId, { query: { enabled: !isOffline && !!gameId } });
-  const offlinePuzzleData = isOffline ? getOfflinePuzzle() : null;
+  } = useGetGame(gameId, { query: { enabled: !isOffline && !!gameId, retry: 1, retryDelay: 500 } });
+
+  // If the API hasn't responded within 4 s, stop waiting and fall back to
+  // whatever is in localStorage (or show the error state).
+  const [apiTimedOut, setApiTimedOut] = useState(false);
+  useEffect(() => {
+    if (isOffline || !apiLoading) return;
+    setApiTimedOut(false);
+    const t = setTimeout(() => setApiTimedOut(true), 4000);
+    return () => clearTimeout(t);
+  }, [isOffline, apiLoading, gameId]);
+
+  const offlinePuzzleData = (isOffline || apiTimedOut) ? getOfflinePuzzle() : null;
   const game = isOffline
     ? (offlinePuzzleData
         ? ({
@@ -254,9 +265,28 @@ export default function Game({ id }: { id: string }) {
             },
           } as any)
         : null)
-    : apiGame;
-  const isLoading = isOffline ? false : apiLoading;
-  const error = isOffline ? null : apiError;
+    : apiTimedOut
+      ? (offlinePuzzleData
+          ? ({
+              id: 0,
+              status: "active",
+              currentGrid: offlinePuzzleData.grid,
+              elapsedSeconds: 0,
+              mistakeCount: 0,
+              hintsUsed: 0,
+              puzzle: {
+                id: 0,
+                grid: offlinePuzzleData.grid,
+                solution: offlinePuzzleData.solution,
+                gridSize: offlinePuzzleData.gridSize,
+                difficulty: offlinePuzzleData.difficulty,
+                createdAt: "",
+              },
+            } as any)
+          : null)
+      : apiGame;
+  const isLoading = isOffline || apiTimedOut ? false : apiLoading;
+  const error = isOffline || apiTimedOut ? null : apiError;
 
   const saveGame = useSaveGame();
   const completeGame = useCompleteGame();
