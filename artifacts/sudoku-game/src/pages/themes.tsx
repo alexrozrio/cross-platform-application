@@ -2,7 +2,7 @@ import React from 'react';
 import { useImageTheme } from '@/hooks/use-image-theme';
 import { ThemeIcon, useThemeImageSrc } from '@/components/theme-icons';
 import { IMAGE_THEMES, getTheme, getSymbol } from '@/lib/themes';
-import { Check, Lock, Gem, LayoutGrid, Eye, ChevronLeft, ChevronRight, ArrowLeft, ImageIcon, Upload, RotateCcw, EyeOff } from 'lucide-react';
+import { Check, Lock, Gem, LayoutGrid, Eye, ChevronLeft, ChevronRight, ArrowLeft, ImageIcon, EyeOff } from 'lucide-react';
 import { type ThemeId } from '@/lib/themes';
 import { useAuth } from '@/hooks/use-auth';
 import { useGetProfile, useUpdateProfile } from '@workspace/api-client-react';
@@ -437,36 +437,7 @@ export default function Themes() {
 
           {/* Controls row */}
           <div className="flex items-center gap-2 p-3 bg-card border-t border-border">
-            {/* Upload custom image */}
-            <input
-              ref={bgFileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleBgUpload}
-            />
-            <button
-              type="button"
-              onClick={() => bgFileRef.current?.click()}
-              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              <Upload className="w-3.5 h-3.5" />
-              Upload image
-            </button>
-
-            {/* Reset to default (only shown when custom is set) */}
-            {hasCustom && (
-              <button
-                type="button"
-                onClick={() => { resetCustomImage(bgThemeId); toast.success('Reset to default image'); }}
-                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted transition-colors"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                Reset to default
-              </button>
-            )}
-
-            <span className="ml-auto text-[10px] text-muted-foreground capitalize">{bgThemeId} theme</span>
+            <span className="text-[10px] text-muted-foreground capitalize">{bgThemeId} theme</span>
           </div>
         </div>
 
