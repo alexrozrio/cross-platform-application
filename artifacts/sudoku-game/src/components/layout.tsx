@@ -106,11 +106,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
             className="fixed inset-0 bg-cover bg-center bg-no-repeat"
             style={{ zIndex: -2, backgroundImage: `url(${effectiveBg})` }}
           />
-          {/* Theme-coloured wash so the image is subtle and UI stays readable */}
+          {/* Subtle theme-coloured wash — keeps bare text legible while image shows through gaps */}
           <div
             aria-hidden
             className="fixed inset-0"
-            style={{ zIndex: -1, background: 'var(--background)', opacity: 0.82 }}
+            style={{ zIndex: -1, background: 'var(--background)', opacity: 0.65 }}
           />
         </>
       )}
@@ -208,7 +208,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       <main
         className={[
-          "flex-1 w-full max-w-4xl mx-auto flex flex-col bg-background",
+          "flex-1 w-full max-w-4xl mx-auto flex flex-col",
           isGameRoute
             ? "px-2 py-2 sm:px-4 md:px-8 md:py-8 md:pb-8"
             : "px-2 py-4 sm:px-4 md:px-8 md:py-8 md:pb-8",

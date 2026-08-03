@@ -346,11 +346,8 @@ export default function Portal() {
           return (
             <button
               onClick={() => setLocation('/profile')}
-              className="w-full text-left rounded-2xl px-4 py-3 flex items-center gap-4 transition-all hover:opacity-90 active:scale-[0.99]"
-              style={{
-                background: `linear-gradient(135deg, ${level.color}22 0%, ${level.ring}18 100%)`,
-                border: `1.5px solid ${level.ring}55`,
-              }}
+              className="w-full text-left rounded-2xl px-4 py-3 flex items-center gap-4 transition-all hover:opacity-90 active:scale-[0.99] bg-card"
+              style={{ border: `1.5px solid ${level.ring}55` }}
             >
               <div
                 className="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm shrink-0"
@@ -386,7 +383,7 @@ export default function Portal() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
             {/* Sudoku Card */}
-            <div className="group relative rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 overflow-hidden">
+            <div className="group relative rounded-2xl border-2 border-primary/20 bg-card overflow-hidden">
               <button onClick={() => setLocation('/sudoku')} className="w-full text-left p-6 space-y-4 hover:from-primary/15 hover:to-primary/10 hover:border-primary/40 transition-all duration-200">
                 <div className="flex items-center gap-3">
                   <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center ring-1 ring-primary/20">
@@ -466,7 +463,7 @@ export default function Portal() {
               const theme = getTheme(themeId as any);
               const previewSymbols = theme.symbols.slice(0, 4);
               return (
-                <div className="group relative rounded-2xl border-2 border-violet-400/25 bg-gradient-to-br from-violet-500/10 to-purple-500/5 overflow-hidden">
+                <div className="group relative rounded-2xl border-2 border-violet-400/25 bg-card overflow-hidden">
                   <button onClick={() => setLocation('/memory')} className="w-full text-left p-6 space-y-4 hover:from-violet-500/15 hover:to-purple-500/10 hover:border-violet-400/40 transition-all duration-200">
                     <div className="flex items-center gap-3">
                       <div className="w-14 h-14 rounded-xl bg-violet-500/10 flex items-center justify-center ring-1 ring-violet-400/20 text-3xl">🃏</div>

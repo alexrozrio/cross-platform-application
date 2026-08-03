@@ -749,7 +749,7 @@ export default function Profile() {
           </div>
 
           {/* Game tab toggle */}
-          <div className="flex rounded-xl border bg-muted/40 p-1 gap-1">
+          <div className="flex rounded-xl border bg-muted p-1 gap-1">
             <button
               onClick={() => setGameTab("sudoku")}
               className={[
