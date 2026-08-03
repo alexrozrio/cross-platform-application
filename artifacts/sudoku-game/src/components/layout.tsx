@@ -12,6 +12,7 @@ import { useLevelUpWatcher } from "@/hooks/use-level-up";
 import { useAchievementNotifier } from "@/hooks/use-achievement-notifier";
 import { useBadgeNotifier } from "@/hooks/use-badge-notifier";
 import { AchievementUnlockModal } from "@/components/achievement-unlock-modal";
+import { TournamentWinModal } from "@/components/tournament-win-modal";
 
 export function applyAppTheme(theme: string) {
   document.documentElement.setAttribute("data-theme", theme);
@@ -46,7 +47,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   useFontTheme();
   useChallengeNotifications(profileId);
   useLevelUpWatcher(profileId);
-  useBadgeNotifier(profileId);
+  const { pendingBadges, dismissBadge } = useBadgeNotifier(profileId);
   const { newlyUnlocked, dismiss } = useAchievementNotifier(profileId);
 
   React.useEffect(() => {
@@ -80,6 +81,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex flex-col bg-background text-foreground transition-colors duration-200" style={{ minHeight: "100dvh" }}>
+      <TournamentWinModal badges={pendingBadges} onDismiss={dismissBadge} />
       <AchievementUnlockModal achievements={newlyUnlocked} onDismiss={dismiss} profileId={profileId} />
       <header className={[
         "border-b bg-card flex items-center justify-between sticky top-0 z-10",
