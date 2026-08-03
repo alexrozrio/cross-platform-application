@@ -327,7 +327,7 @@ export default function Portal() {
           ═══════════════════════════════════════════════════════════ */}
       <div className="hidden md:block space-y-10">
         {/* Title */}
-        <div className="text-center space-y-2 pt-4">
+        <div className="text-center space-y-2 pt-4 bg-card rounded-2xl px-6 py-5 border border-border">
           <h1 className="text-4xl font-serif font-bold tracking-tight">Brain Games 4 All</h1>
           <p className="text-muted-foreground text-lg">Choose your game and play</p>
           {!profileId && isReady && (

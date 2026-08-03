@@ -614,7 +614,7 @@ export default function Profile() {
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-8">
-      <div className="space-y-1">
+      <div className="space-y-1 bg-card rounded-2xl px-5 py-4 border border-border">
         <h1 className="text-3xl font-serif font-bold tracking-tight">Account</h1>
         <p className="text-muted-foreground">Your profile, stats, and game preferences.</p>
       </div>
@@ -743,7 +743,7 @@ export default function Profile() {
       {/* ── Statistics ───────────────────────────────────────────────────── */}
       {profileId && (
         <div className="space-y-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 bg-card rounded-2xl px-5 py-4 border border-border">
             <BarChart2 className="w-5 h-5 text-muted-foreground" />
             <h2 className="text-xl font-serif font-bold tracking-tight">Statistics</h2>
           </div>
@@ -1065,7 +1065,7 @@ export default function Profile() {
       )}
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <div className="border-t pt-6 pb-4 flex flex-col items-center gap-3">
+      <div className="bg-card rounded-2xl border border-border px-5 py-4 flex flex-col items-center gap-3">
         <div className="flex items-center justify-center gap-6">
           <button onClick={() => setLocation("/about")} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <Info className="w-3.5 h-3.5" /> About
