@@ -305,7 +305,7 @@ export default function SudokuHome() {
           true;
         return validForMode;
       })() && (
-        <div className="bg-card border border-border rounded-2xl p-3 sm:bg-transparent sm:border-0 sm:rounded-none sm:p-0">
+        <div className="bg-card border border-border rounded-2xl p-3">
         <button
           onClick={() => setLocation(`/game/${activeGame.id}`)}
           className="w-full flex items-center gap-3 rounded-xl border-2 border-primary/40 bg-primary/5 p-3 sm:p-4 hover:bg-primary/10 hover:border-primary/60 transition-all text-left"
