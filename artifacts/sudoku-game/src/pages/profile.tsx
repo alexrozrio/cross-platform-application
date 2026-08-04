@@ -935,19 +935,19 @@ export default function Profile() {
               {badges.map((badge) => {
                 const meta = BADGE_META[badge.badgeType] ?? BADGE_META["weekly_1st"];
                 return (
-                  <div key={badge.id} className={`flex items-center justify-between rounded-xl border-2 p-3 ${meta.borderColor}`}>
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-2xl ${meta.bg}`}>
+                  <div key={badge.id} className={`flex items-center justify-between gap-2 rounded-xl border-2 p-3 ${meta.borderColor}`}>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-2xl ${meta.bg}`}>
                         {meta.emoji}
                       </div>
-                      <div>
-                        <p className={`text-sm font-bold ${meta.color}`}>{meta.title}</p>
-                        <p className="text-xs text-muted-foreground">
+                      <div className="min-w-0">
+                        <p className={`text-sm font-bold truncate ${meta.color}`}>{meta.title}</p>
+                        <p className="text-xs text-muted-foreground truncate">
                           {formatPeriodLabel(badge.tournamentPeriod)} · {badge.totalPoints.toLocaleString()} pts
                         </p>
                       </div>
                     </div>
-                    <Button size="sm" variant="ghost" className="gap-1.5 text-xs h-8" onClick={() => setShareSheetToken(badge.shareToken)}>
+                    <Button size="sm" variant="ghost" className="gap-1.5 text-xs h-8 shrink-0" onClick={() => setShareSheetToken(badge.shareToken)}>
                       <Share2 className="w-3.5 h-3.5" /> Share
                     </Button>
                   </div>

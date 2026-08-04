@@ -119,7 +119,7 @@ export function BadgeShareSheet({
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
       {/* Use Dialog's natural p-6 gap-4 — do NOT override with p-0/overflow-hidden */}
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md mx-2 sm:mx-auto w-[calc(100%-1rem)] sm:w-full rounded-lg">
         <DialogHeader>
           <DialogTitle>Share your badge</DialogTitle>
           <DialogDescription className="sr-only">
