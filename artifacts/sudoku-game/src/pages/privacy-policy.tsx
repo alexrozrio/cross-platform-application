@@ -9,7 +9,7 @@ export default function PrivacyPolicy() {
     <div className="max-w-2xl mx-auto w-full space-y-8 animate-in fade-in duration-500 pb-12">
       <button
         onClick={() => setLocation("/profile")}
-        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        className="flex items-center gap-1.5 text-sm text-foreground bg-card border border-border rounded-lg px-3 py-1.5 hover:bg-muted transition-colors"
       >
         <ArrowLeft className="w-4 h-4" /> Back
       </button>

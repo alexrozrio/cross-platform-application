@@ -755,7 +755,7 @@ export default function Themes() {
         </div>
       </section>
 
-      <p className="text-xs text-center text-muted-foreground pb-4">
+      <p className="text-xs text-center text-muted-foreground pb-20 sm:pb-4">
         Free selections save automatically. Unlocks are permanent.
       </p>
 

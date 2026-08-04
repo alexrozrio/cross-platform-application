@@ -517,7 +517,7 @@ export default function MemoryMatchPage() {
     const sizeReward: Record<number, string> = { 2: '1 💎', 4: '1 💎', 6: '2 💎', 8: '3 💎' };
 
     return (
-      <div className="max-w-lg mx-auto w-full animate-in fade-in duration-500 flex flex-col gap-4 sm:gap-6">
+      <div className="max-w-lg mx-auto w-full animate-in fade-in duration-500 flex flex-col gap-4 sm:gap-6 pb-20 sm:pb-8">
 
         {/* Top bar: back + title */}
         <div className="flex items-center justify-between gap-3 bg-card rounded-2xl px-4 py-3 border border-border">
@@ -663,7 +663,7 @@ export default function MemoryMatchPage() {
         </div>
 
         {/* Info links */}
-        <div className="flex items-center justify-center gap-6 pb-4">
+        <div className="flex items-center justify-center gap-6">
           <button
             onClick={() => setInfoModal('rules')}
             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
