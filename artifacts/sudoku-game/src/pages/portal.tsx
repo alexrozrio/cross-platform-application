@@ -140,7 +140,7 @@ export default function Portal() {
           return validForMode ? (
             <button
               onClick={() => setLocation(`/game/${activeGame.id}`)}
-              className="w-full flex items-center gap-3 rounded-xl border-2 border-primary/30 bg-primary/5 px-4 py-2.5 text-left hover:bg-primary/10 transition-all"
+              className="w-full flex items-center gap-3 rounded-xl border-2 border-primary/30 bg-card px-4 py-2.5 text-left hover:bg-muted transition-all"
             >
               <RotateCcw className="w-4 h-4 text-primary shrink-0" />
               <div className="flex-1 min-w-0">
@@ -168,7 +168,7 @@ export default function Portal() {
           return (
             <button
               onClick={() => setLocation('/memory')}
-              className="w-full flex items-center gap-3 rounded-xl border-2 border-violet-400/30 bg-violet-500/5 px-4 py-2.5 text-left hover:bg-violet-500/10 transition-all"
+              className="w-full flex items-center gap-3 rounded-xl border-2 border-violet-400/30 bg-card px-4 py-2.5 text-left hover:bg-muted transition-all"
             >
               <RotateCcw className="w-4 h-4 text-violet-600 shrink-0" />
               <div className="flex-1 min-w-0">
@@ -181,7 +181,7 @@ export default function Portal() {
         })()}
 
         {/* Sudoku quick launch */}
-        <div className="rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/8 to-primary/3 p-4 space-y-3">
+        <div className="rounded-2xl border-2 border-primary/20 bg-card p-4 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Grid3X3 className="w-4 h-4 text-primary" />
@@ -216,7 +216,7 @@ export default function Portal() {
         </div>
 
         {/* Memory Match quick launch */}
-        <div className="rounded-2xl border-2 border-violet-400/25 bg-gradient-to-br from-violet-500/8 to-purple-500/3 p-4 space-y-3">
+        <div className="rounded-2xl border-2 border-violet-400/25 bg-card p-4 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-base leading-none">🃏</span>
@@ -244,7 +244,7 @@ export default function Portal() {
         </div>
 
         {/* Daily Challenges */}
-        <div className="rounded-2xl border-2 border-orange-200/70 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 dark:border-orange-800/30 p-4 space-y-2">
+        <div className="rounded-2xl border-2 border-orange-200/70 bg-card dark:border-orange-800/30 p-4 space-y-2">
           <div className="flex items-center gap-2 mb-1">
             <Flame className="w-4 h-4 text-orange-500 shrink-0" />
             <span className="font-bold text-sm">Daily Challenges</span>
@@ -281,9 +281,8 @@ export default function Portal() {
           return (
             <button
               onClick={() => setLocation('/profile')}
-              className="w-full text-left rounded-2xl px-4 py-3 flex items-center gap-3 transition-all hover:opacity-90 active:scale-[0.99]"
+              className="w-full text-left rounded-2xl px-4 py-3 flex items-center gap-3 transition-all hover:opacity-90 active:scale-[0.99] bg-card"
               style={{
-                background: `linear-gradient(135deg, ${level.color}22 0%, ${level.ring}18 100%)`,
                 border: `1.5px solid ${level.ring}55`,
               }}
             >
@@ -309,7 +308,7 @@ export default function Portal() {
         })()}
 
         {/* Title / sign-in note (mobile, at bottom of this section) */}
-        <div className="pt-1 space-y-1">
+        <div className="bg-card border border-border rounded-2xl px-4 py-3 space-y-1">
           <h1 className="text-2xl font-serif font-bold tracking-tight">Brain Games 4 All</h1>
           <p className="text-sm text-muted-foreground">Two classic brain games, endlessly replayable</p>
           {!profileId && isReady && (

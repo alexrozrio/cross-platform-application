@@ -327,9 +327,9 @@ export default function SudokuHome() {
 
       {/* ══════════════════════════════════════════
           MOBILE new-game section (< sm)
-          compact: no Card, pill difficulty, 2-3 col grid
+          compact: pill difficulty, 2-3 col grid
           ══════════════════════════════════════════ */}
-      <div className="sm:hidden flex flex-col gap-4">
+      <div className="sm:hidden bg-card border border-border rounded-2xl p-4 flex flex-col gap-4">
 
         {/* Difficulty pills */}
         <div>
@@ -541,6 +541,7 @@ export default function SudokuHome() {
       </Card>
 
       {/* ── Daily Challenge banner ── */}
+      <div className="bg-card border border-border rounded-2xl p-3 sm:bg-transparent sm:border-0 sm:rounded-none sm:p-0">
       <button
         onClick={() => setLocation('/daily-challenge')}
         className="w-full flex items-center gap-3 sm:gap-4 rounded-xl border-2 border-orange-200/70 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 dark:border-orange-800/30 p-3 sm:p-4 hover:border-orange-300 hover:from-orange-100 hover:to-amber-100 dark:hover:from-orange-950/30 dark:hover:to-amber-950/30 transition-all text-left"
@@ -554,6 +555,7 @@ export default function SudokuHome() {
         </div>
         <div className="text-orange-400 text-lg shrink-0">→</div>
       </button>
+      </div>
 
       {/* ── Quick links ── */}
       <div className="grid grid-cols-2 gap-3">
