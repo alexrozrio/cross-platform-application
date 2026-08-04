@@ -577,7 +577,7 @@ export default function MemoryMatchPage() {
         </div>
 
         {/* ── Grid size cards: 2×2 on mobile, row on desktop ── */}
-        <div>
+        <div className="bg-card border border-border rounded-2xl p-3 sm:bg-transparent sm:border-0 sm:rounded-none sm:p-0">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2.5">Choose Grid Size</p>
 
           {/* Mobile: 2×2 grid */}
@@ -663,7 +663,7 @@ export default function MemoryMatchPage() {
         </div>
 
         {/* Info links */}
-        <div className="flex items-center justify-center gap-6">
+        <div className="flex items-center justify-center gap-6 bg-card border border-border rounded-xl px-4 py-2.5">
           <button
             onClick={() => setInfoModal('rules')}
             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
