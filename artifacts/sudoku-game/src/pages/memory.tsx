@@ -536,7 +536,7 @@ export default function MemoryMatchPage() {
         </div>
 
         {/* Theme preview strip + display mode toggle — one row */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 bg-card border border-border rounded-2xl px-4 py-3">
           {/* 5 symbol preview */}
           <div className="flex items-center gap-1 shrink-0">
             {displayMode === 'image'
