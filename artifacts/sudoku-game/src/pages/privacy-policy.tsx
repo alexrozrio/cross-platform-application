@@ -14,12 +14,12 @@ export default function PrivacyPolicy() {
         <ArrowLeft className="w-4 h-4" /> Back
       </button>
 
-      <div>
+      <div className="bg-card rounded-2xl px-5 py-4 border border-border">
         <h1 className="text-3xl font-serif font-bold tracking-tight">Privacy Policy</h1>
         <p className="text-muted-foreground mt-1 text-sm">Last updated: July 2026</p>
       </div>
 
-      <div className="prose prose-sm max-w-none space-y-6 text-muted-foreground leading-relaxed">
+      <div className="prose prose-sm max-w-none space-y-6 text-muted-foreground leading-relaxed bg-card rounded-2xl border border-border px-6 py-5">
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">1. Information We Collect</h2>
           <p>

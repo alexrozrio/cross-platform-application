@@ -527,7 +527,7 @@ export default function Stats() {
 
   return (
     <div className="max-w-3xl mx-auto w-full space-y-6 animate-in fade-in duration-500">
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-3 bg-card rounded-2xl px-5 py-4 border border-border">
         <div className="space-y-0.5 min-w-0">
           <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight leading-tight">
             Your Statistics

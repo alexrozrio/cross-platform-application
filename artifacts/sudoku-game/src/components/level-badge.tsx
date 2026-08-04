@@ -146,7 +146,7 @@ export function RankGuide({ currentXp }: { currentXp?: number }) {
       {open && (
         <div className="border-t border-border">
           {/* XP earning guide */}
-          <div className="px-5 py-4 bg-muted/20 border-b border-border">
+          <div className="px-5 py-4 bg-muted border-b border-border">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">XP earned per completed game</p>
             <div className="grid grid-cols-4 gap-2">
               {Object.entries(XP_LABELS).map(([diff, label]) => (
@@ -173,7 +173,7 @@ export function RankGuide({ currentXp }: { currentXp?: number }) {
               return (
                 <div
                   key={tier.name}
-                  className={`flex items-center gap-3 px-5 py-3 transition-colors ${isCurrentTier ? "bg-muted/50" : ""}`}
+                  className={`flex items-center gap-3 px-5 py-3 transition-colors ${isCurrentTier ? "bg-muted" : ""}`}
                 >
                   <div
                     className="w-7 h-7 rounded-full flex items-center justify-center font-black text-xs shrink-0"

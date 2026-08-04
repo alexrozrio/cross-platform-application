@@ -281,7 +281,7 @@ export default function SudokuHome() {
     <div className="max-w-lg mx-auto w-full animate-in fade-in duration-500 flex flex-col gap-4 sm:gap-8">
 
       {/* ── Top bar ── */}
-      <div className="flex items-center justify-between gap-3 pt-1">
+      <div className="flex items-center justify-between gap-3 bg-card rounded-2xl px-4 py-3 border border-border">
         <button
           onClick={() => setLocation('/')}
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
@@ -578,7 +578,7 @@ export default function SudokuHome() {
       </div>
 
       {/* ── Info links ── */}
-      <div className="flex items-center justify-center gap-6 pb-4">
+      <div className="flex items-center justify-center gap-6 bg-card rounded-2xl px-5 py-4 border border-border">
         <button onClick={() => setInfoModal('rules')} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <BookOpen className="w-3.5 h-3.5" /> Rules
         </button>

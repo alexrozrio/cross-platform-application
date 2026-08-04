@@ -1400,7 +1400,7 @@ export default function Challenges() {
   if (!profileId) {
     return (
       <div className="max-w-2xl mx-auto w-full space-y-6 animate-in fade-in duration-500">
-        <div className="space-y-1">
+        <div className="space-y-1 bg-card rounded-2xl px-5 py-4 border border-border">
           <h1 className="text-3xl font-serif font-bold tracking-tight">
             Challenges
           </h1>
@@ -1420,7 +1420,7 @@ export default function Challenges() {
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-6 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-3 bg-card rounded-2xl px-5 py-4 border border-border">
         <div className="space-y-0.5 min-w-0">
           <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight leading-tight">
             Challenges

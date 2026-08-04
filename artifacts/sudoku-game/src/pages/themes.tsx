@@ -237,7 +237,7 @@ export default function Themes() {
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-10 animate-in fade-in duration-500">
-      <div>
+      <div className="bg-card rounded-2xl px-5 py-4 border border-border">
         <h1 className="text-3xl font-serif font-bold tracking-tight">Themes</h1>
         <p className="text-muted-foreground mt-1">
           Personalise the look, feel, and typography of the app. Locked items can be unlocked with gems.
@@ -251,7 +251,7 @@ export default function Themes() {
       </div>
 
       {/* ── App Colour Theme ─────────────────────────────────────────── */}
-      <section className="space-y-3">
+      <section className="space-y-3 bg-card rounded-2xl border border-border p-5">
         <div>
           <h2 className="text-xl font-serif font-semibold">Colour Theme</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
@@ -367,10 +367,8 @@ export default function Themes() {
         <p className="text-xs text-muted-foreground">Classic and Dark are always free. Others unlock with gems.</p>
       </section>
 
-      <div className="border-t" />
-
       {/* ── Background Image ─────────────────────────────────────────── */}
-      <section className="space-y-4">
+      <section className="space-y-4 bg-card rounded-2xl border border-border p-5">
         <div>
           <h2 className="text-xl font-serif font-semibold">Background Image</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
@@ -379,7 +377,7 @@ export default function Themes() {
         </div>
 
         {/* Enable / disable toggle */}
-        <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-3">
+        <div className="flex items-center justify-between rounded-xl border border-border bg-muted px-4 py-3">
           <div className="flex items-center gap-2.5">
             {bgEnabled ? <ImageIcon className="w-4 h-4 text-primary shrink-0" /> : <EyeOff className="w-4 h-4 text-muted-foreground shrink-0" />}
             <div>
@@ -447,10 +445,8 @@ export default function Themes() {
         </p>
       </section>
 
-      <div className="border-t" />
-
       {/* ── Font Style ───────────────────────────────────────────────── */}
-      <section className="space-y-3">
+      <section className="space-y-3 bg-card rounded-2xl border border-border p-5">
         <div>
           <h2 className="text-xl font-serif font-semibold">Font Style</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
@@ -555,10 +551,8 @@ export default function Themes() {
         </div>
       </section>
 
-      <div className="border-t" />
-
       {/* ── Game Icon Set ────────────────────────────────────────────── */}
-      <section className="space-y-3">
+      <section className="space-y-3 bg-card rounded-2xl border border-border p-5">
         <div>
           <h2 className="text-xl font-serif font-semibold">Game Icon Set</h2>
           <p className="text-sm text-muted-foreground mt-0.5">

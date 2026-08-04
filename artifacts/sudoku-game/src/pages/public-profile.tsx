@@ -67,7 +67,7 @@ export default function PublicProfilePage({ profileId }: PublicProfileProps) {
   return (
     <div className="max-w-2xl mx-auto px-4 py-10 space-y-8">
       {/* ── Profile header ── */}
-      <div className="text-center space-y-4">
+      <div className="text-center space-y-4 bg-card rounded-2xl px-5 py-6 border border-border">
         {isLoading ? (
           <div className="w-24 h-24 rounded-full bg-muted animate-pulse mx-auto" />
         ) : profile?.avatar ? (

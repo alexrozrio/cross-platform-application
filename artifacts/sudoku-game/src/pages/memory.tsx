@@ -520,7 +520,7 @@ export default function MemoryMatchPage() {
       <div className="max-w-lg mx-auto w-full animate-in fade-in duration-500 flex flex-col gap-4 sm:gap-6">
 
         {/* Top bar: back + title */}
-        <div className="flex items-center justify-between gap-3 pt-1">
+        <div className="flex items-center justify-between gap-3 bg-card rounded-2xl px-4 py-3 border border-border">
           <button
             onClick={() => setLocation('/')}
             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"

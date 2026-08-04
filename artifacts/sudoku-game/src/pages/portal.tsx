@@ -378,7 +378,7 @@ export default function Portal() {
         })()}
 
         {/* Game cards */}
-        <div>
+        <div className="bg-card rounded-2xl border border-border p-5">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Available Games</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
@@ -557,13 +557,13 @@ export default function Portal() {
         </div>
 
         {/* Coming soon (desktop) */}
-        <div>
+        <div className="bg-card rounded-2xl border border-border p-5">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
             <Sparkles className="w-3.5 h-3.5" /> Coming Soon
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {COMING_SOON.map(game => (
-              <div key={game.title} className={`rounded-2xl border bg-gradient-to-br ${game.color} p-6 space-y-3 opacity-60 cursor-not-allowed select-none`}>
+              <div key={game.title} className="rounded-2xl border border-border bg-muted p-6 space-y-3 opacity-60 cursor-not-allowed select-none">
                 <div className="flex items-center gap-3">
                   <div className="w-14 h-14 rounded-xl bg-white/40 flex items-center justify-center text-3xl">{game.icon}</div>
                   <div>
@@ -583,17 +583,17 @@ export default function Portal() {
           shown below the quick launch section
           ═══════════════════════════════════════════════════════════ */}
       <div className="md:hidden space-y-6 mt-2">
-        <div>
+        <div className="bg-card rounded-2xl border border-border p-4">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">About the games</p>
           <div className="space-y-3">
-            <div className="rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/5 to-transparent p-4 flex gap-3 items-start">
+            <div className="rounded-2xl border border-border bg-muted p-4 flex gap-3 items-start">
               <Grid3X3 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
               <div>
                 <p className="font-semibold text-sm">Sudoku</p>
                 <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">Fill the grid so every row, column, and box contains each symbol exactly once. 5 grid sizes, 4 difficulty levels.</p>
               </div>
             </div>
-            <div className="rounded-2xl border border-violet-400/15 bg-gradient-to-br from-violet-500/5 to-transparent p-4 flex gap-3 items-start">
+            <div className="rounded-2xl border border-border bg-muted p-4 flex gap-3 items-start">
               <span className="text-lg mt-0.5 shrink-0">🃏</span>
               <div>
                 <p className="font-semibold text-sm">Memory Match</p>
@@ -604,13 +604,13 @@ export default function Portal() {
         </div>
 
         {/* Coming soon (mobile) */}
-        <div>
+        <div className="bg-card rounded-2xl border border-border p-4">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
             <Sparkles className="w-3.5 h-3.5" /> Coming Soon
           </p>
           <div className="grid grid-cols-2 gap-3">
             {COMING_SOON.map(game => (
-              <div key={game.title} className={`rounded-2xl border bg-gradient-to-br ${game.color} p-4 space-y-1.5 opacity-60 cursor-not-allowed select-none`}>
+              <div key={game.title} className="rounded-2xl border border-border bg-muted p-4 space-y-1.5 opacity-60 cursor-not-allowed select-none">
                 <span className="text-2xl">{game.icon}</span>
                 <div>
                   <p className="font-bold text-sm">{game.title}</p>

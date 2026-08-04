@@ -122,7 +122,7 @@ export default function DailyChallenge() {
 
   return (
     <div className="max-w-lg mx-auto w-full space-y-6 animate-in fade-in duration-500">
-      <div className="space-y-1">
+      <div className="space-y-1 bg-card rounded-2xl px-5 py-4 border border-border">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <CalendarDays className="w-4 h-4" />
           {challenge ? formatDate(challenge.date) : <Skeleton className="h-4 w-40" />}

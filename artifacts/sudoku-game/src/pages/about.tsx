@@ -34,14 +34,14 @@ export default function About() {
         <ArrowLeft className="w-4 h-4" /> Back
       </button>
 
-      <div>
+      <div className="bg-card rounded-2xl px-5 py-4 border border-border">
         <h1 className="text-3xl font-serif font-bold tracking-tight">About</h1>
         <p className="text-muted-foreground mt-1">
           Two classic brain games, reimagined for everyone.
         </p>
       </div>
 
-      <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
+      <div className="space-y-4 text-sm text-muted-foreground leading-relaxed bg-card rounded-2xl border border-border px-5 py-4">
         <p>
           Brain Games 4 All brings together Sudoku and Memory Match — built to make timeless puzzles accessible and engaging for everyone, from first-time solvers to seasoned experts. We believe a great puzzle game should be beautiful, fast, and endlessly replayable.
         </p>
@@ -53,7 +53,7 @@ export default function About() {
         </p>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 bg-card rounded-2xl border border-border px-5 py-4">
         <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
           <Hash className="w-4 h-4 text-primary" /> Sudoku
         </h2>
@@ -74,7 +74,7 @@ export default function About() {
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 bg-card rounded-2xl border border-border px-5 py-4">
         <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
           <Brain className="w-4 h-4 text-primary" /> Memory Match
         </h2>
@@ -95,7 +95,7 @@ export default function About() {
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 bg-card rounded-2xl border border-border px-5 py-4">
         <h2 className="text-base font-semibold text-foreground">Across both games</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {SHARED_FEATURES.map(({ icon: Icon, label, desc }) => (
@@ -114,14 +114,14 @@ export default function About() {
         </div>
       </div>
 
-      <div className="space-y-2 text-sm text-muted-foreground leading-relaxed">
+      <div className="space-y-2 text-sm text-muted-foreground leading-relaxed bg-card rounded-2xl border border-border px-5 py-4">
         <h2 className="text-base font-semibold text-foreground">Stack</h2>
         <p>
           Built with React, TypeScript, Express, and PostgreSQL. Puzzles and memory boards are generated server-side with difficulty tuning. Sign in with Google to sync your progress across devices. The whole thing runs on Replit.
         </p>
       </div>
 
-      <div className="text-sm text-muted-foreground">
+      <div className="text-sm text-muted-foreground bg-card rounded-2xl border border-border px-5 py-4">
         <h2 className="text-base font-semibold text-foreground mb-1">Get in touch</h2>
         <p>
           Feedback, bug reports, or just want to say hi?{" "}

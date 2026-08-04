@@ -146,7 +146,7 @@ function XpGuide() {
         )}
       </button>
       {open && (
-        <div className="border-t border-border px-5 py-4 bg-muted/10 space-y-3">
+        <div className="border-t border-border px-5 py-4 bg-muted space-y-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             XP per completed puzzle
           </p>
@@ -225,7 +225,7 @@ function PointsGuide() {
         )}
       </button>
       {open && (
-        <div className="border-t border-border px-5 py-4 bg-muted/10 space-y-4">
+        <div className="border-t border-border px-5 py-4 bg-muted space-y-4">
           {/* Modifiers */}
           <div>
             <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
@@ -257,7 +257,7 @@ function PointsGuide() {
             </p>
             <div className="rounded-xl border overflow-x-auto text-xs">
               <div className="min-w-[280px]">
-              <div className="grid grid-cols-5 bg-muted/50 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+              <div className="grid grid-cols-5 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
                 <span>Grid</span>
                 <span className="text-center text-green-700">Easy</span>
                 <span className="text-center text-yellow-700">Med</span>
@@ -309,7 +309,7 @@ function PointsGuide() {
               🃏 Memory Match — base points (All tab only)
             </p>
             <div className="rounded-xl border overflow-hidden text-xs">
-              <div className="grid grid-cols-4 bg-muted/50 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+              <div className="grid grid-cols-4 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
                 <span>Level</span>
                 <span className="text-center">Base pts</span>
                 <span className="text-center">Par time</span>
@@ -376,7 +376,7 @@ function PointsGuide() {
               Your Game Mode (set in Profile) controls which grid sizes and difficulties are available to you across all games and challenges.
             </p>
             <div className="rounded-xl border overflow-hidden text-xs">
-              <div className="grid grid-cols-3 bg-muted/50 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+              <div className="grid grid-cols-3 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
                 <span>Mode</span>
                 <span className="text-center">Sudoku</span>
                 <span className="text-center">Memory Match</span>
@@ -757,7 +757,7 @@ function TournamentBoard({
     <div className="space-y-5">
       {/* Period info + countdown */}
       {data && (
-        <div className="flex items-center justify-between gap-2 px-1">
+        <div className="flex items-center justify-between gap-2 bg-card rounded-2xl border border-border px-4 py-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Icon className="w-4 h-4 shrink-0" />
             <span>
@@ -951,14 +951,14 @@ function MemoryScoringGuide() {
         )}
       </button>
       {open && (
-        <div className="border-t border-border px-5 py-4 bg-muted/10 space-y-4">
+        <div className="border-t border-border px-5 py-4 bg-muted space-y-4">
           {/* Base points table */}
           <div>
             <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
               Base points &amp; par time per difficulty
             </p>
             <div className="rounded-xl border overflow-hidden text-xs">
-              <div className="grid grid-cols-4 bg-muted/50 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+              <div className="grid grid-cols-4 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
                 <span>Level</span>
                 <span className="text-center">Base pts</span>
                 <span className="text-center">Par time</span>
@@ -1210,7 +1210,7 @@ export default function Leaderboard() {
   return (
     <div className="max-w-2xl mx-auto w-full space-y-8 animate-in fade-in duration-500">
       <div className="space-y-2">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start justify-between gap-3 bg-card rounded-2xl px-5 py-4 border border-border">
           <div className="space-y-0.5 min-w-0">
             <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight leading-tight">
               Leaderboard
