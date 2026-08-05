@@ -87,16 +87,154 @@ function getPossibleValues(grid: string[], idx: number, size: number, boxRows: n
   return Array.from({ length: size }, (_, i) => i + 1).filter(n => !used.has(n));
 }
 
-function findBestHintCell(grid: string[], initialGrid: string[], size: number, boxRows: number, boxCols: number): number | null {
-  const emptyCells: number[] = [];
+type HintTechnique = "naked-single" | "hidden-single-row" | "hidden-single-col" | "hidden-single-box" | "fallback";
+interface HintResult {
+  cell: number;
+  value: number;
+  technique: HintTechnique;
+  techniqueLabel: string;
+  reason: string;
+}
+
+/**
+ * Tries logical Sudoku techniques in order of difficulty and returns the
+ * simplest deduction available, with a plain-English explanation.
+ *
+ * Order:
+ *   1. Naked Single  — only one candidate remains for a cell
+ *   2. Hidden Single in Row  — a value fits in exactly one cell of a row
+ *   3. Hidden Single in Column  — a value fits in exactly one cell of a column
+ *   4. Hidden Single in Box  — a value fits in exactly one cell of a box
+ *   5. Fallback  — too complex; reveal from the solution
+ */
+function findLogicalHint(
+  grid: string[],
+  initialGrid: string[],
+  solution: string[],
+  size: number,
+  boxRows: number,
+  boxCols: number,
+  displayVal: (n: number) => string,
+): HintResult | null {
+
+  // ── 1. Naked Single ──────────────────────────────────────────────────────
   for (let i = 0; i < grid.length; i++) {
     if (grid[i] !== "0" || initialGrid[i] !== "0") continue;
     const possible = getPossibleValues(grid, i, size, boxRows, boxCols);
-    if (possible.length === 1) return i; // naked single — best hint!
-    if (possible.length > 0) emptyCells.push(i);
+    if (possible.length === 1) {
+      const row = Math.floor(i / size) + 1;
+      const col = (i % size) + 1;
+      const v = possible[0];
+      const boxPart = boxRows > 0 ? ", and its box" : "";
+      return {
+        cell: i, value: v, technique: "naked-single",
+        techniqueLabel: "Naked Single",
+        reason: `Row ${row}, Col ${col} can only be ${displayVal(v)}.\n`
+          + `Every other number already appears somewhere in its row, column${boxPart} — ${displayVal(v)} is the only one left.`,
+      };
+    }
   }
-  if (emptyCells.length === 0) return null;
-  return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+
+  // ── 2. Hidden Single in Row ───────────────────────────────────────────────
+  for (let r = 0; r < size; r++) {
+    const seen: Record<number, number[]> = {};
+    for (let c = 0; c < size; c++) {
+      const idx = r * size + c;
+      if (grid[idx] !== "0" || initialGrid[idx] !== "0") continue;
+      for (const v of getPossibleValues(grid, idx, size, boxRows, boxCols)) {
+        (seen[v] ??= []).push(idx);
+      }
+    }
+    for (const [vs, cells] of Object.entries(seen)) {
+      if (cells.length === 1) {
+        const idx = cells[0];
+        const row = Math.floor(idx / size) + 1;
+        const col = (idx % size) + 1;
+        const v = Number(vs);
+        return {
+          cell: idx, value: v, technique: "hidden-single-row",
+          techniqueLabel: "Hidden Single (Row)",
+          reason: `Row ${row}, Col ${col} must be ${displayVal(v)}.\n`
+            + `Look at Row ${row} — ${displayVal(v)} can only fit in this one cell because every other empty cell in that row is blocked by a ${displayVal(v)} already in its column or box.`,
+        };
+      }
+    }
+  }
+
+  // ── 3. Hidden Single in Column ────────────────────────────────────────────
+  for (let c = 0; c < size; c++) {
+    const seen: Record<number, number[]> = {};
+    for (let r = 0; r < size; r++) {
+      const idx = r * size + c;
+      if (grid[idx] !== "0" || initialGrid[idx] !== "0") continue;
+      for (const v of getPossibleValues(grid, idx, size, boxRows, boxCols)) {
+        (seen[v] ??= []).push(idx);
+      }
+    }
+    for (const [vs, cells] of Object.entries(seen)) {
+      if (cells.length === 1) {
+        const idx = cells[0];
+        const row = Math.floor(idx / size) + 1;
+        const col = (idx % size) + 1;
+        const v = Number(vs);
+        return {
+          cell: idx, value: v, technique: "hidden-single-col",
+          techniqueLabel: "Hidden Single (Column)",
+          reason: `Row ${row}, Col ${col} must be ${displayVal(v)}.\n`
+            + `Look at Column ${col} — ${displayVal(v)} can only fit in this one cell because every other empty cell in that column is blocked by a ${displayVal(v)} already in its row or box.`,
+        };
+      }
+    }
+  }
+
+  // ── 4. Hidden Single in Box ───────────────────────────────────────────────
+  if (boxRows > 0 && boxCols > 0) {
+    for (let br = 0; br < size; br += boxRows) {
+      for (let bc = 0; bc < size; bc += boxCols) {
+        const seen: Record<number, number[]> = {};
+        for (let r = br; r < br + boxRows; r++) {
+          for (let c = bc; c < bc + boxCols; c++) {
+            const idx = r * size + c;
+            if (grid[idx] !== "0" || initialGrid[idx] !== "0") continue;
+            for (const v of getPossibleValues(grid, idx, size, boxRows, boxCols)) {
+              (seen[v] ??= []).push(idx);
+            }
+          }
+        }
+        for (const [vs, cells] of Object.entries(seen)) {
+          if (cells.length === 1) {
+            const idx = cells[0];
+            const row = Math.floor(idx / size) + 1;
+            const col = (idx % size) + 1;
+            const v = Number(vs);
+            return {
+              cell: idx, value: v, technique: "hidden-single-box",
+              techniqueLabel: `Hidden Single (${boxRows}×${boxCols} Box)`,
+              reason: `Row ${row}, Col ${col} must be ${displayVal(v)}.\n`
+                + `Look at the ${boxRows}×${boxCols} box containing this cell — ${displayVal(v)} can only fit here because every other empty cell in that box is blocked by a ${displayVal(v)} in its row or column.`,
+            };
+          }
+        }
+      }
+    }
+  }
+
+  // ── 5. Fallback — too complex for basic logic; reveal from solution ────────
+  const empties: number[] = [];
+  for (let i = 0; i < grid.length; i++) {
+    if (grid[i] === "0" && initialGrid[i] === "0") empties.push(i);
+  }
+  if (empties.length === 0) return null;
+  const idx = empties[Math.floor(Math.random() * empties.length)];
+  const row = Math.floor(idx / size) + 1;
+  const col = (idx % size) + 1;
+  const v = decodeFromGrid(solution[idx]);
+  return {
+    cell: idx, value: v, technique: "fallback",
+    techniqueLabel: "Reveal",
+    reason: `Row ${row}, Col ${col} = ${displayVal(v)}.\n`
+      + `This cell needs an advanced technique — here's a free reveal!`,
+  };
 }
 
 function computeAutoNotes(grid: string[], initialGrid: string[], size: number, boxRows: number, boxCols: number): Record<number, Set<string>> {
@@ -955,25 +1093,22 @@ export default function Game({ id }: { id: string }) {
       return;
     }
 
-    // Value mode: find best cell (naked single first, else random empty)
-    const cellToReveal = findBestHintCell(grid, initialGrid, gridSize, boxRows, boxCols);
-    if (cellToReveal === null) return;
+    // Value mode: find the logically simplest deduction and explain it
+    const displayVal = (n: number) =>
+      mode === "alpha" ? String.fromCharCode(64 + n) : String(n);
+
+    const hint = findLogicalHint(grid, initialGrid, solution, gridSize, boxRows, boxCols, displayVal);
+    if (hint === null) return;
 
     const newGrid = [...grid];
-    newGrid[cellToReveal] = solution[cellToReveal];
+    newGrid[hint.cell] = encodeForGrid(hint.value);
     setGrid(newGrid);
-    setWrongCells(prev => { const s = new Set(prev); s.delete(cellToReveal); return s; });
-    setSelectedCell(cellToReveal);
+    setWrongCells(prev => { const s = new Set(prev); s.delete(hint.cell); return s; });
+    setSelectedCell(hint.cell);
 
-    const possible = getPossibleValues(grid, cellToReveal, gridSize, boxRows, boxCols);
-    const row = Math.floor(cellToReveal / gridSize) + 1;
-    const col = (cellToReveal % gridSize) + 1;
-    const isNaked = possible.length === 1;
-    toast.success("💡 Hint!", {
-      description: isNaked
-        ? `Row ${row}, Col ${col}: only one value could fit here!`
-        : `Row ${row}, Col ${col}: filled in for you.`,
-      duration: 3500,
+    toast.success(`💡 ${hint.techniqueLabel}`, {
+      description: hint.reason,
+      duration: 5000,
     });
 
     if (newHints >= MAX_HINTS) setTimeout(() => toast.error("No more hints available!", { duration: 2000 }), 400);
