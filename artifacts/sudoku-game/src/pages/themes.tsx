@@ -139,7 +139,7 @@ export default function Themes() {
 
   // Background image
   const bgThemeId = activeAppTheme || 'light';
-  const { effectiveBg, enabled: bgEnabled, setEnabled: setBgEnabled, hasCustom, defaultUrl: bgDefaultUrl, setCustomImage, resetCustomImage } = useThemeBg(bgThemeId);
+  const { effectiveBg, bgSource, enabled: bgEnabled, setEnabled: setBgEnabled, hasCustom, localBgUrl, defaultUrl: bgDefaultUrl, setCustomImage, resetCustomImage } = useThemeBg(bgThemeId);
   const bgFileRef = React.useRef<HTMLInputElement>(null);
 
   const handleBgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -372,7 +372,7 @@ export default function Themes() {
         <div>
           <h2 className="text-xl font-serif font-semibold">Background Image</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Each colour theme has a matching default background image. Upload your own or turn it off.
+            Each theme uses a default background. Drop an image named <code className="font-mono text-xs bg-muted px-1 rounded">{bgThemeId}.jpg</code> (or .png/.webp) into the <code className="font-mono text-xs bg-muted px-1 rounded">public/backgrounds/</code> folder to override it automatically.
           </p>
         </div>
 
@@ -422,12 +422,17 @@ export default function Themes() {
             {bgEnabled && effectiveBg && (
               <div className="absolute inset-0" style={{ background: 'var(--background)', opacity: 0.5 }} />
             )}
-            {hasCustom && (
+            {bgEnabled && bgSource === 'custom' && (
               <span className="absolute top-2 left-2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
-                Custom
+                Custom upload
               </span>
             )}
-            {!hasCustom && bgEnabled && bgDefaultUrl && (
+            {bgEnabled && bgSource === 'folder' && (
+              <span className="absolute top-2 left-2 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                From folder
+              </span>
+            )}
+            {bgEnabled && bgSource === 'default' && (
               <span className="absolute top-2 left-2 bg-black/50 text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
                 Default
               </span>
@@ -441,7 +446,8 @@ export default function Themes() {
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Custom images are stored locally on this device. Upload a new one any time — it replaces the previous custom image for this theme.
+          <strong>Priority:</strong> custom upload &gt; <code className="font-mono bg-muted px-1 rounded">public/backgrounds/</code> file &gt; built-in default.
+          Custom uploads are stored on this device only.
         </p>
       </section>
 

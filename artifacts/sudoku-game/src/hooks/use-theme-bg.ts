@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 
 const STORAGE_PREFIX = 'brain-games-bg-custom-';
-const ENABLED_KEY = 'brain-games-bg-enabled';
+const ENABLED_KEY    = 'brain-games-bg-enabled';
 
 /** Default Unsplash background images keyed by colour-theme ID */
 export const THEME_BG_DEFAULTS: Record<string, string> = {
@@ -25,10 +25,52 @@ export const THEME_BG_DEFAULTS: Record<string, string> = {
   crimson:   'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=1920&q=80&auto=format&fit=crop',
 };
 
-// ── Module-level sync so all hook instances react to each other ──────────────
+// ── Public-folder background detection ──────────────────────────────────────
+// Images placed in /public/backgrounds/{themeId}.{ext} are auto-detected and
+// used instead of the Unsplash defaults (but still overridden by custom uploads).
+
+const LOCAL_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'avif'] as const;
+
+/** Module-level cache: undefined = not checked yet, null = checked & not found */
+const _localCache: Record<string, string | null | undefined> = {};
+/** In-flight promises so we don't issue duplicate Image() loads */
+const _localPending: Record<string, Promise<string | null>> = {};
+
+function resolveLocalBg(themeId: string): Promise<string | null> {
+  if (themeId in _localCache) {
+    return Promise.resolve(_localCache[themeId] ?? null);
+  }
+  if (themeId in _localPending) return _localPending[themeId];
+
+  const base = (import.meta.env.BASE_URL as string).replace(/\/$/, '');
+
+  const attempt = async (): Promise<string | null> => {
+    for (const ext of LOCAL_EXTS) {
+      const url = `${base}/backgrounds/${themeId}.${ext}`;
+      const found = await new Promise<boolean>((resolve) => {
+        const img = new Image();
+        img.onload  = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+      });
+      if (found) {
+        _localCache[themeId] = url;
+        return url;
+      }
+    }
+    _localCache[themeId] = null;
+    return null;
+  };
+
+  _localPending[themeId] = attempt().finally(() => {
+    delete _localPending[themeId];
+  });
+  return _localPending[themeId];
+}
+
+// ── Shared event emitter (all hook instances stay in sync) ───────────────────
 const _emitter = new EventTarget();
 const BG_CHANGE = 'bg-change';
-
 function _emit() { _emitter.dispatchEvent(new Event(BG_CHANGE)); }
 
 function readCustomImages(): Record<string, string> {
@@ -37,7 +79,7 @@ function readCustomImages(): Record<string, string> {
     for (const key of Object.keys(localStorage)) {
       if (key.startsWith(STORAGE_PREFIX)) {
         const id = key.slice(STORAGE_PREFIX.length);
-        const v = localStorage.getItem(key);
+        const v  = localStorage.getItem(key);
         if (v) result[id] = v;
       }
     }
@@ -54,13 +96,38 @@ function readEnabled(): boolean {
   }
 }
 
-/** Manages per-theme custom background images stored in localStorage.
- *  All instances of this hook in the same page stay in sync via a shared emitter. */
+/**
+ * Manages per-theme background images.
+ *
+ * Priority (highest → lowest):
+ *  1. User-uploaded custom image (stored in localStorage)
+ *  2. Image from /public/backgrounds/{themeId}.{ext}   ← new
+ *  3. Built-in Unsplash default
+ *  4. null (backgrounds disabled)
+ */
 export function useThemeBg(themeId: string) {
   const [customImages, setCustomImages] = useState<Record<string, string>>(readCustomImages);
-  const [enabled, setEnabledState] = useState<boolean>(readEnabled);
+  const [enabled,      setEnabledState] = useState<boolean>(readEnabled);
+  /** URL of the public-folder image for this theme, or null if none found */
+  const [localBgUrl,   setLocalBgUrl]   = useState<string | null>(
+    // Initialise synchronously from cache if already resolved
+    () => (_localCache[themeId] !== undefined ? (_localCache[themeId] ?? null) : null),
+  );
 
-  // Keep all hook instances in sync when any instance writes
+  // Detect public-folder image whenever the theme changes
+  useEffect(() => {
+    if (_localCache[themeId] !== undefined) {
+      setLocalBgUrl(_localCache[themeId] ?? null);
+      return;
+    }
+    let cancelled = false;
+    resolveLocalBg(themeId).then((url) => {
+      if (!cancelled) setLocalBgUrl(url);
+    });
+    return () => { cancelled = true; };
+  }, [themeId]);
+
+  // Keep all hook instances in sync when any instance writes to localStorage
   useEffect(() => {
     const handler = () => {
       setEnabledState(readEnabled());
@@ -73,10 +140,22 @@ export function useThemeBg(themeId: string) {
   const hasCustom = !!customImages[themeId];
   const defaultUrl = THEME_BG_DEFAULTS[themeId] ?? null;
 
-  /** The effective background URL for the current theme (custom > default, or null if disabled). */
+  /**
+   * The effective background URL for the active theme.
+   * custom > local-folder > unsplash-default, or null when disabled.
+   */
   const effectiveBg: string | null = enabled
-    ? (customImages[themeId] ?? defaultUrl)
+    ? (customImages[themeId] ?? localBgUrl ?? defaultUrl)
     : null;
+
+  /** Which "source" is currently showing (for UI labels) */
+  const bgSource: 'custom' | 'folder' | 'default' | 'off' = !enabled
+    ? 'off'
+    : hasCustom
+      ? 'custom'
+      : localBgUrl
+        ? 'folder'
+        : 'default';
 
   const setCustomImage = useCallback((id: string, dataUrl: string) => {
     try { localStorage.setItem(STORAGE_PREFIX + id, dataUrl); } catch { /* ignore */ }
@@ -102,9 +181,11 @@ export function useThemeBg(themeId: string) {
 
   return {
     effectiveBg,
+    bgSource,
     enabled,
     setEnabled,
     hasCustom,
+    localBgUrl,
     defaultUrl,
     setCustomImage,
     resetCustomImage,
