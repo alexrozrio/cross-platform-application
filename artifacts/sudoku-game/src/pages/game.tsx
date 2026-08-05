@@ -1777,7 +1777,7 @@ export default function Game({ id }: { id: string }) {
         <div className="flex flex-col gap-3 w-full md:w-[260px] shrink-0">
 
           {/* Mode switcher — desktop only (shown above board on mobile) */}
-          <div className="hidden md:block">
+          <div className="hidden md:block bg-card border border-border rounded-xl px-3 py-2.5 flex flex-col gap-2">
           {!isCompleted && !isGameOver && availableModes.length > 1 && (
             <div className="flex items-center gap-2 w-full">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground shrink-0">Style</span>
@@ -1825,7 +1825,7 @@ export default function Game({ id }: { id: string }) {
 
           {/* New game switcher — desktop only (shown above board on mobile) */}
           <div className="hidden md:block">
-          <div className="w-full rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5 flex flex-col gap-2">
+          <div className="w-full rounded-xl border border-border bg-card px-3 py-2.5 flex flex-col gap-2">
             <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">New Game</span>
             <div className={`grid gap-1.5 ${visibleSizes.length === 2 ? 'grid-cols-2' : 'grid-cols-4'}`}>
               {visibleSizes.map((s) => (
