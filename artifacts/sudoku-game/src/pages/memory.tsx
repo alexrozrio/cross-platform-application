@@ -122,8 +122,8 @@ function MemoryCard({
           className={[
             'absolute inset-0 rounded-xl flex items-center justify-center border-2 transition-all',
             hinted
-              ? 'border-amber-400 bg-gradient-to-br from-amber-100/80 to-amber-50/60 shadow-[0_0_0_3px_rgba(251,191,36,0.4)] dark:from-amber-900/40 dark:to-amber-800/20 animate-pulse'
-              : 'border-primary/20 bg-gradient-to-br from-primary/15 to-primary/8 hover:from-primary/25 hover:to-primary/15',
+              ? 'border-amber-400 bg-card shadow-[0_0_0_3px_rgba(251,191,36,0.4)] animate-pulse'
+              : 'border-primary/30 bg-card hover:bg-muted',
           ].join(' ')}
           style={{ backfaceVisibility: 'hidden' }}
         >
@@ -133,8 +133,8 @@ function MemoryCard({
         <div
           className={`absolute inset-0 rounded-xl flex items-center justify-center border-2 transition-colors
             ${card.matched
-              ? 'border-green-400/60 bg-green-50 dark:bg-green-950/30'
-              : 'border-primary/30 bg-primary/5'}`}
+              ? 'border-green-400/60 bg-card'
+              : 'border-primary/30 bg-card'}`}
           style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
         >
           {frontContent}
@@ -1146,7 +1146,7 @@ export default function MemoryMatchPage() {
         ))}
       </div>
 
-      <p className="text-center text-xs text-muted-foreground">
+      <p className="text-center text-xs text-muted-foreground bg-card border border-border rounded-lg px-4 py-2">
         {displayMode === 'image'
           ? <>Theme: {theme.name} · <button onClick={() => setLocation('/themes')} className="underline underline-offset-2 hover:text-foreground transition-colors">Change</button></>
           : displayMode === 'number'
