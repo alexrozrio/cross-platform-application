@@ -1260,7 +1260,7 @@ export default function Game({ id }: { id: string }) {
 
         <button
           onClick={() => setLocation("/")}
-          className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="w-full text-center text-sm text-foreground bg-card border border-border rounded-lg px-4 py-2.5 hover:bg-muted transition-colors"
         >
           ← Back to Brain Games 4 All
         </button>
@@ -1290,7 +1290,7 @@ export default function Game({ id }: { id: string }) {
         </div>
 
         {isPersonalBest && (
-          <div className="flex items-center justify-center gap-2 rounded-xl border border-yellow-300/60 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/20 dark:border-yellow-700/40 px-4 py-2.5">
+          <div className="flex items-center justify-center gap-2 rounded-xl border border-yellow-300/60 bg-card px-4 py-2.5">
             <span className="text-lg">🏆</span>
             <span className="font-bold text-yellow-700 dark:text-yellow-400 text-sm">New Personal Best!</span>
           </div>
@@ -1311,7 +1311,7 @@ export default function Game({ id }: { id: string }) {
         </div>
 
         {pointsEarned !== null && (
-          <div className="rounded-xl border-2 border-primary/20 bg-gradient-to-r from-primary/8 to-primary/4 p-4 flex items-center justify-center gap-6">
+          <div className="rounded-xl border-2 border-primary/20 bg-card p-4 flex items-center justify-center gap-6">
             <div className="flex items-center gap-2">
               <Zap className="w-5 h-5 text-yellow-500" />
               <span className="font-black text-lg">+{pointsEarned.toLocaleString()} pts</span>
@@ -1417,7 +1417,7 @@ export default function Game({ id }: { id: string }) {
 
         <button
           onClick={() => setLocation("/")}
-          className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="w-full text-center text-sm text-foreground bg-card border border-border rounded-lg px-4 py-2.5 hover:bg-muted transition-colors"
         >
           ← Back to Brain Games 4 All
         </button>
@@ -1428,7 +1428,7 @@ export default function Game({ id }: { id: string }) {
   return (
     <div ref={gameViewRef} className="flex flex-col w-full gap-1.5 md:gap-3 animate-in fade-in duration-300 pb-16 sm:pb-20 md:pb-4 scroll-mt-2">
       {/* Header */}
-      <div className="flex items-center justify-between w-full">
+      <div className="flex items-center justify-between w-full bg-card border border-border rounded-xl px-2 py-1">
         <Button
           variant="ghost"
           size="icon"
@@ -1583,7 +1583,7 @@ export default function Game({ id }: { id: string }) {
 
       {/* ── Mobile-only: New Game panel (shown when "New" is tapped) ── */}
       {showMobileControls && (
-        <div className="md:hidden w-full rounded-lg border border-border/60 bg-muted/30 px-2 py-1.5 flex flex-col gap-1">
+        <div className="md:hidden w-full rounded-lg border border-border bg-card px-2 py-1.5 flex flex-col gap-1">
 
           {/* Current game label + Reset on the same row */}
           <div className="flex items-center justify-between">

@@ -809,7 +809,7 @@ export default function MemoryMatchPage() {
         </div>
 
         {winResult?.isPersonalBest && (
-          <div className="flex items-center justify-center gap-2 rounded-xl border border-yellow-300/60 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/20 dark:border-yellow-700/40 px-4 py-2.5">
+          <div className="flex items-center justify-center gap-2 rounded-xl border border-yellow-300/60 bg-card px-4 py-2.5">
             <span className="text-lg">🏆</span>
             <span className="font-bold text-yellow-700 dark:text-yellow-400 text-sm">New Personal Best!</span>
           </div>
@@ -830,7 +830,7 @@ export default function MemoryMatchPage() {
         </div>
 
         {winResult && (winResult.xpEarned > 0 || winResult.gemsEarned > 0) && (
-          <div className="rounded-xl border-2 border-primary/20 bg-gradient-to-r from-primary/8 to-primary/4 p-4 flex items-center justify-center gap-6">
+          <div className="rounded-xl border-2 border-primary/20 bg-card p-4 flex items-center justify-center gap-6">
             <div className="flex items-center gap-2">
               <Zap className="w-5 h-5 text-yellow-500" />
               <span className="font-black text-lg">+{winResult.xpEarned} XP</span>
@@ -900,7 +900,7 @@ export default function MemoryMatchPage() {
 
         <button
           onClick={() => setLocation('/')}
-          className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="w-full text-center text-sm text-foreground bg-card border border-border rounded-lg px-4 py-2.5 hover:bg-muted transition-colors"
         >
           ← Back to Brain Games 4 All
         </button>
@@ -914,7 +914,7 @@ export default function MemoryMatchPage() {
   return (
     <div className="max-w-2xl w-full space-y-4 animate-in fade-in duration-300 -mx-2 px-2 sm:mx-auto sm:px-0">
       {/* Header bar — two rows so nothing overflows on mobile */}
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1.5 bg-card border border-border rounded-xl px-3 py-2">
 
         {/* Row 1: back · stats · progress bar */}
         <div className="flex items-center gap-2.5">
@@ -1098,7 +1098,7 @@ export default function MemoryMatchPage() {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="rounded-xl border-2 border-primary/20 bg-primary/4 p-3 space-y-2">
+            <div className="rounded-xl border-2 border-primary/20 bg-card p-3 space-y-2">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Start New Game</p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {filteredGridOptions.map(opt => (
