@@ -29,7 +29,7 @@
   {
     "id": "forest",
     "name": "Forest",
-    "gems": 10,
+    "gems": 0,
     "visible": true,
     "bg": "#f2f8f2",
     "primary": "#2e6b40",
