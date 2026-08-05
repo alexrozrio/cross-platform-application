@@ -1849,8 +1849,9 @@ export default function Game({ id }: { id: string }) {
           </div>
           </div>{/* end hidden md:block — New game switcher */}
 
-          {/* Controls */}
+          {/* Controls + numpad card */}
           {!isCompleted && (
+          <div className="bg-card border border-border rounded-2xl p-2 flex flex-col gap-2">
             <div className="grid grid-cols-5 gap-1.5 w-full">
               <Button
                 variant={notesMode ? "default" : "secondary"}
@@ -1907,10 +1908,8 @@ export default function Game({ id }: { id: string }) {
                 <span className="text-[11px]">Undo</span>
               </Button>
             </div>
-          )}
 
-          {/* Input pad */}
-          {!isCompleted && (
+            {/* Input pad */}
             <div
               className={`grid w-full ${
                 gridSize === 16
@@ -1964,6 +1963,7 @@ export default function Game({ id }: { id: string }) {
                 );
               })}
             </div>
+          </div>
           )}
 
         </div>{/* end right sidebar */}
