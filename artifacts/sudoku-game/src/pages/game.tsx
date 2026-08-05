@@ -235,13 +235,14 @@ export default function Game({ id }: { id: string }) {
     error: apiError,
   } = useGetGame(gameId, { query: { enabled: !isOffline && !!gameId, retry: 1, retryDelay: 500 } });
 
-  // If the API hasn't responded within 4 s, stop waiting and fall back to
-  // whatever is in localStorage (or show the error state).
+  // If the API hasn't responded within 2 s, stop waiting and fall back to
+  // whatever is in localStorage. Home page already waited up to 1.5 s before
+  // navigating here, so 2 s extra is more than enough for a working API.
   const [apiTimedOut, setApiTimedOut] = useState(false);
   useEffect(() => {
     if (isOffline || !apiLoading) return;
     setApiTimedOut(false);
-    const t = setTimeout(() => setApiTimedOut(true), 4000);
+    const t = setTimeout(() => setApiTimedOut(true), 2000);
     return () => clearTimeout(t);
   }, [isOffline, apiLoading, gameId]);
 

@@ -6,6 +6,7 @@ import { ThemeIcon } from '@/components/theme-icons';
 import { Badge } from '@/components/ui/badge';
 import { Grid3x2 as Grid3X3, Sparkles, Loader as Loader2, RotateCcw, Flame } from 'lucide-react';
 import { customFetch, useGetProfile } from '@workspace/api-client-react';
+import { generateOfflinePuzzle } from '@/lib/sudoku-generator';
 import { getLevelFromXp } from '@/lib/levels';
 import { getTheme } from '@/lib/themes';
 
@@ -93,14 +94,46 @@ export default function Portal() {
   }, []);
 
   const handleQuickStart = async (size: number) => {
-    if (!isReady || !profileId || loadingSize !== null) return;
+    // Only block if another start is already in flight — do NOT block on !isReady.
+    // Auth resolving is not a reason to prevent the user from playing.
+    if (loadingSize !== null) return;
     setLoadingSize(size);
+
     const difficulty = (() => {
       try {
         const stored = localStorage.getItem('sudoku-last-difficulty');
         return stored && ['easy', 'medium', 'hard', 'expert'].includes(stored) ? stored : 'easy';
       } catch { return 'easy'; }
     })();
+
+    // Always pre-generate an offline puzzle immediately — this is instant (bank lookup).
+    // Whatever happens with the API, the user can play right away.
+    try {
+      generateOfflinePuzzle(difficulty, size);
+      localStorage.setItem('sudoku-last-grid-size', String(size));
+      localStorage.setItem('sudoku-last-difficulty', difficulty);
+    } catch { /* ignore */ }
+
+    // No profile → play offline straight away, no API needed.
+    if (!profileId) {
+      setLoadingSize(null);
+      setLocation('/game/0');
+      return;
+    }
+
+    let settled = false;
+
+    const goOffline = () => {
+      if (settled) return;
+      settled = true;
+      setLoadingSize(null);
+      setLocation('/game/0');
+    };
+
+    // Give the API 1.5 s — same budget as the home page.
+    // If it hasn't responded by then, start the offline game immediately.
+    const timer = setTimeout(goOffline, 1500);
+
     try {
       const puzzle = await customFetch<{ id: number; difficulty: string }>(
         `/api/puzzles/new?difficulty=${difficulty}&gridSize=${size}`,
@@ -109,14 +142,15 @@ export default function Portal() {
         method: 'POST',
         body: JSON.stringify({ profileId, puzzleId: puzzle.id, difficulty }),
       });
-      try {
-        localStorage.setItem('sudoku-last-grid-size', String(size));
-        localStorage.setItem('sudoku-last-difficulty', difficulty);
-      } catch { /* private browsing */ }
-      setLocation(`/game/${game.id}`);
-    } catch (err) {
-      console.error('Error starting game:', err);
-      setLoadingSize(null);
+      clearTimeout(timer);
+      if (!settled) {
+        settled = true;
+        setLoadingSize(null);
+        setLocation(`/game/${game.id}`);
+      }
+    } catch {
+      clearTimeout(timer);
+      goOffline();
     }
   };
 
@@ -199,7 +233,7 @@ export default function Portal() {
               <button
                 key={opt.size}
                 onClick={() => handleQuickStart(opt.size)}
-                disabled={loadingSize !== null || !isReady}
+                disabled={loadingSize !== null}
                 className="flex flex-col items-center justify-center rounded-xl border-2 border-primary/25 bg-background hover:bg-primary/10 hover:border-primary/50 transition-all py-3 px-2 disabled:opacity-50 disabled:cursor-not-allowed min-h-[60px]"
               >
                 {loadingSize === opt.size ? (
@@ -434,7 +468,7 @@ export default function Portal() {
                     <button
                       key={opt.size}
                       onClick={() => handleQuickStart(opt.size)}
-                      disabled={loadingSize !== null || !isReady}
+                      disabled={loadingSize !== null}
                       className="flex flex-col items-center justify-center rounded-lg border border-primary/20 bg-primary/5 hover:bg-primary/15 hover:border-primary/40 transition-all py-2 px-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed min-h-[52px]"
                     >
                       {loadingSize === opt.size ? (

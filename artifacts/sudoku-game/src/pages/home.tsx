@@ -107,7 +107,9 @@ export default function SudokuHome() {
 
   const createGame = useCreateGame();
   const [isGenerating, setIsGenerating] = useState(false);
-  const isLoading = !isReady || isGenerating || createGame.isPending;
+  // Do NOT gate on !isReady — auth taking time is not a reason to block the
+  // grid tiles. doStart() already handles the !profileId case by going offline.
+  const isLoading = isGenerating || createGame.isPending;
 
   const [activeGame, setActiveGame] = useState<ActiveGame | null>(null);
   // Play style selected for the *next* game — grid-size buttons start the game immediately
