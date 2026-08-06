@@ -1474,7 +1474,7 @@ export default function Game({ id }: { id: string }) {
               "rounded-2xl border-2 p-4 space-y-3",
               isWinner ? "border-yellow-400 bg-yellow-50 dark:bg-yellow-950/30" :
               isTie ? "border-blue-400 bg-blue-50 dark:bg-blue-950/30" :
-              isPending ? "border-muted bg-muted/30" :
+              isPending ? "border-slate-300 bg-slate-50 dark:bg-slate-900/60 dark:border-slate-600" :
               "border-red-300 bg-red-50 dark:bg-red-950/30",
             ].join(" ")}>
               <div className="flex items-center gap-2">
