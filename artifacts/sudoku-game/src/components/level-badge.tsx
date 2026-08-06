@@ -164,7 +164,7 @@ export function RankGuide({ currentXp }: { currentXp?: number }) {
           </div>
 
           {/* All tiers */}
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-border bg-card">
             {LEVEL_TIERS.map((tier, i) => {
               const isCurrentTier = currentLevel?.name === tier.name;
               const isUnlocked = currentXp !== undefined && currentXp >= tier.minXp;
@@ -173,7 +173,7 @@ export function RankGuide({ currentXp }: { currentXp?: number }) {
               return (
                 <div
                   key={tier.name}
-                  className={`flex items-center gap-3 px-5 py-3 transition-colors ${isCurrentTier ? "bg-muted" : ""}`}
+                  className={`flex items-center gap-3 px-5 py-3 transition-colors ${isCurrentTier ? "bg-primary/8" : "bg-card"}`}
                 >
                   <div
                     className="w-7 h-7 rounded-full flex items-center justify-center font-black text-xs shrink-0"

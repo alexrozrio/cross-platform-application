@@ -740,6 +740,100 @@ export default function Profile() {
         </Card>
       )}
 
+      {/* ── Game Preferences ─────────────────────────────────────────────── */}
+      {profileId && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Game Preferences</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Display Name</FormLabel>
+                      <FormControl><Input placeholder="Enter display name" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="soundEnabled"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center justify-between rounded-lg border p-4">
+                      <div className="flex items-center gap-3">
+                        <Volume2 className="w-4 h-4 text-muted-foreground" />
+                        <div>
+                          <FormLabel className="text-base">Sound Effects</FormLabel>
+                          <FormDescription>Play sounds during gameplay.</FormDescription>
+                        </div>
+                      </div>
+                      <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="showTimer"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center justify-between rounded-lg border p-4">
+                      <div>
+                        <FormLabel className="text-base">Show Timer</FormLabel>
+                        <FormDescription>Display elapsed time during gameplay.</FormDescription>
+                      </div>
+                      <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="gameMode"
+                  render={({ field }) => (
+                    <FormItem className="rounded-lg border p-4 space-y-3">
+                      <div>
+                        <FormLabel className="text-base">Game Mode</FormLabel>
+                        <FormDescription>Controls which difficulty levels appear in both games.</FormDescription>
+                      </div>
+                      <FormControl>
+                        <ToggleGroup
+                          type="single"
+                          value={field.value}
+                          onValueChange={v => v && field.onChange(v)}
+                          className="grid grid-cols-3 gap-2"
+                        >
+                          <ToggleGroupItem value="children" className="flex-col h-16 gap-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                            <Baby className="w-4 h-4" />
+                            <span className="text-xs font-semibold">Kids</span>
+                            <span className="text-[10px] opacity-70 leading-none">Easy · Medium</span>
+                          </ToggleGroupItem>
+                          <ToggleGroupItem value="4all" className="flex-col h-16 gap-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                            <Globe className="w-4 h-4" />
+                            <span className="text-xs font-semibold">4 All</span>
+                            <span className="text-[10px] opacity-70 leading-none">All levels</span>
+                          </ToggleGroupItem>
+                          <ToggleGroupItem value="adult" className="flex-col h-16 gap-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                            <Dumbbell className="w-4 h-4" />
+                            <span className="text-xs font-semibold">Adult</span>
+                            <span className="text-[10px] opacity-70 leading-none">Hard · Expert</span>
+                          </ToggleGroupItem>
+                        </ToggleGroup>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" className="w-full" disabled={updateProfile.isPending}>
+                  {updateProfile.isPending ? "Saving…" : "Save Preferences"}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      )}
+
       {/* ── Statistics ───────────────────────────────────────────────────── */}
       {profileId && (
         <div className="space-y-4">
@@ -955,100 +1049,6 @@ export default function Profile() {
               })}
             </CardContent>
           )}
-        </Card>
-      )}
-
-      {/* ── Game Preferences ─────────────────────────────────────────────── */}
-      {profileId && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Game Preferences</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="username"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Display Name</FormLabel>
-                      <FormControl><Input placeholder="Enter display name" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="soundEnabled"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center justify-between rounded-lg border p-4">
-                      <div className="flex items-center gap-3">
-                        <Volume2 className="w-4 h-4 text-muted-foreground" />
-                        <div>
-                          <FormLabel className="text-base">Sound Effects</FormLabel>
-                          <FormDescription>Play sounds during gameplay.</FormDescription>
-                        </div>
-                      </div>
-                      <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="showTimer"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center justify-between rounded-lg border p-4">
-                      <div>
-                        <FormLabel className="text-base">Show Timer</FormLabel>
-                        <FormDescription>Display elapsed time during gameplay.</FormDescription>
-                      </div>
-                      <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="gameMode"
-                  render={({ field }) => (
-                    <FormItem className="rounded-lg border p-4 space-y-3">
-                      <div>
-                        <FormLabel className="text-base">Game Mode</FormLabel>
-                        <FormDescription>Controls which difficulty levels appear in both games.</FormDescription>
-                      </div>
-                      <FormControl>
-                        <ToggleGroup
-                          type="single"
-                          value={field.value}
-                          onValueChange={v => v && field.onChange(v)}
-                          className="grid grid-cols-3 gap-2"
-                        >
-                          <ToggleGroupItem value="children" className="flex-col h-16 gap-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                            <Baby className="w-4 h-4" />
-                            <span className="text-xs font-semibold">Kids</span>
-                            <span className="text-[10px] opacity-70 leading-none">Easy · Medium</span>
-                          </ToggleGroupItem>
-                          <ToggleGroupItem value="4all" className="flex-col h-16 gap-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                            <Globe className="w-4 h-4" />
-                            <span className="text-xs font-semibold">4 All</span>
-                            <span className="text-[10px] opacity-70 leading-none">All levels</span>
-                          </ToggleGroupItem>
-                          <ToggleGroupItem value="adult" className="flex-col h-16 gap-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
-                            <Dumbbell className="w-4 h-4" />
-                            <span className="text-xs font-semibold">Adult</span>
-                            <span className="text-[10px] opacity-70 leading-none">Hard · Expert</span>
-                          </ToggleGroupItem>
-                        </ToggleGroup>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full" disabled={updateProfile.isPending}>
-                  {updateProfile.isPending ? "Saving…" : "Save Preferences"}
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
         </Card>
       )}
 
