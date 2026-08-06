@@ -104,13 +104,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div
             aria-hidden
             className="fixed inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ zIndex: -2, backgroundImage: `url(${effectiveBg})`, filter: 'brightness(0.2)' }}
+            style={{ zIndex: -2, backgroundImage: `url(${effectiveBg})` }}
           />
-          {/* Subtle theme-coloured wash — keeps bare text legible while image shows through gaps */}
+          {/* Colour wash — 82% opacity means ~18% of the image shows through */}
           <div
             aria-hidden
             className="fixed inset-0"
-            style={{ zIndex: -1, background: 'var(--background)', opacity: 0.65 }}
+            style={{ zIndex: -1, background: 'var(--background)', opacity: 0.82 }}
           />
         </>
       )}
