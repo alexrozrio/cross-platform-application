@@ -400,6 +400,10 @@ function AchievementsCard({ profileId, game }: { profileId: number; game: "sudok
 
 // ─── Best Times — Sudoku ─────────────────────────────────────────────────────
 
+const SUDOKU_GRID_SIZES = [9, 4, 6, 16, 3] as const;
+const SUDOKU_GRID_LABELS: Record<number, string> = { 3: "3×3", 4: "4×4", 6: "6×6", 9: "9×9", 16: "16×16" };
+const SUDOKU_DIFFICULTIES = ["easy", "medium", "hard", "expert"] as const;
+
 function BestTimesSudoku({
   stats,
   formatTime,
@@ -408,6 +412,12 @@ function BestTimesSudoku({
   formatTime: (s: number | null | undefined) => string;
 }) {
   const [open, setOpen] = useState(false);
+
+  // Only show grid sizes that have at least one recorded best time
+  const activeGridSizes = SUDOKU_GRID_SIZES.filter((size) =>
+    SUDOKU_DIFFICULTIES.some((diff) => (stats.bestTimes?.[`${size}-${diff}`] ?? null) !== null)
+  );
+
   return (
     <div className="rounded-xl border border-primary/10 overflow-hidden shadow-sm">
       <button
@@ -415,7 +425,7 @@ function BestTimesSudoku({
         className="w-full flex items-center justify-between px-4 py-3.5 bg-card hover:bg-muted/40 transition-colors text-left"
       >
         <span className="flex items-center gap-2 text-sm font-semibold">
-          <Clock className="w-4 h-4 text-primary" /> Best Times by Difficulty
+          <Clock className="w-4 h-4 text-primary" /> Best Times by Grid &amp; Difficulty
         </span>
         <div className="flex items-center gap-2">
           <Link
@@ -429,15 +439,30 @@ function BestTimesSudoku({
         </div>
       </button>
       {open && (
-        <div className="border-t px-4 py-4 bg-muted/10 space-y-2">
-          {(["easy", "medium", "hard", "expert"] as const).map((diff) => (
-            <div key={diff} className="flex justify-between items-center p-3 rounded-lg bg-background border border-border">
-              <span className="capitalize font-medium text-sm">{diff}</span>
-              <span className="font-mono text-base font-bold text-primary">{formatTime(stats.bestTimes?.[diff])}</span>
-            </div>
-          ))}
+        <div className="border-t px-4 py-4 bg-muted/10 space-y-4">
+          {activeGridSizes.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-2">No completed games yet.</p>
+          ) : (
+            activeGridSizes.map((size) => (
+              <div key={size} className="space-y-1.5">
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground px-1">
+                  {SUDOKU_GRID_LABELS[size]}
+                </p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {SUDOKU_DIFFICULTIES.map((diff) => (
+                    <div key={diff} className="flex justify-between items-center px-3 py-2 rounded-lg bg-background border border-border">
+                      <span className="capitalize text-xs font-medium text-muted-foreground">{diff}</span>
+                      <span className="font-mono text-sm font-bold text-primary">
+                        {formatTime(stats.bestTimes?.[`${size}-${diff}`])}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))
+          )}
           {stats.averageTime != null && (
-            <div className="flex justify-between items-center p-3 rounded-lg bg-primary/5 border border-primary/10">
+            <div className="flex justify-between items-center p-3 rounded-lg bg-card border border-border">
               <span className="font-medium text-sm">Avg. Completion Time</span>
               <span className="font-mono text-base font-bold text-primary">{formatTime(stats.averageTime)}</span>
             </div>

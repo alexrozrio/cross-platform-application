@@ -631,41 +631,52 @@ export default function Stats() {
             </Card>
           </div>
 
-          {/* Best times by difficulty */}
+          {/* Best times by grid size + difficulty */}
           <Card className="shadow-md border-primary/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-primary" /> Best Times by
-                Difficulty
+                <Clock className="w-5 h-5 text-primary" /> Best Times by Grid &amp; Difficulty
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {(["easy", "medium", "hard", "expert"] as const).map((diff) => (
-                  <div
-                    key={diff}
-                    className="flex justify-between items-center p-4 rounded-lg bg-muted/50"
-                  >
-                    <span className="capitalize font-medium">{diff}</span>
-                    <span className="font-mono text-lg font-bold text-primary">
-                      {formatTime(stats.bestTimes?.[diff])}
-                    </span>
+            <CardContent className="space-y-5">
+              {(() => {
+                const GRID_SIZES = [9, 4, 6, 16, 3] as const;
+                const GRID_LABELS: Record<number, string> = { 3: "3×3", 4: "4×4", 6: "6×6", 9: "9×9", 16: "16×16" };
+                const DIFFS = ["easy", "medium", "hard", "expert"] as const;
+                const activeGridSizes = GRID_SIZES.filter((size) =>
+                  DIFFS.some((diff) => (stats.bestTimes?.[`${size}-${diff}`] ?? null) !== null)
+                );
+                if (activeGridSizes.length === 0) {
+                  return <p className="text-sm text-muted-foreground text-center py-4">No completed games yet.</p>;
+                }
+                return activeGridSizes.map((size) => (
+                  <div key={size} className="space-y-2">
+                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                      {GRID_LABELS[size]}
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {DIFFS.map((diff) => (
+                        <div key={diff} className="flex justify-between items-center p-3 rounded-lg bg-muted/50 border border-border/60">
+                          <span className="capitalize font-medium text-sm">{diff}</span>
+                          <span className="font-mono text-base font-bold text-primary">
+                            {formatTime(stats.bestTimes?.[`${size}-${diff}`])}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                ))}
-              </div>
-              <p className="text-[11px] text-muted-foreground mt-3 flex items-start gap-1.5 leading-relaxed">
+                ));
+              })()}
+              <p className="text-[11px] text-muted-foreground flex items-start gap-1.5 leading-relaxed">
                 <span className="shrink-0 mt-px">ℹ️</span>
                 <span>
                   Only difficulties available in your current <strong>Game Mode</strong> are unlocked for play.
                   <em> Kids</em> mode shows Easy &amp; Medium; <em>Adult</em> shows Hard &amp; Expert; <em>4 All</em> shows everything.
-                  Times for locked difficulties are tracked but require switching your mode in Profile to play them.
                 </span>
               </p>
               {stats.averageTime != null && (
-                <div className="mt-3 flex justify-between items-center p-4 rounded-lg bg-primary/5 border border-primary/10">
-                  <span className="font-medium text-sm">
-                    Avg. Completion Time
-                  </span>
+                <div className="flex justify-between items-center p-4 rounded-lg bg-card border border-border">
+                  <span className="font-medium text-sm">Avg. Completion Time</span>
                   <span className="font-mono text-lg font-bold text-primary">
                     {formatTime(stats.averageTime)}
                   </span>

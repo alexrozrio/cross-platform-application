@@ -22,6 +22,7 @@ router.get("/stats/:profileId", async (req, res): Promise<void> => {
       mistakeCount: gamesTable.mistakeCount,
       completedAt: gamesTable.completedAt,
       difficulty: puzzlesTable.difficulty,
+      gridSize: puzzlesTable.gridSize,
     })
     .from(gamesTable)
     .innerJoin(puzzlesTable, eq(gamesTable.puzzleId, puzzlesTable.id))
@@ -33,12 +34,14 @@ router.get("/stats/:profileId", async (req, res): Promise<void> => {
   const totalWins = wins.length;
   const winRate = totalGames > 0 ? totalWins / totalGames : 0;
 
-  const bestTimes: Record<string, number | null> = {
-    easy: null, medium: null, hard: null, expert: null,
-  };
-  for (const diff of ["easy", "medium", "hard", "expert"] as const) {
-    const diffWins = wins.filter((g) => g.difficulty === diff);
-    if (diffWins.length > 0) bestTimes[diff] = Math.min(...diffWins.map((g) => g.elapsedSeconds));
+  const bestTimes: Record<string, number | null> = {};
+  for (const size of [3, 4, 6, 9, 16]) {
+    for (const diff of ["easy", "medium", "hard", "expert"] as const) {
+      const matching = wins.filter((g) => g.gridSize === size && g.difficulty === diff);
+      bestTimes[`${size}-${diff}`] = matching.length > 0
+        ? Math.min(...matching.map((g) => g.elapsedSeconds))
+        : null;
+    }
   }
 
   const totalTime = wins.reduce((sum, g) => sum + g.elapsedSeconds, 0);

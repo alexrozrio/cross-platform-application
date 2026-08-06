@@ -309,12 +309,7 @@ export const GetPlayerStatsResponse = zod.object({
   "totalGames": zod.number(),
   "totalWins": zod.number(),
   "winRate": zod.number().optional(),
-  "bestTimes": zod.object({
-  "easy": zod.number().nullish(),
-  "medium": zod.number().nullish(),
-  "hard": zod.number().nullish(),
-  "expert": zod.number().nullish()
-}),
+  "bestTimes": zod.record(zod.string(), zod.number().nullable()).optional(),
   "averageTime": zod.number().nullish(),
   "totalMistakes": zod.number().optional(),
   "currentStreak": zod.number().optional(),
