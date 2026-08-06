@@ -1359,7 +1359,7 @@ export default function Game({ id }: { id: string }) {
           ))}
         </div>
 
-        <div className="space-y-3">
+        <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
           <Button
             className="w-full gap-2"
             onClick={() => handleNewGame(gridSize as 3 | 4 | 6 | 9 | 16, diff as "easy" | "medium" | "hard" | "expert")}
@@ -1371,7 +1371,7 @@ export default function Game({ id }: { id: string }) {
 
           <div className="space-y-2">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground text-center">Or start a new game</p>
-            <div className={`grid gap-2 ${visibleSizes.length === 2 ? "grid-cols-2" : "grid-cols-2"}`}>
+            <div className="grid grid-cols-2 gap-2">
               {visibleSizes.map((s) => (
                 <button
                   key={s}
@@ -1381,7 +1381,7 @@ export default function Game({ id }: { id: string }) {
                     "flex flex-col items-center gap-1 rounded-xl border-2 py-3 px-2 text-center transition-all",
                     s === gridSize
                       ? "border-primary bg-primary/10 shadow-sm"
-                      : "border-border hover:border-primary/40 hover:bg-muted/50",
+                      : "border-border bg-background hover:border-primary/40 hover:bg-muted/50",
                   ].join(" ")}
                 >
                   <span className="font-black text-base text-primary">{s}×{s}</span>
@@ -1515,7 +1515,7 @@ export default function Game({ id }: { id: string }) {
           );
         })()}
 
-        <div className="space-y-3">
+        <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
           <Button
             variant="outline"
             className="w-full gap-2"
@@ -1538,7 +1538,7 @@ export default function Game({ id }: { id: string }) {
                     "flex flex-col items-center gap-1 rounded-xl border-2 py-3 px-2 text-center transition-all",
                     s === gridSize
                       ? "border-primary bg-primary/10 shadow-sm"
-                      : "border-border hover:border-primary/40 hover:bg-muted/50",
+                      : "border-border bg-background hover:border-primary/40 hover:bg-muted/50",
                   ].join(" ")}
                 >
                   <span className="font-black text-base text-primary">{s}×{s}</span>

@@ -871,7 +871,7 @@ export default function MemoryMatchPage() {
           </div>
         )}
 
-        <div className="space-y-3">
+        <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
           <Button variant="outline" className="w-full gap-2" onClick={() => startGame(gridSize)}>
             <RotateCcw className="w-4 h-4" /> Play again ({GRID_OPTIONS.find(o => o.size === gridSize)?.desc})
           </Button>
@@ -887,7 +887,7 @@ export default function MemoryMatchPage() {
                     'flex flex-col items-center gap-1 rounded-xl border-2 py-3 px-2 text-center transition-all',
                     opt.size === gridSize
                       ? 'border-primary bg-primary/10 shadow-sm'
-                      : 'border-border hover:border-primary/40 hover:bg-muted/50',
+                      : 'border-border bg-background hover:border-primary/40 hover:bg-muted/50',
                   ].join(' ')}
                 >
                   <span className="font-black text-base text-primary">{opt.label}</span>
