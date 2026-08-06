@@ -647,7 +647,12 @@ export default function Stats() {
                   DIFFS.some((diff) => (stats.bestTimes?.[`${size}-${diff}`] ?? null) !== null)
                 );
                 if (activeGridSizes.length === 0) {
-                  return <p className="text-sm text-muted-foreground text-center py-4">No completed games yet.</p>;
+                  return (
+                    <div className="bg-card border border-border rounded-xl px-4 py-5 text-center">
+                      <p className="text-sm font-medium text-muted-foreground">No completed games yet</p>
+                      <p className="text-xs text-muted-foreground mt-1">Finish a Sudoku game to see your best times here.</p>
+                    </div>
+                  );
                 }
                 return activeGridSizes.map((size) => (
                   <div key={size} className="space-y-2">

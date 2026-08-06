@@ -441,7 +441,10 @@ function BestTimesSudoku({
       {open && (
         <div className="border-t px-4 py-4 bg-muted/10 space-y-4">
           {activeGridSizes.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-2">No completed games yet.</p>
+            <div className="bg-card border border-border rounded-xl px-4 py-5 text-center">
+              <p className="text-sm font-medium text-muted-foreground">No completed games yet</p>
+              <p className="text-xs text-muted-foreground mt-1">Finish a Sudoku game to see your best times here.</p>
+            </div>
           ) : (
             activeGridSizes.map((size) => (
               <div key={size} className="space-y-1.5">
