@@ -10,6 +10,7 @@ import { LoginRewardModal } from "@/components/login-reward-modal";
 import { EventModal } from "@/components/event-modal";
 import { Layout } from "@/components/layout";
 import { PageLoader } from "@/components/page-loader";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 // Pages — lazy-loaded so each route only ships the JS it needs, instead of
 // one large bundle that has to load before the app becomes interactive.
@@ -66,6 +67,7 @@ function Router() {
       )}
       <EventModal />
       <Layout>
+        <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>
           <Switch>
             <Route path="/" component={Portal} />
@@ -94,6 +96,7 @@ function Router() {
             <Route component={NotFound} />
           </Switch>
         </Suspense>
+        </ErrorBoundary>
       </Layout>
     </AuthProvider>
   );

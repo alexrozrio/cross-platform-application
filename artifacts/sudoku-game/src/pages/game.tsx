@@ -713,7 +713,7 @@ export default function Game({ id }: { id: string }) {
         localStorage.removeItem(storageKeyElapsed);
         return;
       }
-      const serverGrid = game.currentGrid.split("");
+      const serverGrid = (game.currentGrid ?? game.puzzle?.grid ?? "").split("");
       const loadedInitial = game.puzzle?.grid.split("") || Array(totalCells).fill("0");
 
       // Restore elapsed time — prefer localStorage (saved every second) over
@@ -1205,7 +1205,33 @@ export default function Game({ id }: { id: string }) {
     );
   if (error || !game)
     return (
-      <div className="p-8 text-center text-destructive">Error loading game</div>
+      <div className="min-h-[50vh] flex items-center justify-center px-4">
+        <div className="bg-card border border-border rounded-2xl p-8 max-w-sm w-full text-center space-y-4 shadow-md">
+          <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
+            <span className="text-2xl">⚠️</span>
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-lg font-bold">Game not found</h2>
+            <p className="text-sm text-muted-foreground">
+              This game couldn't be loaded. It may have expired or the connection dropped.
+            </p>
+          </div>
+          <div className="flex gap-2 justify-center">
+            <button
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-muted hover:bg-muted/80 text-sm font-medium transition-colors"
+            >
+              🔄 Retry
+            </button>
+            <button
+              onClick={() => setLocation("/")}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-medium transition-colors"
+            >
+              🏠 Go Home
+            </button>
+          </div>
+        </div>
+      </div>
     );
 
   const MODE_LABELS: Record<GameMode, string> = {
