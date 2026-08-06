@@ -276,11 +276,11 @@ export default function ChallengeInvitePage({ token }: { token: string }) {
   return (
     <div className="max-w-sm mx-auto w-full space-y-6 pt-4 animate-in fade-in duration-500">
       {/* Header */}
-      <div className="text-center space-y-1">
+      <div className="bg-card border border-border rounded-2xl px-5 py-4 text-center space-y-2">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 text-xs font-semibold border border-rose-200 dark:border-rose-800">
           <Swords className="w-3.5 h-3.5" /> Challenge Invite
         </div>
-        <h1 className="text-2xl font-serif font-bold tracking-tight pt-1">
+        <h1 className="text-2xl font-serif font-bold tracking-tight">
           You've been challenged!
         </h1>
       </div>

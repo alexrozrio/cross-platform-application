@@ -201,7 +201,7 @@ export default function DailyChallenge() {
 
       {/* Leaderboard */}
       <div className="space-y-3">
-        <h2 className="font-semibold text-base flex items-center gap-2">
+        <h2 className="font-semibold text-base flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2 shadow-sm">
           <Trophy className="w-4 h-4 text-yellow-500" />
           Today's Leaderboard
           <span className="text-xs text-muted-foreground font-normal ml-auto">{leaderboard.length} completion{leaderboard.length !== 1 ? 's' : ''}</span>

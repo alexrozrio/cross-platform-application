@@ -118,7 +118,7 @@ export default function PublicProfilePage({ profileId }: PublicProfileProps) {
         <div className="space-y-6">
           {sudokuUnlocked.length > 0 && (
             <section>
-              <div className="flex items-center gap-1.5 mb-3">
+              <div className="flex items-center gap-1.5 mb-3 bg-card border border-border rounded-lg px-3 py-1.5 w-fit">
                 <Hash className="w-3.5 h-3.5 text-muted-foreground" />
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Sudoku
@@ -134,7 +134,7 @@ export default function PublicProfilePage({ profileId }: PublicProfileProps) {
 
           {memoryUnlocked.length > 0 && (
             <section>
-              <div className="flex items-center gap-1.5 mb-3">
+              <div className="flex items-center gap-1.5 mb-3 bg-card border border-border rounded-lg px-3 py-1.5 w-fit">
                 <span className="text-xs">🧠</span>
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Memory Match
@@ -151,7 +151,7 @@ export default function PublicProfilePage({ profileId }: PublicProfileProps) {
       )}
 
       {/* ── CTA ── */}
-      <div className="text-center pt-6 border-t border-border space-y-3">
+      <div className="bg-card border border-border rounded-2xl px-5 py-5 text-center space-y-3">
         <p className="text-sm text-muted-foreground">Think you can beat them?</p>
         <Link href="/">
           <Button size="lg" className="gap-2 rounded-xl">

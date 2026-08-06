@@ -32,9 +32,11 @@ export default function BadgeSharePage() {
 
   return (
     <div className="max-w-sm mx-auto w-full space-y-6 animate-in fade-in duration-500 py-8">
-      <Button variant="ghost" size="sm" className="gap-2 -ml-1" onClick={() => setLocation('/')}>
-        <ArrowLeft className="w-4 h-4" /> Home
-      </Button>
+      <div className="bg-card border border-border rounded-xl px-3 py-2 w-fit">
+        <Button variant="ghost" size="sm" className="gap-2 -ml-1 h-auto p-0" onClick={() => setLocation('/')}>
+          <ArrowLeft className="w-4 h-4" /> Home
+        </Button>
+      </div>
 
       {/* Badge card */}
       <Card className={`border-2 shadow-xl overflow-hidden ${meta.borderColor}`}>
@@ -67,10 +69,12 @@ export default function BadgeSharePage() {
         </Button>
       </div>
 
-      <Button className="w-full gap-2" variant="outline" onClick={() => setShareOpen(true)}>
-        <Share2 className="w-4 h-4" />
-        Share this badge
-      </Button>
+      <div className="bg-card border border-border rounded-xl p-3">
+        <Button className="w-full gap-2" variant="outline" onClick={() => setShareOpen(true)}>
+          <Share2 className="w-4 h-4" />
+          Share this badge
+        </Button>
+      </div>
 
       <BadgeShareSheet
         open={shareOpen}
