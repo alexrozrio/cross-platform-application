@@ -113,7 +113,7 @@ function ShareSheet({
         </DialogHeader>
         <div className="space-y-4 pt-1">
           {/* Link preview */}
-          <div className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 text-xs font-mono break-all text-muted-foreground">
+          <div className="flex items-center gap-2 rounded-lg border bg-muted px-3 py-2 text-xs font-mono break-all text-muted-foreground">
             <ExternalLink className="w-3.5 h-3.5 shrink-0 text-primary" />
             <span className="min-w-0 truncate">{shareUrl}</span>
           </div>
@@ -277,7 +277,7 @@ export default function ChallengeInvitePage({ token }: { token: string }) {
     <div className="max-w-sm mx-auto w-full space-y-6 pt-4 animate-in fade-in duration-500">
       {/* Header */}
       <div className="text-center space-y-1">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-semibold border border-rose-200">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 text-xs font-semibold border border-rose-200 dark:border-rose-800">
           <Swords className="w-3.5 h-3.5" /> Challenge Invite
         </div>
         <h1 className="text-2xl font-serif font-bold tracking-tight pt-1">
@@ -440,10 +440,10 @@ export default function ChallengeInvitePage({ token }: { token: string }) {
 
       {/* Badge row */}
       <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
-        <Badge variant="outline" className="gap-1 text-amber-600 border-amber-200">
+        <Badge variant="outline" className="gap-1 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40">
           🏆 Winner gets 10 gems
         </Badge>
-        <Badge variant="outline" className="gap-1">
+        <Badge variant="outline" className="gap-1 bg-card">
           ⚡ Score more points to win
         </Badge>
       </div>

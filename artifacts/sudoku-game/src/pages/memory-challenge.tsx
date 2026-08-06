@@ -328,12 +328,12 @@ export default function MemoryChallengePage() {
     <div className="max-w-lg mx-auto w-full space-y-6 animate-in fade-in duration-500">
       {/* Header */}
       <div className="space-y-1 bg-card rounded-2xl px-5 py-4 border border-border">
-        {/*<button
+        <button
           onClick={() => setLocation('/memory')}
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-2"
         >
           <ArrowLeft className="w-4 h-4" /> Memory Match
-        </button>*/}
+        </button>
         <h1 className="text-3xl font-serif font-bold tracking-tight flex items-center gap-2">
           <Brain className="w-7 h-7 text-violet-500" />
           Memory Challenges

@@ -151,7 +151,7 @@ export default function PublicProfilePage({ profileId }: PublicProfileProps) {
       )}
 
       {/* ── CTA ── */}
-      <div className="text-center pt-6 border-t border-border/60 space-y-3">
+      <div className="text-center pt-6 border-t border-border space-y-3">
         <p className="text-sm text-muted-foreground">Think you can beat them?</p>
         <Link href="/">
           <Button size="lg" className="gap-2 rounded-xl">

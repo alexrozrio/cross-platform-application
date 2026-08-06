@@ -6,7 +6,7 @@ import { useCreateGame, customFetch } from '@workspace/api-client-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trophy, Medal, Award, CalendarDays, Play, Clock, Flame, Zap, Star } from 'lucide-react';
+import { Trophy, Medal, Award, CalendarDays, Play, Clock, Flame, Zap, Star, ArrowLeft } from 'lucide-react';
 
 interface DailyChallenge {
   puzzleId: number;
@@ -56,7 +56,7 @@ function StreakDisplay({ streak }: { streak: StreakData }) {
   const flames = Math.min(streak.currentStreak, 7);
   return (
     <div className="flex items-stretch gap-3">
-      <div className="flex-1 rounded-xl border bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200/70 p-4 text-center">
+      <div className="flex-1 rounded-xl border bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/40 dark:to-amber-950/30 border-orange-200/70 dark:border-orange-800/50 p-4 text-center">
         <div className="flex items-center justify-center gap-1 mb-1">
           {Array.from({ length: Math.max(flames, 1) }, (_, i) => (
             <Flame
@@ -76,7 +76,7 @@ function StreakDisplay({ streak }: { streak: StreakData }) {
         <div className="text-xs text-muted-foreground font-medium">best streak</div>
       </div>
       <div className="flex-1 rounded-xl border bg-card p-4 text-center">
-        <div className={`text-xs font-bold px-2 py-0.5 rounded-full inline-block mb-1 ${streak.completedToday ? 'bg-green-100 text-green-700' : 'bg-muted text-muted-foreground'}`}>
+        <div className={`text-xs font-bold px-2 py-0.5 rounded-full inline-block mb-1 ${streak.completedToday ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' : 'bg-muted text-muted-foreground'}`}>
           {streak.completedToday ? '✓ Done' : 'Pending'}
         </div>
         <div className="text-xs text-muted-foreground font-medium mt-1">today</div>
@@ -123,6 +123,12 @@ export default function DailyChallenge() {
   return (
     <div className="max-w-lg mx-auto w-full space-y-6 animate-in fade-in duration-500">
       <div className="space-y-1 bg-card rounded-2xl px-5 py-4 border border-border">
+        <button
+          onClick={() => setLocation('/sudoku')}
+          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-2"
+        >
+          <ArrowLeft className="w-4 h-4" /> Sudoku
+        </button>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <CalendarDays className="w-4 h-4" />
           {challenge ? formatDate(challenge.date) : <Skeleton className="h-4 w-40" />}
@@ -152,7 +158,7 @@ export default function DailyChallenge() {
       )}
 
       {/* Play card */}
-      <Card className="shadow-md border-orange-200/60 bg-gradient-to-br from-orange-50 to-amber-50">
+      <Card className="shadow-md border-orange-200/60 dark:border-orange-800/50 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/40 dark:to-amber-950/30">
         <CardContent className="pt-6 pb-5 space-y-4">
           {challengeLoading ? (
             <div className="space-y-2">
@@ -186,7 +192,7 @@ export default function DailyChallenge() {
             </div>
           )}
 
-          <div className="text-xs text-muted-foreground border-t border-orange-100 pt-3 flex items-center gap-1.5">
+          <div className="text-xs text-muted-foreground border-t border-orange-100 dark:border-orange-800/40 pt-3 flex items-center gap-1.5">
             <Clock className="w-3 h-3" />
             Resets at midnight · Complete daily to build your streak
           </div>
