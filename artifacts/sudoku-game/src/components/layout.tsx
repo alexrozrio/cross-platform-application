@@ -110,7 +110,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div
             aria-hidden
             className="fixed inset-0"
-            style={{ zIndex: -1, background: 'var(--background)', opacity: 0.65 }}
+            style={{ zIndex: -1, background: 'var(--background)', opacity: 0.80 }}
           />
         </>
       )}
