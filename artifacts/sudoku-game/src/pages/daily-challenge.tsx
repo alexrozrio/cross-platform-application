@@ -251,12 +251,14 @@ export default function DailyChallenge() {
         </Card>
       </div>
 
-      <button
-        onClick={() => setLocation('/leaderboard')}
-        className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
-      >
-        View all-time leaderboard →
-      </button>
+      <div className="bg-card border border-border rounded-xl px-4 py-3 text-center">
+        <button
+          onClick={() => setLocation('/leaderboard')}
+          className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+        >
+          View all-time leaderboard →
+        </button>
+      </div>
     </div>
   );
 }
