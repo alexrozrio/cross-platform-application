@@ -1492,7 +1492,7 @@ export default function Challenges() {
         <div className="space-y-6">
           {pending.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground/70 flex items-center gap-2">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 w-fit shadow-sm">
                 <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />{" "}
                 Waiting for you ({pending.length})
               </h2>
@@ -1512,7 +1512,7 @@ export default function Challenges() {
           )}
           {active.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground/70 flex items-center gap-2">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 w-fit shadow-sm">
                 <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />{" "}
                 In Progress ({active.length})
               </h2>
@@ -1532,7 +1532,7 @@ export default function Challenges() {
           )}
           {outgoing.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground/70 flex items-center gap-2">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 w-fit shadow-sm">
                 <Clock className="w-3.5 h-3.5" /> Waiting for them (
                 {outgoing.length})
               </h2>
@@ -1552,7 +1552,7 @@ export default function Challenges() {
           )}
           {finished.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground/70 flex items-center gap-2">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 w-fit shadow-sm">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Finished
               </h2>
               {finished.map((c) => (
@@ -1591,7 +1591,7 @@ export default function Challenges() {
         <div className="space-y-6">
           {duelPending.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground/70 flex items-center gap-2">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 w-fit shadow-sm">
                 <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />{" "}
                 Waiting for you ({duelPending.length})
               </h2>
@@ -1611,7 +1611,7 @@ export default function Challenges() {
           )}
           {duelActive.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground/70 flex items-center gap-2">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 w-fit shadow-sm">
                 <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />{" "}
                 In Progress ({duelActive.length})
               </h2>
@@ -1631,7 +1631,7 @@ export default function Challenges() {
           )}
           {duelOutgoing.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground/70 flex items-center gap-2">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 w-fit shadow-sm">
                 <Clock className="w-3.5 h-3.5" /> Waiting for them (
                 {duelOutgoing.length})
               </h2>
@@ -1651,7 +1651,7 @@ export default function Challenges() {
           )}
           {duelFinished.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground/70 flex items-center gap-2">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 w-fit shadow-sm">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Finished
               </h2>
               {duelFinished.map((d) => (
