@@ -57,7 +57,18 @@ export function calcPoints(
   return Math.max(10, Math.round(base * (1 + timeBonus) * mistakePenalty * hintPenalty));
 }
 
-/** How many gems a sudoku game completion is worth — based on difficulty */
-export function calcGems(difficulty: string): number {
-  return GEMS_BY_DIFFICULTY[difficulty] ?? 1;
+/**
+ * How many gems a Sudoku completion is worth.
+ *
+ * The API route uses the difficulty form. The numeric form is retained for
+ * compatibility with the standalone API's point-based reward contract and
+ * older callers/tests.
+ */
+export function calcGems(difficulty: string): number;
+export function calcGems(points: number): number;
+export function calcGems(difficultyOrPoints: string | number): number {
+  if (typeof difficultyOrPoints === "number") {
+    return Math.max(1, Math.floor(difficultyOrPoints / 5000));
+  }
+  return GEMS_BY_DIFFICULTY[difficultyOrPoints] ?? 1;
 }

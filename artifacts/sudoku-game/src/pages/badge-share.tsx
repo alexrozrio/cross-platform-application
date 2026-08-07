@@ -12,7 +12,9 @@ export default function BadgeSharePage() {
   const params = useParams<{ token: string }>();
   const [, setLocation] = useLocation();
   const { data: badge, isLoading, isError } = useGetBadgeShare(params.token ?? '', {
-    query: { enabled: !!params.token }
+    // A 404 is terminal for a share token. Retrying keeps visitors on the
+    // loading state for several seconds before the existing error UI appears.
+    query: { enabled: !!params.token, retry: false }
   });
 
   const [shareOpen, setShareOpen] = React.useState(false);
