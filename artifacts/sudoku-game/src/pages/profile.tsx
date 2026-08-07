@@ -448,7 +448,7 @@ function BestTimesSudoku({
           ) : (
             activeGridSizes.map((size) => (
               <div key={size} className="space-y-1.5">
-                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground px-1">
+                <p className="inline-flex items-center rounded-md border border-border bg-card px-2.5 py-1 text-xs font-bold uppercase tracking-widest text-foreground shadow-sm">
                   {SUDOKU_GRID_LABELS[size]}
                 </p>
                 <div className="grid grid-cols-2 gap-1.5">
