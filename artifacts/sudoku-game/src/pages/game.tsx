@@ -384,48 +384,40 @@ export default function Game({ id }: { id: string }) {
     return () => clearTimeout(t);
   }, [isOffline, apiLoading, gameId]);
 
-  const offlinePuzzleData = (isOffline || apiTimedOut) ? getOfflinePuzzle() : null;
-  const game = isOffline
-    ? (offlinePuzzleData
-        ? ({
-            id: 0,
-            status: "active",
-            currentGrid: offlinePuzzleData.grid,
-            elapsedSeconds: 0,
-            mistakeCount: 0,
-            hintsUsed: 0,
-            puzzle: {
-              id: 0,
-              grid: offlinePuzzleData.grid,
-              solution: offlinePuzzleData.solution,
-              gridSize: offlinePuzzleData.gridSize,
-              difficulty: offlinePuzzleData.difficulty,
-              createdAt: "",
-            },
-          } as any)
-        : null)
-    : apiTimedOut
-      ? (offlinePuzzleData
-          ? ({
-              id: 0,
-              status: "active",
-              currentGrid: offlinePuzzleData.grid,
-              elapsedSeconds: 0,
-              mistakeCount: 0,
-              hintsUsed: 0,
-              puzzle: {
-                id: 0,
-                grid: offlinePuzzleData.grid,
-                solution: offlinePuzzleData.solution,
-                gridSize: offlinePuzzleData.gridSize,
-                difficulty: offlinePuzzleData.difficulty,
-                createdAt: "",
-              },
-            } as any)
-          : null)
-      : apiGame;
-  const isLoading = isOffline || apiTimedOut ? false : apiLoading;
-  const error = isOffline || apiTimedOut ? null : apiError;
+  // Keep the offline object stable across renders. Parsing localStorage and
+  // rebuilding this object inline meant a cell click could make the loading
+  // effect below think a new game had arrived, causing React error #185
+  // (maximum update depth exceeded).
+  //
+  // A started game should also remain playable if the API drops after the
+  // route has loaded, rather than replacing the board with an error page.
+  const offlineMode = isOffline || apiTimedOut || !!apiError;
+  const offlinePuzzleData = useMemo(() => {
+    if (!offlineMode) return null;
+    return getOfflinePuzzle() ?? generateOfflinePuzzle("easy", 9);
+  }, [offlineMode]);
+  const game = useMemo(() => {
+    if (!offlineMode) return apiGame;
+    if (!offlinePuzzleData) return null;
+    return {
+      id: 0,
+      status: "active",
+      currentGrid: offlinePuzzleData.grid,
+      elapsedSeconds: 0,
+      mistakeCount: 0,
+      hintsUsed: 0,
+      puzzle: {
+        id: 0,
+        grid: offlinePuzzleData.grid,
+        solution: offlinePuzzleData.solution,
+        gridSize: offlinePuzzleData.gridSize,
+        difficulty: offlinePuzzleData.difficulty,
+        createdAt: "",
+      },
+    } as any;
+  }, [apiGame, offlineMode, offlinePuzzleData]);
+  const isLoading = offlineMode ? false : apiLoading;
+  const error = offlineMode ? null : apiError;
 
   const saveGame = useSaveGame();
   const completeGame = useCompleteGame();
@@ -761,7 +753,7 @@ export default function Game({ id }: { id: string }) {
       }
       if (loadedMistakes >= MAX_MISTAKES) {
         setIsGameOver(true);
-        if (!isOffline) customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }).catch(() => {});
+        if (!offlineMode) customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }).catch(() => {});
       }
     }
   }, [game, isCompleted, isGameOver, totalCells, storageKeyGrid, storageKeyNotes]);
@@ -792,7 +784,7 @@ export default function Game({ id }: { id: string }) {
   }, [notes, storageKeyNotes]);
 
   useEffect(() => {
-    if (isOffline || isCompleted || !game || grid.join("") === game.currentGrid) return;
+    if (offlineMode || isCompleted || !game || grid.join("") === game.currentGrid) return;
     if (saveTimeoutRef.current) window.clearTimeout(saveTimeoutRef.current);
     saveTimeoutRef.current = window.setTimeout(() => {
       saveGame.mutate({
@@ -820,7 +812,7 @@ export default function Game({ id }: { id: string }) {
       if (currentGrid.join("") === solution) {
         sounds.complete();
         setIsCompleted(true);
-        if (isOffline) {
+        if (offlineMode) {
           // Offline mode — show completion UI without any server call
           localStorage.removeItem(storageKeyGrid);
           localStorage.removeItem(storageKeyNotes);
@@ -912,7 +904,7 @@ export default function Game({ id }: { id: string }) {
         );
       }
     },
-    [gameId, seconds, mistakes, hints, formattedTime, completeGame, profileId, dailyChallenge, game, queryClient],
+    [gameId, seconds, mistakes, hints, formattedTime, completeGame, profileId, dailyChallenge, game, queryClient, offlineMode],
   );
 
   const handleNumberInput = useCallback(
@@ -952,7 +944,7 @@ export default function Game({ id }: { id: string }) {
         if (newMistakes >= MAX_MISTAKES) {
           sounds.gameover();
           setIsGameOver(true);
-          if (!isOffline) customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }).catch(() => {});
+          if (!offlineMode) customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }).catch(() => {});
           toast.error("Game Over! 3 mistakes reached.", { duration: 5000 });
         } else {
           toast.error(`Wrong! ${MAX_MISTAKES - newMistakes} mistake${MAX_MISTAKES - newMistakes !== 1 ? "s" : ""} left.`, { duration: 1200 });
@@ -1032,6 +1024,7 @@ export default function Game({ id }: { id: string }) {
       boxRows,
       boxCols,
       checkCompletion,
+      offlineMode,
     ],
   );
 
@@ -1589,6 +1582,14 @@ export default function Game({ id }: { id: string }) {
 
   return (
     <div ref={gameViewRef} className="flex flex-col w-full gap-1.5 md:gap-3 animate-in fade-in duration-300 pb-16 sm:pb-20 md:pb-4 scroll-mt-2">
+      {offlineMode && (
+        <div className="w-full rounded-lg border border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/30 px-3 py-2 text-center">
+          <p className="text-xs font-bold text-amber-900 dark:text-amber-200">Offline Sudoku</p>
+          <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80">
+            Connection unavailable — this local puzzle is still playable.
+          </p>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between w-full bg-card border border-border rounded-xl px-2 py-1">
         <Button
@@ -1624,7 +1625,7 @@ export default function Game({ id }: { id: string }) {
                 try { sessionStorage.setItem('sudoku-abandoned-game-id', String(gameId)); } catch {}
                 // Fire abandon in the background — don't await so navigation
                 // is instant on mobile. Home screen will retry if it fails.
-                if (!isOffline) customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }).catch(() => {});
+                if (!offlineMode) customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }).catch(() => {});
                 setLocation("/sudoku");
               }}>
                 Leave Game
