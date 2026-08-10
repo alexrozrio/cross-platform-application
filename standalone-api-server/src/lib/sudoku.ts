@@ -25,8 +25,8 @@ function encodeGrid(grid: Grid): string {
 // Each position stores a byte with bits representing possible values
 // For size N: bits 0 to N-1 represent values 1 to N
 
-function initCandidates(grid: Grid, size: number): Uint8Array {
-  const candidates = new Uint8Array(grid.length);
+function initCandidates(grid: Grid, size: number): Uint16Array {
+  const candidates = new Uint16Array(grid.length);
   const allBits = (1 << size) - 1;
   for (let i = 0; i < grid.length; i++) {
     candidates[i] = grid[i] === 0 ? allBits : 0;
@@ -34,11 +34,11 @@ function initCandidates(grid: Grid, size: number): Uint8Array {
   return candidates;
 }
 
-function clearBit(candidates: Uint8Array, pos: number, val: number): void {
+function clearBit(candidates: Uint16Array, pos: number, val: number): void {
   candidates[pos] &= ~(1 << (val - 1));
 }
 
-function hasBit(candidates: Uint8Array, pos: number, val: number): boolean {
+function hasBit(candidates: Uint16Array, pos: number, val: number): boolean {
   return (candidates[pos] & (1 << (val - 1))) !== 0;
 }
 
@@ -60,7 +60,7 @@ function getFirstBit(byte: number): number {
 
 // ─── 3×3 (Latin-square: rows + columns only) ──────────────────────────────────
 
-function constrain3x3(grid: Grid, candidates: Uint8Array): boolean {
+function constrain3x3(grid: Grid, candidates: Uint16Array): boolean {
   let changed = true;
   while (changed) {
     changed = false;
@@ -93,7 +93,7 @@ function constrain3x3(grid: Grid, candidates: Uint8Array): boolean {
   return true;
 }
 
-function solve3x3(grid: Grid, candidates: Uint8Array): boolean {
+function solve3x3(grid: Grid, candidates: Uint16Array): boolean {
   if (!constrain3x3(grid, candidates)) return false;
 
   let minCand = 10;
@@ -114,7 +114,7 @@ function solve3x3(grid: Grid, candidates: Uint8Array): boolean {
   for (let num = 1; num <= 3; num++) {
     if (hasBit(candidates, bestPos, num)) {
       const gridBak = [...grid];
-      const candBak = new Uint8Array(candidates);
+      const candBak = new Uint16Array(candidates);
 
       grid[bestPos] = num;
       candidates[bestPos] = 0;
@@ -130,9 +130,9 @@ function solve3x3(grid: Grid, candidates: Uint8Array): boolean {
   return false;
 }
 
-function countSolutions3x3(grid: Grid, candidates: Uint8Array, limit = 2): number {
+function countSolutions3x3(grid: Grid, candidates: Uint16Array, limit = 2): number {
   const gridCopy = [...grid];
-  const candCopy = new Uint8Array(candidates);
+  const candCopy = new Uint16Array(candidates);
 
   if (!constrain3x3(gridCopy, candCopy)) return 0;
 
@@ -154,7 +154,7 @@ function countSolutions3x3(grid: Grid, candidates: Uint8Array, limit = 2): numbe
   for (let num = 1; num <= 3; num++) {
     if (hasBit(candCopy, bestPos, num)) {
       const gc = [...gridCopy];
-      const cc = new Uint8Array(candCopy);
+      const cc = new Uint16Array(candCopy);
       gc[bestPos] = num;
       cc[bestPos] = 0;
       count += countSolutions3x3(gc, cc, limit);
@@ -166,7 +166,7 @@ function countSolutions3x3(grid: Grid, candidates: Uint8Array, limit = 2): numbe
 
 // ─── 4×4 (2×2 boxes) ──────────────────────────────────────────────────────────
 
-function constrain4x4(grid: Grid, candidates: Uint8Array): boolean {
+function constrain4x4(grid: Grid, candidates: Uint16Array): boolean {
   let changed = true;
   while (changed) {
     changed = false;
@@ -208,7 +208,7 @@ function constrain4x4(grid: Grid, candidates: Uint8Array): boolean {
   return true;
 }
 
-function solve4x4(grid: Grid, candidates: Uint8Array): boolean {
+function solve4x4(grid: Grid, candidates: Uint16Array): boolean {
   if (!constrain4x4(grid, candidates)) return false;
 
   let minCand = 10;
@@ -229,7 +229,7 @@ function solve4x4(grid: Grid, candidates: Uint8Array): boolean {
   for (let num = 1; num <= 4; num++) {
     if (hasBit(candidates, bestPos, num)) {
       const gridBak = [...grid];
-      const candBak = new Uint8Array(candidates);
+      const candBak = new Uint16Array(candidates);
 
       grid[bestPos] = num;
       candidates[bestPos] = 0;
@@ -245,9 +245,9 @@ function solve4x4(grid: Grid, candidates: Uint8Array): boolean {
   return false;
 }
 
-function countSolutions4x4(grid: Grid, candidates: Uint8Array, limit = 2): number {
+function countSolutions4x4(grid: Grid, candidates: Uint16Array, limit = 2): number {
   const gridCopy = [...grid];
-  const candCopy = new Uint8Array(candidates);
+  const candCopy = new Uint16Array(candidates);
 
   if (!constrain4x4(gridCopy, candCopy)) return 0;
 
@@ -269,7 +269,7 @@ function countSolutions4x4(grid: Grid, candidates: Uint8Array, limit = 2): numbe
   for (let num = 1; num <= 4; num++) {
     if (hasBit(candCopy, bestPos, num)) {
       const gc = [...gridCopy];
-      const cc = new Uint8Array(candCopy);
+      const cc = new Uint16Array(candCopy);
       gc[bestPos] = num;
       cc[bestPos] = 0;
       count += countSolutions4x4(gc, cc, limit);
@@ -281,7 +281,7 @@ function countSolutions4x4(grid: Grid, candidates: Uint8Array, limit = 2): numbe
 
 // ─── 6×6 (2×3 boxes) ──────────────────────────────────────────────────────────
 
-function constrain6x6(grid: Grid, candidates: Uint8Array): boolean {
+function constrain6x6(grid: Grid, candidates: Uint16Array): boolean {
   let changed = true;
   while (changed) {
     changed = false;
@@ -323,7 +323,7 @@ function constrain6x6(grid: Grid, candidates: Uint8Array): boolean {
   return true;
 }
 
-function solve6x6(grid: Grid, candidates: Uint8Array): boolean {
+function solve6x6(grid: Grid, candidates: Uint16Array): boolean {
   if (!constrain6x6(grid, candidates)) return false;
 
   let minCand = 10;
@@ -344,7 +344,7 @@ function solve6x6(grid: Grid, candidates: Uint8Array): boolean {
   for (let num = 1; num <= 6; num++) {
     if (hasBit(candidates, bestPos, num)) {
       const gridBak = [...grid];
-      const candBak = new Uint8Array(candidates);
+      const candBak = new Uint16Array(candidates);
 
       grid[bestPos] = num;
       candidates[bestPos] = 0;
@@ -360,9 +360,9 @@ function solve6x6(grid: Grid, candidates: Uint8Array): boolean {
   return false;
 }
 
-function countSolutions6x6(grid: Grid, candidates: Uint8Array, limit = 2): number {
+function countSolutions6x6(grid: Grid, candidates: Uint16Array, limit = 2): number {
   const gridCopy = [...grid];
-  const candCopy = new Uint8Array(candidates);
+  const candCopy = new Uint16Array(candidates);
 
   if (!constrain6x6(gridCopy, candCopy)) return 0;
 
@@ -384,7 +384,7 @@ function countSolutions6x6(grid: Grid, candidates: Uint8Array, limit = 2): numbe
   for (let num = 1; num <= 6; num++) {
     if (hasBit(candCopy, bestPos, num)) {
       const gc = [...gridCopy];
-      const cc = new Uint8Array(candCopy);
+      const cc = new Uint16Array(candCopy);
       gc[bestPos] = num;
       cc[bestPos] = 0;
       count += countSolutions6x6(gc, cc, limit);
@@ -396,7 +396,7 @@ function countSolutions6x6(grid: Grid, candidates: Uint8Array, limit = 2): numbe
 
 // ─── 9×9 (3×3 boxes) ──────────────────────────────────────────────────────────
 
-function constrain9x9(grid: Grid, candidates: Uint8Array): boolean {
+function constrain9x9(grid: Grid, candidates: Uint16Array): boolean {
   let changed = true;
   while (changed) {
     changed = false;
@@ -436,7 +436,7 @@ function constrain9x9(grid: Grid, candidates: Uint8Array): boolean {
   return true;
 }
 
-function solve9x9(grid: Grid, candidates: Uint8Array): boolean {
+function solve9x9(grid: Grid, candidates: Uint16Array): boolean {
   if (!constrain9x9(grid, candidates)) return false;
 
   let minCand = 10;
@@ -457,7 +457,7 @@ function solve9x9(grid: Grid, candidates: Uint8Array): boolean {
   for (let num = 1; num <= 9; num++) {
     if (hasBit(candidates, bestPos, num)) {
       const gridBak = [...grid];
-      const candBak = new Uint8Array(candidates);
+      const candBak = new Uint16Array(candidates);
 
       grid[bestPos] = num;
       candidates[bestPos] = 0;
@@ -473,9 +473,9 @@ function solve9x9(grid: Grid, candidates: Uint8Array): boolean {
   return false;
 }
 
-function countSolutions9x9(grid: Grid, candidates: Uint8Array, limit = 2): number {
+function countSolutions9x9(grid: Grid, candidates: Uint16Array, limit = 2): number {
   const gridCopy = [...grid];
-  const candCopy = new Uint8Array(candidates);
+  const candCopy = new Uint16Array(candidates);
 
   if (!constrain9x9(gridCopy, candCopy)) return 0;
 
@@ -497,7 +497,7 @@ function countSolutions9x9(grid: Grid, candidates: Uint8Array, limit = 2): numbe
   for (let num = 1; num <= 9; num++) {
     if (hasBit(candCopy, bestPos, num)) {
       const gc = [...gridCopy];
-      const cc = new Uint8Array(candCopy);
+      const cc = new Uint16Array(candCopy);
       gc[bestPos] = num;
       cc[bestPos] = 0;
       count += countSolutions9x9(gc, cc, limit);
