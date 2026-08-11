@@ -586,6 +586,8 @@ export default function Game({ id }: { id: string }) {
     setNewGameFetching(true);
     setShowMobileControls(false);
     const modeQuery = mode !== "number" ? `?mode=${mode}` : "";
+    const offlineRoute = (nextModeQuery = modeQuery) =>
+      `/game/0${nextModeQuery}${nextModeQuery ? "&" : "?"}offlineGame=${Date.now()}`;
     const clearStorage = () => {
       localStorage.removeItem(storageKeyGrid);
       localStorage.removeItem(storageKeyNotes);
@@ -617,7 +619,7 @@ export default function Game({ id }: { id: string }) {
       console.warn("API unavailable, starting offline game:", err);
       generateOfflinePuzzle(diff, size);
       clearStorage();
-      setLocation(`/game/0${modeQuery}`);
+      setLocation(offlineRoute());
     } finally {
       setNewGameFetching(false);
     }
@@ -632,6 +634,8 @@ export default function Game({ id }: { id: string }) {
     quickDifficultyInFlightRef.current = true;
     setQuickDifficultyLoading(true);
     const modeQuery = mode !== "number" ? `?mode=${mode}` : "";
+    const offlineRoute = () =>
+      `/game/0${modeQuery}${modeQuery ? "&" : "?"}offlineGame=${Date.now()}`;
     const clearStorage = () => {
       localStorage.removeItem(storageKeyGrid);
       localStorage.removeItem(storageKeyNotes);
@@ -663,7 +667,7 @@ export default function Game({ id }: { id: string }) {
       console.warn("API unavailable, starting offline game:", err);
       generateOfflinePuzzle(nextDifficulty, gridSize);
       clearStorage();
-      setLocation(`/game/0${modeQuery}`);
+      setLocation(offlineRoute());
     } finally {
       setQuickDifficultyLoading(false);
       quickDifficultyInFlightRef.current = false;

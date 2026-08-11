@@ -24,6 +24,17 @@ function StatsRedirect() {
   React.useEffect(() => { setLocation("/profile"); }, []);
   return null;
 }
+
+function SudokuGameRoute({ params }: { params: { id: string } }) {
+  const [location] = useLocation();
+  const query = location.split("?")[1] ?? "";
+
+  // Offline games reuse id 0. Include the query string in the React key so
+  // "Play again", difficulty changes, and result-screen grid changes remount
+  // the game instead of leaving the completed board mounted.
+  return <Game key={`${params.id}:${query}`} id={params.id} />;
+}
+
 const Themes = lazy(() => import("@/pages/themes"));
 const BadgeSharePage = lazy(() => import("@/pages/badge-share"));
 const DailyChallenge = lazy(() => import("@/pages/daily-challenge"));
@@ -74,9 +85,7 @@ function Router() {
             <Route path="/sudoku" component={SudokuHome} />
             <Route path="/themes" component={Themes} />
             <Route path="/profile" component={Profile} />
-            <Route path="/game/:id">
-              {(params) => <Game key={params.id} id={params.id} />}
-            </Route>
+            <Route path="/game/:id" component={SudokuGameRoute} />
             <Route path="/daily-challenge" component={DailyChallenge} />
             <Route path="/leaderboard" component={Leaderboard} />
             <Route path="/stats" component={StatsRedirect} />
