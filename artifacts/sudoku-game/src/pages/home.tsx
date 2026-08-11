@@ -79,7 +79,7 @@ function getLastPlayedDifficulty(): Difficulty {
 }
 
 export default function SudokuHome() {
-  const { profileId, isReady } = useAuth();
+  const { profileId, isReady, isSignedIn } = useAuth();
   const [location, setLocation] = useLocation();
   const search = useSearch();
   const sizeParam = new URLSearchParams(search).get('size');
@@ -165,6 +165,8 @@ export default function SudokuHome() {
     const effectiveDifficulty = difficultyOverride ?? difficulty;
     setPendingStart(null);
     const modeQuery = mode !== 'number' ? `?mode=${mode}` : '';
+    const offlineRoute = () =>
+      `/game/0${modeQuery}${modeQuery ? '&' : '?'}offlineGame=${Date.now()}`;
 
     // Always pre-generate an offline puzzle synchronously (instant from the
     // default bank) so the user can play immediately no matter what.
@@ -174,9 +176,11 @@ export default function SudokuHome() {
       localStorage.setItem(LAST_DIFFICULTY_KEY, effectiveDifficulty);
     } catch { /* ignore */ }
 
-    if (!profileId) {
-      // Guest — go offline right away, no API involved.
-      setLocation(`/game/0${modeQuery}`);
+    const browserIsOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
+    if (!isReady || !isSignedIn || !profileId || browserIsOffline) {
+      // Guests, pending auth, and disconnected browsers should never wait for
+      // an API request. The local puzzle is already generated above.
+      setLocation(offlineRoute());
       startInFlightRef.current = false;
       return;
     }
@@ -187,20 +191,23 @@ export default function SudokuHome() {
     setIsGenerating(true);
     let settled = false;
 
+    let controller: AbortController | null = null;
     const goOffline = () => {
       if (settled) return;
       settled = true;
+      controller?.abort();
       setIsGenerating(false);
       startInFlightRef.current = false;
       setActiveGame(null);
-      setLocation(`/game/0${modeQuery}`);
+      setLocation(offlineRoute());
     };
 
-    // User waits at most 1.5 s; a working API typically responds in <300 ms.
-    const fallbackTimer = setTimeout(goOffline, 1500);
+    // Keep the online path quick, but never leave the user waiting on a
+    // stalled API before the already-prepared offline game opens.
+    const fallbackTimer = setTimeout(goOffline, 1000);
 
     try {
-      const controller = new AbortController();
+      controller = new AbortController();
       const puzzle = await generatePuzzle(
         { difficulty: effectiveDifficulty, gridSize: size as any },
         { signal: controller.signal },
