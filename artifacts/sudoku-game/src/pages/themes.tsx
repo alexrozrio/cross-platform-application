@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useGetProfile, useUpdateProfile } from '@workspace/api-client-react';
 import { applyAppTheme } from '@/components/layout';
 import { useFontTheme, FONT_THEMES, type FontThemeId } from '@/hooks/use-font-theme';
+import { useFontSize, FONT_SIZE_OPTIONS, type FontSizeId } from '@/hooks/use-font-size';
 import { useUnlockedItems, useUnlockItem } from '@/hooks/use-unlocked-items';
 import { getItemCost, isFreeItem, type ItemType } from '@/lib/item-catalog';
 import { useThemeBg, THEME_BG_DEFAULTS } from '@/hooks/use-theme-bg';
@@ -124,6 +125,7 @@ export default function Themes() {
   const { data: profile, refetch: refetchProfile } = useGetProfile(profileId as number, { query: { enabled: !!profileId } });
   const updateProfile = useUpdateProfile();
   const { fontId, setFontId } = useFontTheme();
+  const { fontSizeId, setFontSize } = useFontSize();
   const { isUnlocked } = useUnlockedItems(profileId);
   const unlockMutation = useUnlockItem(profileId);
 
@@ -552,6 +554,56 @@ export default function Themes() {
                   <Eye className="w-2.5 h-2.5" /> Preview
                 </button>
               </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── Font Size ──────────────────────────────────────────────────── */}
+      <section className="space-y-3 bg-card rounded-2xl border border-border p-5">
+        <div>
+          <h2 className="text-xl font-serif font-semibold">Font Size</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Adjusts text and interface sizing throughout the entire application. Your choice is saved on this device.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {FONT_SIZE_OPTIONS.map(option => {
+            const selected = fontSizeId === option.id;
+            return (
+              <button
+                key={option.id}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => setFontSize(option.id as FontSizeId)}
+                className={[
+                  'rounded-xl border-2 p-3 text-left transition-all duration-150',
+                  selected
+                    ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-sm'
+                    : 'border-border hover:border-primary/40 hover:bg-muted/50',
+                ].join(' ')}
+              >
+                <span
+                  className={[
+                    'block font-bold leading-tight',
+                    option.id === 'small' ? 'text-sm' :
+                    option.id === 'large' ? 'text-lg' :
+                    option.id === 'extra-large' ? 'text-xl' : 'text-base',
+                  ].join(' ')}
+                >
+                  Aa
+                </span>
+                <span className="mt-1 block text-sm font-semibold">{option.label}</span>
+                <span className="mt-0.5 block text-[10px] leading-tight text-muted-foreground">
+                  {option.description}
+                </span>
+                {selected && (
+                  <span className="mt-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary">
+                    <Check className="h-2.5 w-2.5 text-primary-foreground" />
+                  </span>
+                )}
+              </button>
             );
           })}
         </div>

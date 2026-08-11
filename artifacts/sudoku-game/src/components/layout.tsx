@@ -7,6 +7,7 @@ import { apiUrl } from "@/lib/api-base-url";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Trophy, User, Home, Palette, LogIn, LogOut, Gem, Swords } from "lucide-react";
 import { useFontTheme } from "@/hooks/use-font-theme";
+import { useFontSize } from "@/hooks/use-font-size";
 import { useChallengeNotifications, usePendingChallengeCount } from "@/hooks/use-challenge-notifications";
 import { useLevelUpWatcher } from "@/hooks/use-level-up";
 import { useAchievementNotifier } from "@/hooks/use-achievement-notifier";
@@ -63,6 +64,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { effectiveBg } = useThemeBg(activeBgTheme);
 
   useFontTheme();
+  useFontSize();
   useChallengeNotifications(profileId);
   useLevelUpWatcher(profileId);
   const { pendingBadges, dismissBadge } = useBadgeNotifier(profileId);
