@@ -1586,14 +1586,6 @@ export default function Game({ id }: { id: string }) {
 
   return (
     <div ref={gameViewRef} className="flex flex-col w-full gap-1.5 md:gap-3 animate-in fade-in duration-300 pb-16 sm:pb-20 md:pb-4 scroll-mt-2">
-      {offlineMode && (
-        <div className="w-full rounded-lg border border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/30 px-3 py-2 text-center">
-          <p className="text-xs font-bold text-amber-900 dark:text-amber-200">Offline Sudoku</p>
-          <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80">
-            Connection unavailable — this local puzzle is still playable.
-          </p>
-        </div>
-      )}
       {/* Header */}
       <div className="flex items-center justify-between w-full bg-card border border-border rounded-xl px-2 py-1">
         <Button
@@ -1938,6 +1930,13 @@ export default function Game({ id }: { id: string }) {
             </div>
             </div>{/* end transform wrapper */}
           </Card>
+          {offlineMode && (
+            <div className="mt-2 w-full rounded-lg border border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/30 px-3 py-2 text-center">
+              <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80">
+                Connection unavailable — this local puzzle is still playable.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* RIGHT — Controls sidebar (full width on mobile, fixed 260px on desktop) */}

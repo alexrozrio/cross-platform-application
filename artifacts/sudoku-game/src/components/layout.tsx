@@ -41,6 +41,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   // extra vertical space needed for the board comes from letting the
   // mobile browser's own address bar collapse (see Game's scroll-nudge).
   const isGameRoute = location.startsWith("/game/");
+  const isOfflineGame = location.startsWith("/game/0");
   const { profileId, isSignedIn, replitUser } = useAuth();
   const { data: profile } = useGetProfile(profileId as number, { query: { enabled: !!profileId } });
   const pendingCount = usePendingChallengeCount(profileId);
@@ -137,16 +138,25 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </span>
         </Link>
 
-        {/* Gems badge */}
-        {profileId && profile?.gems !== undefined && (
-          <div className={[
-            "flex items-center gap-1.5 font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 rounded-full border border-cyan-200 dark:border-cyan-800 ml-2 mr-auto",
-            isGameRoute ? "text-xs px-2 py-0.5 md:text-sm md:px-3 md:py-1" : "text-sm px-3 py-1",
-          ].join(" ")}>
-            <Gem className="w-3.5 h-3.5" />
-            <span>{profile.gems.toLocaleString()}</span>
+        {/* Gems badge + offline status */}
+        {(profileId && profile?.gems !== undefined) || isOfflineGame ? (
+          <div className="flex items-center gap-2 ml-2 mr-auto">
+            {profileId && profile?.gems !== undefined && (
+              <div className={[
+                "flex items-center gap-1.5 font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 rounded-full border border-cyan-200 dark:border-cyan-800",
+                isGameRoute ? "text-xs px-2 py-0.5 md:text-sm md:px-3 md:py-1" : "text-sm px-3 py-1",
+              ].join(" ")}>
+                <Gem className="w-3.5 h-3.5" />
+                <span>{profile.gems.toLocaleString()}</span>
+              </div>
+            )}
+            {isOfflineGame && (
+              <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-300">
+                Offline
+              </span>
+            )}
           </div>
-        )}
+        ) : null}
 
         <div className="hidden md:flex items-center gap-1">
           <TooltipProvider delayDuration={400}>
