@@ -54,6 +54,33 @@ const GRID_OPTIONS: { size: GridSize; label: string; sublabel: string; difficult
   { size: 16, label: '16×16', sublabel: 'Pro', difficulties: ['easy', 'medium', 'hard', 'expert'] },
 ];
 
+const GRID_SLUGS: Record<GridSize, string> = {
+  3: 'baby',
+  4: 'mini',
+  6: 'dual',
+  9: 'classic',
+  16: 'pro',
+};
+
+const GRID_SIZE_BY_SLUG: Record<string, GridSize> = Object.fromEntries(
+  Object.entries(GRID_SLUGS).map(([size, slug]) => [slug, Number(size)]),
+) as Record<string, GridSize>;
+
+const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard', 'expert'];
+
+function gridSizeFromSlug(slug?: string): GridSize | null {
+  return slug ? GRID_SIZE_BY_SLUG[slug.toLowerCase()] ?? null : null;
+}
+
+function difficultyFromSlug(slug?: string): Difficulty | null {
+  const normalized = slug?.toLowerCase();
+  return DIFFICULTIES.includes(normalized as Difficulty) ? normalized as Difficulty : null;
+}
+
+function sudokuBookmarkPath(size: GridSize, difficulty: Difficulty): string {
+  return `/sudoku/${GRID_SLUGS[size]}/${difficulty}`;
+}
+
 type InfoModal = 'rules' | 'controls' | 'backstory' | null;
 
 const LAST_GRID_SIZE_KEY  = 'sudoku-last-grid-size';
@@ -78,17 +105,25 @@ function getLastPlayedDifficulty(): Difficulty {
   return 'easy';
 }
 
-export default function SudokuHome() {
+export interface SudokuHomeProps {
+  gridSlug?: string;
+  difficultySlug?: string;
+}
+
+export default function SudokuHome({ gridSlug, difficultySlug }: SudokuHomeProps = {}) {
   const { profileId, isReady, isSignedIn } = useAuth();
   const [location, setLocation] = useLocation();
   const search = useSearch();
+  const bookmarkedSize = gridSizeFromSlug(gridSlug);
+  const bookmarkedDifficulty = difficultyFromSlug(difficultySlug);
   const sizeParam = new URLSearchParams(search).get('size');
   const initialSize = (
-    [3, 4, 6, 9, 16].includes(Number(sizeParam))
+    bookmarkedSize ??
+    ([3, 4, 6, 9, 16].includes(Number(sizeParam))
       ? Number(sizeParam)
-      : getLastPlayedGridSize() ?? 9
+      : getLastPlayedGridSize() ?? 9)
   ) as GridSize;
-  const [difficulty, setDifficulty] = useState<Difficulty>(getLastPlayedDifficulty);
+  const [difficulty, setDifficulty] = useState<Difficulty>(bookmarkedDifficulty ?? getLastPlayedDifficulty);
   const [gridSize, setGridSize] = useState<GridSize>(initialSize);
   const { themeId } = useImageTheme();
   const [infoModal, setInfoModal] = useState<InfoModal>(null);
@@ -156,7 +191,18 @@ export default function SudokuHome() {
   };
   const availableModes = modesForSize(gridSize);
 
+  // Keep direct bookmark routes and browser navigation reflected in the
+  // controls if the same component instance receives new route params.
+  useEffect(() => {
+    if (bookmarkedSize && bookmarkedSize !== gridSize) setGridSize(bookmarkedSize);
+    if (bookmarkedDifficulty && bookmarkedDifficulty !== difficulty) setDifficulty(bookmarkedDifficulty);
+  }, [bookmarkedSize, bookmarkedDifficulty]);
+
   const startInFlightRef = useRef(false);
+
+  const updateBookmarkUrl = (size: GridSize, nextDifficulty: Difficulty) => {
+    setLocation(sudokuBookmarkPath(size, nextDifficulty), { replace: true });
+  };
 
   const doStart = async (size: GridSize, requestedMode: 'number' | 'alpha' | 'image', difficultyOverride?: Difficulty) => {
     if (startInFlightRef.current) return;
@@ -233,6 +279,7 @@ export default function SudokuHome() {
   const handleSelectSize = (size: GridSize) => {
     if (startInFlightRef.current) return;
     setGridSize(size);
+    updateBookmarkUrl(size, difficulty);
     const mode = modesForSize(size).includes(selectedMode) ? selectedMode : 'number';
     const activeMatchesPick =
       activeGame?.puzzle?.gridSize === size &&
@@ -248,6 +295,7 @@ export default function SudokuHome() {
   // immediately at the current grid size.
   const handleDifficultyAutoStart = (value: Difficulty) => {
     setDifficulty(value);
+    updateBookmarkUrl(gridSize, value);
     if (startInFlightRef.current) return;
     const activeMatchesPick =
       activeGame?.puzzle?.gridSize === gridSize &&
@@ -348,7 +396,14 @@ export default function SudokuHome() {
               <button
                 key={d}
                 disabled={isLoading}
-                onClick={() => availableModes.length === 1 ? handleDifficultyAutoStart(d) : setDifficulty(d)}
+                onClick={() => {
+                  if (availableModes.length === 1) {
+                    handleDifficultyAutoStart(d);
+                  } else {
+                    setDifficulty(d);
+                    updateBookmarkUrl(gridSize, d);
+                  }
+                }}
                 className={[
                   'rounded-xl border-2 py-2 text-xs font-bold transition-all',
                   difficulty === d
@@ -522,7 +577,11 @@ export default function SudokuHome() {
           {availableModes.length > 1 && (
           <div className="space-y-2">
             <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Difficulty</label>
-            <Select value={difficulty} onValueChange={v => setDifficulty(v as Difficulty)} disabled={isLoading}>
+            <Select value={difficulty} onValueChange={v => {
+              const nextDifficulty = v as Difficulty;
+              setDifficulty(nextDifficulty);
+              updateBookmarkUrl(gridSize, nextDifficulty);
+            }} disabled={isLoading}>
               <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {allDifficulties.map(d => (

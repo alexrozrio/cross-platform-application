@@ -16,6 +16,9 @@ import { ErrorBoundary } from "@/components/error-boundary";
 // one large bundle that has to load before the app becomes interactive.
 const Portal = lazy(() => import("@/pages/portal"));
 const SudokuHome = lazy(() => import("@/pages/home"));
+function SudokuBookmarkRoute({ params }: { params: { grid: string; difficulty: string } }) {
+  return <SudokuHome gridSlug={params.grid} difficultySlug={params.difficulty} />;
+}
 const Game = lazy(() => import("@/pages/game"));
 const Profile = lazy(() => import("@/pages/profile"));
 const Leaderboard = lazy(() => import("@/pages/leaderboard"));
@@ -43,6 +46,9 @@ const About = lazy(() => import("@/pages/about"));
 const PrivacyPolicy = lazy(() => import("@/pages/privacy-policy"));
 const TermsOfService = lazy(() => import("@/pages/terms-of-service"));
 const MemoryMatch = lazy(() => import("@/pages/memory"));
+function MemoryBookmarkRoute({ params }: { params: { difficulty: string } }) {
+  return <MemoryMatch difficultySlug={params.difficulty} />;
+}
 const MemoryChallengePage = lazy(() => import("@/pages/memory-challenge"));
 const PublicProfilePage = lazy(() => import("@/pages/public-profile"));
 const ChallengeInvitePage = lazy(() => import("@/pages/challenge-invite"));
@@ -82,6 +88,7 @@ function Router() {
         <Suspense fallback={<PageLoader />}>
           <Switch>
             <Route path="/" component={Portal} />
+            <Route path="/sudoku/:grid/:difficulty" component={SudokuBookmarkRoute} />
             <Route path="/sudoku" component={SudokuHome} />
             <Route path="/themes" component={Themes} />
             <Route path="/profile" component={Profile} />
@@ -91,6 +98,7 @@ function Router() {
             <Route path="/stats" component={StatsRedirect} />
             <Route path="/challenges" component={Challenges} />
             <Route path="/badges/:token" component={BadgeSharePage} />
+            <Route path="/memory/:difficulty" component={MemoryBookmarkRoute} />
             <Route path="/memory" component={MemoryMatch} />
             <Route path="/memory-challenge" component={MemoryChallengePage} />
             <Route path="/players/:profileId">

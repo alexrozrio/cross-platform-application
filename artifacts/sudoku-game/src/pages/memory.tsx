@@ -47,6 +47,25 @@ const GRID_OPTIONS: { size: GridSize; label: string; pairs: number; desc: string
   { size: 8, label: '8×8', pairs: 32, desc: 'Hard · 32 pairs' },
 ];
 
+const MEMORY_DIFFICULTY_SLUGS: Record<GridSize, string> = {
+  2: 'beginner',
+  4: 'easy',
+  6: 'medium',
+  8: 'hard',
+};
+
+const MEMORY_SIZE_BY_SLUG: Record<string, GridSize> = Object.fromEntries(
+  Object.entries(MEMORY_DIFFICULTY_SLUGS).map(([size, slug]) => [slug, Number(size)]),
+) as Record<string, GridSize>;
+
+function memorySizeFromSlug(slug?: string): GridSize | null {
+  return slug ? MEMORY_SIZE_BY_SLUG[slug.toLowerCase()] ?? null : null;
+}
+
+function memoryBookmarkPath(size: GridSize): string {
+  return `/memory/${MEMORY_DIFFICULTY_SLUGS[size]}`;
+}
+
 // ─── Card component ───────────────────────────────────────────────────────────
 
 function MemoryCard({
@@ -164,9 +183,14 @@ function MemoryThemeSymbol({ themeId, value, sym }: { themeId: string; value: nu
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-export default function MemoryMatchPage() {
+export interface MemoryMatchProps {
+  difficultySlug?: string;
+}
+
+export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {}) {
   const [, setLocation] = useLocation();
   const search = useSearch();
+  const bookmarkedSize = memorySizeFromSlug(difficultySlug);
   const { profileId } = useAuth();
   const { themeId } = useImageTheme();
   const queryClient = useQueryClient();
@@ -178,7 +202,7 @@ export default function MemoryMatchPage() {
   const sounds = useSound(profile?.soundEnabled);
 
   const [phase, setPhase] = useState<GamePhase>('setup');
-  const [gridSize, setGridSize] = useState<GridSize>(2);
+  const [gridSize, setGridSize] = useState<GridSize>(bookmarkedSize ?? 2);
   const [infoModal, setInfoModal] = useState<InfoModal>(null);
   const [displayMode, setDisplayMode] = useState<DisplayMode>('image');
   const [showNewGame, setShowNewGame] = useState(false);
@@ -226,6 +250,14 @@ export default function MemoryMatchPage() {
     return isNaN(d) ? null : d;
   })();
 
+  const hasSpecialGameQuery = Boolean(challengeType || duelGameId);
+
+  const updateMemoryBookmarkUrl = useCallback((size: GridSize) => {
+    if (!hasSpecialGameQuery) {
+      setLocation(memoryBookmarkPath(size), { replace: true });
+    }
+  }, [hasSpecialGameQuery, setLocation]);
+
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [showAbandonConfirm, setShowAbandonConfirm] = useState(false);
   const restoredRef = useRef(false);
@@ -245,7 +277,7 @@ export default function MemoryMatchPage() {
       // If the URL is requesting a specific size that differs from the saved
       // game, discard the saved game and let the URL auto-start run instead.
       const urlParams = new URLSearchParams(window.location.search);
-      const requestedSize = parseInt(urlParams.get('size') ?? urlParams.get('gridSize') ?? '', 10);
+      const requestedSize = bookmarkedSize ?? parseInt(urlParams.get('size') ?? urlParams.get('gridSize') ?? '', 10);
       if (!isNaN(requestedSize) && requestedSize !== s.gridSize) {
         localStorage.removeItem(STORAGE_KEY);
         return;
@@ -267,7 +299,7 @@ export default function MemoryMatchPage() {
       localStorage.removeItem(STORAGE_KEY);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [bookmarkedSize]);
 
   // Save to localStorage on every move during playing phase
   useEffect(() => {
@@ -290,6 +322,7 @@ export default function MemoryMatchPage() {
   }, [phase]);
 
   const startGame = useCallback(async (size: GridSize, presetGameId?: number) => {
+    updateMemoryBookmarkUrl(size);
     setGridSize(size);
     setCards(buildDeck(size));
     setFlippedIds([]);
@@ -316,7 +349,7 @@ export default function MemoryMatchPage() {
     } catch {
       // non-fatal — game still plays locally
     }
-  }, [profileId]);
+  }, [profileId, updateMemoryBookmarkUrl]);
 
   // Auto-start when ?size= or ?duelGameId= is in the URL (skip if restored from localStorage)
   const startGameRef = useRef(startGame);
@@ -325,7 +358,11 @@ export default function MemoryMatchPage() {
     if (restoredRef.current) return;
     const params = new URLSearchParams(search);
     const duelId = parseInt(params.get('duelGameId') ?? '', 10);
-    const gs = parseInt(params.get('gridSize') ?? params.get('size') ?? '', 10);
+    const gs = bookmarkedSize ?? parseInt(params.get('gridSize') ?? params.get('size') ?? '', 10);
+    // Canonical bookmark URLs show the setup screen with the selected
+    // difficulty highlighted; legacy query URLs retain their auto-start
+    // behavior.
+    if (bookmarkedSize) return;
     if (!isNaN(duelId) && [2, 4, 6, 8].includes(gs)) {
       startGameRef.current(gs as GridSize, duelId);
       return;
@@ -334,7 +371,13 @@ export default function MemoryMatchPage() {
     if ([2, 4, 6, 8].includes(s)) {
       startGameRef.current(s as GridSize);
     }
-  }, [search]);
+  }, [search, bookmarkedSize]);
+
+  useEffect(() => {
+    if (bookmarkedSize && phase === 'setup' && bookmarkedSize !== gridSize) {
+      setGridSize(bookmarkedSize);
+    }
+  }, [bookmarkedSize, phase, gridSize]);
 
   const handleTip = useCallback(() => {
     if (tipsUsed >= MAX_TIPS || lockBoard) return;
@@ -487,7 +530,7 @@ export default function MemoryMatchPage() {
     const sizeLabel = GRID_OPTIONS.find(o => o.size === gridSize)?.label ?? `${gridSize}×${gridSize}`;
     const diffLabel = GRID_OPTIONS.find(o => o.size === gridSize)?.desc.split(' · ')[0] ?? '';
     const rank = profile ? getLevelFromXp(profile.xp ?? 0).name : null;
-    const appUrl = `${window.location.origin}/memory`;
+    const appUrl = `${window.location.origin}${memoryBookmarkPath(gridSize)}`;
     const lines = [
       `${winMessage?.emoji ?? '🎉'} Matched all ${getPairs(gridSize)} pairs (${sizeLabel} ${diffLabel}) in ${formatTime(elapsed)}!`,
       `🔄 ${flips} flip${flips !== 1 ? 's' : ''}`,
@@ -586,7 +629,10 @@ export default function MemoryMatchPage() {
               <button
                 key={opt.size}
                 onClick={() => startGame(opt.size)}
-                className="group relative flex flex-col items-center justify-center rounded-2xl border-2 border-primary/15 bg-gradient-to-br from-primary/8 to-primary/4 hover:border-primary/40 hover:from-primary/14 hover:to-primary/8 active:scale-[0.97] transition-all p-4 gap-1.5 min-h-[110px]"
+                className={[
+                  'group relative flex flex-col items-center justify-center rounded-2xl border-2 bg-gradient-to-br from-primary/8 to-primary/4 hover:border-primary/40 hover:from-primary/14 hover:to-primary/8 active:scale-[0.97] transition-all p-4 gap-1.5 min-h-[110px]',
+                  gridSize === opt.size ? 'border-primary ring-2 ring-primary/25 shadow-sm' : 'border-primary/15',
+                ].join(' ')}
               >
                 <span className="text-xl leading-none">{sizeEmoji[opt.size]}</span>
                 <span className="text-2xl font-black text-primary leading-none tabular-nums">{opt.label}</span>
@@ -602,7 +648,10 @@ export default function MemoryMatchPage() {
               <button
                 key={opt.size}
                 onClick={() => startGame(opt.size)}
-                className="w-full flex items-center justify-between rounded-xl border-2 transition-all p-4 text-left group border-primary/15 bg-gradient-to-r from-primary/5 to-primary/3 hover:border-primary/40 hover:from-primary/10 hover:to-primary/8"
+                className={[
+                  'w-full flex items-center justify-between rounded-xl border-2 transition-all p-4 text-left group bg-gradient-to-r from-primary/5 to-primary/3 hover:border-primary/40 hover:from-primary/10 hover:to-primary/8',
+                  gridSize === opt.size ? 'border-primary ring-2 ring-primary/25 shadow-sm' : 'border-primary/15',
+                ].join(' ')}
               >
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-lg flex items-center justify-center font-black text-lg transition-colors bg-primary/10 text-primary group-hover:bg-primary/20">
