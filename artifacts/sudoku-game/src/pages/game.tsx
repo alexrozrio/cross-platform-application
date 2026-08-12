@@ -34,6 +34,7 @@ import { toast } from "sonner";
 import { pickCompletionMessage } from "@/lib/completion-messages";
 import { getLevelFromXp } from "@/lib/levels";
 import gameFeatures from "@/config/game-features.json";
+import { sudokuGamePath } from "@/lib/sudoku-routes";
 
 interface DailyChallengeInfo { puzzleId: number; date: string; }
 interface StreakData { currentStreak: number; longestStreak: number; completedToday: boolean; }
@@ -355,8 +356,16 @@ export default function Game({ id }: { id: string }) {
   const switchMode = (newMode: GameMode) => {
     if (newMode === "image" && !imageModeAllowed) return;
     if (newMode === "alpha" && !alphaModeAllowed) return;
-    const next = newMode === "number" ? "" : `?mode=${newMode}`;
-    setLocation(`/game/${gameId}${next}`, { replace: true });
+    setLocation(
+      sudokuGamePath(
+        game?.puzzle?.gridSize ?? 9,
+        game?.puzzle?.difficulty ?? "easy",
+        gameId,
+        newMode,
+        isOffline ? params.get("offlineGame") ?? undefined : undefined,
+      ),
+      { replace: true },
+    );
   };
 
   const { profileId } = useAuth();
@@ -585,9 +594,8 @@ export default function Game({ id }: { id: string }) {
     if (newGameLoading) return;
     setNewGameFetching(true);
     setShowMobileControls(false);
-    const modeQuery = mode !== "number" ? `?mode=${mode}` : "";
-    const offlineRoute = (nextModeQuery = modeQuery) =>
-      `/game/0${nextModeQuery}${nextModeQuery ? "&" : "?"}offlineGame=${Date.now()}`;
+    const offlineRoute = () =>
+      sudokuGamePath(size, diff, 0, mode, Date.now());
     const clearStorage = () => {
       localStorage.removeItem(storageKeyGrid);
       localStorage.removeItem(storageKeyNotes);
@@ -611,7 +619,7 @@ export default function Game({ id }: { id: string }) {
           data: { profileId, puzzleId: puzzle.id, difficulty: diff },
         });
         clearStorage();
-        setLocation(`/game/${newGameResult.id}${modeQuery}`);
+        setLocation(sudokuGamePath(size, diff, newGameResult.id, mode));
         return;
       }
       throw new Error("Not signed in");
@@ -633,9 +641,8 @@ export default function Game({ id }: { id: string }) {
     if (quickDifficultyInFlightRef.current) return;
     quickDifficultyInFlightRef.current = true;
     setQuickDifficultyLoading(true);
-    const modeQuery = mode !== "number" ? `?mode=${mode}` : "";
     const offlineRoute = () =>
-      `/game/0${modeQuery}${modeQuery ? "&" : "?"}offlineGame=${Date.now()}`;
+      sudokuGamePath(gridSize, nextDifficulty, 0, mode, Date.now());
     const clearStorage = () => {
       localStorage.removeItem(storageKeyGrid);
       localStorage.removeItem(storageKeyNotes);
@@ -659,7 +666,7 @@ export default function Game({ id }: { id: string }) {
           data: { profileId, puzzleId: puzzle.id, difficulty: nextDifficulty },
         });
         clearStorage();
-        setLocation(`/game/${newGame.id}${modeQuery}`);
+        setLocation(sudokuGamePath(gridSize, nextDifficulty, newGame.id, mode));
         return;
       }
       throw new Error("Not signed in");

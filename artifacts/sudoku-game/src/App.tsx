@@ -16,10 +16,18 @@ import { ErrorBoundary } from "@/components/error-boundary";
 // one large bundle that has to load before the app becomes interactive.
 const Portal = lazy(() => import("@/pages/portal"));
 const SudokuHome = lazy(() => import("@/pages/home"));
+const Game = lazy(() => import("@/pages/game"));
 function SudokuBookmarkRoute({ params }: { params: { grid: string; difficulty: string } }) {
+  const [location] = useLocation();
+  const query = location.split("?")[1] ?? "";
+  const gameIdParam = new URLSearchParams(query).get("gameId");
+  const gameId = gameIdParam !== null ? Number(gameIdParam) : NaN;
+
+  if (Number.isInteger(gameId) && gameId >= 0) {
+    return <Game key={`${params.grid}:${params.difficulty}:${query}`} id={String(gameId)} />;
+  }
   return <SudokuHome gridSlug={params.grid} difficultySlug={params.difficulty} />;
 }
-const Game = lazy(() => import("@/pages/game"));
 const Profile = lazy(() => import("@/pages/profile"));
 const Leaderboard = lazy(() => import("@/pages/leaderboard"));
 function StatsRedirect() {

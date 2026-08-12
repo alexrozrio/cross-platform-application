@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { Play, ChartBar as BarChart2, Trophy, ArrowLeft, Hash, Type, Palette, Flame, BookOpen, Keyboard, Scroll, RotateCcw } from 'lucide-react';
 import { IMAGE_THEMES } from '@/lib/themes';
+import { sudokuGamePath } from '@/lib/sudoku-routes';
 import gameFeatures from '@/config/game-features.json';
 
 interface ActiveGame {
@@ -210,9 +211,8 @@ export default function SudokuHome({ gridSlug, difficultySlug }: SudokuHomeProps
     const mode = modesForSize(size).includes(requestedMode) ? requestedMode : 'number';
     const effectiveDifficulty = difficultyOverride ?? difficulty;
     setPendingStart(null);
-    const modeQuery = mode !== 'number' ? `?mode=${mode}` : '';
     const offlineRoute = () =>
-      `/game/0${modeQuery}${modeQuery ? '&' : '?'}offlineGame=${Date.now()}`;
+      sudokuGamePath(size, effectiveDifficulty, 0, mode, Date.now());
 
     // Always pre-generate an offline puzzle synchronously (instant from the
     // default bank) so the user can play immediately no matter what.
@@ -268,7 +268,7 @@ export default function SudokuHome({ gridSlug, difficultySlug }: SudokuHomeProps
         setIsGenerating(false);
         startInFlightRef.current = false;
         setActiveGame(null);
-        setLocation(`/game/${game.id}${modeQuery}`);
+        setLocation(sudokuGamePath(size, effectiveDifficulty, game.id, mode));
       }
     } catch {
       clearTimeout(fallbackTimer);
@@ -364,7 +364,17 @@ export default function SudokuHome({ gridSlug, difficultySlug }: SudokuHomeProps
       })() && (
         <div className="bg-card border border-border rounded-2xl p-3">
         <button
-          onClick={() => setLocation(`/game/${activeGame.id}`)}
+          onClick={() => {
+            if (activeGame.puzzle) {
+              setLocation(sudokuGamePath(
+                activeGame.puzzle.gridSize,
+                activeGame.puzzle.difficulty,
+                activeGame.id,
+              ));
+            } else {
+              setLocation(sudokuGamePath(gridSize, difficulty, activeGame.id));
+            }
+          }}
           className="w-full flex items-center gap-3 rounded-xl border-2 border-primary/40 bg-primary/5 p-3 sm:p-4 hover:bg-primary/10 hover:border-primary/60 transition-all text-left"
         >
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
@@ -757,7 +767,17 @@ export default function SudokuHome({ gridSlug, difficultySlug }: SudokuHomeProps
           <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
             <Button variant="outline" className="flex-1" disabled={isLoading} onClick={() => {
               setPendingStart(null);
-              if (activeGame) setLocation(`/game/${activeGame.id}`);
+               if (activeGame) {
+                 if (activeGame.puzzle) {
+                   setLocation(sudokuGamePath(
+                     activeGame.puzzle.gridSize,
+                     activeGame.puzzle.difficulty,
+                     activeGame.id,
+                   ));
+                 } else {
+                   setLocation(sudokuGamePath(gridSize, difficulty, activeGame.id));
+                 }
+               }
             }}>
               Resume Last Game
             </Button>
