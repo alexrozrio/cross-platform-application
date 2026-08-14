@@ -42,7 +42,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
   // extra vertical space needed for the board comes from letting the
   // mobile browser's own address bar collapse (see Game's scroll-nudge).
   const isGameRoute = location.startsWith("/game/");
-  const isOfflineGame = location.startsWith("/game/0");
+  const canonicalGameQuery = location.includes("?")
+    ? new URLSearchParams(location.split("?")[1]).get("gameId")
+    : null;
+  const isCanonicalSudokuGame = location.startsWith("/sudoku/") && canonicalGameQuery !== null;
+  const isGamePage = isGameRoute || isCanonicalSudokuGame;
+  const isOfflineGame =
+    location.startsWith("/game/0") ||
+    (isCanonicalSudokuGame && canonicalGameQuery === "0");
   const { profileId, isSignedIn, replitUser } = useAuth();
   const { data: profile } = useGetProfile(profileId as number, { query: { enabled: !!profileId } });
   const pendingCount = usePendingChallengeCount(profileId);
@@ -121,7 +128,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <AchievementUnlockModal achievements={newlyUnlocked} onDismiss={dismiss} profileId={profileId} />
       <header className={[
         "border-b bg-card flex items-center justify-between sticky top-0 z-10",
-        isGameRoute ? "py-1.5 px-3 md:py-4 md:px-6" : "py-4 px-6",
+        isGamePage ? "py-1.5 px-3 md:py-4 md:px-6" : "py-4 px-6",
       ].join(" ")}>
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <img
@@ -129,12 +136,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
             alt="Brain Games 4 All"
             className={[
               "shrink-0",
-              isGameRoute ? "h-6 w-6 md:h-9 md:w-9" : "h-9 w-9",
+              isGamePage ? "h-6 w-6 md:h-9 md:w-9" : "h-9 w-9",
             ].join(" ")}
           />
           <span className={[
             "font-serif font-bold tracking-tight text-primary",
-            isGameRoute ? "text-base md:text-2xl" : "text-2xl",
+            isGamePage ? "text-base md:text-2xl" : "text-2xl",
           ].join(" ")}>
             Brain Games 4 All
           </span>
@@ -146,7 +153,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {profileId && profile?.gems !== undefined && (
               <div className={[
                 "flex items-center gap-1.5 font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 rounded-full border border-cyan-200 dark:border-cyan-800",
-                isGameRoute ? "text-xs px-2 py-0.5 md:text-sm md:px-3 md:py-1" : "text-sm px-3 py-1",
+                isGamePage ? "text-xs px-2 py-0.5 md:text-sm md:px-3 md:py-1" : "text-sm px-3 py-1",
               ].join(" ")}>
                 <Gem className="w-3.5 h-3.5" />
                 <span>{profile.gems.toLocaleString()}</span>
@@ -221,7 +228,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <main
         className={[
           "flex-1 w-full max-w-4xl mx-auto flex flex-col",
-          isGameRoute
+          isGamePage
             ? "px-2 py-2 sm:px-4 md:px-8 md:py-8 md:pb-8"
             : "px-2 py-4 sm:px-4 md:px-8 md:py-8 md:pb-8",
         ].join(" ")}

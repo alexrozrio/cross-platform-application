@@ -15,6 +15,7 @@ import { customFetch, useGetProfile } from "@workspace/api-client-react";
 import { generateOfflinePuzzle } from "@/lib/sudoku-generator";
 import { getLevelFromXp } from "@/lib/levels";
 import { getTheme } from "@/lib/themes";
+import { sudokuGamePath } from "@/lib/sudoku-routes";
 
 interface ActiveGame {
   id: number;
@@ -151,7 +152,7 @@ export default function Portal() {
     // No profile → play offline straight away, no API needed.
     if (!profileId) {
       setLoadingSize(null);
-      setLocation("/game/0");
+      setLocation(sudokuGamePath(size, difficulty, 0, "number", Date.now()));
       return;
     }
 
@@ -161,7 +162,7 @@ export default function Portal() {
       if (settled) return;
       settled = true;
       setLoadingSize(null);
-      setLocation("/game/0");
+      setLocation(sudokuGamePath(size, difficulty, 0, "number", Date.now()));
     };
 
     // Give the API 1.5 s — same budget as the home page.
@@ -180,7 +181,7 @@ export default function Portal() {
       if (!settled) {
         settled = true;
         setLoadingSize(null);
-        setLocation(`/game/${game.id}`);
+        setLocation(sudokuGamePath(size, difficulty, game.id));
       }
     } catch {
       clearTimeout(timer);
@@ -221,7 +222,11 @@ export default function Portal() {
                   : true;
             return validForMode ? (
               <button
-                onClick={() => setLocation(`/game/${activeGame.id}`)}
+                onClick={() => setLocation(sudokuGamePath(
+                  activeGame.puzzle?.gridSize ?? 9,
+                  activeGame.puzzle?.difficulty ?? "easy",
+                  activeGame.id,
+                ))}
                 className="w-full flex items-center gap-3 rounded-xl border-2 border-primary/30 bg-card px-4 py-2.5 text-left hover:bg-muted transition-all"
               >
                 <RotateCcw className="w-4 h-4 text-primary shrink-0" />
@@ -588,7 +593,11 @@ export default function Portal() {
                         : true;
                   return validForMode ? (
                     <button
-                      onClick={() => setLocation(`/game/${activeGame.id}`)}
+                      onClick={() => setLocation(sudokuGamePath(
+                        activeGame.puzzle?.gridSize ?? 9,
+                        activeGame.puzzle?.difficulty ?? "easy",
+                        activeGame.id,
+                      ))}
                       className="mx-6 mb-3 flex items-center gap-2 rounded-lg bg-primary/10 border border-primary/25 px-3 py-2 text-left hover:bg-primary/20 transition-colors w-[calc(100%-3rem)]"
                     >
                       <RotateCcw className="w-3.5 h-3.5 text-primary shrink-0" />

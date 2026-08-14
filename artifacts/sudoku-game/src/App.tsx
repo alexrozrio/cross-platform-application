@@ -97,7 +97,9 @@ function Router() {
           <Switch>
             <Route path="/" component={Portal} />
             <Route path="/sudoku/:grid/:difficulty" component={SudokuBookmarkRoute} />
-            <Route path="/sudoku" component={SudokuHome} />
+            <Route path="/sudoku">
+              {() => <SudokuHome />}
+            </Route>
             <Route path="/themes" component={Themes} />
             <Route path="/profile" component={Profile} />
             <Route path="/game/:id" component={SudokuGameRoute} />
@@ -107,7 +109,9 @@ function Router() {
             <Route path="/challenges" component={Challenges} />
             <Route path="/badges/:token" component={BadgeSharePage} />
             <Route path="/memory/:difficulty" component={MemoryBookmarkRoute} />
-            <Route path="/memory" component={MemoryMatch} />
+            <Route path="/memory">
+              {() => <MemoryMatch />}
+            </Route>
             <Route path="/memory-challenge" component={MemoryChallengePage} />
             <Route path="/players/:profileId">
               {(params) => <PublicProfilePage profileId={params.profileId} />}
