@@ -252,9 +252,10 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
 
   const hasSpecialGameQuery = Boolean(challengeType || duelGameId);
 
-  const updateMemoryBookmarkUrl = useCallback((size: GridSize) => {
+  const updateMemoryBookmarkUrl = useCallback((size: GridSize, startImmediately = false) => {
     if (!hasSpecialGameQuery) {
-      setLocation(memoryBookmarkPath(size), { replace: true });
+      const path = memoryBookmarkPath(size);
+      setLocation(startImmediately ? `${path}?start=1` : path, { replace: true });
     }
   }, [hasSpecialGameQuery, setLocation]);
 
@@ -322,7 +323,15 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
   }, [phase]);
 
   const startGame = useCallback(async (size: GridSize, presetGameId?: number) => {
-    updateMemoryBookmarkUrl(size);
+    // Keep the canonical level in the URL while telling a remounted route
+    // that this navigation came from a "start game" action, not a setup
+    // bookmark visit.
+    const currentParams = new URLSearchParams(search);
+    const alreadyStartingThisLevel =
+      bookmarkedSize === size && currentParams.get('start') === '1';
+    if (!alreadyStartingThisLevel) {
+      updateMemoryBookmarkUrl(size, true);
+    }
     setGridSize(size);
     setCards(buildDeck(size));
     setFlippedIds([]);
@@ -349,7 +358,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
     } catch {
       // non-fatal — game still plays locally
     }
-  }, [profileId, updateMemoryBookmarkUrl]);
+  }, [profileId, search, bookmarkedSize, updateMemoryBookmarkUrl]);
 
   // Auto-start when ?size= or ?duelGameId= is in the URL (skip if restored from localStorage)
   const startGameRef = useRef(startGame);
@@ -359,10 +368,15 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
     const params = new URLSearchParams(search);
     const duelId = parseInt(params.get('duelGameId') ?? '', 10);
     const gs = bookmarkedSize ?? parseInt(params.get('gridSize') ?? params.get('size') ?? '', 10);
+    const startImmediately = params.get('start') === '1';
     // Canonical bookmark URLs show the setup screen with the selected
     // difficulty highlighted; legacy query URLs retain their auto-start
     // behavior.
-    if (bookmarkedSize) return;
+    if (bookmarkedSize && !startImmediately) return;
+    if (bookmarkedSize && startImmediately) {
+      startGameRef.current(bookmarkedSize);
+      return;
+    }
     if (!isNaN(duelId) && [2, 4, 6, 8].includes(gs)) {
       startGameRef.current(gs as GridSize, duelId);
       return;

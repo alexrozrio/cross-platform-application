@@ -4,3 +4,4 @@
 - [Prod Render/local DB drift](prod-render-db-drift.md) — frontend defaults to external Render API with its own DB; local schema pushes don't reach it, so verify "is it live" against prod directly.
 - [Offline game object stability](offline-game-object-stability.md) — memoize fallback game data; rebuilding it during render can retrigger initialization effects and cause React error #185.
 - [Sudoku bookmark URLs](sudoku-bookmark-urls.md) — setup URLs are safe to bookmark; game URLs add gameId and preserve mode/offline state.
+- [Memory direct-start routes](memory-direct-start.md) — use `start=1` when canonicalizing a level link that must open directly into a game.
