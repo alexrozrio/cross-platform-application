@@ -1938,7 +1938,7 @@ export default function Game({ id }: { id: string }) {
             </div>{/* end transform wrapper */}
           </Card>
           {offlineMode && (
-            <div className="mt-2 w-full rounded-lg border border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/30 px-3 py-2 text-center">
+            <div className="hidden md:block mt-2 w-full rounded-lg border border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/30 px-3 py-2 text-center">
               <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80">
                 Connection unavailable — this local puzzle is still playable.
               </p>
@@ -2137,6 +2137,14 @@ export default function Game({ id }: { id: string }) {
               })}
             </div>
           </div>
+          )}
+
+          {offlineMode && (
+            <div className="md:hidden mt-1 w-full rounded-lg border border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/30 px-3 py-2 text-center">
+              <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80">
+                Connection unavailable — this local puzzle is still playable.
+              </p>
+            </div>
           )}
 
         </div>{/* end right sidebar */}
