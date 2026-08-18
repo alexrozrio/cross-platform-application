@@ -15,7 +15,16 @@ import {
 } from '@/components/ui/dialog';
 import { Play, ChartBar as BarChart2, Trophy, ArrowLeft, Hash, Type, Palette, Flame, BookOpen, Keyboard, Scroll, RotateCcw } from 'lucide-react';
 import { IMAGE_THEMES } from '@/lib/themes';
-import { sudokuGamePath } from '@/lib/sudoku-routes';
+import {
+  difficultyFromSlug,
+  gridSizeFromSlug,
+  modeFromQuery,
+  sudokuGamePath,
+  sudokuSetupPath,
+  type SudokuDifficulty,
+  type SudokuGridSize,
+  type SudokuRouteMode,
+} from '@/lib/sudoku-routes';
 import gameFeatures from '@/config/game-features.json';
 
 interface ActiveGame {
@@ -25,8 +34,8 @@ interface ActiveGame {
   mistakeCount: number;
 }
 
-type Difficulty = 'easy' | 'medium' | 'hard' | 'expert';
-type GridSize = 3 | 4 | 6 | 9 | 16;
+type Difficulty = SudokuDifficulty;
+type GridSize = SudokuGridSize;
 
 const ALPHA_COLORS = ['#E53935','#1E88E5','#43A047','#FB8C00','#8E24AA','#00897B','#D81B60','#F4511E','#3949AB'];
 
@@ -55,32 +64,7 @@ const GRID_OPTIONS: { size: GridSize; label: string; sublabel: string; difficult
   { size: 16, label: '16×16', sublabel: 'Pro', difficulties: ['easy', 'medium', 'hard', 'expert'] },
 ];
 
-const GRID_SLUGS: Record<GridSize, string> = {
-  3: 'baby',
-  4: 'mini',
-  6: 'dual',
-  9: 'classic',
-  16: 'pro',
-};
-
-const GRID_SIZE_BY_SLUG: Record<string, GridSize> = Object.fromEntries(
-  Object.entries(GRID_SLUGS).map(([size, slug]) => [slug, Number(size)]),
-) as Record<string, GridSize>;
-
 const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard', 'expert'];
-
-function gridSizeFromSlug(slug?: string): GridSize | null {
-  return slug ? GRID_SIZE_BY_SLUG[slug.toLowerCase()] ?? null : null;
-}
-
-function difficultyFromSlug(slug?: string): Difficulty | null {
-  const normalized = slug?.toLowerCase();
-  return DIFFICULTIES.includes(normalized as Difficulty) ? normalized as Difficulty : null;
-}
-
-function sudokuBookmarkPath(size: GridSize, difficulty: Difficulty): string {
-  return `/sudoku/${GRID_SLUGS[size]}/${difficulty}`;
-}
 
 type InfoModal = 'rules' | 'controls' | 'backstory' | null;
 
@@ -109,15 +93,19 @@ function getLastPlayedDifficulty(): Difficulty {
 export interface SudokuHomeProps {
   gridSlug?: string;
   difficultySlug?: string;
+  modeSlug?: SudokuRouteMode;
 }
 
-export default function SudokuHome({ gridSlug, difficultySlug }: SudokuHomeProps = {}) {
+export default function SudokuHome({ gridSlug, difficultySlug, modeSlug }: SudokuHomeProps = {}) {
   const { profileId, isReady, isSignedIn } = useAuth();
   const [location, setLocation] = useLocation();
   const search = useSearch();
   const bookmarkedSize = gridSizeFromSlug(gridSlug);
   const bookmarkedDifficulty = difficultyFromSlug(difficultySlug);
-  const sizeParam = new URLSearchParams(search).get('size');
+  const urlParams = new URLSearchParams(search);
+  const sizeParam = urlParams.get('size');
+  const queryMode = modeFromQuery(urlParams.get('mode'));
+  const bookmarkedMode = modeSlug ?? queryMode ?? 'number';
   const initialSize = (
     bookmarkedSize ??
     ([3, 4, 6, 9, 16].includes(Number(sizeParam))
@@ -150,7 +138,7 @@ export default function SudokuHome({ gridSlug, difficultySlug }: SudokuHomeProps
   const [activeGame, setActiveGame] = useState<ActiveGame | null>(null);
   // Play style selected for the *next* game — grid-size buttons start the game immediately
   // using whichever style is currently selected.
-  const [selectedMode, setSelectedMode] = useState<'number' | 'alpha' | 'image'>('number');
+  const [selectedMode, setSelectedMode] = useState<SudokuRouteMode>(bookmarkedMode);
   const [pendingStart, setPendingStart] = useState<{ size: GridSize; mode: 'number' | 'alpha' | 'image'; difficulty?: Difficulty } | null>(null);
 
   useEffect(() => {
@@ -184,7 +172,7 @@ export default function SudokuHome({ gridSlug, difficultySlug }: SudokuHomeProps
   }, [profileId, isReady, location]);
 
   const modesForSize = (size: GridSize): Array<'number' | 'alpha' | 'image'> => {
-    const smallGrid = size === 3 || size === 4;
+    const smallGrid = size === 3 || size === 4 || size === 6;
     const modes: Array<'number' | 'alpha' | 'image'> = ['number'];
     if (smallGrid || gameFeatures.alphabetModeEnabled) modes.push('alpha');
     if (smallGrid || gameFeatures.imageModeEnabled) modes.push('image');
@@ -197,12 +185,18 @@ export default function SudokuHome({ gridSlug, difficultySlug }: SudokuHomeProps
   useEffect(() => {
     if (bookmarkedSize && bookmarkedSize !== gridSize) setGridSize(bookmarkedSize);
     if (bookmarkedDifficulty && bookmarkedDifficulty !== difficulty) setDifficulty(bookmarkedDifficulty);
-  }, [bookmarkedSize, bookmarkedDifficulty]);
+    if (bookmarkedMode !== selectedMode) setSelectedMode(bookmarkedMode);
+  }, [bookmarkedSize, bookmarkedDifficulty, bookmarkedMode]);
 
   const startInFlightRef = useRef(false);
 
-  const updateBookmarkUrl = (size: GridSize, nextDifficulty: Difficulty) => {
-    setLocation(sudokuBookmarkPath(size, nextDifficulty), { replace: true });
+  const updateBookmarkUrl = (
+    size: GridSize,
+    nextDifficulty: Difficulty,
+    mode: SudokuRouteMode = selectedMode,
+  ) => {
+    const safeMode = modesForSize(size).includes(mode) ? mode : 'number';
+    setLocation(sudokuSetupPath(size, nextDifficulty, safeMode), { replace: true });
   };
 
   const doStart = async (size: GridSize, requestedMode: 'number' | 'alpha' | 'image', difficultyOverride?: Difficulty) => {
@@ -279,8 +273,9 @@ export default function SudokuHome({ gridSlug, difficultySlug }: SudokuHomeProps
   const handleSelectSize = (size: GridSize) => {
     if (startInFlightRef.current) return;
     setGridSize(size);
-    updateBookmarkUrl(size, difficulty);
     const mode = modesForSize(size).includes(selectedMode) ? selectedMode : 'number';
+    setSelectedMode(mode);
+    updateBookmarkUrl(size, difficulty, mode);
     const activeMatchesPick =
       activeGame?.puzzle?.gridSize === size &&
       activeGame?.puzzle?.difficulty === difficulty;
@@ -411,7 +406,7 @@ export default function SudokuHome({ gridSlug, difficultySlug }: SudokuHomeProps
                     handleDifficultyAutoStart(d);
                   } else {
                     setDifficulty(d);
-                    updateBookmarkUrl(gridSize, d);
+                    updateBookmarkUrl(gridSize, d, selectedMode);
                   }
                 }}
                 className={[
@@ -437,7 +432,10 @@ export default function SudokuHome({ gridSlug, difficultySlug }: SudokuHomeProps
             <div className="flex gap-2 flex-wrap">
               <button
                 disabled={isLoading}
-                onClick={() => setSelectedMode('number')}
+                onClick={() => {
+                  setSelectedMode('number');
+                  updateBookmarkUrl(gridSize, difficulty, 'number');
+                }}
                 className={[
                   'flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-xs font-semibold transition-all',
                   selectedMode === 'number' ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:border-primary/40',
@@ -448,7 +446,10 @@ export default function SudokuHome({ gridSlug, difficultySlug }: SudokuHomeProps
               {availableModes.includes('alpha') && (
                 <button
                   disabled={isLoading}
-                  onClick={() => setSelectedMode('alpha')}
+                  onClick={() => {
+                    setSelectedMode('alpha');
+                    updateBookmarkUrl(gridSize, difficulty, 'alpha');
+                  }}
                   className={[
                     'flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-xs font-semibold transition-all',
                     selectedMode === 'alpha' ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:border-primary/40',
@@ -460,7 +461,10 @@ export default function SudokuHome({ gridSlug, difficultySlug }: SudokuHomeProps
               {availableModes.includes('image') && (
                 <button
                   disabled={isLoading}
-                  onClick={() => setSelectedMode('image')}
+                  onClick={() => {
+                    setSelectedMode('image');
+                    updateBookmarkUrl(gridSize, difficulty, 'image');
+                  }}
                   className={[
                     'flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-xs font-semibold transition-all',
                     selectedMode === 'image' ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:border-primary/40',
@@ -524,7 +528,10 @@ export default function SudokuHome({ gridSlug, difficultySlug }: SudokuHomeProps
             <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Play Style</label>
             <Button size="lg" variant={selectedMode === 'number' ? 'default' : 'outline'}
               className="w-full h-13 text-base font-medium flex items-center justify-start gap-3"
-              onClick={() => setSelectedMode('number')} disabled={isLoading}>
+              onClick={() => {
+                setSelectedMode('number');
+                updateBookmarkUrl(gridSize, difficulty, 'number');
+              }} disabled={isLoading}>
               <Hash className="w-5 h-5 shrink-0" />
               <div className="text-left flex-1 min-w-0">
                 <div className="font-semibold">Numbers</div>
@@ -534,7 +541,10 @@ export default function SudokuHome({ gridSlug, difficultySlug }: SudokuHomeProps
             {availableModes.includes('alpha') && (
             <Button size="lg" variant={selectedMode === 'alpha' ? 'default' : 'outline'}
               className="w-full h-13 text-base font-medium flex items-center gap-3"
-              onClick={() => setSelectedMode('alpha')} disabled={isLoading}>
+              onClick={() => {
+                setSelectedMode('alpha');
+                updateBookmarkUrl(gridSize, difficulty, 'alpha');
+              }} disabled={isLoading}>
               <Type className="w-5 h-5 shrink-0 text-primary" />
               <div className="text-left flex-1 min-w-0">
                 <div className="font-semibold">Letters</div>
@@ -547,7 +557,10 @@ export default function SudokuHome({ gridSlug, difficultySlug }: SudokuHomeProps
             {availableModes.includes('image') && (
             <Button size="lg" variant={selectedMode === 'image' ? 'default' : 'outline'}
               className="w-full h-13 text-base font-medium flex items-center gap-3"
-              onClick={() => setSelectedMode('image')} disabled={isLoading}>
+              onClick={() => {
+                setSelectedMode('image');
+                updateBookmarkUrl(gridSize, difficulty, 'image');
+              }} disabled={isLoading}>
               <ThemeIcon themeId={themeId} value={1} size={24} />
               <div className="text-left flex-1 min-w-0">
                 <div className="font-semibold">{activeTheme.name}</div>

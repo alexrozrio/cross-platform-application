@@ -11,6 +11,7 @@ import { EventModal } from "@/components/event-modal";
 import { Layout } from "@/components/layout";
 import { PageLoader } from "@/components/page-loader";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { modeFromQuery } from "@/lib/sudoku-routes";
 
 // Pages — lazy-loaded so each route only ships the JS it needs, instead of
 // one large bundle that has to load before the app becomes interactive.
@@ -20,13 +21,20 @@ const Game = lazy(() => import("@/pages/game"));
 function SudokuBookmarkRoute({ params }: { params: { grid: string; difficulty: string } }) {
   const [location] = useLocation();
   const query = location.split("?")[1] ?? "";
-  const gameIdParam = new URLSearchParams(query).get("gameId");
+  const urlParams = new URLSearchParams(query);
+  const gameIdParam = urlParams.get("gameId");
   const gameId = gameIdParam !== null ? Number(gameIdParam) : NaN;
 
   if (Number.isInteger(gameId) && gameId >= 0) {
     return <Game key={`${params.grid}:${params.difficulty}:${query}`} id={String(gameId)} />;
   }
-  return <SudokuHome gridSlug={params.grid} difficultySlug={params.difficulty} />;
+  return (
+    <SudokuHome
+      gridSlug={params.grid}
+      difficultySlug={params.difficulty}
+      modeSlug={modeFromQuery(urlParams.get("mode")) ?? undefined}
+    />
+  );
 }
 const Profile = lazy(() => import("@/pages/profile"));
 const Leaderboard = lazy(() => import("@/pages/leaderboard"));

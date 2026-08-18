@@ -3,3 +3,4 @@
 - [OAuth dynamic return URL](oauth-dynamic-return-url.md) — pass `window.location.origin` as base64url OAuth state so any frontend origin gets the post-login redirect; also covers SameSite=None cookie fix and session-save race condition.
 - [Prod Render/local DB drift](prod-render-db-drift.md) — frontend defaults to external Render API with its own DB; local schema pushes don't reach it, so verify "is it live" against prod directly.
 - [Offline game object stability](offline-game-object-stability.md) — memoize fallback game data; rebuilding it during render can retrigger initialization effects and cause React error #185.
+- [Sudoku bookmark URLs](sudoku-bookmark-urls.md) — setup URLs are safe to bookmark; game URLs add gameId and preserve mode/offline state.
