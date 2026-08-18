@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from "react";
-import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation, useSearch } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "sonner";
@@ -19,14 +19,13 @@ const Portal = lazy(() => import("@/pages/portal"));
 const SudokuHome = lazy(() => import("@/pages/home"));
 const Game = lazy(() => import("@/pages/game"));
 function SudokuBookmarkRoute({ params }: { params: { grid: string; difficulty: string } }) {
-  const [location] = useLocation();
-  const query = location.split("?")[1] ?? "";
-  const urlParams = new URLSearchParams(query);
+  const search = useSearch();
+  const urlParams = new URLSearchParams(search);
   const gameIdParam = urlParams.get("gameId");
   const gameId = gameIdParam !== null ? Number(gameIdParam) : NaN;
 
   if (Number.isInteger(gameId) && gameId >= 0) {
-    return <Game key={`${params.grid}:${params.difficulty}:${query}`} id={String(gameId)} />;
+    return <Game key={`${params.grid}:${params.difficulty}:${search}`} id={String(gameId)} />;
   }
   return (
     <SudokuHome
