@@ -813,7 +813,7 @@ export default function Themes() {
         </div>
       </section>
 
-      <p className="text-xs text-center text-muted-foreground bg-card border border-border rounded-lg px-4 py-2.5 pb-20 sm:pb-2.5">
+      <p className="text-xs text-center text-muted-foreground bg-card border border-border rounded-lg px-4 py-2.5">
         Free selections save automatically. Unlocks are permanent.
       </p>
 
