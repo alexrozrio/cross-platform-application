@@ -873,6 +873,80 @@ export default function Profile() {
             <h2 className="text-xl font-serif font-bold tracking-tight">Statistics</h2>
           </div>
 
+          {/* ── Tournament Streak ─────────────────────────────────────────────── */}
+          {tournamentStreak && tournamentStreak.totalTop3Finishes > 0 && (
+            <Card
+              className="cursor-pointer hover:border-violet-300 transition-colors border-violet-200/70 bg-gradient-to-br from-violet-50 to-purple-50"
+              onClick={() => setLocation("/leaderboard")}
+            >
+              <CardContent className="pt-5 pb-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-violet-500" />
+                    <p className="text-sm font-semibold text-violet-800">Tournament Streak</p>
+                  </div>
+                  <span className="text-xs text-violet-500 underline underline-offset-2">View leaderboard →</span>
+                </div>
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div>
+                    <p className="text-2xl font-black text-violet-600 flex items-center justify-center gap-0.5">
+                      {tournamentStreak.currentStreak > 0 && <span className="text-lg">🔥</span>}
+                      {tournamentStreak.currentStreak}
+                    </p>
+                    <p className="text-xs text-muted-foreground">current</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-black text-foreground">{tournamentStreak.bestStreak}</p>
+                    <p className="text-xs text-muted-foreground">best</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-black text-foreground">{tournamentStreak.totalTop3Finishes}</p>
+                    <p className="text-xs text-muted-foreground">top-3 total</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* ── Tournament Badges ─────────────────────────────────────────────── */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Trophy className="w-4 h-4" /> Tournament Badges
+              </CardTitle>
+              {(!badges || badges.length === 0) && (
+                <CardDescription className="text-xs">
+                  Finish in the top 3 of a weekly or monthly tournament to earn badges.
+                </CardDescription>
+              )}
+            </CardHeader>
+            {badges && badges.length > 0 && (
+              <CardContent className="space-y-3">
+                {badges.map((badge) => {
+                  const meta = BADGE_META[badge.badgeType] ?? BADGE_META["weekly_1st"];
+                  return (
+                    <div key={badge.id} className={`flex items-center justify-between gap-2 rounded-xl border-2 p-3 ${meta.borderColor}`}>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-2xl ${meta.bg}`}>
+                          {meta.emoji}
+                        </div>
+                        <div className="min-w-0">
+                          <p className={`text-sm font-bold truncate ${meta.color}`}>{meta.title}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {formatPeriodLabel(badge.tournamentPeriod)} · {badge.totalPoints.toLocaleString()} pts
+                          </p>
+                        </div>
+                      </div>
+                      <Button size="sm" variant="ghost" className="gap-1.5 text-xs h-8 shrink-0" onClick={() => setShareSheetToken(badge.shareToken)}>
+                        <Share2 className="w-3.5 h-3.5" /> Share
+                      </Button>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            )}
+          </Card>
+
           {/* Game tab toggle */}
           <div className="flex rounded-xl border bg-muted p-1 gap-1">
             <button
@@ -1005,82 +1079,6 @@ export default function Profile() {
             </div>
           )}
         </div>
-      )}
-
-      {/* ── Tournament Streak ─────────────────────────────────────────────── */}
-      {profileId && tournamentStreak && tournamentStreak.totalTop3Finishes > 0 && (
-        <Card
-          className="cursor-pointer hover:border-violet-300 transition-colors border-violet-200/70 bg-gradient-to-br from-violet-50 to-purple-50"
-          onClick={() => setLocation("/leaderboard")}
-        >
-          <CardContent className="pt-5 pb-5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-violet-500" />
-                <p className="text-sm font-semibold text-violet-800">Tournament Streak</p>
-              </div>
-              <span className="text-xs text-violet-500 underline underline-offset-2">View leaderboard →</span>
-            </div>
-            <div className="grid grid-cols-3 gap-3 text-center">
-              <div>
-                <p className="text-2xl font-black text-violet-600 flex items-center justify-center gap-0.5">
-                  {tournamentStreak.currentStreak > 0 && <span className="text-lg">🔥</span>}
-                  {tournamentStreak.currentStreak}
-                </p>
-                <p className="text-xs text-muted-foreground">current</p>
-              </div>
-              <div>
-                <p className="text-2xl font-black text-foreground">{tournamentStreak.bestStreak}</p>
-                <p className="text-xs text-muted-foreground">best</p>
-              </div>
-              <div>
-                <p className="text-2xl font-black text-foreground">{tournamentStreak.totalTop3Finishes}</p>
-                <p className="text-xs text-muted-foreground">top-3 total</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ── Tournament Badges ─────────────────────────────────────────────── */}
-      {profileId && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Trophy className="w-4 h-4" /> Tournament Badges
-            </CardTitle>
-            {(!badges || badges.length === 0) && (
-              <CardDescription className="text-xs">
-                Finish in the top 3 of a weekly or monthly tournament to earn badges.
-              </CardDescription>
-            )}
-          </CardHeader>
-          {badges && badges.length > 0 && (
-            <CardContent className="space-y-3">
-              {badges.map((badge) => {
-                const meta = BADGE_META[badge.badgeType] ?? BADGE_META["weekly_1st"];
-                return (
-                  <div key={badge.id} className={`flex items-center justify-between gap-2 rounded-xl border-2 p-3 ${meta.borderColor}`}>
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-2xl ${meta.bg}`}>
-                        {meta.emoji}
-                      </div>
-                      <div className="min-w-0">
-                        <p className={`text-sm font-bold truncate ${meta.color}`}>{meta.title}</p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {formatPeriodLabel(badge.tournamentPeriod)} · {badge.totalPoints.toLocaleString()} pts
-                        </p>
-                      </div>
-                    </div>
-                    <Button size="sm" variant="ghost" className="gap-1.5 text-xs h-8 shrink-0" onClick={() => setShareSheetToken(badge.shareToken)}>
-                      <Share2 className="w-3.5 h-3.5" /> Share
-                    </Button>
-                  </div>
-                );
-              })}
-            </CardContent>
-          )}
-        </Card>
       )}
 
       {shareSheetBadge && shareSheetMeta && (
