@@ -94,9 +94,15 @@ export interface SudokuHomeProps {
   gridSlug?: string;
   difficultySlug?: string;
   modeSlug?: SudokuRouteMode;
+  autoStartFromBookmark?: boolean;
 }
 
-export default function SudokuHome({ gridSlug, difficultySlug, modeSlug }: SudokuHomeProps = {}) {
+export default function SudokuHome({
+  gridSlug,
+  difficultySlug,
+  modeSlug,
+  autoStartFromBookmark = false,
+}: SudokuHomeProps = {}) {
   const { profileId, isReady, isSignedIn } = useAuth();
   const [location, setLocation] = useLocation();
   const search = useSearch();
@@ -189,6 +195,7 @@ export default function SudokuHome({ gridSlug, difficultySlug, modeSlug }: Sudok
   }, [bookmarkedSize, bookmarkedDifficulty, bookmarkedMode]);
 
   const startInFlightRef = useRef(false);
+  const bookmarkStartRef = useRef(false);
 
   const updateBookmarkUrl = (
     size: GridSize,
@@ -269,6 +276,29 @@ export default function SudokuHome({ gridSlug, difficultySlug, modeSlug }: Sudok
       goOffline();
     }
   };
+
+  // A canonical bookmark is an explicit request to play that exact variant,
+  // rather than to open the setup screen. Wait for auth readiness so a
+  // signed-in user does not get sent to offline mode while Clerk is loading.
+  useEffect(() => {
+    if (
+      !autoStartFromBookmark ||
+      !bookmarkedSize ||
+      !bookmarkedDifficulty ||
+      !isReady ||
+      bookmarkStartRef.current
+    ) {
+      return;
+    }
+    bookmarkStartRef.current = true;
+    doStart(bookmarkedSize, bookmarkedMode, bookmarkedDifficulty);
+  }, [
+    autoStartFromBookmark,
+    bookmarkedSize,
+    bookmarkedDifficulty,
+    bookmarkedMode,
+    isReady,
+  ]);
 
   const handleSelectSize = (size: GridSize) => {
     if (startInFlightRef.current) return;

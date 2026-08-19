@@ -32,6 +32,7 @@ function SudokuBookmarkRoute({ params }: { params: { grid: string; difficulty: s
       gridSlug={params.grid}
       difficultySlug={params.difficulty}
       modeSlug={modeFromQuery(urlParams.get("mode")) ?? undefined}
+      autoStartFromBookmark
     />
   );
 }
