@@ -809,9 +809,12 @@ export default function Profile() {
                   name="showTimer"
                   render={({ field }) => (
                     <FormItem className="flex items-center justify-between rounded-lg border p-4">
-                      <div>
+                      <div className="flex items-center gap-3">
+                        <Clock className="w-4 h-4 text-muted-foreground" />
+                        <div>
                         <FormLabel className="text-base">Show Timer</FormLabel>
                         <FormDescription>Display elapsed time during gameplay.</FormDescription>
+                        </div>
                       </div>
                       <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                     </FormItem>
