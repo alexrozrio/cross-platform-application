@@ -1420,8 +1420,8 @@ export default function Challenges() {
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-6 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between gap-3 bg-card rounded-2xl px-5 py-4 border border-border">
-        <div className="space-y-0.5 min-w-0">
+      <div className="font-size-mobile-safe flex items-center justify-between gap-3 bg-card rounded-2xl px-5 py-4 border border-border">
+        <div className="space-y-0.5 min-w-0 flex-1">
           <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight leading-tight">
             Challenges
           </h1>
@@ -1429,7 +1429,7 @@ export default function Challenges() {
             Beat your opponent's score to win 10 gems.
           </p>
         </div>
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="font-size-mobile-actions flex items-center gap-1.5 shrink-0">
           <Link
             href="/sudoku"
             className="inline-flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg border border-border bg-card text-xs sm:text-sm font-medium text-foreground hover:bg-muted transition-colors"

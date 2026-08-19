@@ -703,7 +703,7 @@ export default function SudokuHome({
       </div>
 
       {/* ── Info links ── */}
-      <div className="flex items-center justify-center gap-6 bg-card rounded-2xl px-5 py-4 border border-border">
+      <div className="home-info-links flex items-center justify-center gap-6 bg-card rounded-2xl px-5 py-4 border border-border">
         <button onClick={() => setInfoModal('rules')} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <BookOpen className="w-3.5 h-3.5" /> Rules
         </button>

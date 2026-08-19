@@ -1028,6 +1028,72 @@
 
 /* ─── Mobile / browser compatibility ──────────────────────────────────────── */
 
+/* Large text needs a little extra room for the compact mobile chrome. Keep
+   the default and desktop layouts untouched. */
+@media (max-width: 639px) {
+  [data-font-size="large"] .font-size-mobile-safe,
+  [data-font-size="extra-large"] .font-size-mobile-safe {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  [data-font-size="large"] .font-size-mobile-safe > :first-child,
+  [data-font-size="extra-large"] .font-size-mobile-safe > :first-child {
+    flex-basis: 100%;
+  }
+
+  [data-font-size="large"] .font-size-mobile-actions,
+  [data-font-size="extra-large"] .font-size-mobile-actions {
+    margin-left: auto;
+  }
+
+  [data-font-size="large"] .leaderboard-tabs [data-slot="tabs-trigger"],
+  [data-font-size="extra-large"] .leaderboard-tabs [data-slot="tabs-trigger"] {
+    min-width: 0;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+    font-size: 0.8rem;
+  }
+
+  [data-font-size="large"] .leaderboard-tabs [data-slot="tabs-trigger"] > span,
+  [data-font-size="extra-large"] .leaderboard-tabs [data-slot="tabs-trigger"] > span {
+    gap: 0.15rem;
+    white-space: normal;
+    text-align: center;
+  }
+
+  [data-font-size="large"] .memory-display-options,
+  [data-font-size="extra-large"] .memory-display-options {
+    flex-wrap: wrap;
+  }
+
+  [data-font-size="large"] .memory-symbol-preview,
+  [data-font-size="extra-large"] .memory-symbol-preview {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  [data-font-size="large"] .memory-display-toggle,
+  [data-font-size="extra-large"] .memory-display-toggle {
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  [data-font-size="large"] .memory-card-grid,
+  [data-font-size="extra-large"] .memory-card-grid {
+    height: calc(100dvh - 335px) !important;
+  }
+
+  [data-font-size="large"] .home-info-links,
+  [data-font-size="extra-large"] .home-info-links,
+  [data-font-size="large"] .profile-footer-links,
+  [data-font-size="extra-large"] .profile-footer-links {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+    column-gap: 1rem;
+  }
+}
+
 /* Eliminate 300 ms tap delay on older Android / Samsung Internet */
 * {
   -webkit-tap-highlight-color: transparent;

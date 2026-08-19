@@ -1095,7 +1095,7 @@ export default function Profile() {
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}
       <div className="bg-card rounded-2xl border border-border px-5 py-4 flex flex-col items-center gap-3">
-        <div className="flex items-center justify-center gap-6">
+        <div className="profile-footer-links flex items-center justify-center gap-6">
           <button onClick={() => setLocation("/about")} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <Info className="w-3.5 h-3.5" /> About
           </button>

@@ -1210,8 +1210,8 @@ export default function Leaderboard() {
   return (
     <div className="max-w-2xl mx-auto w-full space-y-8 animate-in fade-in duration-500">
       <div className="space-y-2">
-        <div className="flex items-start justify-between gap-3 bg-card rounded-2xl px-5 py-4 border border-border">
-          <div className="space-y-0.5 min-w-0">
+        <div className="font-size-mobile-safe flex items-start justify-between gap-3 bg-card rounded-2xl px-5 py-4 border border-border">
+          <div className="space-y-0.5 min-w-0 flex-1">
             <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight leading-tight">
               Leaderboard
             </h1>
@@ -1219,7 +1219,7 @@ export default function Leaderboard() {
               Compete in weekly and monthly tournaments.
             </p>
           </div>
-          <div className="flex gap-1.5 shrink-0">
+          <div className="font-size-mobile-actions flex gap-1.5 shrink-0">
             <Link
               href="/sudoku"
               className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-card text-xs sm:text-sm font-medium text-foreground hover:bg-muted transition-colors"
@@ -1243,7 +1243,7 @@ export default function Leaderboard() {
         onValueChange={(v) => setTab(v as MainTab)}
         className="w-full"
       >
-        <TabsList className="grid w-full grid-cols-4 h-auto p-1">
+        <TabsList className="leaderboard-tabs grid w-full grid-cols-4 h-auto p-1">
           <TabsTrigger value="weekly" className="flex-col gap-0 leading-tight py-1.5">
             <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" />Weekly</span>
             <span className="text-[9px] font-normal opacity-60">tournament</span>

@@ -29,6 +29,7 @@ function getStoredFontSize(): FontSizeId {
 function applyFontSize(id: FontSizeId) {
   const option = FONT_SIZE_OPTIONS.find(item => item.id === id) ?? FONT_SIZE_OPTIONS[1];
   document.documentElement.style.setProperty('--app-font-size', `${option.scale * 100}%`);
+  document.documentElement.dataset.fontSize = id;
 }
 
 export function useFontSize() {

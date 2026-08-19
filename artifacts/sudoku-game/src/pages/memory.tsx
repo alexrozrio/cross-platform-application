@@ -593,9 +593,9 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
         </div>
 
         {/* Theme preview strip + display mode toggle — one row */}
-        <div className="flex items-center gap-2 bg-card border border-border rounded-2xl px-4 py-3">
+        <div className="memory-display-options flex items-center gap-2 bg-card border border-border rounded-2xl px-4 py-3">
           {/* 5 symbol preview */}
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="memory-symbol-preview flex items-center gap-1 shrink-0">
             {displayMode === 'image'
               ? theme.symbols.slice(0, 5).map((sym, i) => (
                   <MemoryThemeSymbol key={i} themeId={themeId} value={i + 1} sym={sym} />
@@ -609,7 +609,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
             }
           </div>
           {/* Pill toggle */}
-          <div className="ml-auto flex items-center gap-1 rounded-full border bg-muted/50 p-0.5">
+          <div className="memory-display-toggle ml-auto flex items-center gap-1 rounded-full border bg-muted/50 p-0.5">
             {([
               { id: 'image'  as DisplayMode, label: '🎴' , title: 'Images' },
               { id: 'number' as DisplayMode, label: '123', title: 'Numbers' },
@@ -1188,7 +1188,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
       {/* Card grid */}
       {/* For 8×4: fix grid height to viewport so 8 rows fit without scrolling */}
       <div
-        className={`grid ${colClass} gap-1 sm:gap-2`}
+        className={`memory-card-grid grid ${colClass} gap-1 sm:gap-2`}
         style={(gridSize === 4 || gridSize === 6 || gridSize === 8) ? {
           height: 'calc(100dvh - 280px)',
           gridTemplateRows: gridSize === 4 ? 'repeat(4, 1fr)' : 'repeat(8, 1fr)',
