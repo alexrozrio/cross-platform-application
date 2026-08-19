@@ -370,27 +370,20 @@ export default function Themes() {
       </section>
 
       {/* ── Background Image ─────────────────────────────────────────── */}
-      <section className="space-y-4 bg-card rounded-2xl border border-border p-5">
-        <div>
-          <h2 className="text-xl font-serif font-semibold">Background Image</h2>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Each theme uses a default background. Drop an image named <code className="font-mono text-xs bg-muted px-1 rounded">{bgThemeId}.jpg</code> (or .png/.webp) into the <code className="font-mono text-xs bg-muted px-1 rounded">public/backgrounds/</code> folder to override it automatically.
-          </p>
-        </div>
+      <section className="space-y-3 bg-card rounded-2xl border border-border p-5">
+        <h2 className="text-xl font-serif font-semibold">Background Image</h2>
 
         {/* Enable / disable toggle */}
         <div className="flex items-center justify-between rounded-xl border border-border bg-muted px-4 py-3">
           <div className="flex items-center gap-2.5">
             {bgEnabled ? <ImageIcon className="w-4 h-4 text-primary shrink-0" /> : <EyeOff className="w-4 h-4 text-muted-foreground shrink-0" />}
-            <div>
-              <p className="text-sm font-medium leading-none">{bgEnabled ? 'Background image on' : 'Background image off'}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{bgEnabled ? 'Showing behind the UI' : 'Plain colour theme only'}</p>
-            </div>
+            <p className="text-sm font-medium leading-none">Background image</p>
           </div>
           <button
             type="button"
             role="switch"
             aria-checked={bgEnabled}
+            aria-label={bgEnabled ? 'Turn background image off' : 'Turn background image on'}
             onClick={() => setBgEnabled(!bgEnabled)}
             className={[
               'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
@@ -415,42 +408,14 @@ export default function Themes() {
           >
             {(!bgEnabled || !effectiveBg) && (
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="flex flex-col items-center gap-1.5 text-muted-foreground/50">
-                  <ImageIcon className="w-8 h-8" />
-                  <span className="text-xs">No background image</span>
-                </div>
+                <ImageIcon className="w-8 h-8 text-muted-foreground/50" />
               </div>
             )}
             {bgEnabled && effectiveBg && (
               <div className="absolute inset-0" style={{ background: 'var(--background)', opacity: 0.5 }} />
             )}
-            {bgEnabled && bgSource === 'custom' && (
-              <span className="absolute top-2 left-2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
-                Custom upload
-              </span>
-            )}
-            {bgEnabled && bgSource === 'folder' && (
-              <span className="absolute top-2 left-2 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                From folder
-              </span>
-            )}
-            {bgEnabled && bgSource === 'default' && (
-              <span className="absolute top-2 left-2 bg-black/50 text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
-                Default
-              </span>
-            )}
-          </div>
-
-          {/* Controls row */}
-          <div className="flex items-center gap-2 p-3 bg-card border-t border-border">
-            <span className="text-[10px] text-muted-foreground capitalize">{bgThemeId} theme</span>
           </div>
         </div>
-
-        <p className="text-xs text-muted-foreground">
-          <strong>Priority:</strong> custom upload &gt; <code className="font-mono bg-muted px-1 rounded">public/backgrounds/</code> file &gt; built-in default.
-          Custom uploads are stored on this device only.
-        </p>
       </section>
 
       {/* ── Font Style ───────────────────────────────────────────────── */}
