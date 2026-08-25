@@ -371,7 +371,13 @@ export default function Themes() {
 
       {/* ── Background Image ─────────────────────────────────────────── */}
       <section className="space-y-3 bg-card rounded-2xl border border-border p-5">
-        <h2 className="text-xl font-serif font-semibold">Background Image</h2>
+        <div>
+          <h2 className="text-xl font-serif font-semibold">Background Image</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Add a personal touch with a custom image or use the theme’s default backdrop.<br />
+            Your chosen background appears throughout the app behind every game.
+          </p>
+        </div>
 
         {/* Enable / disable toggle */}
         <div className="flex items-center justify-between rounded-xl border border-border bg-muted px-4 py-3">
