@@ -1028,20 +1028,22 @@
 
 /* ─── Mobile / browser compatibility ──────────────────────────────────────── */
 
-/* Large text needs a little extra room for the compact mobile chrome. Keep
-   the default and desktop layouts untouched. */
+/* Give the compact mobile chrome enough room for the page title and actions. */
 @media (max-width: 639px) {
+  [data-font-size="default"] .font-size-mobile-safe,
   [data-font-size="large"] .font-size-mobile-safe,
   [data-font-size="extra-large"] .font-size-mobile-safe {
     align-items: flex-start;
     flex-wrap: wrap;
   }
 
+  [data-font-size="default"] .font-size-mobile-safe > :first-child,
   [data-font-size="large"] .font-size-mobile-safe > :first-child,
   [data-font-size="extra-large"] .font-size-mobile-safe > :first-child {
     flex-basis: 100%;
   }
 
+  [data-font-size="default"] .font-size-mobile-actions,
   [data-font-size="large"] .font-size-mobile-actions,
   [data-font-size="extra-large"] .font-size-mobile-actions {
     margin-left: auto;
