@@ -1021,9 +1021,11 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setPendingAction({ type: 'reset' })}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
+            aria-label="Reset game"
+            className="memory-reset-action flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
           >
-            <RotateCcw className="w-3 h-3" /> Reset
+            <RotateCcw className="w-3 h-3" />
+            <span className="memory-reset-label">Reset</span>
           </button>
 
           <TooltipProvider>
@@ -1047,14 +1049,16 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
             onClick={handleTip}
             disabled={tipsUsed >= MAX_TIPS || lockBoard}
             className={[
-              'flex items-center gap-1 text-xs transition-colors shrink-0 font-medium disabled:cursor-not-allowed',
+              'memory-tip-action flex items-center gap-1 text-xs transition-colors shrink-0 font-medium disabled:cursor-not-allowed',
               tipsUsed >= MAX_TIPS ? 'text-muted-foreground/40' : 'text-amber-500 hover:text-amber-600',
             ].join(' ')}
             title="Tip: briefly reveals all cards"
           >
             <Lightbulb className={`w-3 h-3 ${tipsUsed >= MAX_TIPS ? 'opacity-40' : ''}`} />
-            <span>Tip</span>
-            <span className={`text-[9px] font-bold leading-none tabular-nums ${tipsUsed >= MAX_TIPS ? 'text-red-400' : 'text-amber-500'}`}>
+            <span className={`memory-tip-label ${tipsUsed >= MAX_TIPS ? 'text-red-400' : 'text-amber-500'}`}>
+              Tip
+            </span>
+            <span className={`memory-tip-count text-[9px] font-bold leading-none tabular-nums ${tipsUsed >= MAX_TIPS ? 'text-red-400' : 'text-amber-500'}`}>
               {MAX_TIPS - tipsUsed}
             </span>
           </button>

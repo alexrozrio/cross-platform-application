@@ -1081,6 +1081,22 @@
     flex-shrink: 0;
   }
 
+  [data-font-size="large"] .memory-reset-action,
+  [data-font-size="extra-large"] .memory-reset-action,
+  [data-font-size="large"] .memory-tip-action,
+  [data-font-size="extra-large"] .memory-tip-action {
+    gap: 0;
+  }
+
+  [data-font-size="large"] .memory-reset-label,
+  [data-font-size="extra-large"] .memory-reset-label,
+  [data-font-size="large"] .memory-tip-label,
+  [data-font-size="extra-large"] .memory-tip-label,
+  [data-font-size="large"] .memory-tip-count,
+  [data-font-size="extra-large"] .memory-tip-count {
+    display: none;
+  }
+
   [data-font-size="large"] .memory-card-grid-fixed-height,
   [data-font-size="extra-large"] .memory-card-grid-fixed-height {
     height: calc(100dvh - 335px) !important;
