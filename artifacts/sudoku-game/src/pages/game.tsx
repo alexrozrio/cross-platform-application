@@ -15,6 +15,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useGameTimer } from "@/hooks/use-game-logic";
 import { useImageTheme } from "@/hooks/use-image-theme";
+import { useFontSize } from "@/hooks/use-font-size";
 import { ThemeIcon } from "@/components/theme-icons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -370,6 +371,7 @@ export default function Game({ id }: { id: string }) {
 
   const { profileId } = useAuth();
   const { themeId } = useImageTheme();
+  const { fontSizeId } = useFontSize();
 
   const { data: profile } = useGetProfile(profileId as number, {
     query: { enabled: !!profileId },
@@ -1360,6 +1362,8 @@ export default function Game({ id }: { id: string }) {
   const diff = game?.puzzle?.difficulty ?? "";
   const diffLabel = diff.charAt(0).toUpperCase() + diff.slice(1);
   const sizeLabel = `${gridSize}×${gridSize}`;
+  const useThreeRowKeypad =
+    gridSize === 9 && (fontSizeId === "large" || fontSizeId === "extra-large");
   const gemsEarned = pointsEarned !== null
     ? ({ easy: 1, medium: 2, hard: 3, expert: 3 }[diff] ?? 1)
     : null;
@@ -2093,6 +2097,8 @@ export default function Game({ id }: { id: string }) {
                   ? "gap-1.5 grid-cols-4"
                   : gridSize === 3
                   ? "gap-1.5 grid-cols-3"
+                  : useThreeRowKeypad
+                  ? "gap-1.5 grid-cols-9 md:grid-cols-3"
                   : "gap-1 grid-cols-9 md:gap-1.5 md:grid-cols-5"
               }`}
             >
