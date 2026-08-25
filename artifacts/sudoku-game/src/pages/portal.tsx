@@ -661,8 +661,6 @@ export default function Portal() {
 
             {/* Memory Match Card */}
             {(() => {
-              const theme = getTheme(themeId as any);
-              const previewSymbols = theme.symbols.slice(0, 4);
               return (
                 <div className="group relative rounded-2xl border-2 border-violet-400/25 bg-card overflow-hidden">
                   <button
@@ -670,8 +668,8 @@ export default function Portal() {
                     className="w-full text-left p-6 space-y-4 hover:from-violet-500/15 hover:to-purple-500/10 hover:border-violet-400/40 transition-all duration-200"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-14 h-14 rounded-xl bg-violet-500/10 flex items-center justify-center ring-1 ring-violet-400/20 text-3xl">
-                        🃏
+                      <div className="w-14 h-14 rounded-xl bg-violet-500/10 flex items-center justify-center ring-1 ring-violet-400/20">
+                        <ThemeIcon themeId={themeId} value={1} size={34} />
                       </div>
                       <div>
                         <h2 className="text-xl font-bold font-serif">
@@ -687,12 +685,12 @@ export default function Portal() {
                       minimise your flips to maximise your score.
                     </p>
                     <div className="flex gap-1 items-center">
-                      {previewSymbols.map((sym, i) => (
+                      {[1, 2, 3, 4].map((value) => (
                         <span
-                          key={i}
-                          className="text-xl leading-none opacity-80 group-hover:opacity-100 transition-opacity"
+                          key={value}
+                          className="inline-flex items-center justify-center opacity-80 group-hover:opacity-100 transition-opacity"
                         >
-                          {sym}
+                          <ThemeIcon themeId={themeId} value={value} size={22} />
                         </span>
                       ))}
                       <span className="text-muted-foreground/60 text-xs self-end pb-0.5 ml-1">
