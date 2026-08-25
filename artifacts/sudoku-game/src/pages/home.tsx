@@ -214,6 +214,11 @@ export default function SudokuHome({
     setPendingStart(null);
     const offlineRoute = () =>
       sudokuGamePath(size, effectiveDifficulty, 0, mode, Date.now());
+    const clearLegacyOfflineStorage = () => {
+      localStorage.removeItem('sudoku-grid-0');
+      localStorage.removeItem('sudoku-notes-0');
+      localStorage.removeItem('sudoku-elapsed-0');
+    };
 
     // Always pre-generate an offline puzzle synchronously (instant from the
     // default bank) so the user can play immediately no matter what.
@@ -227,6 +232,7 @@ export default function SudokuHome({
     if (!isReady || !isSignedIn || !profileId || browserIsOffline) {
       // Guests, pending auth, and disconnected browsers should never wait for
       // an API request. The local puzzle is already generated above.
+      clearLegacyOfflineStorage();
       setLocation(offlineRoute());
       startInFlightRef.current = false;
       return;
@@ -246,6 +252,7 @@ export default function SudokuHome({
       setIsGenerating(false);
       startInFlightRef.current = false;
       setActiveGame(null);
+      clearLegacyOfflineStorage();
       setLocation(offlineRoute());
     };
 

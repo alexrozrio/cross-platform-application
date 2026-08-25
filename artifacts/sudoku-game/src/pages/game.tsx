@@ -340,12 +340,19 @@ function CellContent({
 
 export default function Game({ id }: { id: string }) {
   const gameId = parseInt(id, 10);
-  const storageKeyGrid = `sudoku-grid-${gameId}`;
-  const storageKeyNotes = `sudoku-notes-${gameId}`;
-  const storageKeyElapsed = `sudoku-elapsed-${gameId}`;
   const [, setLocation] = useLocation();
   const search = useSearch();
   const params = new URLSearchParams(search);
+  const isOfflineRoute = gameId === 0;
+  // Offline games use gameId=0, so include the route's unique offlineGame
+  // timestamp to prevent a new puzzle from inheriting another puzzle's entries.
+  // Keeping this stable for the same URL still allows refresh/resume to work.
+  const storageGameKey = isOfflineRoute
+    ? `offline-${params.get("offlineGame") ?? "legacy"}`
+    : String(gameId);
+  const storageKeyGrid = `sudoku-grid-${storageGameKey}`;
+  const storageKeyNotes = `sudoku-notes-${storageGameKey}`;
+  const storageKeyElapsed = `sudoku-elapsed-${storageGameKey}`;
   const modeParam = params.get("mode");
   const rawMode: GameMode =
     modeParam === "image"

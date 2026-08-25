@@ -151,6 +151,11 @@ export default function Portal() {
 
     // No profile → play offline straight away, no API needed.
     if (!profileId) {
+      // Offline games are identified by gameId=0. Remove the legacy shared
+      // key so older sessions cannot be restored into the new puzzle.
+      localStorage.removeItem("sudoku-grid-0");
+      localStorage.removeItem("sudoku-notes-0");
+      localStorage.removeItem("sudoku-elapsed-0");
       setLoadingSize(null);
       setLocation(sudokuGamePath(size, difficulty, 0, "number", Date.now()));
       return;
@@ -161,6 +166,9 @@ export default function Portal() {
     const goOffline = () => {
       if (settled) return;
       settled = true;
+      localStorage.removeItem("sudoku-grid-0");
+      localStorage.removeItem("sudoku-notes-0");
+      localStorage.removeItem("sudoku-elapsed-0");
       setLoadingSize(null);
       setLocation(sudokuGamePath(size, difficulty, 0, "number", Date.now()));
     };
