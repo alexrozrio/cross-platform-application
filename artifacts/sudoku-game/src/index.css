@@ -1081,8 +1081,8 @@
     flex-shrink: 0;
   }
 
-  [data-font-size="large"] .memory-card-grid,
-  [data-font-size="extra-large"] .memory-card-grid {
+  [data-font-size="large"] .memory-card-grid-fixed-height,
+  [data-font-size="extra-large"] .memory-card-grid-fixed-height {
     height: calc(100dvh - 335px) !important;
   }
 

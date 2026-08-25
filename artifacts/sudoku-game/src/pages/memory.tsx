@@ -1188,7 +1188,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
       {/* Card grid */}
       {/* For 8×4: fix grid height to viewport so 8 rows fit without scrolling */}
       <div
-        className={`memory-card-grid grid ${colClass} gap-1 sm:gap-2`}
+        className={`memory-card-grid ${gridSize !== 2 ? 'memory-card-grid-fixed-height' : ''} grid ${colClass} gap-1 sm:gap-2`}
         style={(gridSize === 4 || gridSize === 6 || gridSize === 8) ? {
           height: 'calc(100dvh - 280px)',
           gridTemplateRows: gridSize === 4 ? 'repeat(4, 1fr)' : 'repeat(8, 1fr)',
