@@ -518,7 +518,20 @@ components:
           type: ["string", "null"]
         theme:
           type: string
-          enum: [light, dark]
+          description: "Selected colour theme for this user's profile"
+        imageTheme:
+          type: string
+          description: "Selected game icon set for this user's profile"
+        fontTheme:
+          type: string
+          description: "Selected font theme for this user's profile"
+        fontSize:
+          type: string
+          enum: [small, default, large, extra-large]
+          description: "Selected interface font size for this user's profile"
+        backgroundEnabled:
+          type: boolean
+          description: "Whether the background image is enabled for this user's profile"
         highlightErrors:
           type: boolean
         showTimer:
@@ -549,7 +562,16 @@ components:
           type: string
         theme:
           type: string
-          enum: [light, dark]
+          description: "Selected colour theme for this user's profile"
+        imageTheme:
+          type: string
+        fontTheme:
+          type: string
+        fontSize:
+          type: string
+          enum: [small, default, large, extra-large]
+        backgroundEnabled:
+          type: boolean
         highlightErrors:
           type: boolean
         showTimer:
@@ -566,7 +588,16 @@ components:
           type: string
         theme:
           type: string
-          enum: [light, dark]
+          description: "Selected colour theme for this user's profile"
+        imageTheme:
+          type: string
+        fontTheme:
+          type: string
+        fontSize:
+          type: string
+          enum: [small, default, large, extra-large]
+        backgroundEnabled:
+          type: boolean
         highlightErrors:
           type: boolean
         showTimer:

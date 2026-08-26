@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/hooks/use-auth';
+import { useGetProfile, useUpdateProfile } from '@workspace/api-client-react';
 
 export const FONT_SIZE_OPTIONS = [
   { id: 'small', label: 'Small', description: 'More content on screen', scale: 0.875 },
@@ -17,15 +19,6 @@ function isFontSizeId(value: string | null): value is FontSizeId {
   return FONT_SIZE_OPTIONS.some(option => option.id === value);
 }
 
-function getStoredFontSize(): FontSizeId {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return isFontSizeId(stored) ? stored : DEFAULT_FONT_SIZE;
-  } catch {
-    return DEFAULT_FONT_SIZE;
-  }
-}
-
 function applyFontSize(id: FontSizeId) {
   const option = FONT_SIZE_OPTIONS.find(item => item.id === id) ?? FONT_SIZE_OPTIONS[1];
   document.documentElement.style.setProperty('--app-font-size', `${option.scale * 100}%`);
@@ -33,11 +26,32 @@ function applyFontSize(id: FontSizeId) {
 }
 
 export function useFontSize() {
-  const [fontSizeId, setFontSizeState] = useState<FontSizeId>(getStoredFontSize);
+  const { profileId } = useAuth();
+  const { data: profile } = useGetProfile(profileId as number);
+  const updateProfile = useUpdateProfile();
+  const storageKey = `${STORAGE_KEY}-${profileId ?? 'guest'}`;
+  const [fontSizeId, setFontSizeState] = useState<FontSizeId>(() => {
+    try {
+      const stored = localStorage.getItem(storageKey);
+      return isFontSizeId(stored) ? stored : DEFAULT_FONT_SIZE;
+    } catch {
+      return DEFAULT_FONT_SIZE;
+    }
+  });
 
   useEffect(() => {
     applyFontSize(fontSizeId);
   }, [fontSizeId]);
+
+  useEffect(() => {
+    if (!profileId) return;
+    try {
+      const saved = localStorage.getItem(storageKey);
+      setFontSizeState(profile?.fontSize ?? (isFontSizeId(saved) ? saved : DEFAULT_FONT_SIZE));
+    } catch {
+      setFontSizeState(profile?.fontSize ?? DEFAULT_FONT_SIZE);
+    }
+  }, [profileId, profile?.fontSize, storageKey]);
 
   useEffect(() => {
     const handleChange = (event: Event) => {
@@ -53,9 +67,12 @@ export function useFontSize() {
     setFontSizeState(id);
     applyFontSize(id);
     try {
-      localStorage.setItem(STORAGE_KEY, id);
+      localStorage.setItem(storageKey, id);
     } catch {
       // Ignore storage failures; the preference still applies for this session.
+    }
+    if (profileId) {
+      updateProfile.mutate({ id: profileId, data: { fontSize: id } });
     }
     window.dispatchEvent(new CustomEvent(FONT_SIZE_CHANGE, { detail: id }));
   };

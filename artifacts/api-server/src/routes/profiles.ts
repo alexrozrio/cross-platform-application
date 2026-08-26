@@ -158,6 +158,10 @@ router.patch("/profiles/:id", async (req, res): Promise<void> => {
   if (parsed.data.username !== undefined) updateData.username = parsed.data.username;
   if (parsed.data.avatar !== undefined) updateData.avatar = parsed.data.avatar;
   if (parsed.data.theme !== undefined) updateData.theme = parsed.data.theme;
+  if (parsed.data.imageTheme !== undefined) updateData.imageTheme = parsed.data.imageTheme;
+  if (parsed.data.fontTheme !== undefined) updateData.fontTheme = parsed.data.fontTheme;
+  if (parsed.data.fontSize !== undefined) updateData.fontSize = parsed.data.fontSize;
+  if (parsed.data.backgroundEnabled !== undefined) updateData.backgroundEnabled = parsed.data.backgroundEnabled;
   if (parsed.data.highlightErrors !== undefined) updateData.highlightErrors = parsed.data.highlightErrors;
   if (parsed.data.showTimer !== undefined) updateData.showTimer = parsed.data.showTimer;
   if (parsed.data.soundEnabled !== undefined) updateData.soundEnabled = parsed.data.soundEnabled;

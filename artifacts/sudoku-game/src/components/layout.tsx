@@ -51,7 +51,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     location.startsWith("/game/0") ||
     (isCanonicalSudokuGame && canonicalGameQuery === "0");
   const { profileId, isSignedIn, replitUser } = useAuth();
-  const { data: profile } = useGetProfile(profileId as number, { query: { enabled: !!profileId } });
+  const { data: profile } = useGetProfile(profileId as number);
   const pendingCount = usePendingChallengeCount(profileId);
 
   // Track the active colour theme; updated immediately on selection (before profile refetch)

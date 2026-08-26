@@ -571,9 +571,7 @@ export default function Profile() {
   const tabParam = new URLSearchParams(search).get("tab");
 
   const { profileId, isSignedIn, replitUser } = useAuth();
-  const { data: profile, isLoading } = useGetProfile(profileId as number, {
-    query: { enabled: !!profileId },
-  });
+  const { data: profile, isLoading } = useGetProfile(profileId as number);
   const updateProfile = useUpdateProfile();
 
   // Stats tab

@@ -4,9 +4,7 @@ import { getLevelFromXp } from "@/lib/levels";
 import { showEventModal } from "@/hooks/use-event-modal";
 
 export function useLevelUpWatcher(profileId: number | null) {
-  const { data: profile } = useGetProfile(profileId as number, {
-    query: { enabled: !!profileId },
-  });
+  const { data: profile } = useGetProfile(profileId as number);
 
   const prevTierRef = useRef<string | null>(null);
   const initializedRef = useRef(false);

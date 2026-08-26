@@ -1,4 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useAuth } from '@/hooks/use-auth';
+import { useGetProfile, useUpdateProfile } from '@workspace/api-client-react';
 
 const STORAGE_PREFIX = 'brain-games-bg-custom-';
 const ENABLED_KEY    = 'brain-games-bg-enabled';
@@ -73,12 +75,12 @@ const _emitter = new EventTarget();
 const BG_CHANGE = 'bg-change';
 function _emit() { _emitter.dispatchEvent(new Event(BG_CHANGE)); }
 
-function readCustomImages(): Record<string, string> {
+function readCustomImages(storagePrefix: string): Record<string, string> {
   const result: Record<string, string> = {};
   try {
     for (const key of Object.keys(localStorage)) {
-      if (key.startsWith(STORAGE_PREFIX)) {
-        const id = key.slice(STORAGE_PREFIX.length);
+      if (key.startsWith(storagePrefix)) {
+        const id = key.slice(storagePrefix.length);
         const v  = localStorage.getItem(key);
         if (v) result[id] = v;
       }
@@ -87,9 +89,9 @@ function readCustomImages(): Record<string, string> {
   return result;
 }
 
-function readEnabled(): boolean {
+function readEnabled(key: string): boolean {
   try {
-    const v = localStorage.getItem(ENABLED_KEY);
+    const v = localStorage.getItem(key);
     return v === null ? true : v === 'true';
   } catch {
     return true;
@@ -106,8 +108,15 @@ function readEnabled(): boolean {
  *  4. null (backgrounds disabled)
  */
 export function useThemeBg(themeId: string) {
-  const [customImages, setCustomImages] = useState<Record<string, string>>(readCustomImages);
-  const [enabled,      setEnabledState] = useState<boolean>(readEnabled);
+  const { profileId } = useAuth();
+  const { data: profile } = useGetProfile(profileId as number);
+  const updateProfile = useUpdateProfile();
+  const storagePrefix = `${STORAGE_PREFIX}${profileId ?? 'guest'}-`;
+  const enabledKey = `${ENABLED_KEY}-${profileId ?? 'guest'}`;
+  const [customImages, setCustomImages] = useState<Record<string, string>>(
+    () => readCustomImages(storagePrefix),
+  );
+  const [enabled, setEnabledState] = useState<boolean>(() => readEnabled(enabledKey));
   /** URL of the public-folder image for this theme, or null if none found */
   const [localBgUrl,   setLocalBgUrl]   = useState<string | null>(
     // Initialise synchronously from cache if already resolved
@@ -129,13 +138,18 @@ export function useThemeBg(themeId: string) {
 
   // Keep all hook instances in sync when any instance writes to localStorage
   useEffect(() => {
+    setCustomImages(readCustomImages(storagePrefix));
+    setEnabledState(profile?.backgroundEnabled ?? readEnabled(enabledKey));
+  }, [profileId, profile?.backgroundEnabled, storagePrefix, enabledKey]);
+
+  useEffect(() => {
     const handler = () => {
-      setEnabledState(readEnabled());
-      setCustomImages(readCustomImages());
+      setEnabledState(readEnabled(enabledKey));
+      setCustomImages(readCustomImages(storagePrefix));
     };
     _emitter.addEventListener(BG_CHANGE, handler);
     return () => _emitter.removeEventListener(BG_CHANGE, handler);
-  }, []);
+  }, [enabledKey, storagePrefix]);
 
   const hasCustom = !!customImages[themeId];
   const defaultUrl = THEME_BG_DEFAULTS[themeId] ?? null;
@@ -158,26 +172,29 @@ export function useThemeBg(themeId: string) {
         : 'default';
 
   const setCustomImage = useCallback((id: string, dataUrl: string) => {
-    try { localStorage.setItem(STORAGE_PREFIX + id, dataUrl); } catch { /* ignore */ }
+    try { localStorage.setItem(storagePrefix + id, dataUrl); } catch { /* ignore */ }
     setCustomImages(prev => ({ ...prev, [id]: dataUrl }));
     _emit();
-  }, []);
+  }, [storagePrefix]);
 
   const resetCustomImage = useCallback((id: string) => {
-    try { localStorage.removeItem(STORAGE_PREFIX + id); } catch { /* ignore */ }
+    try { localStorage.removeItem(storagePrefix + id); } catch { /* ignore */ }
     setCustomImages(prev => {
       const next = { ...prev };
       delete next[id];
       return next;
     });
     _emit();
-  }, []);
+  }, [storagePrefix]);
 
   const setEnabled = useCallback((v: boolean) => {
-    try { localStorage.setItem(ENABLED_KEY, String(v)); } catch { /* ignore */ }
+    try { localStorage.setItem(enabledKey, String(v)); } catch { /* ignore */ }
     setEnabledState(v);
+    if (profileId) {
+      updateProfile.mutate({ id: profileId, data: { backgroundEnabled: v } });
+    }
     _emit();
-  }, []);
+  }, [enabledKey, profileId, updateProfile]);
 
   return {
     effectiveBg,

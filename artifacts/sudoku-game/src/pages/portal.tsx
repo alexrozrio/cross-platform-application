@@ -60,9 +60,7 @@ export default function Portal() {
   const { themeId } = useImageTheme();
   const [loadingSize, setLoadingSize] = useState<number | null>(null);
 
-  const { data: profile } = useGetProfile(profileId as number, {
-    query: { enabled: !!profileId },
-  });
+  const { data: profile } = useGetProfile(profileId as number);
 
   const gameMode = (profile?.gameMode ?? "4all") as
     | "children"

@@ -490,9 +490,7 @@ export default function Stats() {
   const { data: stats, isLoading } = useGetPlayerStats(profileId as number, {
     query: { enabled: !!profileId },
   });
-  const { data: profile } = useGetProfile(profileId as number, {
-    query: { enabled: !!profileId },
-  });
+  const { data: profile } = useGetProfile(profileId as number);
 
   const formatTime = (seconds: number | null | undefined) => {
     if (seconds == null) return "--:--";

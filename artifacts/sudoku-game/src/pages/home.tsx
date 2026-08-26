@@ -123,9 +123,7 @@ export default function SudokuHome({
   const { themeId } = useImageTheme();
   const [infoModal, setInfoModal] = useState<InfoModal>(null);
 
-  const { data: profile } = useGetProfile(profileId as number, {
-    query: { enabled: !!profileId },
-  });
+  const { data: profile } = useGetProfile(profileId as number);
 
   const gameMode = (profile?.gameMode ?? '4all') as 'children' | 'adult' | '4all';
   const allDifficulties: Difficulty[] = ['easy', 'medium', 'hard', 'expert'];

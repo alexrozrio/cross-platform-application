@@ -9,12 +9,17 @@ export interface HealthStatus {
   status: string;
 }
 
-export type ProfileTheme = typeof ProfileTheme[keyof typeof ProfileTheme];
+/**
+ * Selected interface font size for this user's profile
+ */
+export type ProfileFontSize = typeof ProfileFontSize[keyof typeof ProfileFontSize];
 
 
-export const ProfileTheme = {
-  light: 'light',
-  dark: 'dark',
+export const ProfileFontSize = {
+  small: 'small',
+  default: 'default',
+  large: 'large',
+  'extra-large': 'extra-large',
 } as const;
 
 export type ProfileGameMode = typeof ProfileGameMode[keyof typeof ProfileGameMode];
@@ -31,7 +36,16 @@ export interface Profile {
   username: string;
   /** @nullable */
   avatar?: string | null;
-  theme: ProfileTheme;
+  /** Selected colour theme for this user's profile */
+  theme: string;
+  /** Selected game icon set for this user's profile */
+  imageTheme?: string;
+  /** Selected font theme for this user's profile */
+  fontTheme?: string;
+  /** Selected interface font size for this user's profile */
+  fontSize?: ProfileFontSize;
+  /** Whether the background image is enabled for this user's profile */
+  backgroundEnabled?: boolean;
   highlightErrors?: boolean;
   showTimer?: boolean;
   soundEnabled?: boolean;
@@ -43,12 +57,14 @@ export interface Profile {
   createdAt: string;
 }
 
-export type ProfileInputTheme = typeof ProfileInputTheme[keyof typeof ProfileInputTheme];
+export type ProfileInputFontSize = typeof ProfileInputFontSize[keyof typeof ProfileInputFontSize];
 
 
-export const ProfileInputTheme = {
-  light: 'light',
-  dark: 'dark',
+export const ProfileInputFontSize = {
+  small: 'small',
+  default: 'default',
+  large: 'large',
+  'extra-large': 'extra-large',
 } as const;
 
 export interface ProfileInput {
@@ -58,17 +74,24 @@ export interface ProfileInput {
      */
   username: string;
   avatar?: string;
-  theme?: ProfileInputTheme;
+  /** Selected colour theme for this user's profile */
+  theme?: string;
+  imageTheme?: string;
+  fontTheme?: string;
+  fontSize?: ProfileInputFontSize;
+  backgroundEnabled?: boolean;
   highlightErrors?: boolean;
   showTimer?: boolean;
 }
 
-export type ProfileUpdateTheme = typeof ProfileUpdateTheme[keyof typeof ProfileUpdateTheme];
+export type ProfileUpdateFontSize = typeof ProfileUpdateFontSize[keyof typeof ProfileUpdateFontSize];
 
 
-export const ProfileUpdateTheme = {
-  light: 'light',
-  dark: 'dark',
+export const ProfileUpdateFontSize = {
+  small: 'small',
+  default: 'default',
+  large: 'large',
+  'extra-large': 'extra-large',
 } as const;
 
 export type ProfileUpdateGameMode = typeof ProfileUpdateGameMode[keyof typeof ProfileUpdateGameMode];
@@ -87,7 +110,12 @@ export interface ProfileUpdate {
      */
   username?: string;
   avatar?: string;
-  theme?: ProfileUpdateTheme;
+  /** Selected colour theme for this user's profile */
+  theme?: string;
+  imageTheme?: string;
+  fontTheme?: string;
+  fontSize?: ProfileUpdateFontSize;
+  backgroundEnabled?: boolean;
   highlightErrors?: boolean;
   showTimer?: boolean;
   soundEnabled?: boolean;

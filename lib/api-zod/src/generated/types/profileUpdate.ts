@@ -5,8 +5,8 @@
  * Sudoku Game API
  * OpenAPI spec version: 0.1.0
  */
+import type { ProfileUpdateFontSize } from './profileUpdateFontSize';
 import type { ProfileUpdateGameMode } from './profileUpdateGameMode';
-import type { ProfileUpdateTheme } from './profileUpdateTheme';
 
 export interface ProfileUpdate {
   /**
@@ -15,7 +15,12 @@ export interface ProfileUpdate {
      */
   username?: string;
   avatar?: string;
-  theme?: ProfileUpdateTheme;
+  /** Selected colour theme for this user's profile */
+  theme?: string;
+  imageTheme?: string;
+  fontTheme?: string;
+  fontSize?: ProfileUpdateFontSize;
+  backgroundEnabled?: boolean;
   highlightErrors?: boolean;
   showTimer?: boolean;
   soundEnabled?: boolean;

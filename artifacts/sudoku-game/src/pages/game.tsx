@@ -380,9 +380,7 @@ export default function Game({ id }: { id: string }) {
   const { themeId } = useImageTheme();
   const { fontSizeId } = useFontSize();
 
-  const { data: profile } = useGetProfile(profileId as number, {
-    query: { enabled: !!profileId },
-  });
+  const { data: profile } = useGetProfile(profileId as number);
   // gameId === 0 means offline mode (API was unavailable when game was started)
   const isOffline = gameId === 0;
   const {

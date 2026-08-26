@@ -122,7 +122,7 @@ function MobileCarousel({
 export default function Themes() {
   const { themeId, setThemeId } = useImageTheme();
   const { profileId } = useAuth();
-  const { data: profile, refetch: refetchProfile } = useGetProfile(profileId as number, { query: { enabled: !!profileId } });
+  const { data: profile, refetch: refetchProfile } = useGetProfile(profileId as number);
   const updateProfile = useUpdateProfile();
   const { fontId, setFontId } = useFontTheme();
   const { fontSizeId, setFontSize } = useFontSize();
@@ -257,7 +257,7 @@ export default function Themes() {
         <div>
           <h2 className="text-xl font-serif font-semibold">Colour Theme</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Changes the background and colour palette of the entire app.
+            Changes the background and colour palette of the entire app. Saved to your user profile and applied only to your account.
           </p>
         </div>
 
@@ -375,7 +375,7 @@ export default function Themes() {
           <h2 className="text-xl font-serif font-semibold">Background Image</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
             Add a personal touch with a custom image or use the theme’s default backdrop.<br />
-            Your chosen background appears throughout the app behind every game.
+            Your chosen background appears throughout the app behind every game. The on/off choice is saved to your profile; custom uploads stay on this device for your profile.
           </p>
         </div>
 
@@ -429,7 +429,7 @@ export default function Themes() {
         <div>
           <h2 className="text-xl font-serif font-semibold">Font Style</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Changes the typeface used throughout the app. Default is free — others cost 50 gems each.
+            Changes the typeface used throughout the app and is saved to your user profile. Default is free — others cost 50 gems each.
           </p>
         </div>
 
@@ -535,7 +535,7 @@ export default function Themes() {
         <div>
           <h2 className="text-xl font-serif font-semibold">Font Size</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Adjusts text and interface sizing throughout the entire application. Your choice is saved on this device.
+            Adjusts text and interface sizing throughout the entire application. Your choice is saved to your user profile and follows you when you sign in on another device.
           </p>
         </div>
 
@@ -585,7 +585,7 @@ export default function Themes() {
         <div>
           <h2 className="text-xl font-serif font-semibold">Game Icon Set</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Choose the characters used when playing in image mode. Shapes and Adventure are free.
+            Choose the characters used when playing in image mode. Your selection is saved to your user profile. Shapes and Adventure are free.
           </p>
         </div>
 
@@ -785,7 +785,7 @@ export default function Themes() {
       </section>
 
       <p className="text-xs text-center text-muted-foreground bg-card border border-border rounded-lg px-4 py-2.5">
-        Free selections save automatically. Unlocks are permanent.
+        Your selections save automatically to your profile. Unlocks are permanent.
       </p>
 
       {/* ── Show All Sub-pages (mobile overlay) ──────────────────────── */}

@@ -195,9 +195,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
   const { themeId } = useImageTheme();
   const queryClient = useQueryClient();
 
-  const { data: profile } = useGetProfile(profileId as number, {
-    query: { enabled: !!profileId },
-  });
+  const { data: profile } = useGetProfile(profileId as number);
 
   const sounds = useSound(profile?.soundEnabled);
 

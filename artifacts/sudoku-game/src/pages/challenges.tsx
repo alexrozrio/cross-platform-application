@@ -1210,9 +1210,7 @@ export default function Challenges() {
     setShareSheetData({ token, label });
   }, []);
 
-  const { data: profile } = useGetProfile(profileId as number, {
-    query: { enabled: !!profileId },
-  });
+  const { data: profile } = useGetProfile(profileId as number);
   const gameMode = (profile?.gameMode ?? '4all') as GameMode;
 
   // ── Sudoku challenges ────────────────────────────────────────────────────────
