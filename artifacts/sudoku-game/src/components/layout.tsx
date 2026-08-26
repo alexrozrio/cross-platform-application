@@ -127,21 +127,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <TournamentWinModal badges={pendingBadges} onDismiss={dismissBadge} />
       <AchievementUnlockModal achievements={newlyUnlocked} onDismiss={dismiss} profileId={profileId} />
       <header className={[
-        "border-b bg-card flex items-center justify-between sticky top-0 z-10",
-        isGamePage ? "py-1.5 px-3 md:py-4 md:px-6" : "py-4 px-6",
+        "app-header border-b bg-card flex items-center justify-between sticky top-0 z-10",
+        isGamePage ? "app-header-game px-3 md:px-6" : "app-header-standard px-6",
       ].join(" ")}>
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <img
             src="/brain-games-logo.png"
             alt="Brain Games 4 All"
             className={[
-              "shrink-0",
-              isGamePage ? "h-6 w-6 md:h-9 md:w-9" : "h-9 w-9",
+              "app-header-logo shrink-0",
+              isGamePage ? "app-header-logo-game" : "",
             ].join(" ")}
           />
           <span className={[
-            "font-serif font-bold tracking-tight text-primary",
-            isGamePage ? "text-base md:text-2xl" : "text-2xl",
+            "app-header-brand font-serif font-bold tracking-tight text-primary",
+            isGamePage ? "app-header-brand-game" : "",
           ].join(" ")}>
             Brain Games 4 All
           </span>
@@ -152,22 +152,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-2 ml-2 mr-auto">
             {profileId && profile?.gems !== undefined && (
               <div className={[
-                "flex items-center gap-1.5 font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 rounded-full border border-cyan-200 dark:border-cyan-800",
-                isGamePage ? "text-xs px-2 py-0.5 md:text-sm md:px-3 md:py-1" : "text-sm px-3 py-1",
+                "app-header-gems flex items-center font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 rounded-full border border-cyan-200 dark:border-cyan-800",
+                isGamePage ? "app-header-gems-game" : "",
               ].join(" ")}>
-                <Gem className="w-3.5 h-3.5" />
+                <Gem className="app-header-gem-icon" />
                 <span>{profile.gems.toLocaleString()}</span>
               </div>
             )}
             {isOfflineGame && (
-              <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-300">
+              <span className="app-header-offline font-semibold text-amber-700 dark:text-amber-300">
                 Offline
               </span>
             )}
           </div>
         ) : null}
 
-        <div className="hidden md:flex items-center gap-1">
+        <div className="app-header-nav hidden md:flex items-center gap-1">
           <TooltipProvider delayDuration={400}>
             <nav className="flex items-center gap-1">
               {navItems.map((item) => (
