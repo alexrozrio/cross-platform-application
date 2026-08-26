@@ -2036,7 +2036,7 @@ export default function Game({ id }: { id: string }) {
           {/* Controls + numpad card */}
           {!isCompleted && (
           <div className="bg-card border border-border rounded-2xl p-2 flex flex-col gap-2">
-            <div className="grid grid-cols-5 gap-1.5 w-full">
+            <div className="order-2 md:order-1 grid grid-cols-5 gap-1.5 w-full">
               <Button
                 variant={notesMode ? "default" : "secondary"}
                 className="flex-col h-12 gap-0.5"
@@ -2095,7 +2095,7 @@ export default function Game({ id }: { id: string }) {
 
             {/* Input pad */}
             <div
-              className={`grid w-full ${
+              className={`order-1 md:order-2 grid w-full ${
                 gridSize === 16
                   ? "gap-1 grid-cols-8 md:grid-cols-8"
                   : gridSize === 6
