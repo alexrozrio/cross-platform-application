@@ -10,12 +10,18 @@ import {
   Loader as Loader2,
   RotateCcw,
   Flame,
+  ChevronDown,
 } from "lucide-react";
 import { customFetch, useGetProfile } from "@workspace/api-client-react";
 import { generateOfflinePuzzle } from "@/lib/sudoku-generator";
 import { getLevelFromXp } from "@/lib/levels";
 import { getTheme } from "@/lib/themes";
 import { sudokuGamePath } from "@/lib/sudoku-routes";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 interface ActiveGame {
   id: number;
@@ -93,6 +99,7 @@ export default function Portal() {
   const [memorySession, setMemorySession] = useState<MemorySession | null>(
     null,
   );
+  const [aboutGamesOpen, setAboutGamesOpen] = useState(true);
 
   useEffect(() => {
     if (!profileId || !isReady) return;
@@ -901,33 +908,64 @@ export default function Portal() {
         </div>
 
         {/* About the games — last */}
-        <div className="bg-card rounded-2xl border border-border p-4">
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
-            About the games
-          </p>
-          <div className="space-y-3">
-            <div className="rounded-2xl border border-border bg-muted p-4 flex gap-3 items-start">
-              <Grid3X3 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-              <div>
-                <p className="font-semibold text-sm">Sudoku</p>
-                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                  Fill the grid so every row, column, and box contains each
-                  symbol exactly once. 5 grid sizes, 4 difficulty levels.
-                </p>
-              </div>
+        <Collapsible
+          open={aboutGamesOpen}
+          onOpenChange={setAboutGamesOpen}
+          className="bg-card rounded-2xl border border-border p-4"
+        >
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              aria-expanded={aboutGamesOpen}
+              className="w-full flex items-center justify-between gap-3 text-left group"
+            >
+              <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                About the games
+              </span>
+              <ChevronDown
+                aria-hidden="true"
+                className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${
+                  aboutGamesOpen ? "rotate-180" : ""
+                }`}
+              />
+              <span className="sr-only">
+                {aboutGamesOpen ? "Collapse" : "Expand"} about the games
+              </span>
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-3">
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={() => setLocation("/sudoku")}
+                className="w-full rounded-2xl border border-border bg-muted p-4 flex gap-3 items-start text-left hover:bg-muted/70 hover:border-primary/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Grid3X3 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-semibold text-sm">Sudoku</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                    Fill the grid so every row, column, and box contains each
+                    symbol exactly once. 5 grid sizes, 4 difficulty levels.
+                  </p>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setLocation("/memory")}
+                className="w-full rounded-2xl border border-border bg-muted p-4 flex gap-3 items-start text-left hover:bg-muted/70 hover:border-primary/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <span className="text-lg mt-0.5 shrink-0">🃏</span>
+                <div>
+                  <p className="font-semibold text-sm">Memory Match</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                    Flip cards to find matching pairs. Beat the clock and minimise
+                    your flips to maximise your score.
+                  </p>
+                </div>
+              </button>
             </div>
-            <div className="rounded-2xl border border-border bg-muted p-4 flex gap-3 items-start">
-              <span className="text-lg mt-0.5 shrink-0">🃏</span>
-              <div>
-                <p className="font-semibold text-sm">Memory Match</p>
-                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                  Flip cards to find matching pairs. Beat the clock and minimise
-                  your flips to maximise your score.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
     </div>
   );
