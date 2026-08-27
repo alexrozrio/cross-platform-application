@@ -121,6 +121,9 @@ function Router() {
               {() => <MemoryMatch />}
             </Route>
             <Route path="/memory-challenge" component={MemoryChallengePage} />
+            <Route path="/player/:profileId">
+              {(params) => <PublicProfilePage profileId={params.profileId} />}
+            </Route>
             <Route path="/players/:profileId">
               {(params) => <PublicProfilePage profileId={params.profileId} />}
             </Route>

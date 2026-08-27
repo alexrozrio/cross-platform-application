@@ -1140,6 +1140,46 @@
     font-size: 0.8rem;
   }
 
+  [data-font-size="large"] .public-profile-page,
+  [data-font-size="extra-large"] .public-profile-page {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    gap: 1.5rem;
+  }
+
+  [data-font-size="large"] .public-profile-header,
+  [data-font-size="extra-large"] .public-profile-header {
+    padding: 1rem;
+  }
+
+  [data-font-size="large"] .public-profile-achievement-grid,
+  [data-font-size="extra-large"] .public-profile-achievement-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  [data-font-size="large"] .public-profile-achievement-card,
+  [data-font-size="extra-large"] .public-profile-achievement-card {
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: left;
+    gap: 0.75rem;
+  }
+
+  [data-font-size="large"] .public-profile-achievement-card > div,
+  [data-font-size="extra-large"] .public-profile-achievement-card > div {
+    min-width: 0;
+  }
+
+  [data-font-size="large"] .public-profile-achievement-card p,
+  [data-font-size="extra-large"] .public-profile-achievement-card p {
+    overflow-wrap: anywhere;
+  }
+
+  [data-font-size="large"] .public-profile-cta,
+  [data-font-size="extra-large"] .public-profile-cta {
+    padding: 1rem;
+  }
+
   [data-font-size="large"] .leaderboard-tabs > [role="tab"],
   [data-font-size="extra-large"] .leaderboard-tabs > [role="tab"] {
     min-width: 0;

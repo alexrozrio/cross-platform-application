@@ -65,19 +65,19 @@ export default function PublicProfilePage({ profileId }: PublicProfileProps) {
   const displayName = profile?.displayName || profile?.username;
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10 space-y-8">
+    <div className="public-profile-page max-w-2xl mx-auto px-4 py-10 space-y-8">
       {/* ── Profile header ── */}
-      <div className="text-center space-y-4 bg-card rounded-2xl px-5 py-6 border border-border">
+      <div className="public-profile-header text-center space-y-4 bg-card rounded-2xl px-5 py-6 border border-border">
         {isLoading ? (
-          <div className="w-24 h-24 rounded-full bg-muted animate-pulse mx-auto" />
+          <div className="public-profile-avatar w-24 h-24 rounded-full bg-muted animate-pulse mx-auto" />
         ) : profile?.avatar ? (
           <img
             src={profile.avatar}
             alt={displayName}
-            className="w-24 h-24 rounded-full mx-auto object-cover ring-4 ring-amber-300/60 shadow-lg"
+            className="public-profile-avatar w-24 h-24 rounded-full mx-auto object-cover ring-4 ring-amber-300/60 shadow-lg"
           />
         ) : (
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-4xl font-bold text-white mx-auto shadow-lg ring-4 ring-amber-300/60">
+          <div className="public-profile-avatar w-24 h-24 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-4xl font-bold text-white mx-auto shadow-lg ring-4 ring-amber-300/60">
             {displayName?.[0]?.toUpperCase() ?? "?"}
           </div>
         )}
@@ -86,7 +86,7 @@ export default function PublicProfilePage({ profileId }: PublicProfileProps) {
           {isLoading ? (
             <div className="h-8 w-40 bg-muted animate-pulse rounded mx-auto" />
           ) : (
-            <h1 className="text-2xl font-bold tracking-tight">{displayName}</h1>
+            <h1 className="public-profile-name text-2xl font-bold tracking-tight break-words">{displayName}</h1>
           )}
           <p className="text-sm text-muted-foreground mt-1">
             {isLoading ? (
@@ -103,7 +103,7 @@ export default function PublicProfilePage({ profileId }: PublicProfileProps) {
 
       {/* ── Achievement grid ── */}
       {isLoading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="public-profile-achievement-grid grid grid-cols-2 sm:grid-cols-3 gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="h-28 rounded-xl bg-muted animate-pulse" />
           ))}
@@ -118,13 +118,13 @@ export default function PublicProfilePage({ profileId }: PublicProfileProps) {
         <div className="space-y-6">
           {sudokuUnlocked.length > 0 && (
             <section>
-              <div className="flex items-center gap-1.5 mb-3 bg-card border border-border rounded-lg px-3 py-1.5 w-fit">
+              <div className="public-profile-section-title flex items-center gap-1.5 mb-3 bg-card border border-border rounded-lg px-3 py-1.5 w-fit max-w-full">
                 <Hash className="w-3.5 h-3.5 text-muted-foreground" />
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground break-words">
                   Sudoku
                 </h2>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="public-profile-achievement-grid grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {sudokuUnlocked.map((a) => (
                   <AchievementCard key={a.id} emoji={a.emoji} title={a.title} description={a.description} />
                 ))}
@@ -134,13 +134,13 @@ export default function PublicProfilePage({ profileId }: PublicProfileProps) {
 
           {memoryUnlocked.length > 0 && (
             <section>
-              <div className="flex items-center gap-1.5 mb-3 bg-card border border-border rounded-lg px-3 py-1.5 w-fit">
+              <div className="public-profile-section-title flex items-center gap-1.5 mb-3 bg-card border border-border rounded-lg px-3 py-1.5 w-fit max-w-full">
                 <span className="text-xs">🧠</span>
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground break-words">
                   Memory Match
                 </h2>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="public-profile-achievement-grid grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {memoryUnlocked.map((a) => (
                   <AchievementCard key={a.id} emoji={a.emoji} title={a.title} description={a.description} />
                 ))}
@@ -151,12 +151,15 @@ export default function PublicProfilePage({ profileId }: PublicProfileProps) {
       )}
 
       {/* ── CTA ── */}
-      <div className="bg-card border border-border rounded-2xl px-5 py-5 text-center space-y-3">
-        <p className="text-sm text-muted-foreground">Think you can beat them?</p>
+      <div className="public-profile-cta bg-card border border-border rounded-2xl px-5 py-5 text-center space-y-3">
+        <p className="text-sm font-semibold">No account needed to play</p>
+        <p className="text-sm text-muted-foreground">
+          Play as a guest on this device. Your progress is saved here automatically; sign in is only needed to sync across devices.
+        </p>
         <Link href="/">
-          <Button size="lg" className="gap-2 rounded-xl">
+          <Button size="lg" className="w-full gap-2 rounded-xl">
             <Gamepad2 className="w-4 h-4" />
-            Play on Brain Games 4 All
+            Play without signing in →
           </Button>
         </Link>
       </div>
@@ -174,7 +177,7 @@ function AchievementCard({
   description: string;
 }) {
   return (
-    <div className="rounded-xl border bg-card p-4 flex flex-col items-center gap-2 text-center shadow-sm hover:shadow-md transition-shadow">
+    <div className="public-profile-achievement-card rounded-xl border bg-card p-4 flex flex-col items-center gap-2 text-center shadow-sm hover:shadow-md transition-shadow">
       <span className="text-3xl leading-none">{emoji}</span>
       <div>
         <p className="text-sm font-semibold leading-tight">{title}</p>

@@ -47,6 +47,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
     : null;
   const isCanonicalSudokuGame = location.startsWith("/sudoku/") && canonicalGameQuery !== null;
   const isGamePage = isGameRoute || isCanonicalSudokuGame;
+  const isPublicPlayerPage =
+    location.startsWith("/player/") || location.startsWith("/players/");
   const isOfflineGame =
     location.startsWith("/game/0") ||
     (isCanonicalSudokuGame && canonicalGameQuery === "0");
@@ -201,26 +203,28 @@ export function Layout({ children }: { children: React.ReactNode }) {
               ))}
             </nav>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant={isSignedIn ? "ghost" : "outline"}
-                  size="sm"
-                  className="gap-2 ml-1"
-                  onClick={handleSignInOut}
-                >
-                  {isSignedIn
-                    ? <LogOut className="h-4 w-4 text-slate-400" />
-                    : <LogIn className="h-4 w-4 text-teal-500" />}
-                  <span className={isSignedIn ? "text-muted-foreground" : "text-teal-600 dark:text-teal-400"}>
-                    {isSignedIn ? "Sign out" : "Sign in"}
-                  </span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                {isSignedIn ? "Sign out of your account" : "Sign in to save progress and earn rewards"}
-              </TooltipContent>
-            </Tooltip>
+            {!isPublicPlayerPage && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={isSignedIn ? "ghost" : "outline"}
+                    size="sm"
+                    className="gap-2 ml-1"
+                    onClick={handleSignInOut}
+                  >
+                    {isSignedIn
+                      ? <LogOut className="h-4 w-4 text-slate-400" />
+                      : <LogIn className="h-4 w-4 text-teal-500" />}
+                    <span className={isSignedIn ? "text-muted-foreground" : "text-teal-600 dark:text-teal-400"}>
+                      {isSignedIn ? "Sign out" : "Sign in"}
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  {isSignedIn ? "Sign out of your account" : "Sign in to save progress and earn rewards"}
+                </TooltipContent>
+              </Tooltip>
+            )}
           </TooltipProvider>
         </div>
       </header>
@@ -258,18 +262,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </span>
           </Link>
         ))}
-        {/* Sign in / out pill */}
-        <button
-          className="flex flex-col items-center gap-0.5 text-xs min-w-[48px] py-1"
-          onClick={handleSignInOut}
-        >
-          <div className="p-1.5 rounded-xl text-muted-foreground">
-            {isSignedIn ? <LogOut className="h-5 w-5" /> : <LogIn className="h-5 w-5" />}
-          </div>
-          <span className="text-[10px] text-muted-foreground">
-            {isSignedIn ? "Sign out" : "Sign in"}
-          </span>
-        </button>
+        {!isPublicPlayerPage && (
+          <button
+            className="flex flex-col items-center gap-0.5 text-xs min-w-[48px] py-1"
+            onClick={handleSignInOut}
+          >
+            <div className="p-1.5 rounded-xl text-muted-foreground">
+              {isSignedIn ? <LogOut className="h-5 w-5" /> : <LogIn className="h-5 w-5" />}
+            </div>
+            <span className="text-[10px] text-muted-foreground">
+              {isSignedIn ? "Sign out" : "Sign in"}
+            </span>
+          </button>
+        )}
       </nav>
     </div>
   );
