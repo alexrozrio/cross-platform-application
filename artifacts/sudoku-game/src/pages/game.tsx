@@ -1139,6 +1139,7 @@ export default function Game({ id }: { id: string }) {
       `❌ ${mistakes} mistake${mistakes !== 1 ? "s" : ""} · 💡 ${hints} hint${hints !== 1 ? "s" : ""}`,
       pointsEarned !== null ? `+${pointsEarned.toLocaleString()} pts · +${xpGain} XP` : `+${xpGain} XP`,
       rank ? `🏅 ${rank} · Brain Games 4 All` : "🧠 Brain Games 4 All",
+      "🎮 Come and play Brain Games 4 All!",
       `🔗 ${appUrl}`,
     ];
     const text = lines.join("\n");

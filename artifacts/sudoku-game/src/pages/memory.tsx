@@ -548,6 +548,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
       `🔄 ${flips} flip${flips !== 1 ? 's' : ''}`,
       winResult && winResult.points > 0 ? `+${winResult.points.toLocaleString()} pts` : null,
       rank ? `🏅 ${rank} · Brain Games 4 All` : '🧠 Brain Games 4 All',
+      '🎮 Come and play Brain Games 4 All!',
       `🔗 ${appUrl}`,
     ].filter(Boolean).join('\n');
     try {
