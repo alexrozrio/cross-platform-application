@@ -725,7 +725,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
         </div>
 
         {/* Info links */}
-        <div className="flex items-center justify-center gap-6 bg-card border border-border rounded-xl px-4 py-2.5">
+        <div className="home-info-links flex items-center justify-center gap-6 bg-card border border-border rounded-xl px-4 py-2.5">
           <button
             onClick={() => setInfoModal('rules')}
             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
