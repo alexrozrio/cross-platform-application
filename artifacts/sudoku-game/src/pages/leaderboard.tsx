@@ -615,7 +615,7 @@ function BreakdownPanel({
       )}
 
       {bdTab === "memory" && (
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {(
             data?.memory ??
             [2, 4, 6, 8].map((gs) => ({ gridSize: gs, points: 0, games: 0 }))
