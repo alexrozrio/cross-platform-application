@@ -1155,6 +1155,19 @@
     line-height: 1.1;
   }
 
+  [data-font-size="large"] .leaderboard-tabs .leaderboard-tab-main,
+  [data-font-size="extra-large"] .leaderboard-tabs .leaderboard-tab-main {
+    flex-direction: column;
+    gap: 0.1rem;
+    line-height: 1;
+  }
+
+  [data-font-size="large"] .leaderboard-tabs .leaderboard-tab-icon,
+  [data-font-size="extra-large"] .leaderboard-tabs .leaderboard-tab-icon {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
   [data-font-size="large"] .leaderboard-tabs [data-slot="tabs-trigger"] > span,
   [data-font-size="extra-large"] .leaderboard-tabs [data-slot="tabs-trigger"] > span {
     gap: 0.15rem;

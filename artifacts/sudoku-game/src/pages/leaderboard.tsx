@@ -1245,19 +1245,31 @@ export default function Leaderboard() {
       >
         <TabsList className="leaderboard-tabs grid w-full grid-cols-4 gap-1 h-auto p-1">
           <TabsTrigger value="weekly" className="leaderboard-tab-trigger flex-col gap-0 leading-tight py-1.5">
-            <span className="flex items-center justify-center gap-1"><CalendarDays className="w-3.5 h-3.5 shrink-0" />Weekly</span>
+            <span className="leaderboard-tab-main flex items-center justify-center gap-1">
+              <CalendarDays className="leaderboard-tab-icon w-3.5 h-3.5 shrink-0" />
+              <span>Weekly</span>
+            </span>
             <span className="text-[9px] font-normal opacity-60">tournament</span>
           </TabsTrigger>
           <TabsTrigger value="monthly" className="leaderboard-tab-trigger flex-col gap-0 leading-tight py-1.5">
-            <span className="flex items-center justify-center gap-1"><Calendar className="w-3.5 h-3.5 shrink-0" />Monthly</span>
+            <span className="leaderboard-tab-main flex items-center justify-center gap-1">
+              <Calendar className="leaderboard-tab-icon w-3.5 h-3.5 shrink-0" />
+              <span>Monthly</span>
+            </span>
             <span className="text-[9px] font-normal opacity-60">tournament</span>
           </TabsTrigger>
           <TabsTrigger value="alltime" className="leaderboard-tab-trigger flex-col gap-0 leading-tight py-1.5">
-            <span className="flex items-center justify-center gap-1"><Zap className="w-3.5 h-3.5 shrink-0" />Sudoku</span>
+            <span className="leaderboard-tab-main flex items-center justify-center gap-1">
+              <Zap className="leaderboard-tab-icon w-3.5 h-3.5 shrink-0" />
+              <span>Sudoku</span>
+            </span>
             <span className="text-[9px] font-normal opacity-60">all-time</span>
           </TabsTrigger>
           <TabsTrigger value="memory" className="leaderboard-tab-trigger flex-col gap-0 leading-tight py-1.5">
-            <span className="flex items-center justify-center gap-1"><Brain className="w-3.5 h-3.5 shrink-0" />Memory</span>
+            <span className="leaderboard-tab-main flex items-center justify-center gap-1">
+              <Brain className="leaderboard-tab-icon w-3.5 h-3.5 shrink-0" />
+              <span>Memory</span>
+            </span>
             <span className="text-[9px] font-normal opacity-60">all-time</span>
           </TabsTrigger>
         </TabsList>
