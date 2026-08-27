@@ -1140,11 +1140,44 @@
     font-size: 0.8rem;
   }
 
+  [data-font-size="large"] .leaderboard-tabs > [role="tab"],
+  [data-font-size="extra-large"] .leaderboard-tabs > [role="tab"] {
+    min-width: 0;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+    overflow-wrap: anywhere;
+  }
+
+  [data-font-size="large"] .leaderboard-tabs > [role="tab"] > :first-child,
+  [data-font-size="extra-large"] .leaderboard-tabs > [role="tab"] > :first-child {
+    min-width: 0;
+    white-space: normal;
+    line-height: 1.1;
+  }
+
   [data-font-size="large"] .leaderboard-tabs [data-slot="tabs-trigger"] > span,
   [data-font-size="extra-large"] .leaderboard-tabs [data-slot="tabs-trigger"] > span {
     gap: 0.15rem;
     white-space: normal;
     text-align: center;
+  }
+
+  [data-font-size="large"] .leaderboard-period-info,
+  [data-font-size="extra-large"] .leaderboard-period-info {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  [data-font-size="large"] .leaderboard-period-label,
+  [data-font-size="extra-large"] .leaderboard-period-label {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  [data-font-size="large"] .leaderboard-period-countdown,
+  [data-font-size="extra-large"] .leaderboard-period-countdown {
+    align-self: flex-start;
+    margin-top: 0.15rem;
   }
 
   [data-font-size="large"] .memory-display-options,

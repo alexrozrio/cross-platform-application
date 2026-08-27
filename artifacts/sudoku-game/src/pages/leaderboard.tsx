@@ -757,10 +757,10 @@ function TournamentBoard({
     <div className="space-y-5">
       {/* Period info + countdown */}
       {data && (
-        <div className="flex items-center justify-between gap-2 bg-card rounded-2xl border border-border px-4 py-3">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="leaderboard-period-info flex items-center justify-between gap-2 bg-card rounded-2xl border border-border px-4 py-3">
+          <div className="leaderboard-period-label flex items-center gap-2 text-sm text-muted-foreground min-w-0">
             <Icon className="w-4 h-4 shrink-0" />
-            <span>
+            <span className="min-w-0 break-words leading-snug">
               Current period:{" "}
               <span className="font-semibold text-foreground">
                 {data.periodLabel}
@@ -768,7 +768,7 @@ function TournamentBoard({
             </span>
           </div>
           {countdown && (
-            <div className="flex items-center gap-1.5 text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 shrink-0">
+            <div className="leaderboard-period-countdown flex items-center gap-1.5 text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 shrink-0">
               <Timer className="w-3 h-3" />
               {countdown}
             </div>
@@ -1243,21 +1243,21 @@ export default function Leaderboard() {
         onValueChange={(v) => setTab(v as MainTab)}
         className="w-full"
       >
-        <TabsList className="leaderboard-tabs grid w-full grid-cols-4 h-auto p-1">
-          <TabsTrigger value="weekly" className="flex-col gap-0 leading-tight py-1.5">
-            <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" />Weekly</span>
+        <TabsList className="leaderboard-tabs grid w-full grid-cols-4 gap-1 h-auto p-1">
+          <TabsTrigger value="weekly" className="leaderboard-tab-trigger flex-col gap-0 leading-tight py-1.5">
+            <span className="flex items-center justify-center gap-1"><CalendarDays className="w-3.5 h-3.5 shrink-0" />Weekly</span>
             <span className="text-[9px] font-normal opacity-60">tournament</span>
           </TabsTrigger>
-          <TabsTrigger value="monthly" className="flex-col gap-0 leading-tight py-1.5">
-            <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />Monthly</span>
+          <TabsTrigger value="monthly" className="leaderboard-tab-trigger flex-col gap-0 leading-tight py-1.5">
+            <span className="flex items-center justify-center gap-1"><Calendar className="w-3.5 h-3.5 shrink-0" />Monthly</span>
             <span className="text-[9px] font-normal opacity-60">tournament</span>
           </TabsTrigger>
-          <TabsTrigger value="alltime" className="flex-col gap-0 leading-tight py-1.5">
-            <span className="flex items-center gap-1"><Zap className="w-3.5 h-3.5" />Sudoku</span>
+          <TabsTrigger value="alltime" className="leaderboard-tab-trigger flex-col gap-0 leading-tight py-1.5">
+            <span className="flex items-center justify-center gap-1"><Zap className="w-3.5 h-3.5 shrink-0" />Sudoku</span>
             <span className="text-[9px] font-normal opacity-60">all-time</span>
           </TabsTrigger>
-          <TabsTrigger value="memory" className="flex-col gap-0 leading-tight py-1.5">
-            <span className="flex items-center gap-1"><Brain className="w-3.5 h-3.5" />Memory</span>
+          <TabsTrigger value="memory" className="leaderboard-tab-trigger flex-col gap-0 leading-tight py-1.5">
+            <span className="flex items-center justify-center gap-1"><Brain className="w-3.5 h-3.5 shrink-0" />Memory</span>
             <span className="text-[9px] font-normal opacity-60">all-time</span>
           </TabsTrigger>
         </TabsList>
