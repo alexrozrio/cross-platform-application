@@ -2049,32 +2049,6 @@ export default function Game({ id }: { id: string }) {
                 <span className="text-[11px]">Notes</span>
               </Button>
 
-              <div className={[
-                "flex flex-col items-center justify-center h-12 rounded-md border gap-0.5 select-none",
-                mistakes === 0
-                  ? "bg-muted/50 border-border text-muted-foreground"
-                  : mistakes === 1
-                  ? "bg-orange-50 border-orange-200 text-orange-600"
-                  : "bg-red-50 border-red-200 text-red-600",
-              ].join(" ")}>
-                <AlertTriangle className="h-4 w-4" />
-                <span className="text-[10px] font-semibold leading-none">{MAX_MISTAKES - mistakes} left</span>
-              </div>
-
-              <Button
-                variant="secondary"
-                className="flex-col h-12 gap-0.5 relative"
-                onClick={handleHint}
-                disabled={isGameOver || hints >= MAX_HINTS}
-                title={notesMode ? "Auto-fill pencil marks (uses 1 hint)" : "Reveal the easiest empty cell (uses 1 hint)"}
-              >
-                <Lightbulb className={`h-4 w-4 ${hints >= MAX_HINTS ? "opacity-40" : ""}`} />
-                <span className="text-[11px]">{notesMode ? "Auto✏️" : "Hint"}</span>
-                <span className={`text-[9px] font-bold leading-none ${hints >= MAX_HINTS ? "text-red-400" : "text-primary"}`}>
-                  {MAX_HINTS - hints} left
-                </span>
-              </Button>
-
               <Button
                 variant="secondary"
                 className="flex-col h-12 gap-0.5"
@@ -2094,6 +2068,32 @@ export default function Game({ id }: { id: string }) {
                 <Undo2 className="h-4 w-4" />
                 <span className="text-[11px]">Undo</span>
               </Button>
+
+              <Button
+                variant="secondary"
+                className="flex-col h-12 gap-0.5 relative"
+                onClick={handleHint}
+                disabled={isGameOver || hints >= MAX_HINTS}
+                title={notesMode ? "Auto-fill pencil marks (uses 1 hint)" : "Reveal the easiest empty cell (uses 1 hint)"}
+              >
+                <Lightbulb className={`h-4 w-4 ${hints >= MAX_HINTS ? "opacity-40" : ""}`} />
+                <span className="text-[11px]">{notesMode ? "Auto✏️" : "Hint"}</span>
+                <span className={`text-[9px] font-bold leading-none ${hints >= MAX_HINTS ? "text-red-400" : "text-primary"}`}>
+                  {MAX_HINTS - hints} left
+                </span>
+              </Button>
+
+              <div className={[
+                "flex flex-col items-center justify-center h-12 rounded-md border gap-0.5 select-none",
+                mistakes === 0
+                  ? "bg-muted/50 border-border text-muted-foreground"
+                  : mistakes === 1
+                  ? "bg-orange-50 border-orange-200 text-orange-600"
+                  : "bg-red-50 border-red-200 text-red-600",
+              ].join(" ")}>
+                <AlertTriangle className="h-4 w-4" />
+                <span className="text-[10px] font-semibold leading-none">{MAX_MISTAKES - mistakes} left</span>
+              </div>
             </div>
 
             {/* Input pad */}
