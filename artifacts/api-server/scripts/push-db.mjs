@@ -32,11 +32,7 @@ try {
 }
 
 if (process.env.SKIP_DB_PUSH === 'true') {
-  if (isProduction) {
-    console.error('[db-push] Production cannot start with SKIP_DB_PUSH=true; the API schema must be verified first.');
-    process.exit(1);
-  }
-  console.log('[db-push] Skipped (SKIP_DB_PUSH=true)');
+  console.log('[db-push] Drizzle push skipped (SKIP_DB_PUSH=true); startup compatibility check will still run.');
   process.exit(0);
 }
 
@@ -66,13 +62,12 @@ if (result.status !== 0) {
     '[db-push] ⚠️  drizzle-kit push failed (possibly a TTY/interactive-prompt issue).\n' +
     '         Run `pnpm --filter @workspace/db run push` manually in a TTY shell if schema changes are needed.';
 
-  if (isProduction) {
-    console.error(
-      message +
-      '\n         Production startup is stopping because serving with an outdated schema causes profile and reward APIs to fail.'
-    );
-    process.exit(result.status ?? 1);
-  }
-
-  console.warn(message + '\n         Server will start anyway in development.');
+  // The API now performs an idempotent additive schema check before it starts
+  // listening. That check works in Render/CI where drizzle-kit cannot answer
+  // its destructive-change prompt because there is no TTY. Keep this hook
+  // non-blocking so the real startup check can run.
+  console.warn(
+    message +
+    '\n         Continuing; the API startup compatibility check will verify required columns.'
+  );
 }

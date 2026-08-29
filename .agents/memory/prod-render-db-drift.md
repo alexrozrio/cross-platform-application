@@ -14,11 +14,12 @@ whatever DB the Render deployment uses.
 return HTTP 500 for profile, stats, and achievements endpoints while its
 leaderboard and profile-search endpoints still worked. This pattern strongly
 suggests the deployed API is selecting columns that the Render database does
-not yet have.
+not yet have. Render's non-TTY startup cannot complete Drizzle's destructive
+change prompt reliably.
 
 **How to apply:** When testing "is this feature actually live for users",
 hit the production Render URL directly (or ask the user), don't trust the
-local dev server's behavior as a proxy for it. If a production 500/schema
-mismatch is found, it needs the production `DATABASE_URL` (which this repl
-doesn't have) to fix via `drizzle-kit push` — flag it to the user rather than
-assuming it's fixed once the local schema changes.
+local dev server's behavior as a proxy for it. The API startup now runs an
+idempotent additive compatibility check for profile columns, so Render can
+repair this class of drift before listening. Use a real migration process for
+non-additive changes and still verify the production database after deployment.

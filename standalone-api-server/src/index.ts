@@ -1,5 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { ensureDatabaseSchema } from "@workspace/db";
 
 // ─── Startup env guard ────────────────────────────────────────────────────────
 // Detect the common local-dev misconfiguration where DATABASE_URL is still
@@ -51,6 +52,14 @@ const port = Number(rawPort);
 
 if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
+}
+
+try {
+  await ensureDatabaseSchema();
+  logger.info("Database schema compatibility check completed");
+} catch (err) {
+  logger.error({ err }, "Database schema compatibility check failed");
+  process.exit(1);
 }
 
 app.listen(port, (err) => {
