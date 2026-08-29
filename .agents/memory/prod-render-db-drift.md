@@ -10,10 +10,11 @@ is used directly against whatever `DATABASE_URL` is active), so a schema
 change pushed against the local/dev Neon DB does not automatically reach
 whatever DB the Render deployment uses.
 
-**Why:** Confirmed by observing `GET /api/leaderboard` returning HTTP 500 on
-the production Render API while the same route worked fine locally — the
-route selects `gamesTable.xpEarned`, a column added in an earlier session,
-strongly suggesting the production DB never got that migration.
+**Why:** Confirmed on August 29, 2026 by observing the production Render API
+return HTTP 500 for profile, stats, and achievements endpoints while its
+leaderboard and profile-search endpoints still worked. This pattern strongly
+suggests the deployed API is selecting columns that the Render database does
+not yet have.
 
 **How to apply:** When testing "is this feature actually live for users",
 hit the production Render URL directly (or ask the user), don't trust the

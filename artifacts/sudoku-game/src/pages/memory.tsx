@@ -191,7 +191,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
   const [, setLocation] = useLocation();
   const search = useSearch();
   const bookmarkedSize = memorySizeFromSlug(difficultySlug);
-  const { profileId } = useAuth();
+  const { profileId, isReady } = useAuth();
   const { themeId } = useImageTheme();
   const queryClient = useQueryClient();
 
@@ -258,6 +258,10 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
   }, [hasSpecialGameQuery, setLocation]);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // A fast game can finish before the server create request resolves.
+  // Retaining the promise lets completion wait for the game ID instead of
+  // silently losing the result and its gem reward.
+  const gameCreationRef = useRef<Promise<number> | null>(null);
   const [showAbandonConfirm, setShowAbandonConfirm] = useState(false);
   const restoredRef = useRef(false);
 
@@ -339,6 +343,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
     setLockBoard(false);
     setWinResult(null);
     setGameId(presetGameId ?? null);
+    gameCreationRef.current = presetGameId ? Promise.resolve(presetGameId) : null;
     setTipsUsed(0);
     setHintedIds([]);
     setPhase('playing');
@@ -347,13 +352,18 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
     if (presetGameId) return;
 
     // Create server-side game record (best-effort)
-    try {
-      const res = await customFetch<{ id: number }>('/api/memory-games', {
+    const creation = customFetch<{ id: number }>('/api/memory-games', {
         method: 'POST',
         body: JSON.stringify({ profileId: profileId ?? undefined, gridSize: size }),
+      }).then((res) => {
+        setGameId(res.id);
+        return res.id;
       });
-      setGameId(res.id);
+    gameCreationRef.current = creation;
+    try {
+      await creation;
     } catch {
+      gameCreationRef.current = null;
       // non-fatal — game still plays locally
     }
   }, [profileId, search, bookmarkedSize, updateMemoryBookmarkUrl]);
@@ -362,7 +372,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
   const startGameRef = useRef(startGame);
   useEffect(() => { startGameRef.current = startGame; }, [startGame]);
   useEffect(() => {
-    if (restoredRef.current) return;
+    if (restoredRef.current || !isReady) return;
     const params = new URLSearchParams(search);
     const duelId = parseInt(params.get('duelGameId') ?? '', 10);
     const gs = bookmarkedSize ?? parseInt(params.get('gridSize') ?? params.get('size') ?? '', 10);
@@ -383,7 +393,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
     if ([2, 4, 6, 8].includes(s)) {
       startGameRef.current(s as GridSize);
     }
-  }, [search, bookmarkedSize]);
+  }, [search, bookmarkedSize, isReady]);
 
   useEffect(() => {
     if (bookmarkedSize && phase === 'setup' && bookmarkedSize !== gridSize) {
@@ -497,15 +507,25 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
     const currentElapsed = elapsed;
     const currentFlips = flips + 1;
 
+    // Wait for an in-flight create request so very quick games are recorded.
+    const completedGameId = gameId ?? await gameCreationRef.current?.catch(() => null) ?? null;
+
     let pts = 0;
-    if (gameId) {
+    if (completedGameId !== null) {
       try {
-        const result = await customFetch<WinResult>(`/api/memory-games/${gameId}/complete`, {
+        const result = await customFetch<WinResult>(`/api/memory-games/${completedGameId}/complete`, {
           method: 'POST',
           body: JSON.stringify({ elapsedSeconds: currentElapsed, flips: currentFlips, tipsUsed }),
         });
         setWinResult(result);
         pts = result.points;
+        if (profileId) {
+          queryClient.invalidateQueries({ queryKey: [`/api/profiles/${profileId}`] });
+          await queryClient.refetchQueries({
+            queryKey: [`/api/profiles/${profileId}`],
+            type: 'active',
+          });
+        }
       } catch {
         setWinResult({ points: 0, xpEarned: 0, gemsEarned: 0 });
       }
@@ -532,7 +552,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
         }
       } catch { /* non-fatal */ }
     }
-  }, [gameId, elapsed, flips, challengeType, profileId]);
+  }, [gameId, elapsed, flips, challengeType, profileId, gridSize, tipsUsed, queryClient]);
 
   // Wrap completeGame in a ref so the card-click closure captures it fresh
   const completeGameRef = useRef(completeGame);

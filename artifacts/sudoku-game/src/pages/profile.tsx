@@ -571,7 +571,9 @@ export default function Profile() {
   const tabParam = new URLSearchParams(search).get("tab");
 
   const { profileId, isSignedIn, replitUser } = useAuth();
-  const { data: profile, isLoading } = useGetProfile(profileId as number);
+  const { data: profile, isLoading } = useGetProfile(profileId as number, {
+    query: { refetchOnMount: "always", staleTime: 0 },
+  });
   const updateProfile = useUpdateProfile();
 
   // Stats tab
@@ -666,9 +668,11 @@ export default function Profile() {
               )}
               <div className="min-w-0">
                 <p className="font-semibold truncate">
-                  {replitUser.firstName && replitUser.lastName
-                    ? `${replitUser.firstName} ${replitUser.lastName}`
-                    : replitUser.firstName ?? replitUser.email ?? "User"}
+                  {profile?.username ?? (
+                    replitUser.firstName && replitUser.lastName
+                      ? `${replitUser.firstName} ${replitUser.lastName}`
+                      : replitUser.firstName ?? replitUser.email ?? "User"
+                  )}
                 </p>
                 {replitUser.email && <p className="text-sm text-muted-foreground truncate">{replitUser.email}</p>}
               </div>

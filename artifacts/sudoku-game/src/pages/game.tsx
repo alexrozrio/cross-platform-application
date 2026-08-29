@@ -859,6 +859,10 @@ export default function Game({ id }: { id: string }) {
               localStorage.removeItem(storageKeyElapsed);
               if (profileId) {
                 queryClient.invalidateQueries({ queryKey: [`/api/profiles/${profileId}`] });
+                 await queryClient.refetchQueries({
+                   queryKey: [`/api/profiles/${profileId}`],
+                   type: "active",
+                 });
                 queryClient.invalidateQueries({ queryKey: [`/api/achievements/${profileId}`] });
                 queryClient.invalidateQueries({ queryKey: [`/api/stats/${profileId}`] });
               }

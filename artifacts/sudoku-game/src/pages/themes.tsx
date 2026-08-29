@@ -122,7 +122,9 @@ function MobileCarousel({
 export default function Themes() {
   const { themeId, setThemeId } = useImageTheme();
   const { profileId } = useAuth();
-  const { data: profile, refetch: refetchProfile } = useGetProfile(profileId as number);
+  const { data: profile, refetch: refetchProfile } = useGetProfile(profileId as number, {
+    query: { refetchOnMount: "always", staleTime: 0 },
+  });
   const updateProfile = useUpdateProfile();
   const { fontId, setFontId } = useFontTheme();
   const { fontSizeId, setFontSize } = useFontSize();

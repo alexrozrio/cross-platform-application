@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * Runs `drizzle-kit push` before the dev server starts.
+ * Runs `drizzle-kit push` before the API server starts.
  *
  * Set SKIP_DB_PUSH=true in your environment or .env to skip this step
  * (useful when the DB isn't yet reachable or you want to skip migrations).
  *
- * Failures are warnings on local (no REPL_ID), hard errors on Replit.
+ * Failures are warnings during development and hard errors in production.
  */
 
 import { spawnSync } from 'child_process';
@@ -17,6 +17,10 @@ const require = createRequire(import.meta.url);
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const onReplit = Boolean(process.env.REPL_ID);
+const isProduction =
+  process.env.NODE_ENV === 'production' ||
+  process.env.RENDER === 'true' ||
+  Boolean(process.env.RENDER_SERVICE_ID);
 
 // Load .env so SKIP_DB_PUSH is visible even before the server sets up env vars
 // dotenv is optional — on Replit env vars are already injected by the platform
@@ -28,6 +32,10 @@ try {
 }
 
 if (process.env.SKIP_DB_PUSH === 'true') {
+  if (isProduction) {
+    console.error('[db-push] Production cannot start with SKIP_DB_PUSH=true; the API schema must be verified first.');
+    process.exit(1);
+  }
   console.log('[db-push] Skipped (SKIP_DB_PUSH=true)');
   process.exit(0);
 }
@@ -54,9 +62,17 @@ if (result.status !== 0) {
   // TTY terminal". This is a drizzle-kit limitation, not a schema error.
   // Treat as a warning and let the server start — the schema is already in sync
   // from the last successful push.
-  console.warn(
+  const message =
     '[db-push] ⚠️  drizzle-kit push failed (possibly a TTY/interactive-prompt issue).\n' +
-    '         Server will start anyway. Run `pnpm --filter @workspace/db run push` manually in a TTY shell if schema changes are needed.\n' +
-    '         Set SKIP_DB_PUSH=true in .env to silence this warning.'
-  );
+    '         Run `pnpm --filter @workspace/db run push` manually in a TTY shell if schema changes are needed.';
+
+  if (isProduction) {
+    console.error(
+      message +
+      '\n         Production startup is stopping because serving with an outdated schema causes profile and reward APIs to fail.'
+    );
+    process.exit(result.status ?? 1);
+  }
+
+  console.warn(message + '\n         Server will start anyway in development.');
 }
