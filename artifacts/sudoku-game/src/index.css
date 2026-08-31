@@ -77,11 +77,11 @@
   --input: 40 20% 85%;
   --ring: 215 30% 45%;
 
-  --card: 40 33% 98%;
+  --card: 40 33% 94%;
   --card-foreground: 220 20% 20%;
   --card-border: 40 20% 85%;
 
-  --popover: 40 33% 98%;
+  --popover: 40 33% 94%;
   --popover-foreground: 220 20% 20%;
   --popover-border: 40 20% 85%;
 
@@ -146,11 +146,11 @@
   --input: 200 25% 83%;
   --ring: 192 55% 40%;
 
-  --card: 200 45% 98%;
+  --card: 200 45% 94%;
   --card-foreground: 200 35% 15%;
   --card-border: 200 25% 83%;
 
-  --popover: 200 45% 98%;
+  --popover: 200 45% 94%;
   --popover-foreground: 200 35% 15%;
   --popover-border: 200 25% 83%;
 
@@ -178,11 +178,11 @@
   --input: 120 18% 83%;
   --ring: 140 40% 32%;
 
-  --card: 120 25% 98%;
+  --card: 120 25% 94%;
   --card-foreground: 120 30% 14%;
   --card-border: 120 18% 83%;
 
-  --popover: 120 25% 98%;
+  --popover: 120 25% 94%;
   --popover-foreground: 120 30% 14%;
   --popover-border: 120 18% 83%;
 
@@ -210,11 +210,11 @@
   --input: 24 22% 83%;
   --ring: 18 65% 45%;
 
-  --card: 24 45% 99%;
+  --card: 24 45% 95%;
   --card-foreground: 20 30% 14%;
   --card-border: 24 22% 83%;
 
-  --popover: 24 45% 99%;
+  --popover: 24 45% 95%;
   --popover-foreground: 20 30% 14%;
   --popover-border: 24 22% 83%;
 
@@ -274,11 +274,11 @@
   --input: 340 20% 83%;
   --ring: 340 58% 45%;
 
-  --card: 340 38% 99%;
+  --card: 340 38% 95%;
   --card-foreground: 340 25% 14%;
   --card-border: 340 20% 83%;
 
-  --popover: 340 38% 99%;
+  --popover: 340 38% 95%;
   --popover-foreground: 340 25% 14%;
   --popover-border: 340 20% 83%;
 
@@ -306,11 +306,11 @@
   --input: 141 30% 84%;
   --ring: 161 94% 30%;
 
-  --card: 141 60% 98%;
+  --card: 141 60% 94%;
   --card-foreground: 161 40% 12%;
   --card-border: 141 30% 84%;
 
-  --popover: 141 60% 98%;
+  --popover: 141 60% 94%;
   --popover-foreground: 161 40% 12%;
   --popover-border: 141 30% 84%;
 
@@ -338,11 +338,11 @@
   --input: 215 20% 84%;
   --ring: 215 19% 35%;
 
-  --card: 210 40% 99%;
+  --card: 210 40% 95%;
   --card-foreground: 215 25% 15%;
   --card-border: 215 20% 84%;
 
-  --popover: 210 40% 99%;
+  --popover: 210 40% 95%;
   --popover-foreground: 215 25% 15%;
   --popover-border: 215 20% 84%;
 
@@ -370,11 +370,11 @@
   --input: 258 35% 85%;
   --ring: 262 83% 58%;
 
-  --card: 258 80% 99%;
+  --card: 258 80% 95%;
   --card-foreground: 262 30% 14%;
   --card-border: 258 35% 85%;
 
-  --popover: 258 80% 99%;
+  --popover: 258 80% 95%;
   --popover-foreground: 262 30% 14%;
   --popover-border: 258 35% 85%;
 
@@ -402,11 +402,11 @@
   --input: 48 30% 83%;
   --ring: 37 91% 43%;
 
-  --card: 48 80% 98%;
+  --card: 48 80% 94%;
   --card-foreground: 37 40% 12%;
   --card-border: 48 30% 83%;
 
-  --popover: 48 80% 98%;
+  --popover: 48 80% 94%;
   --popover-foreground: 37 40% 12%;
   --popover-border: 48 30% 83%;
 
@@ -434,11 +434,11 @@
   --input: 166 30% 84%;
   --ring: 176 83% 32%;
 
-  --card: 166 60% 98%;
+  --card: 166 60% 94%;
   --card-foreground: 176 40% 12%;
   --card-border: 166 30% 84%;
 
-  --popover: 166 60% 98%;
+  --popover: 166 60% 94%;
   --popover-foreground: 176 40% 12%;
   --popover-border: 166 30% 84%;
 
@@ -466,11 +466,11 @@
   --input: 10 25% 84%;
   --ring: 4 70% 59%;
 
-  --card: 10 80% 99%;
+  --card: 10 80% 95%;
   --card-foreground: 4 30% 14%;
   --card-border: 10 25% 84%;
 
-  --popover: 10 80% 99%;
+  --popover: 10 80% 95%;
   --popover-foreground: 4 30% 14%;
   --popover-border: 10 25% 84%;
 
@@ -498,11 +498,11 @@
   --input: 208 30% 84%;
   --ring: 221 83% 53%;
 
-  --card: 208 80% 99%;
+  --card: 208 80% 95%;
   --card-foreground: 221 30% 14%;
   --card-border: 208 30% 84%;
 
-  --popover: 208 80% 99%;
+  --popover: 208 80% 95%;
   --popover-foreground: 221 30% 14%;
   --popover-border: 208 30% 84%;
 
@@ -530,11 +530,11 @@
   --input: 36 20% 83%;
   --ring: 20 37% 35%;
 
-  --card: 36 25% 99%;
+  --card: 36 25% 95%;
   --card-foreground: 20 30% 12%;
   --card-border: 36 20% 83%;
 
-  --popover: 36 25% 99%;
+  --popover: 36 25% 95%;
   --popover-foreground: 20 30% 12%;
   --popover-border: 36 20% 83%;
 
@@ -562,11 +562,11 @@
   --input: 0 25% 84%;
   --ring: 0 72% 51%;
 
-  --card: 0 80% 99%;
+  --card: 0 80% 95%;
   --card-foreground: 0 30% 14%;
   --card-border: 0 25% 84%;
 
-  --popover: 0 80% 99%;
+  --popover: 0 80% 95%;
   --popover-foreground: 0 30% 14%;
   --popover-border: 0 25% 84%;
 
@@ -594,11 +594,11 @@
   --input: 207 30% 84%;
   --ring: 230 68% 33%;
 
-  --card: 207 70% 98%;
+  --card: 207 70% 94%;
   --card-foreground: 230 30% 14%;
   --card-border: 207 30% 84%;
 
-  --popover: 207 70% 98%;
+  --popover: 207 70% 94%;
   --popover-foreground: 230 30% 14%;
   --popover-border: 207 30% 84%;
 
@@ -626,11 +626,11 @@
   --input: 4 25% 84%;
   --ring: 4 72% 38%;
 
-  --card: 4 60% 99%;
+  --card: 4 60% 95%;
   --card-foreground: 4 25% 12%;
   --card-border: 4 25% 84%;
 
-  --popover: 4 60% 99%;
+  --popover: 4 60% 95%;
   --popover-foreground: 4 25% 12%;
   --popover-border: 4 25% 84%;
 
@@ -690,11 +690,11 @@
   --input: 295 22% 84%;
   --ring: 295 58% 44%;
 
-  --card: 295 45% 99%;
+  --card: 295 45% 95%;
   --card-foreground: 295 25% 14%;
   --card-border: 295 22% 84%;
 
-  --popover: 295 45% 99%;
+  --popover: 295 45% 95%;
   --popover-foreground: 295 25% 14%;
   --popover-border: 295 22% 84%;
 
@@ -850,11 +850,11 @@
   --input: 160 25% 84%;
   --ring: 160 52% 35%;
 
-  --card: 160 40% 99%;
+  --card: 160 40% 95%;
   --card-foreground: 160 35% 12%;
   --card-border: 160 25% 84%;
 
-  --popover: 160 40% 99%;
+  --popover: 160 40% 95%;
   --popover-foreground: 160 35% 12%;
   --popover-border: 160 25% 84%;
 
@@ -882,11 +882,11 @@
   --input: 22 25% 83%;
   --ring: 22 75% 50%;
 
-  --card: 22 70% 99%;
+  --card: 22 70% 95%;
   --card-foreground: 22 30% 12%;
   --card-border: 22 25% 83%;
 
-  --popover: 22 70% 99%;
+  --popover: 22 70% 95%;
   --popover-foreground: 22 30% 12%;
   --popover-border: 22 25% 83%;
 
@@ -914,11 +914,11 @@
   --input: 215 20% 84%;
   --ring: 215 58% 35%;
 
-  --card: 215 25% 99%;
+  --card: 215 25% 95%;
   --card-foreground: 215 30% 14%;
   --card-border: 215 20% 84%;
 
-  --popover: 215 25% 99%;
+  --popover: 215 25% 95%;
   --popover-foreground: 215 30% 14%;
   --popover-border: 215 20% 84%;
 
@@ -946,11 +946,11 @@
   --input: 320 22% 84%;
   --ring: 320 52% 38%;
 
-  --card: 320 30% 99%;
+  --card: 320 30% 95%;
   --card-foreground: 320 30% 14%;
   --card-border: 320 22% 84%;
 
-  --popover: 320 30% 99%;
+  --popover: 320 30% 95%;
   --popover-foreground: 320 30% 14%;
   --popover-border: 320 22% 84%;
 
