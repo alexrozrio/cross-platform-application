@@ -1301,7 +1301,7 @@ function ThemeIconWithEmojiFallback({ themeId, value, sym, size = 28 }: { themeI
 
 function getCharacterNames(themeId: ThemeId): string[] {
   const names: Record<string, string[]> = {
-    shapes:       ['Circle', 'Square', 'Triangle', 'Diamond', 'Star', 'Oval', 'Heart', 'Pentagon', 'Hexagon', 'Octagon', 'Cylinder', 'Cube', 'Cuboid', 'Triangle', 'Dome', 'Cross'],
+    shapes:       ['Circle', 'Square', 'Triangle', 'Rectangle', 'Diamond', 'Star', 'Oval', 'Heart', 'Pentagon', 'Hexagon', 'Octagon', 'Cylinder', 'Cube', 'Cuboid', 'Triangle', 'Dome'],
     adventure:    ['Dora', 'Monkey', 'Backpack', 'Map', 'Blue Cow', 'Squirrel', 'Fox', 'Diego', 'Dora & Baby Jaguar', "Dora's Boat", 'Star', 'Adventure House', 'Rain Boots', 'Acorns', 'Treasure Chest', 'Butterfly'],
     superhero:    ['Superman', 'Spider-Man', 'Batman', 'Hulk', 'Captain America', 'Iron Man', 'Caped Superhero', 'Aquaman', 'Wonder Woman', 'Ice Superhero', 'Female Superhero', 'The Flash', 'Black Panther', 'Armored Hero', 'Green Hero', 'Black-Suited Hero'],
     ocean:        ['Clownfish', 'Sea Turtle', 'Crab', 'Starfish', 'Pearl Shell', 'Conch Shell', 'Octopus', 'Blue Tang', 'Coral Reef', 'Shrimp', 'Seahorse', 'Sea Urchin', 'Pufferfish', 'Manta Ray', 'Tropical Fish', 'Lionfish'],
