@@ -999,7 +999,7 @@ export default function Themes() {
         const ctCanAfford = gems >= ctCost;
         return (
           <Dialog open={!!previewColourId} onOpenChange={(open) => { if (!open) setPreviewColourId(null); }}>
-            <DialogContent className="max-w-sm p-0 overflow-hidden">
+            <DialogContent className="max-w-sm max-h-[calc(100dvh-2rem)] p-0 overflow-y-auto overscroll-contain">
               <DialogHeader className="px-5 pt-5 pb-0">
                 <DialogTitle>{ct.label} Theme</DialogTitle>
                 <DialogDescription>Colour palette preview</DialogDescription>
@@ -1084,7 +1084,7 @@ export default function Themes() {
         const ftCanAfford = gems >= ftCost;
         return (
           <Dialog open={!!previewFontId} onOpenChange={(open) => { if (!open) setPreviewFontId(null); }}>
-            <DialogContent className="max-w-sm">
+            <DialogContent className="max-w-sm max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
               <DialogHeader>
                 <DialogTitle>{ft.label} Font</DialogTitle>
                 <DialogDescription>How text looks throughout the app</DialogDescription>
