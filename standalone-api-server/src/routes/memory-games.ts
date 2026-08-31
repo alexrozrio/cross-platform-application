@@ -101,8 +101,22 @@ router.post("/memory-games/:id/complete", async (req, res): Promise<void> => {
   const [game] = await db
     .update(memoryGamesTable)
     .set({ status: "completed", elapsedSeconds, flips, points, xpEarned, gemsEarned, completedAt: new Date() })
-    .where(eq(memoryGamesTable.id, id))
+    .where(and(eq(memoryGamesTable.id, id), eq(memoryGamesTable.status, "active")))
     .returning();
+  if (!game) {
+    const [completedGame] = await db.select().from(memoryGamesTable).where(eq(memoryGamesTable.id, id));
+    if (completedGame?.status === "completed") {
+      res.json({
+        points: completedGame.points ?? 0,
+        xpEarned: completedGame.xpEarned ?? 0,
+        gemsEarned: completedGame.gemsEarned ?? 0,
+        completedAt: completedGame.completedAt?.toISOString(),
+      });
+      return;
+    }
+    res.status(404).json({ error: "Game not found or already finished" });
+    return;
+  }
 
   if (existing.profileId) {
     // Update gems, XP, and memory daily streak

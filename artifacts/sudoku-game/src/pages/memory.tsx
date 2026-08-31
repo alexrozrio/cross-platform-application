@@ -262,6 +262,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
   // Retaining the promise lets completion wait for the game ID instead of
   // silently losing the result and its gem reward.
   const gameCreationRef = useRef<Promise<number> | null>(null);
+  const completionStartedRef = useRef(false);
   const [showAbandonConfirm, setShowAbandonConfirm] = useState(false);
   const restoredRef = useRef(false);
 
@@ -344,6 +345,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
     setWinResult(null);
     setGameId(presetGameId ?? null);
     gameCreationRef.current = presetGameId ? Promise.resolve(presetGameId) : null;
+    completionStartedRef.current = false;
     setTipsUsed(0);
     setHintedIds([]);
     setPhase('playing');
@@ -352,19 +354,24 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
     if (presetGameId) return;
 
     // Create server-side game record (best-effort)
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 3000);
     const creation = customFetch<{ id: number }>('/api/memory-games', {
-        method: 'POST',
-        body: JSON.stringify({ profileId: profileId ?? undefined, gridSize: size }),
-      }).then((res) => {
-        setGameId(res.id);
-        return res.id;
-      });
+      method: 'POST',
+      body: JSON.stringify({ profileId: profileId ?? undefined, gridSize: size }),
+      signal: controller.signal,
+    }).then((res) => {
+      setGameId(res.id);
+      return res.id;
+    });
     gameCreationRef.current = creation;
     try {
       await creation;
     } catch {
       gameCreationRef.current = null;
       // non-fatal — game still plays locally
+    } finally {
+      window.clearTimeout(timeoutId);
     }
   }, [profileId, search, bookmarkedSize, updateMemoryBookmarkUrl]);
 
@@ -495,6 +502,8 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
   }, [lockBoard, gridSize]);
 
   const completeGame = useCallback(async (finalCards: Card[]) => {
+    if (completionStartedRef.current) return;
+    completionStartedRef.current = true;
     setPhase('won');
     sounds.complete();
     if (timerRef.current) clearInterval(timerRef.current);
@@ -507,16 +516,55 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
     const currentElapsed = elapsed;
     const currentFlips = flips + 1;
 
-    // Wait for an in-flight create request so very quick games are recorded.
-    const completedGameId = gameId ?? await gameCreationRef.current?.catch(() => null) ?? null;
+    const browserIsOffline = typeof navigator !== "undefined" && navigator.onLine === false;
+    // Wait for an in-flight create request so very quick games are recorded,
+    // but only while the browser reports a possible connection. startGame
+    // aborts this request after three seconds if the API is unreachable.
+    let completedGameId = gameId;
+    if (completedGameId === null && !browserIsOffline) {
+      completedGameId = await gameCreationRef.current?.catch(() => null) ?? null;
+    }
+
+    // A game can start while disconnected, leaving no server game ID. If the
+    // connection is back by the time the board is solved, create the record
+    // now and complete it through the normal scoring/reward path. The request
+    // itself verifies that the API is reachable; if it fails, retain the
+    // existing offline result.
+    if (completedGameId === null && profileId && !browserIsOffline) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(), 3000);
+        try {
+          const createdGame = await customFetch<{ id: number }>('/api/memory-games', {
+            method: 'POST',
+            body: JSON.stringify({ profileId, gridSize }),
+            signal: controller.signal,
+          });
+          completedGameId = createdGame.id;
+        } finally {
+          window.clearTimeout(timeoutId);
+        }
+      } catch {
+        // The browser may report itself online while the API is unreachable.
+        // Keep the game completion local in that case.
+      }
+    }
 
     let pts = 0;
     if (completedGameId !== null) {
       try {
-        const result = await customFetch<WinResult>(`/api/memory-games/${completedGameId}/complete`, {
-          method: 'POST',
-          body: JSON.stringify({ elapsedSeconds: currentElapsed, flips: currentFlips, tipsUsed }),
-        });
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(), 3000);
+        let result: WinResult;
+        try {
+          result = await customFetch<WinResult>(`/api/memory-games/${completedGameId}/complete`, {
+            method: 'POST',
+            body: JSON.stringify({ elapsedSeconds: currentElapsed, flips: currentFlips, tipsUsed }),
+            signal: controller.signal,
+          });
+        } finally {
+          window.clearTimeout(timeoutId);
+        }
         setWinResult(result);
         pts = result.points;
         if (profileId) {

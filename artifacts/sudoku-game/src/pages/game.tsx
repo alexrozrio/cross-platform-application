@@ -823,23 +823,120 @@ export default function Game({ id }: { id: string }) {
   const [pointsEarned, setPointsEarned] = useState<number | null>(null);
   const [isPersonalBest, setIsPersonalBest] = useState(false);
   const [showMobileControls, setShowMobileControls] = useState(false);
+  const completionStartedRef = useRef(false);
+  useEffect(() => {
+    completionStartedRef.current = false;
+  }, [storageGameKey]);
 
   const checkCompletion = useCallback(
     (currentGrid: string[], solution?: string) => {
       if (!solution) return;
       if (currentGrid.join("") === solution) {
+        if (completionStartedRef.current) return;
+        completionStartedRef.current = true;
         sounds.complete();
         setIsCompleted(true);
         if (offlineMode) {
-          // Offline mode — show completion UI without any server call
           localStorage.removeItem(storageKeyGrid);
           localStorage.removeItem(storageKeyNotes);
           localStorage.removeItem(storageKeyElapsed);
           const msg = pickCompletionMessage(game?.puzzle?.difficulty, game?.puzzle?.gridSize);
           setCompletionMessage(msg);
           setPointsEarned(null);
-          toast.success(`${msg.headline} ${msg.emoji}`, {
-            description: `Time: ${formattedTime} • Mistakes: ${mistakes} • Offline`,
+
+          // An offline route has no server game ID. If the connection came
+          // back while the user was solving, create a tracked game now and
+          // use the normal server completion path so score, XP, gems, stats,
+          // and achievements are recorded. The request itself is the
+          // connectivity check; navigator.onLine avoids an unnecessary wait
+          // when the browser already knows it is disconnected.
+          const trySyncingCompletion = async (): Promise<boolean> => {
+            const browserIsOffline = typeof navigator !== "undefined" && navigator.onLine === false;
+            if (browserIsOffline || (gameId === 0 && !profileId)) return false;
+
+            try {
+              let completionGameId = gameId;
+              if (completionGameId === 0) {
+                const offlinePuzzle = game?.puzzle;
+                if (!offlinePuzzle || !profileId) return false;
+
+                const controller = new AbortController();
+                const timeoutId = window.setTimeout(() => controller.abort(), 3000);
+                try {
+                  const puzzle = await generatePuzzle(
+                    {
+                      difficulty: offlinePuzzle.difficulty as any,
+                      gridSize: offlinePuzzle.gridSize as any,
+                    },
+                    { signal: controller.signal },
+                  );
+                  if (!puzzle) throw new Error("No puzzle returned");
+
+                  const createdGame = await customFetch<{ id: number }>("/api/games", {
+                    method: "POST",
+                    body: JSON.stringify({
+                      profileId,
+                      puzzleId: puzzle.id,
+                      difficulty: offlinePuzzle.difficulty,
+                    }),
+                    signal: controller.signal,
+                  });
+                  completionGameId = createdGame.id;
+                } finally {
+                  window.clearTimeout(timeoutId);
+                }
+              }
+
+              const completionController = new AbortController();
+              const completionTimeoutId = window.setTimeout(() => completionController.abort(), 3000);
+              let data: { points?: number; isPersonalBest?: boolean };
+              try {
+                data = await customFetch<{ points?: number; isPersonalBest?: boolean }>(
+                  `/api/games/${completionGameId}/complete`,
+                  {
+                    method: "POST",
+                    body: JSON.stringify({
+                      elapsedSeconds: seconds,
+                      mistakeCount: mistakes,
+                      hintsUsed: hints,
+                    }),
+                    signal: completionController.signal,
+                  },
+                );
+              } finally {
+                window.clearTimeout(completionTimeoutId);
+              }
+
+              const pts = data.points ?? null;
+              setPointsEarned(pts);
+              setIsPersonalBest((data as any).isPersonalBest === true);
+              if (profileId) {
+                queryClient.invalidateQueries({ queryKey: [`/api/profiles/${profileId}`] });
+                await queryClient.refetchQueries({
+                  queryKey: [`/api/profiles/${profileId}`],
+                  type: "active",
+                });
+                queryClient.invalidateQueries({ queryKey: [`/api/achievements/${profileId}`] });
+                queryClient.invalidateQueries({ queryKey: [`/api/stats/${profileId}`] });
+              }
+
+              toast.success(`${msg.headline} ${msg.emoji}`, {
+                description: pts
+                  ? `+${pts.toLocaleString()} pts • ${formattedTime}`
+                  : `Time: ${formattedTime} • Mistakes: ${mistakes}`,
+              });
+              return true;
+            } catch {
+              return false;
+            }
+          };
+
+          void trySyncingCompletion().then((synced) => {
+            if (!synced) {
+              toast.success(`${msg.headline} ${msg.emoji}`, {
+                description: `Time: ${formattedTime} • Mistakes: ${mistakes} • Offline`,
+              });
+            }
           });
           return;
         }

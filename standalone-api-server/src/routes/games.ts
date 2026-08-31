@@ -184,6 +184,13 @@ router.post("/games/:id/complete", async (req, res): Promise<void> => {
 
   const [puzzle] = await db.select().from(puzzlesTable).where(eq(puzzlesTable.id, existing.puzzleId));
 
+  // Completion requests can be retried after a lost network response. Do not
+  // award XP, gems, or stats a second time for an already completed game.
+  if (existing.status === "completed") {
+    res.json({ ...CompleteGameResponse.parse(formatGame(existing, puzzle)), isPersonalBest: false });
+    return;
+  }
+
   // Check for personal best (fastest prior completion for same profile+gridSize+difficulty)
   let isPersonalBest = false;
   if (existing.profileId && puzzle) {
@@ -220,8 +227,17 @@ router.post("/games/:id/complete", async (req, res): Promise<void> => {
       points,
       completedAt: new Date(),
     })
-    .where(eq(gamesTable.id, params.data.id))
+    .where(and(eq(gamesTable.id, params.data.id), eq(gamesTable.status, "active")))
     .returning();
+  if (!game) {
+    const [completedGame] = await db.select().from(gamesTable).where(eq(gamesTable.id, params.data.id));
+    if (completedGame?.status === "completed") {
+      res.json({ ...CompleteGameResponse.parse(formatGame(completedGame, puzzle)), isPersonalBest: false });
+      return;
+    }
+    res.status(404).json({ error: "Game not found or already finished" });
+    return;
+  }
 
   // Award gems and XP to the player's profile
   if (existing.profileId) {
