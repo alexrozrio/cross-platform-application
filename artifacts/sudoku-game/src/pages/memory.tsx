@@ -846,7 +846,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
 
         {/* Backstory modal */}
         <Dialog open={infoModal === 'backstory'} onOpenChange={o => !o && setInfoModal(null)}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Scroll className="w-5 h-5 text-primary" /> Backstory
