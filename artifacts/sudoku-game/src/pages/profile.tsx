@@ -583,6 +583,16 @@ export default function Profile() {
     else if (tabParam === "sudoku") setGameTab("sudoku");
   }, [tabParam]);
 
+  const statsSectionRef = React.useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!isLoading && (tabParam === "sudoku" || tabParam === "memory")) {
+      const frame = window.requestAnimationFrame(() => {
+        statsSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+      return () => window.cancelAnimationFrame(frame);
+    }
+  }, [isLoading, tabParam]);
+
   const { data: stats, isLoading: statsLoading } = useGetPlayerStats(profileId as number, {
     query: { enabled: !!profileId },
   });
@@ -869,7 +879,7 @@ export default function Profile() {
 
       {/* ── Statistics ───────────────────────────────────────────────────── */}
       {profileId && (
-        <div className="space-y-4">
+        <div ref={statsSectionRef} id="statistics" className="space-y-4 scroll-mt-20">
           <div className="flex items-center gap-2 bg-card rounded-2xl px-5 py-4 border border-border">
             <BarChart2 className="w-5 h-5 text-muted-foreground" />
             <h2 className="text-xl font-serif font-bold tracking-tight">Statistics</h2>
