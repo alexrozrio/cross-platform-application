@@ -40,7 +40,10 @@ const Profile = lazy(() => import("@/pages/profile"));
 const Leaderboard = lazy(() => import("@/pages/leaderboard"));
 function StatsRedirect() {
   const [, setLocation] = useLocation();
-  React.useEffect(() => { setLocation("/profile"); }, []);
+  const search = useSearch();
+  React.useEffect(() => {
+    setLocation(`/profile${search ? `?${search}` : ""}`);
+  }, [search, setLocation]);
   return null;
 }
 

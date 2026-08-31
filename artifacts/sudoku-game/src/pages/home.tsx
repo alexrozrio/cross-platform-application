@@ -686,7 +686,7 @@ export default function SudokuHome({
       {/* ── Quick links ── */}
       <div className="grid grid-cols-2 gap-3">
         <button
-          onClick={() => setLocation('/stats')}
+          onClick={() => setLocation('/profile?tab=sudoku')}
           className="flex items-center gap-3 rounded-xl border bg-card p-3 sm:p-4 hover:bg-muted/50 hover:border-primary/30 transition-all text-left"
         >
           <BarChart2 className="w-5 h-5 text-primary shrink-0" />
