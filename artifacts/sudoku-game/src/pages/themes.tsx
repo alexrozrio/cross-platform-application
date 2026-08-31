@@ -431,7 +431,7 @@ export default function Themes() {
         <div>
           <h2 className="text-xl font-serif font-semibold">Font Style</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Changes the typeface used throughout the app and is saved to your user profile. Default is free — others cost 50 gems each.
+            Changes the typeface used throughout the app and is saved to your user profile. Friendly is free — others cost 50 gems each.
           </p>
         </div>
 
