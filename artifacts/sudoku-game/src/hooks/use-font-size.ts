@@ -4,7 +4,7 @@ import { useGetProfile, useUpdateProfile } from '@workspace/api-client-react';
 
 export const FONT_SIZE_OPTIONS = [
   { id: 'small', label: 'Small', description: 'More content on screen', scale: 0.875 },
-  { id: 'default', label: 'Default', description: 'Recommended size', scale: 1 },
+  { id: 'default', label: 'Medium', description: 'Balanced for everyday use', scale: 1 },
   { id: 'large', label: 'Large', description: 'Easier to read', scale: 1.125 },
   { id: 'extra-large', label: 'Extra Large', description: 'Maximum readability', scale: 1.25 },
 ] as const;
