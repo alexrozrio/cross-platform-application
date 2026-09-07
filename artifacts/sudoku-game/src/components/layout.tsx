@@ -129,7 +129,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <TournamentWinModal badges={pendingBadges} onDismiss={dismissBadge} />
       <AchievementUnlockModal achievements={newlyUnlocked} onDismiss={dismiss} profileId={profileId} />
       <header className={[
-        "app-header border-b bg-card flex items-center justify-between sticky top-0 z-10",
+        "app-header border-b bg-card flex items-center justify-between sticky top-0 z-50 isolate shadow-sm",
         isGamePage ? "app-header-game px-3 md:px-6" : "app-header-standard px-6",
       ].join(" ")}>
         <Link href="/" className="flex items-center gap-2 shrink-0">
@@ -241,7 +241,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      <nav className="md:hidden border-t bg-card pt-2 px-2 flex items-center justify-around fixed bottom-0 left-0 right-0 z-10" style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}>
+      <nav className="md:hidden border-t bg-card pt-2 px-2 flex items-center justify-around fixed bottom-0 left-0 right-0 z-50 isolate shadow-[0_-2px_8px_rgba(0,0,0,0.08)]" style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}>
         {navItems.map((item) => (
           <Link
             key={item.href}
