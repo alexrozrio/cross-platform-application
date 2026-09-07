@@ -292,27 +292,36 @@ export default function Portal() {
             );
           })()}
 
-        {/* Sudoku quick launch */}
-        <div className="rounded-2xl border-2 border-primary/20 bg-card p-4 space-y-3">
+        {/* Sudoku quick launch — featured game */}
+        <div className="relative overflow-hidden rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/15 via-card to-primary/5 p-5 space-y-4 shadow-md shadow-primary/10">
+          <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-primary/10 blur-2xl" />
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Grid3X3 className="w-4 h-4 text-primary" />
-              <span className="font-bold text-sm">Sudoku</span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+                <Grid3X3 className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="block text-base font-black leading-tight">Sudoku</span>
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-primary/70">Featured game</span>
+              </div>
             </div>
             <button
               onClick={() => setLocation("/sudoku")}
-              className="text-xs text-primary/70 hover:text-primary transition-colors underline underline-offset-2"
+              className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold text-primary transition-colors hover:bg-primary/20"
             >
-              More options →
+              More options
             </button>
           </div>
+          <p className="text-sm font-medium leading-relaxed text-foreground/75">
+            Pick a grid and start solving.
+          </p>
           <div className={`grid gap-2 ${sudokuGridCols}`}>
             {visibleSudokuSizes.map((opt) => (
               <button
                 key={opt.size}
                 onClick={() => handleQuickStart(opt.size)}
                 disabled={loadingSize !== null}
-                className="flex flex-col items-center justify-center rounded-xl border-2 border-primary/25 bg-background hover:bg-primary/10 hover:border-primary/50 transition-all py-3 px-2 disabled:opacity-50 disabled:cursor-not-allowed min-h-[60px]"
+                className="flex min-h-[64px] flex-col items-center justify-center rounded-xl border-2 border-primary/35 bg-background/80 px-2 py-3 transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/10 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loadingSize === opt.size ? (
                   <Loader2 className="w-4 h-4 text-primary animate-spin" />
@@ -331,26 +340,35 @@ export default function Portal() {
           </div>
         </div>
 
-        {/* Memory Match quick launch */}
-        <div className="rounded-2xl border-2 border-violet-400/25 bg-card p-4 space-y-3">
+        {/* Memory Match quick launch — featured game */}
+        <div className="relative overflow-hidden rounded-2xl border-2 border-violet-400/45 bg-gradient-to-br from-violet-500/15 via-card to-purple-500/5 p-5 space-y-4 shadow-md shadow-violet-500/10">
+          <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-violet-400/15 blur-2xl" />
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-base leading-none">🃏</span>
-              <span className="font-bold text-sm">Memory Match</span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500 text-lg text-white shadow-sm">
+                🃏
+              </div>
+              <div>
+                <span className="block text-base font-black leading-tight">Memory Match</span>
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-400">Featured game</span>
+              </div>
             </div>
             <button
               onClick={() => setLocation("/memory")}
-              className="text-xs text-violet-500/70 hover:text-violet-600 transition-colors underline underline-offset-2"
+              className="rounded-full bg-violet-500/10 px-2.5 py-1 text-[10px] font-bold text-violet-600 transition-colors hover:bg-violet-500/20 dark:text-violet-400"
             >
-              More options →
+              More options
             </button>
           </div>
+          <p className="text-sm font-medium leading-relaxed text-foreground/75">
+            Match pairs and beat your best score.
+          </p>
           <div className={`grid gap-2 ${memoryGridCols}`}>
             {visibleMemoryOptions.map((opt) => (
               <button
                 key={opt.size}
                 onClick={() => setLocation(`/memory?size=${opt.size}`)}
-                className="flex flex-col items-center justify-center rounded-xl border-2 border-violet-400/20 bg-background hover:bg-violet-500/10 hover:border-violet-400/50 transition-all py-3 px-2 min-h-[60px]"
+                className="flex min-h-[64px] flex-col items-center justify-center rounded-xl border-2 border-violet-400/35 bg-background/80 px-2 py-3 transition-all hover:-translate-y-0.5 hover:border-violet-400/65 hover:bg-violet-500/10 active:translate-y-0"
               >
                 <span className="font-black text-sm leading-none text-violet-600">
                   {opt.label}
