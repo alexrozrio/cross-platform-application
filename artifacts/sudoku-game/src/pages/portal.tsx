@@ -293,27 +293,34 @@ export default function Portal() {
           })()}
 
         {/* Sudoku quick launch — featured game */}
-        <div className="relative overflow-hidden rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/15 via-card to-primary/5 p-5 space-y-4 shadow-md shadow-primary/10">
-          <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-primary/10 blur-2xl" />
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-                <Grid3X3 className="w-5 h-5" />
+        <div className="relative overflow-hidden rounded-2xl border-2 border-primary/45 bg-gradient-to-br from-primary/20 via-card to-primary/5 p-5 space-y-4 shadow-lg shadow-primary/15">
+          {/* Puzzle-grid backdrop */}
+          <div aria-hidden="true" className="pointer-events-none absolute -right-2 -top-3 grid h-32 w-32 rotate-6 grid-cols-3 overflow-hidden rounded-2xl border-2 border-primary/15 opacity-60">
+            {Array.from({ length: 9 }, (_, i) => (
+              <span key={i} className="flex items-center justify-center border border-primary/10 text-lg font-black text-primary/20">
+                {[5, 2, 8, 1, 7, 3, 9, 4, 6][i]}
+              </span>
+            ))}
+          </div>
+          <div className="relative z-10 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
+                <Grid3X3 className="w-6 h-6" />
               </div>
               <div>
-                <span className="block text-base font-black leading-tight">Sudoku</span>
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-primary/70">Featured game</span>
+                <span className="block text-xl font-black leading-tight">Sudoku</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary/75">Number puzzle</span>
               </div>
             </div>
             <button
               onClick={() => setLocation("/sudoku")}
-              className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold text-primary transition-colors hover:bg-primary/20"
+              className="rounded-full bg-primary px-3 py-1.5 text-[11px] font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
             >
-              More options
+              All options
             </button>
           </div>
-          <p className="text-sm font-medium leading-relaxed text-foreground/75">
-            Pick a grid and start solving.
+          <p className="relative z-10 text-base font-medium leading-relaxed text-foreground/80">
+            Choose a grid and start solving.
           </p>
           <div className={`grid gap-2 ${sudokuGridCols}`}>
             {visibleSudokuSizes.map((opt) => (
@@ -321,16 +328,16 @@ export default function Portal() {
                 key={opt.size}
                 onClick={() => handleQuickStart(opt.size)}
                 disabled={loadingSize !== null}
-                className="flex min-h-[64px] flex-col items-center justify-center rounded-xl border-2 border-primary/35 bg-background/80 px-2 py-3 transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/10 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
+                className="relative z-10 flex min-h-[68px] flex-col items-center justify-center rounded-xl border-2 border-primary/35 bg-background/85 px-2 py-3 transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/10 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loadingSize === opt.size ? (
                   <Loader2 className="w-4 h-4 text-primary animate-spin" />
                 ) : (
                   <>
-                    <span className="font-black text-sm leading-none text-primary">
+                    <span className="font-black text-base leading-none text-primary">
                       {opt.label}
                     </span>
-                    <span className="text-[11px] text-muted-foreground mt-1 leading-none">
+                    <span className="mt-1 text-xs text-muted-foreground leading-none">
                       {opt.sublabel}
                     </span>
                   </>
@@ -341,39 +348,47 @@ export default function Portal() {
         </div>
 
         {/* Memory Match quick launch — featured game */}
-        <div className="relative overflow-hidden rounded-2xl border-2 border-violet-400/45 bg-gradient-to-br from-violet-500/15 via-card to-purple-500/5 p-5 space-y-4 shadow-md shadow-violet-500/10">
-          <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-violet-400/15 blur-2xl" />
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500 text-lg text-white shadow-sm">
+        <div className="relative overflow-hidden rounded-2xl border-2 border-violet-400/50 bg-gradient-to-br from-violet-500/20 via-card to-purple-500/5 p-5 space-y-4 shadow-lg shadow-violet-500/15">
+          {/* Stacked card backdrop */}
+          <div aria-hidden="true" className="pointer-events-none absolute right-5 top-2 h-28 w-20 rotate-12 rounded-xl border-2 border-violet-400/20 bg-violet-400/10 opacity-70 shadow-sm">
+            <div className="flex h-full items-center justify-center text-3xl opacity-40">?</div>
+          </div>
+          <div aria-hidden="true" className="pointer-events-none absolute right-14 top-5 h-28 w-20 -rotate-6 rounded-xl border-2 border-violet-400/25 bg-card/70 opacity-80 shadow-sm">
+            <div className="flex h-full items-center justify-center">
+              <ThemeIcon themeId={themeId} value={2} size={30} />
+            </div>
+          </div>
+          <div className="relative z-10 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500 text-xl text-white shadow-md">
                 🃏
               </div>
               <div>
-                <span className="block text-base font-black leading-tight">Memory Match</span>
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-400">Featured game</span>
+                <span className="block text-xl font-black leading-tight">Memory Match</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-violet-600 dark:text-violet-400">Card matching</span>
               </div>
             </div>
             <button
               onClick={() => setLocation("/memory")}
-              className="rounded-full bg-violet-500/10 px-2.5 py-1 text-[10px] font-bold text-violet-600 transition-colors hover:bg-violet-500/20 dark:text-violet-400"
+              className="rounded-full bg-violet-500 px-3 py-1.5 text-[11px] font-bold text-white shadow-sm transition-colors hover:bg-violet-600"
             >
-              More options
+              All options
             </button>
           </div>
-          <p className="text-sm font-medium leading-relaxed text-foreground/75">
-            Match pairs and beat your best score.
+          <p className="relative z-10 text-base font-medium leading-relaxed text-foreground/80">
+            Find matching pairs and beat your score.
           </p>
           <div className={`grid gap-2 ${memoryGridCols}`}>
             {visibleMemoryOptions.map((opt) => (
               <button
                 key={opt.size}
                 onClick={() => setLocation(`/memory?size=${opt.size}`)}
-                className="flex min-h-[64px] flex-col items-center justify-center rounded-xl border-2 border-violet-400/35 bg-background/80 px-2 py-3 transition-all hover:-translate-y-0.5 hover:border-violet-400/65 hover:bg-violet-500/10 active:translate-y-0"
+                className="relative z-10 flex min-h-[68px] flex-col items-center justify-center rounded-xl border-2 border-violet-400/35 bg-background/85 px-2 py-3 transition-all hover:-translate-y-0.5 hover:border-violet-400/65 hover:bg-violet-500/10 active:translate-y-0"
               >
-                <span className="font-black text-sm leading-none text-violet-600">
+                <span className="font-black text-base leading-none text-violet-600">
                   {opt.label}
                 </span>
-                <span className="text-[11px] text-muted-foreground mt-1 leading-none">
+                <span className="mt-1 text-xs text-muted-foreground leading-none">
                   {opt.sub}
                 </span>
               </button>
