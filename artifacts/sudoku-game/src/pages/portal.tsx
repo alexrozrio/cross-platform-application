@@ -936,32 +936,6 @@ export default function Portal() {
           shown below the quick launch section
           ═══════════════════════════════════════════════════════════ */}
       <div className="md:hidden space-y-6 mt-2">
-        {/* Coming soon (mobile) — first */}
-        <div className="bg-card rounded-2xl border border-border p-4">
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5" /> Coming Soon
-          </p>
-          <div className="grid grid-cols-2 gap-3">
-            {COMING_SOON.map((game) => (
-              <div
-                key={game.title}
-                className="rounded-2xl border border-border bg-muted p-4 space-y-1.5 opacity-60 cursor-not-allowed select-none"
-              >
-                <span className="text-2xl">{game.icon}</span>
-                <div>
-                  <p className="font-bold text-sm">{game.title}</p>
-                  <Badge
-                    variant="outline"
-                    className="text-xs mt-0.5 border-current/30"
-                  >
-                    Soon
-                  </Badge>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Brain Games 4 All info — combined and collapsed by default */}
         <Collapsible
           open={aboutGamesOpen}
@@ -1037,6 +1011,32 @@ export default function Portal() {
             </div>
           </CollapsibleContent>
         </Collapsible>
+
+        {/* Coming soon (mobile) — last */}
+        <div className="bg-card rounded-2xl border border-border p-4">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
+            <Sparkles className="w-3.5 h-3.5" /> Coming Soon
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            {COMING_SOON.map((game) => (
+              <div
+                key={game.title}
+                className="rounded-2xl border border-border bg-muted p-4 space-y-1.5 opacity-60 cursor-not-allowed select-none"
+              >
+                <span className="text-2xl">{game.icon}</span>
+                <div>
+                  <p className="font-bold text-sm">{game.title}</p>
+                  <Badge
+                    variant="outline"
+                    className="text-xs mt-0.5 border-current/30"
+                  >
+                    Soon
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
