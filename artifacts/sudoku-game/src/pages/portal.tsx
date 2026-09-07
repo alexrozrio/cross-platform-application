@@ -99,7 +99,8 @@ export default function Portal() {
   const [memorySession, setMemorySession] = useState<MemorySession | null>(
     null,
   );
-  const [aboutGamesOpen, setAboutGamesOpen] = useState(true);
+  const [dailyChallengesOpen, setDailyChallengesOpen] = useState(false);
+  const [aboutGamesOpen, setAboutGamesOpen] = useState(false);
 
   useEffect(() => {
     if (!profileId || !isReady) return;
@@ -397,41 +398,62 @@ export default function Portal() {
         </div>
 
         {/* Daily Challenges */}
-        <div className="rounded-2xl border-2 border-orange-200/70 bg-card dark:border-orange-800/30 p-4 space-y-2">
-          <div className="flex items-center gap-2 mb-1">
-            <Flame className="w-4 h-4 text-orange-500 shrink-0" />
-            <span className="font-bold text-sm">Daily Challenges</span>
-            <span className="text-xs text-muted-foreground ml-auto">
-              Resets at midnight
-            </span>
-          </div>
-          <button
-            onClick={() => setLocation("/daily-challenge")}
-            className="w-full flex items-center gap-3 rounded-xl border border-orange-200 bg-white/60 dark:bg-orange-950/30 px-3 py-2.5 text-left hover:bg-white/90 dark:hover:bg-orange-950/50 transition-all"
-          >
-            <span className="text-lg leading-none shrink-0">🔢</span>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm">Sudoku</p>
-              <p className="text-xs text-muted-foreground">
-                One shared puzzle per day
-              </p>
-            </div>
-            <span className="text-orange-400 text-sm shrink-0">→</span>
-          </button>
-          <button
-            onClick={() => setLocation("/memory-challenge")}
-            className="w-full flex items-center gap-3 rounded-xl border border-orange-200 bg-white/60 dark:bg-orange-950/30 px-3 py-2.5 text-left hover:bg-white/90 dark:hover:bg-orange-950/50 transition-all"
-          >
-            <span className="text-lg leading-none shrink-0">🃏</span>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm">Memory Match</p>
-              <p className="text-xs text-muted-foreground">
-                Daily + weekly challenge
-              </p>
-            </div>
-            <span className="text-orange-400 text-sm shrink-0">→</span>
-          </button>
-        </div>
+        <Collapsible
+          open={dailyChallengesOpen}
+          onOpenChange={setDailyChallengesOpen}
+          className="rounded-2xl border-2 border-orange-200/70 bg-card p-4 dark:border-orange-800/30"
+        >
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              aria-expanded={dailyChallengesOpen}
+              className="flex w-full items-center gap-2 text-left"
+            >
+              <Flame className="h-4 w-4 shrink-0 text-orange-500" />
+              <span className="font-bold text-sm">Daily Challenges</span>
+              <span className="ml-auto text-xs text-muted-foreground">
+                Resets at midnight
+              </span>
+              <ChevronDown
+                aria-hidden="true"
+                className={`h-4 w-4 shrink-0 text-orange-400 transition-transform duration-200 ${
+                  dailyChallengesOpen ? "rotate-180" : ""
+                }`}
+              />
+              <span className="sr-only">
+                {dailyChallengesOpen ? "Collapse" : "Expand"} daily challenges
+              </span>
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-2 pt-3">
+            <button
+              onClick={() => setLocation("/daily-challenge")}
+              className="flex w-full items-center gap-3 rounded-xl border border-orange-200 bg-white/60 px-3 py-2.5 text-left transition-all hover:bg-white/90 dark:bg-orange-950/30 dark:hover:bg-orange-950/50"
+            >
+              <span className="shrink-0 text-lg leading-none">🔢</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold">Sudoku</p>
+                <p className="text-xs text-muted-foreground">
+                  One shared puzzle per day
+                </p>
+              </div>
+              <span className="shrink-0 text-sm text-orange-400">→</span>
+            </button>
+            <button
+              onClick={() => setLocation("/memory-challenge")}
+              className="flex w-full items-center gap-3 rounded-xl border border-orange-200 bg-white/60 px-3 py-2.5 text-left transition-all hover:bg-white/90 dark:bg-orange-950/30 dark:hover:bg-orange-950/50"
+            >
+              <span className="shrink-0 text-lg leading-none">🃏</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold">Memory Match</p>
+                <p className="text-xs text-muted-foreground">
+                  Daily + weekly challenge
+                </p>
+              </div>
+              <span className="shrink-0 text-sm text-orange-400">→</span>
+            </button>
+          </CollapsibleContent>
+        </Collapsible>
 
         {/* Level banner (mobile) */}
         {profile &&
@@ -814,43 +836,64 @@ export default function Portal() {
         </div>
 
         {/* Daily Challenges (desktop) */}
-        <div className="rounded-2xl border-2 border-orange-200/70 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 dark:border-orange-800/30 p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Flame className="w-5 h-5 text-orange-500" />
-            <span className="font-bold">Daily Challenges</span>
-            <span className="text-xs text-muted-foreground ml-auto">
-              Same puzzle for everyone · Resets at midnight
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
+        <Collapsible
+          open={dailyChallengesOpen}
+          onOpenChange={setDailyChallengesOpen}
+          className="rounded-2xl border-2 border-orange-200/70 bg-gradient-to-r from-orange-50 to-amber-50 p-5 dark:border-orange-800/30 dark:from-orange-950/20 dark:to-amber-950/20"
+        >
+          <CollapsibleTrigger asChild>
             <button
-              onClick={() => setLocation("/daily-challenge")}
-              className="flex items-center gap-3 rounded-xl border border-orange-200 bg-white/60 dark:bg-orange-950/30 px-4 py-3 text-left hover:bg-white/90 dark:hover:bg-orange-950/50 transition-all"
+              type="button"
+              aria-expanded={dailyChallengesOpen}
+              className="flex w-full items-center gap-2 text-left"
             >
-              <span className="text-2xl leading-none shrink-0">🔢</span>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm">Sudoku</p>
-                <p className="text-xs text-muted-foreground">
-                  One shared puzzle per day
-                </p>
-              </div>
-              <span className="text-orange-400 shrink-0">→</span>
+              <Flame className="h-5 w-5 text-orange-500" />
+              <span className="font-bold">Daily Challenges</span>
+              <span className="ml-auto text-xs text-muted-foreground">
+                Same puzzle for everyone · Resets at midnight
+              </span>
+              <ChevronDown
+                aria-hidden="true"
+                className={`h-4 w-4 shrink-0 text-orange-400 transition-transform duration-200 ${
+                  dailyChallengesOpen ? "rotate-180" : ""
+                }`}
+              />
+              <span className="sr-only">
+                {dailyChallengesOpen ? "Collapse" : "Expand"} daily challenges
+              </span>
             </button>
-            <button
-              onClick={() => setLocation("/memory-challenge")}
-              className="flex items-center gap-3 rounded-xl border border-orange-200 bg-white/60 dark:bg-orange-950/30 px-4 py-3 text-left hover:bg-white/90 dark:hover:bg-orange-950/50 transition-all"
-            >
-              <span className="text-2xl leading-none shrink-0">🃏</span>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm">Memory Match</p>
-                <p className="text-xs text-muted-foreground">
-                  Daily + weekly challenge
-                </p>
-              </div>
-              <span className="text-orange-400 shrink-0">→</span>
-            </button>
-          </div>
-        </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-4">
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setLocation("/daily-challenge")}
+                className="flex items-center gap-3 rounded-xl border border-orange-200 bg-white/60 px-4 py-3 text-left transition-all hover:bg-white/90 dark:bg-orange-950/30 dark:hover:bg-orange-950/50"
+              >
+                <span className="shrink-0 text-2xl leading-none">🔢</span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold">Sudoku</p>
+                  <p className="text-xs text-muted-foreground">
+                    One shared puzzle per day
+                  </p>
+                </div>
+                <span className="shrink-0 text-orange-400">→</span>
+              </button>
+              <button
+                onClick={() => setLocation("/memory-challenge")}
+                className="flex items-center gap-3 rounded-xl border border-orange-200 bg-white/60 px-4 py-3 text-left transition-all hover:bg-white/90 dark:bg-orange-950/30 dark:hover:bg-orange-950/50"
+              >
+                <span className="shrink-0 text-2xl leading-none">🃏</span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold">Memory Match</p>
+                  <p className="text-xs text-muted-foreground">
+                    Daily + weekly challenge
+                  </p>
+                </div>
+                <span className="shrink-0 text-orange-400">→</span>
+              </button>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
 
         {/* Coming soon (desktop) */}
         <div className="bg-card rounded-2xl border border-border p-5">
@@ -919,32 +962,11 @@ export default function Portal() {
           </div>
         </div>
 
-        {/* Title / sign-in note — after coming soon */}
-        <div className="bg-card border border-border rounded-2xl px-4 py-3 space-y-1">
-          <h1 className="text-2xl font-serif font-bold tracking-tight">
-            Brain Games 4 All
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Two classic brain games, endlessly replayable
-          </p>
-          {!profileId && isReady && (
-            <p className="text-xs text-muted-foreground">
-              <button
-                className="underline underline-offset-2 hover:text-foreground transition-colors"
-                onClick={() => setLocation("/sign-in")}
-              >
-                Sign in
-              </button>{" "}
-              to sync progress across devices
-            </p>
-          )}
-        </div>
-
-        {/* About the games — last */}
+        {/* Brain Games 4 All info — combined and collapsed by default */}
         <Collapsible
           open={aboutGamesOpen}
           onOpenChange={setAboutGamesOpen}
-          className="bg-card rounded-2xl border border-border p-4"
+          className="rounded-2xl border border-border bg-card p-4"
         >
           <CollapsibleTrigger asChild>
             <button
@@ -952,8 +974,13 @@ export default function Portal() {
               aria-expanded={aboutGamesOpen}
               className="w-full flex items-center justify-between gap-3 text-left group"
             >
-              <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                About the games
+              <span>
+                <span className="block text-lg font-serif font-bold tracking-tight">
+                  Brain Games 4 All
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  Two classic brain games, endlessly replayable
+                </span>
               </span>
               <ChevronDown
                 aria-hidden="true"
@@ -962,12 +989,23 @@ export default function Portal() {
                 }`}
               />
               <span className="sr-only">
-                {aboutGamesOpen ? "Collapse" : "Expand"} about the games
+                {aboutGamesOpen ? "Collapse" : "Expand"} Brain Games 4 All information
               </span>
             </button>
           </CollapsibleTrigger>
           <CollapsibleContent className="pt-3">
             <div className="space-y-3">
+              {!profileId && isReady && (
+                <p className="text-xs text-muted-foreground">
+                  <button
+                    className="underline underline-offset-2 transition-colors hover:text-foreground"
+                    onClick={() => setLocation("/sign-in")}
+                  >
+                    Sign in
+                  </button>{" "}
+                  to sync progress across devices
+                </p>
+              )}
               <button
                 type="button"
                 onClick={() => setLocation("/sudoku")}
