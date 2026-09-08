@@ -88,7 +88,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       iconCls: "text-sky-400", activeIconCls: "text-sky-600 dark:text-sky-400", activeBgCls: "bg-sky-100 dark:bg-sky-900/40" },
     { href: "/leaderboard", label: "Leaderboard", shortLabel: "Ranks", icon: Trophy, badge: 0, tooltip: "See the top players — complete games to rise up the rankings",
       iconCls: "text-amber-400", activeIconCls: "text-amber-600 dark:text-amber-400", activeBgCls: "bg-amber-100 dark:bg-amber-900/40" },
-    { href: "/challenges", label: "Challenges", shortLabel: "Duels", icon: Swords, badge: pendingCount, tooltip: "Challenge others to a duel — win to earn 10 💎 gems",
+    { href: "/challenges", label: "Challenges", shortLabel: "Duels", icon: Swords, badge: pendingCount, tooltip: "Challenge others to a duel — win for 10 💎 gems; ties award 2 💎 each",
       iconCls: "text-rose-400", activeIconCls: "text-rose-600 dark:text-rose-400", activeBgCls: "bg-rose-100 dark:bg-rose-900/40" },
     { href: "/themes", label: "Themes", shortLabel: "Themes", icon: Palette, badge: 0, tooltip: "Unlock new board themes and fonts with your gems",
       iconCls: "text-violet-400", activeIconCls: "text-violet-600 dark:text-violet-400", activeBgCls: "bg-violet-100 dark:bg-violet-900/40" },

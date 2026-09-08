@@ -908,10 +908,10 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
                 The game was popularised in the West as <em>Concentration</em>, named after the mental effort required to hold multiple card positions in mind simultaneously. It appeared in parlour game books as early as the 1890s and became a staple of children's toy boxes throughout the 20th century.
               </p>
               <p>
-                Memory training with matching cards has been studied extensively by cognitive scientists. Regularly playing the game is linked to improvements in short-term visual memory, pattern recognition, and focus — benefits that hold across all age groups.
+                Memory Match is a practice game for recalling positions and spotting matching symbols; any learning benefit varies by player.
               </p>
               <p>
-                In the digital era the game has evolved far beyond a standard 52-card deck. Here you can play with themed emoji symbols across grids from a quick 2×4 sprint to a challenging 8×8 marathon — and compete on global leaderboards for the fastest solve.
+                In the digital era the game has evolved far beyond a standard 52-card deck. Here you can play with themed emoji symbols across grids from a quick 2×4 sprint to a challenging 8×8 marathon, then compare your results on the leaderboard.
               </p>
             </div>
           </DialogContent>
@@ -1201,8 +1201,8 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
             </AlertDialogTitle>
             <AlertDialogDescription>
               {pendingAction?.type === 'reset'
-                ? 'All cards will be reshuffled and your current progress will be lost.'
-                : `This will start a fresh ${GRID_OPTIONS.find(o => o.size === (pendingAction as any)?.size)?.desc ?? 'game'}. Your current progress will be lost.`}
+                 ? 'The current board will be reshuffled and your current progress will be lost.'
+                 : `This starts a new shuffled ${GRID_OPTIONS.find(o => o.size === (pendingAction as any)?.size)?.desc ?? 'game'} board. Your current progress will be lost.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -151,7 +151,7 @@ function ChallengeCard({
         <div className="text-xs text-muted-foreground flex items-center gap-1.5 border-t pt-3">
           <Clock className="w-3 h-3" />
           {isDaily
-            ? "Resets at midnight · Bonus awarded once per day"
+            ? "Refreshes at 00:00 UTC · Bonus awarded once per day"
             : "Resets weekly · Bonus awarded once per week"}
         </div>
       </CardContent>

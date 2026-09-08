@@ -677,7 +677,7 @@ export default function SudokuHome({
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-sm">Daily Challenge</p>
-          <p className="text-xs text-muted-foreground">Same puzzle for everyone · Resets at midnight</p>
+          <p className="text-xs text-muted-foreground">Same puzzle for everyone · Refreshes at 00:00 UTC</p>
         </div>
         <div className="text-orange-400 text-lg shrink-0">→</div>
       </button>
@@ -737,7 +737,7 @@ export default function SudokuHome({
                 'Every row must contain each symbol exactly once.',
                 'Every column must contain each symbol exactly once.',
                 'Every box must contain each symbol exactly once.',
-                'No guessing required — every puzzle has a unique solution.',
+                'Each generated puzzle is designed to have one unique solution, so logical deduction is enough.',
                 'Cells with pre-filled values are fixed and cannot be changed.',
               ].map((rule, i) => (
                 <li key={i} className="flex gap-2">
@@ -747,7 +747,7 @@ export default function SudokuHome({
               ))}
             </ul>
             <p className="pt-1">
-              Grid sizes range from 3×3 (9 cells) up to 16×16 (256 cells). Larger grids use letters or images instead of numbers.
+               Grid sizes range from 3×3 (9 cells) up to 16×16 (256 cells). Letters and image styles are available on 3×3, 4×4, and 6×6 grids.
             </p>
           </div>
         </DialogContent>
@@ -783,7 +783,7 @@ export default function SudokuHome({
               <div className="space-y-1.5 text-muted-foreground">
                 {[
                   ['Arrow keys', 'Move between cells'],
-                  ['1–9 / A–P', 'Fill selected cell'],
+                   ['1–9 / A–F', 'Fill selected cell (use the on-screen keypad for 16×16 values 10–16)'],
                   ['Backspace / Delete', 'Clear selected cell'],
                   ['N', 'Toggle note mode'],
                   ['Z (Ctrl+Z)', 'Undo last move'],

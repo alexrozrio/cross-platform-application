@@ -172,7 +172,7 @@ function ShareSheet({
           </div>
 
           <p className="text-[11px] text-muted-foreground text-center">
-            Anyone with this link can accept your challenge and play against you.
+            Anyone can accept an open challenge link. A challenge sent to a specific player can only be accepted by that player.
           </p>
         </div>
       </DialogContent>

@@ -138,7 +138,7 @@ export default function DailyChallenge() {
           Daily Challenge
         </h1>
         <p className="text-muted-foreground text-sm">
-          One 9×9 Medium puzzle — same for everyone, resets each day.
+          One 9×9 Medium puzzle — the same for everyone, refreshed at 00:00 UTC each day.
         </p>
       </div>
 
@@ -194,7 +194,7 @@ export default function DailyChallenge() {
 
           <div className="text-xs text-muted-foreground border-t border-orange-100 dark:border-orange-800/40 pt-3 flex items-center gap-1.5">
             <Clock className="w-3 h-3" />
-            Resets at midnight · Complete daily to build your streak
+            Refreshes at 00:00 UTC · Complete it daily to build your streak
           </div>
         </CardContent>
       </Card>

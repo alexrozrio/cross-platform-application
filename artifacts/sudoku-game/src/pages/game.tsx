@@ -1726,7 +1726,7 @@ export default function Game({ id }: { id: string }) {
             <DialogHeader>
               <DialogTitle>Leave this game?</DialogTitle>
               <DialogDescription>
-                If you leave, this game will end and cannot be resumed.
+                 Leaving abandons this game. You won’t be able to resume it from the game screen.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
@@ -1754,7 +1754,7 @@ export default function Game({ id }: { id: string }) {
             <AlertDialogHeader>
               <AlertDialogTitle>Reset this puzzle?</AlertDialogTitle>
               <AlertDialogDescription>
-                All your filled numbers and notes will be cleared. The puzzle will restart from scratch.
+                 Your filled numbers and notes will be cleared, and this same puzzle will start over.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -2171,7 +2171,7 @@ export default function Game({ id }: { id: string }) {
                 className="flex-col h-12 gap-0.5 relative"
                 onClick={handleHint}
                 disabled={isGameOver || hints >= MAX_HINTS}
-                title={notesMode ? "Auto-fill pencil marks (uses 1 hint)" : "Reveal the easiest empty cell (uses 1 hint)"}
+                 title={notesMode ? "Auto-fill pencil marks (uses 1 hint)" : "Reveal a recommended empty cell (uses 1 hint)"}
               >
                 <Lightbulb className={`h-4 w-4 ${hints >= MAX_HINTS ? "opacity-40" : ""}`} />
                 <span className="text-[11px]">{notesMode ? "Auto✏️" : "Hint"}</span>

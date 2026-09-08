@@ -412,7 +412,7 @@ export default function Portal() {
               <Flame className="h-4 w-4 shrink-0 text-orange-500" />
               <span className="font-bold text-sm">Daily Challenges</span>
               <span className="ml-auto text-xs text-muted-foreground">
-                Resets at midnight
+                Refreshes at 00:00 UTC
               </span>
               <ChevronDown
                 aria-hidden="true"
@@ -850,7 +850,7 @@ export default function Portal() {
               <Flame className="h-5 w-5 text-orange-500" />
               <span className="font-bold">Daily Challenges</span>
               <span className="ml-auto text-xs text-muted-foreground">
-                Same puzzle for everyone · Resets at midnight
+                Same puzzle for everyone · Refreshes at 00:00 UTC
               </span>
               <ChevronDown
                 aria-hidden="true"

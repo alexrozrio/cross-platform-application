@@ -747,7 +747,7 @@ export default function Profile() {
                       <ul className="space-y-2 text-muted-foreground">
                         <li className="flex items-start gap-2">
                           <span className="text-base leading-none mt-0.5">🧩</span>
-                          <span><span className="font-medium text-foreground">Complete a Sudoku or Memory puzzle</span> — 1💎 per 5,000 points scored (at least 1💎 per game).</span>
+                          <span><span className="font-medium text-foreground">Complete a Sudoku</span> — earn gems based on difficulty. <span className="font-medium text-foreground">Complete Memory Match</span> — earn 1💎 per 5,000 points (at least 1💎 per game).</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-base leading-none mt-0.5">🔥</span>
@@ -839,7 +839,7 @@ export default function Profile() {
                     <FormItem className="rounded-lg border p-4 space-y-3">
                       <div>
                         <FormLabel className="text-base">Game Mode</FormLabel>
-                        <FormDescription>Controls which difficulty levels appear in both games.</FormDescription>
+                        <FormDescription>Controls which grid sizes appear in Sudoku and Memory Match.</FormDescription>
                       </div>
                       <FormControl>
                         <ToggleGroup
@@ -851,17 +851,17 @@ export default function Profile() {
                           <ToggleGroupItem value="children" className="flex-col h-16 gap-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                             <Baby className="w-4 h-4" />
                             <span className="text-xs font-semibold">Kids</span>
-                            <span className="text-[10px] opacity-70 leading-none">Easy · Medium</span>
+                            <span className="text-[10px] opacity-70 leading-none">Smaller grids</span>
                           </ToggleGroupItem>
                           <ToggleGroupItem value="4all" className="flex-col h-16 gap-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                             <Globe className="w-4 h-4" />
                             <span className="text-xs font-semibold">4 All</span>
-                            <span className="text-[10px] opacity-70 leading-none">All levels</span>
+                            <span className="text-[10px] opacity-70 leading-none">All grid sizes</span>
                           </ToggleGroupItem>
                           <ToggleGroupItem value="adult" className="flex-col h-16 gap-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
                             <Dumbbell className="w-4 h-4" />
                             <span className="text-xs font-semibold">Adult</span>
-                            <span className="text-[10px] opacity-70 leading-none">Hard · Expert</span>
+                            <span className="text-[10px] opacity-70 leading-none">Larger grids</span>
                           </ToggleGroupItem>
                         </ToggleGroup>
                       </FormControl>

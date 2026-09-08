@@ -368,7 +368,7 @@ export default function Themes() {
             );
           })}
         </div>
-        <p className="text-xs text-muted-foreground">Classic and Dark are always free. Others unlock with gems.</p>
+         <p className="text-xs text-muted-foreground">Classic, Dark, and Forest are free. Other colour themes cost gems.</p>
       </section>
 
       {/* ── Background Image ─────────────────────────────────────────── */}
@@ -431,7 +431,7 @@ export default function Themes() {
         <div>
           <h2 className="text-xl font-serif font-semibold">Font Style</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Changes the typeface used throughout the app and is saved to your user profile. Friendly is free — others cost 50 gems each.
+             Changes the typeface used throughout the app and is saved to your user profile. Friendly and Modern are free. Other fonts cost 50 or 75 gems.
           </p>
         </div>
 
@@ -587,7 +587,7 @@ export default function Themes() {
         <div>
           <h2 className="text-xl font-serif font-semibold">Game Icon Set</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Choose the characters used when playing in image mode. Your selection is saved to your user profile. Shapes and Adventure are free.
+             Choose the characters used when playing in image mode. Your selection is saved to your user profile. Shapes, Ocean, Jungle, Princess, and Vehicles are free; other icon sets cost gems.
           </p>
         </div>
 
