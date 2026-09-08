@@ -320,7 +320,7 @@ export default function Portal() {
               All options
             </button>
           </div>
-          <p className="relative z-10 text-base font-medium leading-relaxed text-foreground/80">
+          <p className="relative z-10 text-xs sm:text-base font-medium leading-snug sm:leading-relaxed text-foreground/80">
             Choose a grid and start solving.
           </p>
           <div className={`grid gap-2 ${sudokuGridCols}`}>
@@ -376,7 +376,7 @@ export default function Portal() {
               All options
             </button>
           </div>
-          <p className="relative z-10 text-base font-medium leading-relaxed text-foreground/80">
+          <p className="relative z-10 text-xs sm:text-base font-medium leading-snug sm:leading-relaxed text-foreground/80">
             Find matching pairs and beat your score.
           </p>
           <div className={`grid gap-2 ${memoryGridCols}`}>
