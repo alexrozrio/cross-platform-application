@@ -10,7 +10,7 @@ router.get("/test-email", async (req, res): Promise<void> => {
   const to = typeof req.query.to === "string" ? req.query.to : null;
 
   const apiKey = process.env.RESEND_API_KEY;
-  const fromAddress = process.env.RESEND_FROM_EMAIL ?? "Brain Games 4 All <onboarding@resend.dev>";
+  const fromAddress = process.env.RESEND_FROM_EMAIL ?? "Play Brain Games . Online <onboarding@resend.dev>";
 
   const status: Record<string, unknown> = {
     RESEND_API_KEY: apiKey ? `(set, length=${apiKey.length})` : "(not set)",
@@ -33,7 +33,7 @@ router.get("/test-email", async (req, res): Promise<void> => {
     const { data, error } = await client.emails.send({
       from: fromAddress,
       to,
-      subject: "✅ Brain Games 4 All — email test",
+      subject: "✅ Play Brain Games . Online — email test",
       text: "If you're reading this, Resend is working correctly.",
     });
 

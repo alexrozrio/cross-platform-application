@@ -48,7 +48,7 @@ export default function PublicProfilePage({ profileId }: PublicProfileProps) {
           <Link href="/">
             <Button className="gap-2">
               <Gamepad2 className="w-4 h-4" />
-              Back to Brain Games 4 All
+              Back to Play Brain Games . Online
             </Button>
           </Link>
         </div>

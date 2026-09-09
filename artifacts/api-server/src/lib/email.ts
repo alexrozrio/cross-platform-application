@@ -74,7 +74,7 @@ export async function sendChallengeNotification({
 
   // Resend requires a verified sender domain. RESEND_FROM_EMAIL defaults to
   // the Resend sandbox address which works without domain verification.
-  const fromAddress = process.env.RESEND_FROM_EMAIL ?? "Brain Games 4 All <onboarding@resend.dev>";
+  const fromAddress = process.env.RESEND_FROM_EMAIL ?? "Play Brain Games . Online <onboarding@resend.dev>";
 
   try {
     const { data, error } = await client.emails.send({
@@ -101,7 +101,7 @@ export async function sendChallengeNotification({
           <td style="padding:32px;">
             <p style="margin:0 0 16px;font-size:16px;color:#374151;">Hi ${recipient.firstName},</p>
             <p style="margin:0 0 24px;font-size:16px;color:#374151;">
-              <strong>${challengerUsername}</strong> has challenged you to a Sudoku duel on <strong>Brain Games 4 All</strong>. Think you can beat them?
+              <strong>${challengerUsername}</strong> has challenged you to a Sudoku duel on <strong>Play Brain Games . Online</strong>. Think you can beat them?
             </p>
 
             <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f7f4;border-radius:8px;padding:20px;margin-bottom:28px;">
@@ -135,7 +135,7 @@ export async function sendChallengeNotification({
 
         <tr>
           <td style="background:#f8f7f4;padding:16px 32px;text-align:center;border-top:1px solid #e5e7eb;">
-            <p style="margin:0;font-size:12px;color:#9ca3af;">Brain Games 4 All · You're receiving this because someone challenged you</p>
+             <p style="margin:0;font-size:12px;color:#9ca3af;">Play Brain Games . Online · Need help? support@playbraingames.online</p>
           </td>
         </tr>
 

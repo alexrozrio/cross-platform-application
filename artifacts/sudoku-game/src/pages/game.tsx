@@ -1239,8 +1239,8 @@ export default function Game({ id }: { id: string }) {
       `${completionMessage.emoji} Solved a ${sizeLabel} ${diffLabel} Sudoku in ${formattedTime}!`,
       `❌ ${mistakes} mistake${mistakes !== 1 ? "s" : ""} · 💡 ${hints} hint${hints !== 1 ? "s" : ""}`,
       pointsEarned !== null ? `+${pointsEarned.toLocaleString()} pts · +${xpGain} XP` : `+${xpGain} XP`,
-      rank ? `🏅 ${rank} · Brain Games 4 All` : "🧠 Brain Games 4 All",
-      "🎮 Come and play Brain Games 4 All!",
+      rank ? `🏅 ${rank} · Play Brain Games . Online` : "🧠 Play Brain Games . Online",
+      "🎮 Play online at Play Brain Games . Online!",
       `🔗 ${appUrl}`,
     ];
     const text = lines.join("\n");
@@ -1539,7 +1539,7 @@ export default function Game({ id }: { id: string }) {
           onClick={() => setLocation("/")}
           className="w-full text-center text-sm text-foreground bg-card border border-border rounded-lg px-4 py-2.5 hover:bg-muted transition-colors"
         >
-          ← Back to Brain Games 4 All
+          ← Back to Play Brain Games . Online
         </button>
       </div>
     );
@@ -1696,7 +1696,7 @@ export default function Game({ id }: { id: string }) {
           onClick={() => setLocation("/")}
           className="w-full text-center text-sm text-foreground bg-card border border-border rounded-lg px-4 py-2.5 hover:bg-muted transition-colors"
         >
-          ← Back to Brain Games 4 All
+          ← Back to Play Brain Games . Online
         </button>
       </div>
     );

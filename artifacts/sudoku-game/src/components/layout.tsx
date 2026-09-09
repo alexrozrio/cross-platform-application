@@ -135,7 +135,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <img
             src="/brain-games-logo.png"
-            alt="Brain Games 4 All"
+            alt="Play Brain Games . Online"
             className={[
               "app-header-logo shrink-0",
               isGamePage ? "app-header-logo-game" : "",
@@ -145,7 +145,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             "app-header-brand font-serif font-bold tracking-tight text-primary",
             isGamePage ? "app-header-brand-game" : "",
           ].join(" ")}>
-            Brain Games 4 All
+            Play Brain Games . Online
           </span>
         </Link>
 

@@ -65,7 +65,7 @@ export default function BadgeSharePage() {
       {/* CTA for visitors */}
       <div className="rounded-xl border bg-card shadow-sm p-4 text-center space-y-2">
         <p className="text-sm font-semibold">Can you beat this score?</p>
-        <p className="text-xs text-muted-foreground">Play Brain Games 4 All — free, no download needed.</p>
+        <p className="text-xs text-muted-foreground">Play Brain Games . Online — free, no download needed.</p>
         <Button className="w-full mt-1" onClick={() => setLocation('/')}>
           Start Playing →
         </Button>

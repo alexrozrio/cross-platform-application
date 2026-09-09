@@ -1,4 +1,4 @@
-# Brain Games 4 All
+# Play Brain Games . Online
 
 A multiplayer browser game platform featuring Sudoku and memory games, with leaderboards, daily challenges, login-streak rewards, and Google OAuth sign-in.
 

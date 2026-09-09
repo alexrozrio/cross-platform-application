@@ -518,7 +518,7 @@ export default function Portal() {
         {/* Title */}
         <div className="text-center space-y-2 pt-4 bg-card rounded-2xl px-6 py-5 border border-border">
           <h1 className="text-4xl font-serif font-bold tracking-tight">
-            Brain Games 4 All
+            Play Brain Games . Online
           </h1>
           <p className="text-muted-foreground text-lg">
             Choose your game and play
@@ -936,7 +936,7 @@ export default function Portal() {
           shown below the quick launch section
           ═══════════════════════════════════════════════════════════ */}
       <div className="md:hidden space-y-6 mt-2">
-        {/* Brain Games 4 All info — combined and collapsed by default */}
+        {/* Play Brain Games . Online info — combined and collapsed by default */}
         <Collapsible
           open={aboutGamesOpen}
           onOpenChange={setAboutGamesOpen}
@@ -950,7 +950,7 @@ export default function Portal() {
             >
               <span>
                 <span className="block text-lg font-serif font-bold tracking-tight">
-                  Brain Games 4 All
+                  Play Brain Games . Online
                 </span>
                 <span className="text-xs text-muted-foreground">
                   Two classic brain games, endlessly replayable
@@ -963,7 +963,7 @@ export default function Portal() {
                 }`}
               />
               <span className="sr-only">
-                {aboutGamesOpen ? "Collapse" : "Expand"} Brain Games 4 All information
+                {aboutGamesOpen ? "Collapse" : "Expand"} Play Brain Games . Online information
               </span>
             </button>
           </CollapsibleTrigger>

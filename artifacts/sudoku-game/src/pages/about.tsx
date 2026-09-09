@@ -43,7 +43,7 @@ export default function About() {
 
       <div className="space-y-4 text-sm text-muted-foreground leading-relaxed bg-card rounded-2xl border border-border px-5 py-4">
         <p>
-          Brain Games 4 All brings together Sudoku and Memory Match — built to make timeless puzzles accessible and engaging for everyone, from first-time solvers to seasoned experts. We believe a great puzzle game should be beautiful, fast, and endlessly replayable.
+          Play Brain Games . Online brings together Sudoku and Memory Match — built to make timeless puzzles accessible and engaging for everyone, from first-time solvers to seasoned experts. We believe a great puzzle game should be beautiful, fast, and endlessly replayable.
         </p>
         <p>
           In Sudoku, beyond the standard 9×9, we support baby grids perfect for kids and pro-level 16×16 boards that will challenge even experienced players. You can play with numbers, letters, or swappable image themes — keeping every session feeling fresh.

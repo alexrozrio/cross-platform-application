@@ -23,7 +23,7 @@ export default function TermsOfService() {
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">1. Acceptance</h2>
           <p>
-            By accessing or using Brain Games 4 All, including the Sudoku and Memory Match games ("Service"), you agree to be bound by these Terms. If you do not agree, please stop using the Service immediately.
+            By accessing or using Play Brain Games . Online, including the Sudoku and Memory Match games ("Service"), you agree to be bound by these Terms. If you do not agree, please stop using the Service immediately.
           </p>
         </section>
 
@@ -91,7 +91,7 @@ export default function TermsOfService() {
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">10. Contact</h2>
           <p>
-            Questions? Email <span className="text-foreground font-medium">legal@sudokugame.app</span>.
+            Questions? Email <a className="text-foreground font-medium underline underline-offset-2" href="mailto:help@playbraingames.online">help@playbraingames.online</a>. For administrative matters, contact <a className="text-foreground font-medium underline underline-offset-2" href="mailto:admin@playbraingames.online">admin@playbraingames.online</a>.
           </p>
         </section>
       </div>

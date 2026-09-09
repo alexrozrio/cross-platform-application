@@ -1009,7 +1009,7 @@ export default function Themes() {
               <div className="mx-5 mt-3 rounded-xl overflow-hidden border border-border shadow-md text-[11px]" style={{ background: ct.bg, color: ct.primary }}>
                 {/* Header bar */}
                 <div className="flex items-center justify-between px-3 py-2" style={{ background: ct.primary }}>
-                  <span className="font-bold text-white text-xs">Brain Games 4 All</span>
+                  <span className="font-bold text-white text-xs">Play Brain Games . Online</span>
                   <div className="flex gap-1.5">
                     {['Home', 'Leaderboard', 'Themes'].map(l => (
                       <span key={l} className="text-white/70 text-[9px]">{l}</span>

@@ -80,7 +80,7 @@ export default function PrivacyPolicy() {
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">8. Contact</h2>
           <p>
-            Questions about this policy? Reach us at <span className="text-foreground font-medium">privacy@sudokugame.app</span>. We will respond within 30 days.
+             Questions about this policy? Reach us at <a className="text-foreground font-medium underline underline-offset-2" href="mailto:info@playbraingames.online">info@playbraingames.online</a>. For account or data support, contact <a className="text-foreground font-medium underline underline-offset-2" href="mailto:support@playbraingames.online">support@playbraingames.online</a>. We will respond within 30 days.
           </p>
         </section>
       </div>

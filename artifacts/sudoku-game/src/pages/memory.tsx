@@ -615,8 +615,8 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
       `${winMessage?.emoji ?? '🎉'} Matched all ${getPairs(gridSize)} pairs (${sizeLabel} ${diffLabel}) in ${formatTime(elapsed)}!`,
       `🔄 ${flips} flip${flips !== 1 ? 's' : ''}`,
       winResult && winResult.points > 0 ? `+${winResult.points.toLocaleString()} pts` : null,
-      rank ? `🏅 ${rank} · Brain Games 4 All` : '🧠 Brain Games 4 All',
-      '🎮 Come and play Brain Games 4 All!',
+      rank ? `🏅 ${rank} · Play Brain Games . Online` : '🧠 Play Brain Games . Online',
+      '🎮 Play online at Play Brain Games . Online!',
       `🔗 ${appUrl}`,
     ].filter(Boolean).join('\n');
     try {
@@ -1032,7 +1032,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
           onClick={() => setLocation('/')}
           className="w-full text-center text-sm text-foreground bg-card border border-border rounded-lg px-4 py-2.5 hover:bg-muted transition-colors"
         >
-          ← Back to Brain Games 4 All
+          ← Back to Play Brain Games . Online
         </button>
       </div>
     );

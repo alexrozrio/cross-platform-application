@@ -1,6 +1,6 @@
 {
-  "name": "Brain Games 4 All",
-  "short_name": "BrainGames",
+  "name": "Play Brain Games . Online",
+  "short_name": "Play Brain Games",
   "description": "Play Sudoku and Memory Match, earn achievements, and compete on the leaderboard.",
   "start_url": "/",
   "display": "standalone",
