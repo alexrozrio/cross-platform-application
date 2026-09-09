@@ -294,9 +294,11 @@ export default function Portal() {
           })()}
 
         {/* Sudoku quick launch — featured game */}
-        <div className="relative isolate overflow-hidden rounded-2xl border-2 border-primary/45 bg-card bg-gradient-to-br from-primary/20 via-card to-primary/5 p-4 space-y-3 shadow-lg shadow-primary/15">
+        <div className="relative isolate overflow-hidden rounded-2xl border-2 border-primary/55 bg-gradient-to-br from-cyan-100 via-sky-50 to-indigo-100 p-4 space-y-3 shadow-xl shadow-primary/20 ring-1 ring-inset ring-white/70 dark:from-cyan-950/80 dark:via-sky-950/75 dark:to-indigo-950/80 dark:ring-white/10">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-400 via-primary to-indigo-500" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -left-8 h-28 w-28 rounded-full bg-cyan-300/35 blur-2xl dark:bg-cyan-400/15" />
           {/* Puzzle-grid backdrop */}
-          <div aria-hidden="true" className="pointer-events-none absolute -right-2 -top-3 grid h-32 w-32 rotate-6 grid-cols-3 overflow-hidden rounded-2xl border-2 border-primary/15 opacity-60">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-2 -top-3 grid h-32 w-32 rotate-6 grid-cols-3 overflow-hidden rounded-2xl border-2 border-primary/20 bg-white/20 opacity-70 dark:bg-white/5">
             {Array.from({ length: 9 }, (_, i) => (
               <span key={i} className="flex items-center justify-center border border-primary/10 text-lg font-black text-primary/20">
                 {[5, 2, 8, 1, 7, 3, 9, 4, 6][i]}
@@ -309,8 +311,8 @@ export default function Portal() {
                 <Grid3X3 className="w-6 h-6" />
               </div>
               <div>
-                <span className="block text-xl font-black leading-tight">Sudoku</span>
-                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary/75">Number puzzle</span>
+                <span className="block text-xl font-black leading-tight text-slate-900 dark:text-white">Sudoku</span>
+                <span className="mt-1 inline-flex w-fit rounded-full bg-white/65 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-primary shadow-sm dark:bg-slate-950/30">Number puzzle</span>
               </div>
             </div>
             <button
@@ -329,7 +331,7 @@ export default function Portal() {
                 key={opt.size}
                 onClick={() => handleQuickStart(opt.size)}
                 disabled={loadingSize !== null}
-                className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-primary/35 bg-background px-2 py-2 transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/10 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
+                className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-primary/30 bg-white/75 px-2 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:bg-white active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"
               >
                 {loadingSize === opt.size ? (
                   <Loader2 className="w-4 h-4 text-primary animate-spin" />
@@ -349,12 +351,14 @@ export default function Portal() {
         </div>
 
         {/* Memory Match quick launch — featured game */}
-        <div className="relative isolate overflow-hidden rounded-2xl border-2 border-violet-400/50 bg-card bg-gradient-to-br from-violet-500/20 via-card to-purple-500/5 p-4 space-y-3 shadow-lg shadow-violet-500/15">
+        <div className="relative isolate overflow-hidden rounded-2xl border-2 border-violet-400/60 bg-gradient-to-br from-fuchsia-100 via-violet-50 to-amber-100 p-4 space-y-3 shadow-xl shadow-violet-500/20 ring-1 ring-inset ring-white/70 dark:from-fuchsia-950/75 dark:via-violet-950/80 dark:to-amber-950/60 dark:ring-white/10">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-400" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-fuchsia-300/35 blur-2xl dark:bg-fuchsia-400/15" />
           {/* Stacked card backdrop */}
-          <div aria-hidden="true" className="pointer-events-none absolute right-5 top-2 h-28 w-20 rotate-12 rounded-xl border-2 border-violet-400/20 bg-violet-400/10 opacity-70 shadow-sm">
+          <div aria-hidden="true" className="pointer-events-none absolute right-5 top-2 h-28 w-20 rotate-12 rounded-xl border-2 border-violet-400/30 bg-fuchsia-300/25 opacity-80 shadow-sm dark:bg-violet-400/10">
             <div className="flex h-full items-center justify-center text-3xl opacity-40">?</div>
           </div>
-          <div aria-hidden="true" className="pointer-events-none absolute right-14 top-5 h-28 w-20 -rotate-6 rounded-xl border-2 border-violet-400/25 bg-card/70 opacity-80 shadow-sm">
+          <div aria-hidden="true" className="pointer-events-none absolute right-14 top-5 h-28 w-20 -rotate-6 rounded-xl border-2 border-violet-400/35 bg-white/55 opacity-90 shadow-sm dark:bg-slate-950/35">
             <div className="flex h-full items-center justify-center">
               <ThemeIcon themeId={themeId} value={2} size={30} />
             </div>
@@ -365,8 +369,8 @@ export default function Portal() {
                 🃏
               </div>
               <div>
-                <span className="block text-xl font-black leading-tight">Memory Match</span>
-                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-violet-600 dark:text-violet-400">Card matching</span>
+                <span className="block text-xl font-black leading-tight text-slate-900 dark:text-white">Memory Match</span>
+                <span className="mt-1 inline-flex w-fit rounded-full bg-white/65 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-violet-700 shadow-sm dark:bg-slate-950/30 dark:text-violet-300">Card matching</span>
               </div>
             </div>
             <button
@@ -384,7 +388,7 @@ export default function Portal() {
               <button
                 key={opt.size}
                 onClick={() => setLocation(`/memory?size=${opt.size}`)}
-                className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-violet-400/35 bg-background px-2 py-2 transition-all hover:-translate-y-0.5 hover:border-violet-400/65 hover:bg-violet-500/10 active:translate-y-0"
+                className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-violet-400/35 bg-white/75 px-2 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"
               >
                 <span className="font-black text-base leading-none text-violet-600">
                   {opt.label}
