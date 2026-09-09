@@ -21,9 +21,9 @@ export function AchievementUnlockModal({ achievements, onDismiss, profileId }: A
   const games = new Set(achievements.map((a) => a.game));
   const statsTab = games.size === 1 && games.has("memory") ? "memory" : "sudoku";
 
-  const handleViewStats = () => {
+  const handleViewAchievements = () => {
     onDismiss();
-    setLocation(`/stats?tab=${statsTab}`);
+    setLocation(`/profile?tab=${statsTab}&section=achievements`);
   };
 
   const isSingle = achievements.length === 1;
@@ -88,7 +88,7 @@ export function AchievementUnlockModal({ achievements, onDismiss, profileId }: A
         {/* Actions */}
         <div className="px-5 pb-6 pt-4 flex flex-col gap-2">
           <Button
-            onClick={handleViewStats}
+            onClick={handleViewAchievements}
             className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl h-11"
           >
             View Achievements →

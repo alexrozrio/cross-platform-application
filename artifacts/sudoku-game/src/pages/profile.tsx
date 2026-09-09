@@ -327,7 +327,10 @@ function AchievementsCard({ profileId, game }: { profileId: number; game: "sudok
   const unlockedCount = data ? gameMeta.filter((a) => data[a.id]?.unlocked).length : 0;
 
   return (
-    <Card className={`shadow-sm ${isMemory ? "border-purple-200/60 dark:border-purple-800/40" : "border-primary/10"}`}>
+    <Card
+      id={`profile-achievements-${game}`}
+      className={`scroll-mt-20 shadow-sm ${isMemory ? "border-purple-200/60 dark:border-purple-800/40" : "border-primary/10"}`}
+    >
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-base">
@@ -568,7 +571,9 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 export default function Profile() {
   const [, setLocation] = useLocation();
   const search = useSearch();
-  const tabParam = new URLSearchParams(search).get("tab");
+  const params = new URLSearchParams(search);
+  const tabParam = params.get("tab");
+  const sectionParam = params.get("section");
 
   const { profileId, isSignedIn, replitUser } = useAuth();
   const { data: profile, isLoading } = useGetProfile(profileId as number, {
@@ -583,19 +588,22 @@ export default function Profile() {
     else if (tabParam === "sudoku") setGameTab("sudoku");
   }, [tabParam]);
 
-  const statsSectionRef = React.useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!isLoading && (tabParam === "sudoku" || tabParam === "memory")) {
-      const frame = window.requestAnimationFrame(() => {
-        statsSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-      return () => window.cancelAnimationFrame(frame);
-    }
-  }, [isLoading, tabParam]);
-
   const { data: stats, isLoading: statsLoading } = useGetPlayerStats(profileId as number, {
     query: { enabled: !!profileId },
   });
+
+  const statsSectionRef = React.useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!isLoading && !statsLoading && (tabParam === "sudoku" || tabParam === "memory")) {
+      const frame = window.requestAnimationFrame(() => {
+        const target = sectionParam === "achievements"
+          ? document.getElementById(`profile-achievements-${tabParam}`)
+          : statsSectionRef.current;
+        target?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+      return () => window.cancelAnimationFrame(frame);
+    }
+  }, [isLoading, statsLoading, tabParam, sectionParam]);
 
   const { data: tournamentStreak } = useQuery<TournamentStreakData>({
     queryKey: ["tournament-streak", profileId],
