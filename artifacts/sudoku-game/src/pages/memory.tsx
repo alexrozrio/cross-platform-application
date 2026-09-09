@@ -141,8 +141,8 @@ function MemoryCard({
           className={[
             'absolute inset-0 rounded-xl flex items-center justify-center border-2 transition-all',
             hinted
-              ? 'border-amber-400 bg-card shadow-[0_0_0_3px_rgba(251,191,36,0.4)] animate-pulse'
-              : 'border-primary/30 bg-card hover:bg-muted',
+              ? 'border-amber-400 bg-gradient-to-br from-amber-100 via-fuchsia-50 to-violet-100 shadow-[0_0_0_3px_rgba(251,191,36,0.4)] animate-pulse dark:from-amber-950/60 dark:via-fuchsia-950/50 dark:to-violet-950/60'
+              : 'border-violet-300/50 bg-gradient-to-br from-violet-100 via-fuchsia-50 to-amber-50 hover:from-violet-200 hover:to-fuchsia-100 dark:border-violet-700/50 dark:from-violet-950/60 dark:via-fuchsia-950/50 dark:to-amber-950/40 dark:hover:from-violet-900/70',
           ].join(' ')}
           style={{ backfaceVisibility: 'hidden' }}
         >
@@ -152,8 +152,8 @@ function MemoryCard({
         <div
           className={`absolute inset-0 rounded-xl flex items-center justify-center border-2 transition-colors
             ${card.matched
-              ? 'border-green-400/60 bg-card'
-              : 'border-primary/30 bg-card'}`}
+              ? 'border-green-400/70 bg-gradient-to-br from-emerald-100 via-green-50 to-cyan-50 dark:from-emerald-950/60 dark:via-green-950/50 dark:to-cyan-950/50'
+              : 'border-fuchsia-300/50 bg-gradient-to-br from-white via-violet-50 to-fuchsia-50 dark:border-fuchsia-700/50 dark:from-slate-950/60 dark:via-violet-950/50 dark:to-fuchsia-950/50'}`}
           style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
         >
           {frontContent}
@@ -644,7 +644,8 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
       <div className="max-w-lg mx-auto w-full animate-in fade-in duration-500 flex flex-col gap-4 sm:gap-6 pb-20 sm:pb-8">
 
         {/* Top bar: back + title */}
-        <div className="flex items-center justify-between gap-3 bg-card rounded-2xl px-4 py-3 border border-border">
+        <div className="relative isolate overflow-hidden flex items-center justify-between gap-3 rounded-2xl border-2 border-fuchsia-200/80 bg-gradient-to-br from-fuchsia-50 via-white to-violet-100 px-4 py-3 shadow-lg shadow-violet-500/10 dark:border-fuchsia-800/60 dark:from-fuchsia-950/60 dark:via-card dark:to-violet-950/60">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full bg-amber-300/30 blur-2xl dark:bg-amber-400/15" />
           <button
             onClick={() => setLocation('/')}
             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
@@ -660,7 +661,8 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
         </div>
 
         {/* Theme preview strip + display mode toggle — one row */}
-        <div className="memory-display-options flex items-center gap-2 bg-card border border-border rounded-2xl px-4 py-3">
+        <div className="memory-display-options relative isolate overflow-hidden flex items-center gap-2 rounded-2xl border-2 border-violet-200/80 bg-gradient-to-r from-violet-50 via-fuchsia-50 to-amber-50 px-4 py-3 shadow-md shadow-violet-500/10 dark:border-violet-800/50 dark:from-violet-950/50 dark:via-fuchsia-950/40 dark:to-amber-950/40">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-400" />
           {/* 5 symbol preview */}
           <div className="memory-symbol-preview flex items-center gap-1 shrink-0">
             {displayMode === 'image'
@@ -676,7 +678,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
             }
           </div>
           {/* Pill toggle */}
-          <div className="memory-display-toggle ml-auto flex items-center gap-1 rounded-full border bg-muted/50 p-0.5">
+          <div className="memory-display-toggle ml-auto flex items-center gap-1 rounded-full border border-violet-200 bg-white/60 p-0.5 shadow-sm dark:border-violet-700/50 dark:bg-slate-950/30">
             {([
               { id: 'image'  as DisplayMode, label: '🎴' , title: 'Images' },
               { id: 'number' as DisplayMode, label: '123', title: 'Numbers' },
@@ -690,7 +692,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
                 className={[
                   'rounded-full px-2.5 py-1 text-xs font-bold transition-all',
                   displayMode === m.id
-                    ? 'bg-background shadow text-foreground'
+                    ? 'bg-violet-500 text-white shadow'
                     : 'text-muted-foreground hover:text-foreground',
                 ].join(' ')}
               >
@@ -701,8 +703,9 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
         </div>
 
         {/* ── Grid size cards: 2×2 on mobile, row on desktop ── */}
-        <div className="bg-card border border-border rounded-2xl p-3">
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2.5">Choose Grid Size</p>
+        <div className="relative isolate overflow-hidden rounded-2xl border-2 border-violet-200/80 bg-gradient-to-br from-white via-violet-50 to-fuchsia-50 p-3 shadow-xl shadow-violet-500/10 dark:border-violet-800/50 dark:from-card dark:via-violet-950/35 dark:to-fuchsia-950/40">
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-8 -left-8 h-24 w-24 rounded-full bg-amber-300/25 blur-2xl dark:bg-amber-400/10" />
+          <p className="relative z-10 text-xs font-semibold uppercase tracking-widest text-violet-700 dark:text-violet-300 mb-2.5">Choose Grid Size</p>
 
           {/* Mobile: 2×2 grid */}
           <div className="grid grid-cols-2 gap-2.5 sm:hidden">
@@ -711,8 +714,8 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
                 key={opt.size}
                 onClick={() => startGame(opt.size)}
                 className={[
-                  'group relative flex flex-col items-center justify-center rounded-2xl border-2 bg-gradient-to-br from-primary/8 to-primary/4 hover:border-primary/40 hover:from-primary/14 hover:to-primary/8 active:scale-[0.97] transition-all p-4 gap-1.5 min-h-[110px]',
-                  gridSize === opt.size ? 'border-primary ring-2 ring-primary/25 shadow-sm' : 'border-primary/15',
+                  'group relative z-10 flex flex-col items-center justify-center rounded-2xl border-2 bg-gradient-to-br from-violet-100/80 via-fuchsia-50/80 to-amber-100/70 hover:border-violet-400 hover:from-violet-200/90 hover:to-fuchsia-100 active:scale-[0.97] transition-all p-4 gap-1.5 min-h-[110px] shadow-sm dark:from-violet-950/55 dark:via-fuchsia-950/45 dark:to-amber-950/35',
+                  gridSize === opt.size ? 'border-violet-500 ring-2 ring-violet-400/35 shadow-md' : 'border-violet-200/80 dark:border-violet-800/60',
                 ].join(' ')}
               >
                 <span className="text-xl leading-none">{sizeEmoji[opt.size]}</span>
@@ -730,8 +733,8 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
                 key={opt.size}
                 onClick={() => startGame(opt.size)}
                 className={[
-                  'w-full flex items-center justify-between rounded-xl border-2 transition-all p-4 text-left group bg-gradient-to-r from-primary/5 to-primary/3 hover:border-primary/40 hover:from-primary/10 hover:to-primary/8',
-                  gridSize === opt.size ? 'border-primary ring-2 ring-primary/25 shadow-sm' : 'border-primary/15',
+                   'w-full flex items-center justify-between rounded-xl border-2 transition-all p-4 text-left group bg-gradient-to-r from-violet-50 to-fuchsia-50 hover:border-violet-400 hover:from-violet-100 hover:to-fuchsia-100 dark:from-violet-950/45 dark:to-fuchsia-950/40',
+                   gridSize === opt.size ? 'border-violet-500 ring-2 ring-violet-400/35 shadow-sm' : 'border-violet-200/80 dark:border-violet-800/60',
                 ].join(' ')}
               >
                 <div className="flex items-center gap-4">
@@ -1044,7 +1047,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
   return (
     <div className="max-w-2xl w-full space-y-4 animate-in fade-in duration-300 -mx-2 px-2 sm:mx-auto sm:px-0">
       {/* Header bar — two rows so nothing overflows on mobile */}
-      <div className="flex flex-col gap-1.5 bg-card border border-border rounded-xl px-3 py-2">
+      <div className="flex flex-col gap-1.5 rounded-xl border-2 border-violet-200/70 bg-gradient-to-r from-violet-50 via-fuchsia-50 to-amber-50 px-3 py-2 shadow-md shadow-violet-500/10 dark:border-violet-800/50 dark:from-violet-950/45 dark:via-fuchsia-950/35 dark:to-amber-950/30">
 
         {/* Row 1: back · stats · progress bar */}
         <div className="flex items-center gap-2.5">
@@ -1077,7 +1080,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
           {/* Progress bar */}
           <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
             <motion.div
-              className="h-full rounded-full bg-primary"
+              className="h-full rounded-full bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-400"
               animate={{ width: `${(matchedCount / totalPairs) * 100}%` }}
               transition={{ duration: 0.3 }}
             />
@@ -1232,7 +1235,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="rounded-xl border-2 border-primary/20 bg-card p-3 space-y-2">
+            <div className="rounded-xl border-2 border-violet-300/60 bg-gradient-to-br from-violet-50 via-fuchsia-50 to-amber-50 p-3 space-y-2 dark:border-violet-700/50 dark:from-violet-950/55 dark:via-fuchsia-950/45 dark:to-amber-950/35">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Start New Game</p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {filteredGridOptions.map(opt => (

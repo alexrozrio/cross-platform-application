@@ -368,7 +368,8 @@ export default function SudokuHome({
     <div className="max-w-lg mx-auto w-full animate-in fade-in duration-500 flex flex-col gap-4 sm:gap-8">
 
       {/* ── Top bar ── */}
-      <div className="flex items-center justify-between gap-3 bg-card rounded-2xl px-4 py-3 border border-border">
+      <div className="relative isolate overflow-hidden flex items-center justify-between gap-3 rounded-2xl border-2 border-sky-200/80 bg-gradient-to-br from-sky-50 via-white to-indigo-50 px-4 py-3 shadow-lg shadow-sky-500/10 dark:border-sky-800/60 dark:from-sky-950/60 dark:via-card dark:to-indigo-950/60">
+        <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full bg-indigo-300/25 blur-2xl dark:bg-indigo-400/15" />
         <button
           onClick={() => setLocation('/')}
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
@@ -392,7 +393,7 @@ export default function SudokuHome({
           true;
         return validForMode;
       })() && (
-        <div className="bg-card border border-border rounded-2xl p-3">
+        <div className="rounded-2xl border-2 border-cyan-200/70 bg-gradient-to-br from-cyan-50 via-sky-50 to-indigo-50 p-3 shadow-lg shadow-cyan-500/10 dark:border-cyan-800/50 dark:from-cyan-950/40 dark:via-card dark:to-indigo-950/50">
         <button
           onClick={() => {
             if (activeGame.puzzle) {
@@ -405,7 +406,7 @@ export default function SudokuHome({
               setLocation(sudokuGamePath(gridSize, difficulty, activeGame.id));
             }
           }}
-          className="w-full flex items-center gap-3 rounded-xl border-2 border-primary/40 bg-primary/5 p-3 sm:p-4 hover:bg-primary/10 hover:border-primary/60 transition-all text-left"
+          className="w-full flex items-center gap-3 rounded-xl border-2 border-cyan-300/60 bg-gradient-to-r from-cyan-100/70 via-sky-100/60 to-indigo-100/70 p-3 text-left transition-all hover:border-primary/70 hover:from-cyan-200/80 hover:to-indigo-200/80 dark:border-cyan-700/50 dark:from-cyan-950/50 dark:via-sky-950/40 dark:to-indigo-950/50"
         >
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
             <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
@@ -426,7 +427,9 @@ export default function SudokuHome({
           MOBILE new-game section (< sm)
           compact: pill difficulty, 2-3 col grid
           ══════════════════════════════════════════ */}
-      <div className="sm:hidden bg-card border border-border rounded-2xl p-4 flex flex-col gap-4">
+      <div className="relative isolate overflow-hidden sm:hidden rounded-2xl border-2 border-sky-200/80 bg-gradient-to-br from-white via-sky-50 to-indigo-50 p-4 shadow-xl shadow-sky-500/10 dark:border-sky-800/50 dark:from-card dark:via-sky-950/35 dark:to-indigo-950/45">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-400 via-sky-500 to-indigo-500" />
+        <div className="relative flex flex-col gap-4">
 
         {/* Difficulty pills */}
         <div>
@@ -448,7 +451,7 @@ export default function SudokuHome({
                   'rounded-xl border-2 py-2 text-xs font-bold transition-all',
                   difficulty === d
                     ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                    : 'border-border bg-background hover:border-primary/40 hover:bg-muted/50',
+                     : 'border-sky-200 bg-white/75 hover:border-sky-400 hover:bg-sky-50 dark:border-sky-800/60 dark:bg-slate-950/25 dark:hover:bg-sky-950/40',
                 ].join(' ')}
               >
                 <span className={difficulty === d ? '' : difficultyMeta[d].color}>{difficultyMeta[d].label}</span>
@@ -473,7 +476,7 @@ export default function SudokuHome({
                 }}
                 className={[
                   'flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-xs font-semibold transition-all',
-                  selectedMode === 'number' ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:border-primary/40',
+                     selectedMode === 'number' ? 'border-primary bg-primary text-primary-foreground' : 'border-sky-200/80 bg-white/50 hover:border-sky-400 dark:border-sky-800/60 dark:bg-slate-950/20',
                 ].join(' ')}
               >
                 <Hash className="w-3 h-3" /> Numbers
@@ -487,7 +490,7 @@ export default function SudokuHome({
                   }}
                   className={[
                     'flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-xs font-semibold transition-all',
-                    selectedMode === 'alpha' ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:border-primary/40',
+                     selectedMode === 'alpha' ? 'border-primary bg-primary text-primary-foreground' : 'border-sky-200/80 bg-white/50 hover:border-sky-400 dark:border-sky-800/60 dark:bg-slate-950/20',
                   ].join(' ')}
                 >
                   <Type className="w-3 h-3" /> Letters
@@ -502,7 +505,7 @@ export default function SudokuHome({
                   }}
                   className={[
                     'flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-xs font-semibold transition-all',
-                    selectedMode === 'image' ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:border-primary/40',
+                     selectedMode === 'image' ? 'border-primary bg-primary text-primary-foreground' : 'border-sky-200/80 bg-white/50 hover:border-sky-400 dark:border-sky-800/60 dark:bg-slate-950/20',
                   ].join(' ')}
                 >
                   <ThemeIcon themeId={themeId} value={1} size={12} /> {activeTheme.name}
@@ -530,7 +533,7 @@ export default function SudokuHome({
                   'flex flex-col items-center justify-center rounded-2xl border-2 py-3.5 gap-0.5 transition-all active:scale-[0.97]',
                   gridSize === opt.size
                     ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                    : 'border-primary/15 bg-gradient-to-br from-primary/8 to-primary/4 hover:border-primary/40',
+                     : 'border-sky-200 bg-gradient-to-br from-cyan-100/80 via-sky-50/80 to-indigo-100/80 hover:border-primary/60 hover:from-cyan-200/80 hover:to-indigo-200/80 dark:border-sky-800/60 dark:from-cyan-950/45 dark:via-sky-950/35 dark:to-indigo-950/50',
                 ].join(' ')}
               >
                 <span className="font-black text-base leading-none">{opt.label}</span>
@@ -539,13 +542,14 @@ export default function SudokuHome({
             ))}
           </div>
         </div>
+        </div>
       </div>
 
       {/* ══════════════════════════════════════════
           DESKTOP new-game section (≥ sm)
           original Card layout unchanged
           ══════════════════════════════════════════ */}
-      <Card className="hidden sm:block shadow-md border-primary/15">
+      <Card className="hidden sm:block border-2 border-sky-200/70 bg-gradient-to-br from-white via-sky-50/50 to-indigo-50/70 shadow-xl shadow-sky-500/10 dark:border-sky-800/50 dark:from-card dark:via-sky-950/25 dark:to-indigo-950/35">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2">
             <Play className="w-5 h-5 text-primary" /> New Game
