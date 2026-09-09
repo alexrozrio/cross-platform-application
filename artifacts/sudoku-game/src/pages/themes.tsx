@@ -376,8 +376,8 @@ export default function Themes() {
         <div>
           <h2 className="text-xl font-serif font-semibold">Background Image</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Add a personal touch with a custom image or use the theme’s default backdrop.<br />
-            Your chosen background appears throughout the app behind every game. The on/off choice is saved to your profile; custom uploads stay on this device for your profile.
+            Use the system-provided background image for your selected theme.<br />
+            The selected background appears throughout the app behind every game. Your on/off choice is saved to your profile.
           </p>
         </div>
 
