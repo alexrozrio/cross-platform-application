@@ -224,75 +224,6 @@ export default function Portal() {
           MOBILE QUICK LAUNCH — shown only on mobile (top of screen)
           ═══════════════════════════════════════════════════════════ */}
       <div className="md:hidden space-y-3 mb-6">
-        {/* Resume strips */}
-        {activeGame &&
-          (() => {
-            const gs = activeGame.puzzle?.gridSize;
-            const validForMode =
-              gameMode === "children"
-                ? [3, 4, 6].includes(gs!)
-                : gameMode === "adult"
-                  ? [9, 16].includes(gs!)
-                  : true;
-            return validForMode ? (
-              <button
-                onClick={() => setLocation(sudokuGamePath(
-                  activeGame.puzzle?.gridSize ?? 9,
-                  activeGame.puzzle?.difficulty ?? "easy",
-                  activeGame.id,
-                ))}
-                className="w-full flex items-center gap-3 rounded-xl border-2 border-primary/30 bg-card px-4 py-2.5 text-left hover:bg-muted transition-all"
-              >
-                <RotateCcw className="w-4 h-4 text-primary shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <span className="text-sm font-semibold text-primary">
-                    Resume Sudoku
-                  </span>
-                  {activeGame.puzzle && (
-                    <span className="text-xs text-muted-foreground capitalize ml-2">
-                      {activeGame.puzzle.gridSize}×{activeGame.puzzle.gridSize}{" "}
-                      · {activeGame.puzzle.difficulty}
-                    </span>
-                  )}
-                </div>
-                <span className="text-primary text-sm shrink-0">→</span>
-              </button>
-            ) : null;
-          })()}
-
-        {memorySession &&
-          (() => {
-            const gs = memorySession.gridSize;
-            const validForMode =
-              gameMode === "children"
-                ? [2, 4].includes(gs)
-                : gameMode === "adult"
-                  ? [6, 8].includes(gs)
-                  : true;
-            if (!validForMode) return null;
-            const matched = memorySession.cards.filter((c) => c.matched).length;
-            const total = memorySession.cards.length / 2;
-            const sizeLabel =
-              gs === 2 ? "2×4" : gs === 4 ? "4×4" : gs === 6 ? "4×8" : "8×8";
-            return (
-              <button
-                onClick={() => setLocation("/memory")}
-                className="w-full flex items-center gap-3 rounded-xl border-2 border-violet-400/30 bg-card px-4 py-2.5 text-left hover:bg-muted transition-all"
-              >
-                <RotateCcw className="w-4 h-4 text-violet-600 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <span className="text-sm font-semibold text-violet-700 dark:text-violet-400">
-                    Resume Memory Match
-                  </span>
-                  <span className="text-xs text-muted-foreground ml-2">
-                    {sizeLabel} · {matched}/{total} pairs
-                  </span>
-                </div>
-                <span className="text-violet-500 text-sm shrink-0">→</span>
-              </button>
-            );
-          })()}
-
         {/* Sudoku quick launch — featured game */}
         <div className="relative isolate overflow-hidden rounded-2xl border-2 border-primary/55 bg-gradient-to-br from-cyan-100 via-sky-50 to-indigo-100 p-4 space-y-3 shadow-xl shadow-primary/20 ring-1 ring-inset ring-white/70 dark:from-cyan-950/80 dark:via-sky-950/75 dark:to-indigo-950/80 dark:ring-white/10">
           <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-400 via-primary to-indigo-500" />
@@ -350,6 +281,41 @@ export default function Portal() {
           </div>
         </div>
 
+        {activeGame &&
+          (() => {
+            const gs = activeGame.puzzle?.gridSize;
+            const validForMode =
+              gameMode === "children"
+                ? [3, 4, 6].includes(gs!)
+                : gameMode === "adult"
+                  ? [9, 16].includes(gs!)
+                  : true;
+            return validForMode ? (
+              <button
+                onClick={() => setLocation(sudokuGamePath(
+                  activeGame.puzzle?.gridSize ?? 9,
+                  activeGame.puzzle?.difficulty ?? "easy",
+                  activeGame.id,
+                ))}
+                className="w-full flex items-center gap-3 rounded-xl border-2 border-primary/30 bg-card px-4 py-2.5 text-left hover:bg-muted transition-all"
+              >
+                <RotateCcw className="w-4 h-4 text-primary shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm font-semibold text-primary">
+                    Resume Sudoku
+                  </span>
+                  {activeGame.puzzle && (
+                    <span className="text-xs text-muted-foreground capitalize ml-2">
+                      {activeGame.puzzle.gridSize}×{activeGame.puzzle.gridSize}{" "}
+                      · {activeGame.puzzle.difficulty}
+                    </span>
+                  )}
+                </div>
+                <span className="text-primary text-sm shrink-0">→</span>
+              </button>
+            ) : null;
+          })()}
+
         {/* Memory Match quick launch — featured game */}
         <div className="relative isolate overflow-hidden rounded-2xl border-2 border-violet-400/60 bg-gradient-to-br from-fuchsia-100 via-violet-50 to-amber-100 p-4 space-y-3 shadow-xl shadow-violet-500/20 ring-1 ring-inset ring-white/70 dark:from-fuchsia-950/75 dark:via-violet-950/80 dark:to-amber-950/60 dark:ring-white/10">
           <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-400" />
@@ -400,6 +366,39 @@ export default function Portal() {
             ))}
           </div>
         </div>
+
+        {memorySession &&
+          (() => {
+            const gs = memorySession.gridSize;
+            const validForMode =
+              gameMode === "children"
+                ? [2, 4].includes(gs)
+                : gameMode === "adult"
+                  ? [6, 8].includes(gs)
+                  : true;
+            if (!validForMode) return null;
+            const matched = memorySession.cards.filter((c) => c.matched).length;
+            const total = memorySession.cards.length / 2;
+            const sizeLabel =
+              gs === 2 ? "2×4" : gs === 4 ? "4×4" : gs === 6 ? "4×8" : "8×8";
+            return (
+              <button
+                onClick={() => setLocation("/memory")}
+                className="w-full flex items-center gap-3 rounded-xl border-2 border-violet-400/30 bg-card px-4 py-2.5 text-left hover:bg-muted transition-all"
+              >
+                <RotateCcw className="w-4 h-4 text-violet-600 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm font-semibold text-violet-700 dark:text-violet-400">
+                    Resume Memory Match
+                  </span>
+                  <span className="text-xs text-muted-foreground ml-2">
+                    {sizeLabel} · {matched}/{total} pairs
+                  </span>
+                </div>
+                <span className="text-violet-500 text-sm shrink-0">→</span>
+              </button>
+            );
+          })()}
 
         {/* Daily Challenges */}
         <Collapsible
