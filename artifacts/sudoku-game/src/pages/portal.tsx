@@ -294,7 +294,7 @@ export default function Portal() {
           })()}
 
         {/* Sudoku quick launch — featured game */}
-        <div className="relative isolate overflow-hidden rounded-2xl border-2 border-primary/45 bg-card bg-gradient-to-br from-primary/20 via-card to-primary/5 p-5 space-y-4 shadow-lg shadow-primary/15">
+        <div className="relative isolate overflow-hidden rounded-2xl border-2 border-primary/45 bg-card bg-gradient-to-br from-primary/20 via-card to-primary/5 p-4 space-y-3 shadow-lg shadow-primary/15">
           {/* Puzzle-grid backdrop */}
           <div aria-hidden="true" className="pointer-events-none absolute -right-2 -top-3 grid h-32 w-32 rotate-6 grid-cols-3 overflow-hidden rounded-2xl border-2 border-primary/15 opacity-60">
             {Array.from({ length: 9 }, (_, i) => (
@@ -304,8 +304,8 @@ export default function Portal() {
             ))}
           </div>
           <div className="relative z-10 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
                 <Grid3X3 className="w-6 h-6" />
               </div>
               <div>
@@ -320,16 +320,16 @@ export default function Portal() {
               All options
             </button>
           </div>
-          <p className="relative z-10 text-xs sm:text-base font-medium leading-snug sm:leading-relaxed text-foreground/80">
+          <p className="relative z-10 text-[11px] font-medium leading-tight text-foreground/80">
             Choose a grid and start solving.
           </p>
-          <div className={`grid gap-2 ${sudokuGridCols}`}>
+          <div className={`grid gap-1.5 ${sudokuGridCols}`}>
             {visibleSudokuSizes.map((opt) => (
               <button
                 key={opt.size}
                 onClick={() => handleQuickStart(opt.size)}
                 disabled={loadingSize !== null}
-                className="relative z-10 flex min-h-[68px] flex-col items-center justify-center rounded-xl border-2 border-primary/35 bg-background px-2 py-3 transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/10 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
+                className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-primary/35 bg-background px-2 py-2 transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/10 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loadingSize === opt.size ? (
                   <Loader2 className="w-4 h-4 text-primary animate-spin" />
@@ -349,7 +349,7 @@ export default function Portal() {
         </div>
 
         {/* Memory Match quick launch — featured game */}
-        <div className="relative isolate overflow-hidden rounded-2xl border-2 border-violet-400/50 bg-card bg-gradient-to-br from-violet-500/20 via-card to-purple-500/5 p-5 space-y-4 shadow-lg shadow-violet-500/15">
+        <div className="relative isolate overflow-hidden rounded-2xl border-2 border-violet-400/50 bg-card bg-gradient-to-br from-violet-500/20 via-card to-purple-500/5 p-4 space-y-3 shadow-lg shadow-violet-500/15">
           {/* Stacked card backdrop */}
           <div aria-hidden="true" className="pointer-events-none absolute right-5 top-2 h-28 w-20 rotate-12 rounded-xl border-2 border-violet-400/20 bg-violet-400/10 opacity-70 shadow-sm">
             <div className="flex h-full items-center justify-center text-3xl opacity-40">?</div>
@@ -360,8 +360,8 @@ export default function Portal() {
             </div>
           </div>
           <div className="relative z-10 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500 text-xl text-white shadow-md">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-500 text-xl text-white shadow-md">
                 🃏
               </div>
               <div>
@@ -376,15 +376,15 @@ export default function Portal() {
               All options
             </button>
           </div>
-          <p className="relative z-10 text-xs sm:text-base font-medium leading-snug sm:leading-relaxed text-foreground/80">
+          <p className="relative z-10 text-[11px] font-medium leading-tight text-foreground/80">
             Find matching pairs and beat your score.
           </p>
-          <div className={`grid gap-2 ${memoryGridCols}`}>
+          <div className={`grid gap-1.5 ${memoryGridCols}`}>
             {visibleMemoryOptions.map((opt) => (
               <button
                 key={opt.size}
                 onClick={() => setLocation(`/memory?size=${opt.size}`)}
-                className="relative z-10 flex min-h-[68px] flex-col items-center justify-center rounded-xl border-2 border-violet-400/35 bg-background px-2 py-3 transition-all hover:-translate-y-0.5 hover:border-violet-400/65 hover:bg-violet-500/10 active:translate-y-0"
+                className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-violet-400/35 bg-background px-2 py-2 transition-all hover:-translate-y-0.5 hover:border-violet-400/65 hover:bg-violet-500/10 active:translate-y-0"
               >
                 <span className="font-black text-base leading-none text-violet-600">
                   {opt.label}
