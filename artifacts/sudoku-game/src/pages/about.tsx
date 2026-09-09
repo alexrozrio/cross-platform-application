@@ -125,7 +125,7 @@ export default function About() {
         <h2 className="text-base font-semibold text-foreground mb-1">Get in touch</h2>
         <p>
           Feedback, bug reports, or just want to say hi?{" "}
-          <span className="text-foreground font-medium">hello@sudokugame.app</span>
+           <a className="text-foreground font-medium underline underline-offset-2" href="mailto:help@playbraingames.online">help@playbraingames.online</a>
         </p>
       </div>
     </div>
