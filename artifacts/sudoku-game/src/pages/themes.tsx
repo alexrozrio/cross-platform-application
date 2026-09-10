@@ -2,7 +2,7 @@ import React from 'react';
 import { useImageTheme } from '@/hooks/use-image-theme';
 import { ThemeIcon, useThemeImageSrc } from '@/components/theme-icons';
 import { IMAGE_THEMES, getTheme, getSymbol } from '@/lib/themes';
-import { Check, Lock, Gem, LayoutGrid, Eye, ChevronLeft, ChevronRight, ArrowLeft, ImageIcon, EyeOff } from 'lucide-react';
+import { Check, Lock, Gem, LayoutGrid, Eye, ChevronLeft, ChevronRight, ArrowLeft, X, ImageIcon, EyeOff } from 'lucide-react';
 import { type ThemeId } from '@/lib/themes';
 import { useAuth } from '@/hooks/use-auth';
 import { useGetProfile, useUpdateProfile } from '@workspace/api-client-react';
@@ -795,21 +795,37 @@ export default function Themes() {
         <div className="sm:hidden fixed inset-0 z-40 bg-background overflow-y-auto animate-in slide-in-from-right duration-200">
           <div className="max-w-2xl mx-auto px-4 pb-8 space-y-5">
             {/* Header */}
-            <div className="sticky top-0 bg-background/95 backdrop-blur-sm pt-4 pb-3 flex items-center gap-3 border-b border-border z-10">
-              <button
-                onClick={() => setShowAll(null)}
-                className="flex items-center justify-center w-9 h-9 rounded-full border border-border bg-background hover:bg-muted transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </button>
-              <div>
-                <h2 className="text-lg font-serif font-semibold">
-                  {showAll === 'colors' ? 'All Colour Themes' : showAll === 'fonts' ? 'All Font Styles' : 'All Icon Sets'}
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  {showAll === 'colors' ? `${APP_THEMES.length} themes` : showAll === 'fonts' ? `${FONT_THEMES.length} fonts` : `${IMAGE_THEMES.length} icon sets`}
-                </p>
+            <div className="sticky top-0 bg-background/95 backdrop-blur-sm pt-4 pb-3 flex items-center justify-between gap-3 border-b border-border z-10">
+              <div className="flex items-center gap-3 min-w-0">
+                <button
+                  type="button"
+                  onClick={() => setShowAll(null)}
+                  aria-label="Back to Themes"
+                  title="Back to Themes"
+                  className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-2 text-xs font-semibold hover:bg-muted transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Back</span>
+                </button>
+                <div className="min-w-0">
+                  <h2 className="text-lg font-serif font-semibold">
+                    {showAll === 'colors' ? 'All Colour Themes' : showAll === 'fonts' ? 'All Font Styles' : 'All Icon Sets'}
+                  </h2>
+                  <p className="text-xs text-muted-foreground">
+                    {showAll === 'colors' ? `${APP_THEMES.length} themes` : showAll === 'fonts' ? `${FONT_THEMES.length} fonts` : `${IMAGE_THEMES.length} icon sets`}
+                  </p>
+                </div>
               </div>
+              <button
+                type="button"
+                onClick={() => setShowAll(null)}
+                aria-label="Close theme options"
+                title="Close"
+                className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-2 text-xs font-semibold hover:bg-muted transition-colors"
+              >
+                <span>Close</span>
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
             {/* All Colour Themes */}
