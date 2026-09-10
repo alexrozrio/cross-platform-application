@@ -549,7 +549,7 @@ export default function SudokuHome({
           DESKTOP new-game section (≥ sm)
           original Card layout unchanged
           ══════════════════════════════════════════ */}
-      <Card className="hidden sm:block border-2 border-sky-200/70 bg-gradient-to-br from-white via-sky-50/50 to-indigo-50/70 shadow-xl shadow-sky-500/10 dark:border-sky-800/50 dark:from-card dark:via-sky-950/25 dark:to-indigo-950/35">
+      <Card className="hidden sm:block border border-border bg-card shadow-xl shadow-sky-500/10">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2">
             <Play className="w-5 h-5 text-primary" /> New Game
