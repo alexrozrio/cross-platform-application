@@ -16,7 +16,7 @@ export default function PrivacyPolicy() {
 
       <div className="bg-card rounded-2xl px-5 py-4 border border-border">
         <h1 className="text-3xl font-serif font-bold tracking-tight">Privacy Policy</h1>
-        <p className="text-muted-foreground mt-1 text-sm">Last updated: July 2026</p>
+        <p className="text-muted-foreground mt-1 text-sm">Last updated: September 10, 2026</p>
       </div>
 
       <div className="prose prose-sm max-w-none space-y-6 text-muted-foreground leading-relaxed bg-card rounded-2xl border border-border px-6 py-5">
@@ -28,6 +28,9 @@ export default function PrivacyPolicy() {
           <p>
             We also store game-related data you create across both Sudoku and Memory Match: puzzle and game attempts, completion times, scores, settings, and earned badges.
           </p>
+          <p>
+            We use Google Analytics to understand how visitors use the Service, such as which pages are visited and how the Service performs. Google Analytics may use cookies or similar identifiers and may process usage and device information on our behalf.
+          </p>
         </section>
 
         <section className="space-y-2">
@@ -37,9 +40,9 @@ export default function PrivacyPolicy() {
             <li>To display your stats, rank, and leaderboard position for Sudoku and Memory Match.</li>
             <li>To show your username, avatar, and badges on public profiles and leaderboards.</li>
             <li>To send login-streak and reward notifications within the app.</li>
-            <li>To improve game balance and fix bugs.</li>
+            <li>To improve game balance, understand Service usage, and fix bugs.</li>
           </ul>
-          <p>We do not sell, rent, or share your personal information with third parties for marketing purposes.</p>
+          <p>We do not sell or rent your personal information. We share information with service providers only as needed to operate, secure, measure, and improve the Service, or when required by law.</p>
         </section>
 
         <section className="space-y-2">
@@ -50,35 +53,59 @@ export default function PrivacyPolicy() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-base font-semibold text-foreground">4. Cookies & Local Storage</h2>
+          <h2 className="text-base font-semibold text-foreground">4. Cookies, Analytics & Local Storage</h2>
           <p>
-            We use browser local storage to cache your profile ID and device identifier between visits. Authentication sessions are managed using secure, server-side session cookies. We do not use advertising or tracking cookies.
+            We use browser local storage to cache your profile ID, device identifier, preferences, and offline game progress between visits. Authentication sessions are managed using secure, server-side session cookies.
+          </p>
+          <p>
+            Google Analytics may use cookies or similar technologies to measure traffic, usage, and performance. You can manage cookies through your browser settings. Disabling cookies or local storage may affect sign-in, saved preferences, and game progress.
+          </p>
+          <p>
+            We do not currently serve display advertising through the Service. If Google AdSense is enabled, Google and its advertising partners may use cookies or similar identifiers to provide, measure, and prevent fraud in advertising. Where required by law, we will request consent before serving personalized advertising and provide controls to withdraw or change that choice. For more information, review Google's advertising privacy information at{" "}
+            <a
+              className="text-foreground font-medium underline underline-offset-2"
+              href="https://policies.google.com/technologies/partner-sites"
+              target="_blank"
+              rel="noreferrer"
+            >
+              How Google uses information from sites or apps that use our services
+            </a>.
           </p>
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-base font-semibold text-foreground">5. Data Retention</h2>
+          <h2 className="text-base font-semibold text-foreground">5. Third-Party Services</h2>
+          <p>
+            We use third-party services to operate and improve the Service, including Google OAuth for sign-in and Google Analytics for usage measurement. These providers may process information according to their own privacy policies and the instructions or settings applicable to their services.
+          </p>
+          <p>
+            If advertising is enabled, Google AdSense may process information to deliver and measure ads. Advertising settings and consent choices may affect whether ads are personalized.
+          </p>
+        </section>
+
+        <section className="space-y-2">
+          <h2 className="text-base font-semibold text-foreground">6. Data Retention</h2>
           <p>
             Your profile and game history — including both Sudoku and Memory Match activity — are retained as long as your account is active. You can delete your data at any time by contacting us — see Section 8.
           </p>
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-base font-semibold text-foreground">6. Children's Privacy</h2>
+          <h2 className="text-base font-semibold text-foreground">7. Children's Privacy</h2>
           <p>
             This service is not directed at children under the age of 13. We do not knowingly collect personal information from children. If you believe a child has provided us with personal data, please contact us so we can delete it.
           </p>
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-base font-semibold text-foreground">7. Security</h2>
+          <h2 className="text-base font-semibold text-foreground">8. Security</h2>
           <p>
             We use industry-standard measures to protect your data in transit (TLS) and at rest. No system is 100 % secure; please use a strong, unique password with any linked account and keep your device secure.
           </p>
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-base font-semibold text-foreground">8. Contact</h2>
+          <h2 className="text-base font-semibold text-foreground">9. Contact</h2>
           <p>
              Questions about this policy? Reach us at <a className="text-foreground font-medium underline underline-offset-2" href="mailto:info@playbraingames.online">info@playbraingames.online</a>. For account or data support, contact <a className="text-foreground font-medium underline underline-offset-2" href="mailto:support@playbraingames.online">support@playbraingames.online</a>. We will respond within 30 days.
           </p>
