@@ -5,11 +5,13 @@
   "scripts": {
     "preinstall": "node scripts/preinstall.cjs",
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "check:lockfile": "pnpm install --lockfile-only --frozen-lockfile --ignore-scripts",
     "typecheck:libs": "tsc --build",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
     "test": "vitest run"
   },
   "private": true,
+  "packageManager": "pnpm@10.26.1",
   "devDependencies": {
     "prettier": "^3.8.3",
     "typescript": "~5.9.3",

@@ -7,3 +7,4 @@
 - [Memory direct-start routes](memory-direct-start.md) — use `start=1` when canonicalizing a level link that must open directly into a game.
 - [API workspace dependency sync](api-workspace-dependency-sync.md) — declared API dependencies can be absent from node_modules after workspace changes; sync the API filter before debugging guest creation.
 - [Offline completion sync](offline-completion-sync.md) — reconnect scoring must be bounded and completion endpoints must atomically guard active games before awarding rewards.
+- [Pnpm lockfile discipline](pnpm-lockfile-discipline.md) — workspace config changes must be lockfile-synced and validated with the pinned pnpm version before Render deploys.
