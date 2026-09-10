@@ -792,7 +792,7 @@ export default function Themes() {
 
       {/* ── Show All Sub-pages (mobile overlay) ──────────────────────── */}
       {showAll !== null && (
-        <div className="fixed inset-0 z-40 bg-background overflow-y-auto animate-in slide-in-from-right duration-200">
+        <div className="fixed inset-0 z-[60] bg-background overflow-y-auto animate-in slide-in-from-right duration-200">
           <div className="max-w-2xl mx-auto px-4 pb-8 space-y-5">
             {/* Header */}
             <div className="sticky top-0 bg-background/95 backdrop-blur-sm pt-4 pb-3 flex items-center justify-between gap-3 border-b border-border z-10">
