@@ -132,7 +132,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         "app-header border-b bg-card flex items-center justify-between sticky top-0 z-50 isolate shadow-sm",
         isGamePage ? "app-header-game px-3 md:px-6" : "app-header-standard px-6",
       ].join(" ")}>
-        <Link href="/" className="flex items-center gap-2 shrink-0">
+        <Link href="/" className="flex min-w-0 items-center gap-2">
           <img
             src="/brain-games-logo.png"
             alt="Play Brain Games . Online"
@@ -142,7 +142,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             ].join(" ")}
           />
           <span className={[
-            "app-header-brand font-serif font-bold tracking-tight text-primary",
+            "app-header-brand min-w-0 truncate font-serif font-bold tracking-tight text-primary",
             isGamePage ? "app-header-brand-game" : "",
           ].join(" ")}>
             Play Brain Games . Online
@@ -151,7 +151,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Gems badge + offline status */}
         {(profileId && profile?.gems !== undefined) || isOfflineGame ? (
-          <div className="flex items-center gap-2 ml-2 mr-auto">
+          <div className="ml-2 mr-auto flex shrink-0 items-center gap-2">
             {profileId && profile?.gems !== undefined && (
               <div className={[
                 "app-header-gems flex items-center font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 rounded-full border border-cyan-200 dark:border-cyan-800",

@@ -1113,6 +1113,34 @@
 
 /* Give the compact mobile chrome enough room for the page title and actions. */
 @media (max-width: 639px) {
+  /* Keep the title and gem balance visible on narrow phone headers. */
+  .app-header-standard {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .app-header-logo {
+    width: 28px;
+    height: 28px;
+  }
+
+  .app-header-brand {
+    font-size: 18px;
+    line-height: 1.1;
+  }
+
+  .app-header-gems {
+    gap: 4px;
+    padding: 2px 8px;
+    font-size: 12px;
+    line-height: 14px;
+  }
+
+  .app-header-gem-icon {
+    width: 13px;
+    height: 13px;
+  }
+
   [data-font-size="default"] .font-size-mobile-safe,
   [data-font-size="large"] .font-size-mobile-safe,
   [data-font-size="extra-large"] .font-size-mobile-safe {
