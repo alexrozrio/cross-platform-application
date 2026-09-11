@@ -37,6 +37,7 @@ import { pickCompletionMessage } from "@/lib/completion-messages";
 import { getLevelFromXp } from "@/lib/levels";
 import gameFeatures from "@/config/game-features.json";
 import { sudokuGamePath } from "@/lib/sudoku-routes";
+import { shareOrDownloadShareCard } from "@/lib/share-card";
 
 interface DailyChallengeInfo { puzzleId: number; date: string; }
 interface StreakData { currentStreak: number; longestStreak: number; completedToday: boolean; }
@@ -1263,14 +1264,24 @@ export default function Game({ id }: { id: string }) {
     const text = lines.join("\n");
 
     try {
-      if (navigator.share) {
-        await navigator.share({ text });
-      } else {
-        await navigator.clipboard.writeText(text);
-        toast.success("Result copied to clipboard!", { duration: 2500 });
+      const result = await shareOrDownloadShareCard({
+        title: `${sizeLabel} ${diffLabel} Sudoku`,
+        lines,
+        shareText: text,
+        shareUrl: appUrl,
+        accent: "#f3b63f",
+        filename: "sudoku-result.png",
+      });
+      if (result === "downloaded") {
+        toast.success("Result image downloaded — attach it to your message!", { duration: 3000 });
       }
     } catch {
-      // user cancelled or clipboard blocked — silent
+      try {
+        await navigator.clipboard.writeText(text);
+        toast.success("Result copied to clipboard!", { duration: 2500 });
+      } catch {
+        // user cancelled or clipboard blocked — silent
+      }
     }
   }, [game, profile, completionMessage, formattedTime, mistakes, hints, pointsEarned]);
 

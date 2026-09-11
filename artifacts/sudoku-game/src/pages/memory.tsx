@@ -19,6 +19,7 @@ import { Confetti } from '@/components/confetti';
 import { pickCompletionMessage, type CompletionMessage } from '@/lib/completion-messages';
 import { getLevelFromXp } from '@/lib/levels';
 import { toast } from 'sonner';
+import { shareOrDownloadShareCard } from '@/lib/share-card';
 import {
   type GridSize, type DisplayMode, type Card,
   shuffle, getPairs, buildDeck, formatTime, ALPHA_LABELS, getCardLabel,
@@ -664,14 +665,24 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
       `🔗 ${appUrl}`,
     ].filter(Boolean).join('\n');
     try {
-      if (navigator.share) {
-        await navigator.share({ text: lines });
-      } else {
-        await navigator.clipboard.writeText(lines);
-        toast.success('Result copied to clipboard!', { duration: 2500 });
+      const result = await shareOrDownloadShareCard({
+        title: `Memory Match ${sizeLabel}`,
+        lines: lines.split('\n'),
+        shareText: lines,
+        shareUrl: appUrl,
+        accent: '#8b7cf6',
+        filename: 'memory-match-result.png',
+      });
+      if (result === 'downloaded') {
+        toast.success('Result image downloaded — attach it to your message!', { duration: 3000 });
       }
     } catch {
-      // user cancelled or clipboard blocked — silent
+      try {
+        await navigator.clipboard.writeText(lines);
+        toast.success('Result copied to clipboard!', { duration: 2500 });
+      } catch {
+        // user cancelled or clipboard blocked — silent
+      }
     }
   }, [gridSize, profile, winMessage, elapsed, flips, winResult]);
 

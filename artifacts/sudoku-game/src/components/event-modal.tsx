@@ -7,6 +7,7 @@ import {
   TrendingUp, TrendingDown, Star, CalendarDays, Calendar, Gem, Share2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { shareOrDownloadShareCard } from "@/lib/share-card";
 import {
   subscribeEventModal, dismissEventModal,
   type EventModalPayload,
@@ -204,18 +205,24 @@ export function EventModal() {
     const shareUrl = `${window.location.origin}/profile`;
     const shareText = `I just reached the ${payload.newRank} rank on Play Brain Games . Online! 🎉`;
     try {
-      if (navigator.share) {
-        await navigator.share({
-          title: `I reached ${payload.newRank}!`,
-          text: shareText,
-          url: shareUrl,
-        });
-      } else {
-        await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
-        toast.success("Rank announcement copied!");
+      const result = await shareOrDownloadShareCard({
+        title: `I reached ${payload.newRank}!`,
+        lines: [shareText, `${payload.previousRank} → ${payload.newRank}`, payload.nextGoalName ? `Next: ${payload.nextGoalName}` : "Highest rank reached"],
+        shareText,
+        shareUrl,
+        accent: payload.newRankColor,
+        filename: "rank-up.png",
+      });
+      if (result === "downloaded") {
+        toast.success("Rank image downloaded — attach it to your message!", { duration: 3000 });
       }
     } catch {
-      // Sharing can be cancelled by the user; keep the modal open.
+      try {
+        await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+        toast.success("Rank announcement copied!");
+      } catch {
+        // Sharing can be cancelled by the user; keep the modal open.
+      }
     }
   };
 

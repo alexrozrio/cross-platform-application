@@ -3,6 +3,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Share2, Check, Copy, X } from "lucide-react";
 import { type AchievementMeta } from "@/lib/achievement-utils";
+import { shareOrDownloadShareCard } from "@/lib/share-card";
+import { toast } from "sonner";
 
 // ─── Social platform definitions ──────────────────────────────────────────────
 
@@ -111,6 +113,28 @@ export function ShareAchievementButton({
     }
   };
 
+  const handleShareImage = async () => {
+    const items = achievements && achievements.length > 1
+      ? achievements.map((item) => `${item.emoji} ${item.title}`)
+      : [`${(achievement ?? achievements![0])!.emoji} ${(achievement ?? achievements![0])!.title}`, (achievement ?? achievements![0])!.description];
+    try {
+      const result = await shareOrDownloadShareCard({
+        title: achievements && achievements.length > 1 ? "My achievements" : (achievement ?? achievements![0])!.title,
+        lines: items,
+        shareText,
+        shareUrl: siteUrl,
+        accent: "#f3b63f",
+        filename: "achievement.png",
+      });
+      if (result === "downloaded") {
+        toast.success("Achievement image downloaded — attach it to your message!", { duration: 3000 });
+      }
+      setOpen(false);
+    } catch {
+      toast.error("Could not create the achievement image");
+    }
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -173,6 +197,13 @@ export function ShareAchievementButton({
               <Copy className="w-4 h-4" />
             )}
             {copied ? "Copied!" : "Copy message"}
+          </button>
+          <button
+            onClick={handleShareImage}
+            className="flex items-center gap-2.5 w-full rounded-lg px-2.5 py-2 text-sm font-medium transition-colors hover:bg-muted text-foreground"
+          >
+            <Share2 className="w-4 h-4" />
+            Share as image
           </button>
         </div>
       </PopoverContent>

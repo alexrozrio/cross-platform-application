@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { usePageMeta } from "@/components/page-meta";
 import { getLevelFromXp } from "@/lib/levels";
 import { apiUrl } from "@/lib/api-base-url";
+import { shareOrDownloadShareCard } from "@/lib/share-card";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -98,7 +99,25 @@ function ShareSheet({
   const canNativeShare = typeof navigator !== "undefined" && !!navigator.share;
 
   const nativeShare = () => {
-    navigator.share({ url: shareUrl, title: "Brain Games Challenge", text }).catch(() => {});
+    void shareImage();
+  };
+
+  const shareImage = async () => {
+    try {
+      const result = await shareOrDownloadShareCard({
+        title: "Brain Games Challenge",
+        lines: [text, "Accept the invite and play!"],
+        shareText: `${text}\n${shareUrl}`,
+        shareUrl,
+        accent: "#8b7cf6",
+        filename: "brain-games-challenge.png",
+      });
+      if (result === "downloaded") {
+        toast.success("Challenge image downloaded — attach it to your message!", { duration: 3000 });
+      }
+    } catch {
+      toast.error("Could not create the challenge image");
+    }
   };
 
   const whatsapp = `https://wa.me/?text=${encodeURIComponent(text + "\n" + shareUrl)}`;
@@ -157,6 +176,14 @@ function ShareSheet({
                 Share via…
               </Button>
             )}
+            <Button
+              variant="default"
+              className="col-span-2 gap-2"
+              onClick={shareImage}
+            >
+              <Share2 className="w-4 h-4" />
+              Share as image
+            </Button>
 
             <Button
               variant="outline"

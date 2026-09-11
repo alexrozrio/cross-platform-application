@@ -1,6 +1,7 @@
 import React from "react";
 import { toast } from "sonner";
 import { Copy, Share2 } from "lucide-react";
+import { shareOrDownloadShareCard } from "@/lib/share-card";
 import {
   Dialog,
   DialogContent,
@@ -107,10 +108,24 @@ export function BadgeShareSheet({
   };
 
   const handleNativeShare = async () => {
+    await handleShareImage();
+  };
+
+  const handleShareImage = async () => {
     try {
-      await navigator.share({ title: `${badgeTitle} — Play Brain Games . Online`, text, url: shareUrl });
+      const result = await shareOrDownloadShareCard({
+        title: badgeTitle,
+        lines: [`🏆 ${username}`, `${period} · ${points.toLocaleString()} points`, badgeTitle],
+        shareText: text,
+        shareUrl,
+        accent: "#f3b63f",
+        filename: "achievement-badge.png",
+      });
+      if (result === "downloaded") {
+        toast.success("Badge image downloaded — attach it to your message!", { duration: 3000 });
+      }
     } catch {
-      // user cancelled or not supported
+      toast.error("Could not create the badge image");
     }
   };
 
@@ -146,6 +161,15 @@ export function BadgeShareSheet({
             </button>
           ))}
         </div>
+
+        <button
+          type="button"
+          onClick={handleShareImage}
+          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
+        >
+          <Share2 className="w-4 h-4" />
+          Share as image
+        </button>
 
         {/* Copy link */}
         <div className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 overflow-hidden">
