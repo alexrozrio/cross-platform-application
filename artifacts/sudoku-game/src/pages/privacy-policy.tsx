@@ -58,7 +58,16 @@ export default function PrivacyPolicy() {
             We use browser local storage to cache your profile ID, device identifier, preferences, and offline game progress between visits. Authentication sessions are managed using secure, server-side session cookies.
           </p>
           <p>
-            Google Analytics may use cookies or similar technologies to measure traffic, usage, and performance. You can manage cookies through your browser settings. Disabling cookies or local storage may affect sign-in, saved preferences, and game progress.
+            Google Analytics may use cookies or similar technologies to measure traffic, usage, and performance. You can manage cookies through your browser settings or opt out of Google Analytics with Google's{" "}
+            <a
+              className="text-foreground font-medium underline underline-offset-2"
+              href="https://tools.google.com/dlpage/gaoptout"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Analytics Opt-out Browser Add-on
+            </a>
+            . Disabling cookies or local storage may affect sign-in, saved preferences, and game progress.
           </p>
           <p>
             We do not currently serve display advertising through the Service. If Google AdSense is enabled, Google and its advertising partners may use cookies or similar identifiers to provide, measure, and prevent fraud in advertising. Where required by law, we will request consent before serving personalized advertising and provide controls to withdraw or change that choice. For more information, review Google's advertising privacy information at{" "}
@@ -86,26 +95,45 @@ export default function PrivacyPolicy() {
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">6. Data Retention</h2>
           <p>
-            Your profile and game history — including both Sudoku and Memory Match activity — are retained as long as your account is active. You can delete your data at any time by contacting us — see Section 8.
+            Your profile and game history — including both Sudoku and Memory Match activity — are retained as long as your account is active. You can delete your data at any time by contacting us — see Section 10.
           </p>
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-base font-semibold text-foreground">7. Children's Privacy</h2>
+          <h2 className="text-base font-semibold text-foreground">7. Your Choices and Rights</h2>
+          <p>
+            You may ask us to provide, correct, or delete the personal information associated with your account. You may also withdraw consent where we rely on consent to process information. Some requests may require us to verify your identity or may be limited by legal obligations.
+          </p>
+          <p>
+            To make a request, contact us using the details in Section 10. If advertising is enabled, you can also manage Google's advertising personalization choices through{" "}
+            <a
+              className="text-foreground font-medium underline underline-offset-2"
+              href="https://adssettings.google.com/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Google Ads Settings
+            </a>
+            .
+          </p>
+        </section>
+
+        <section className="space-y-2">
+          <h2 className="text-base font-semibold text-foreground">8. Children's Privacy</h2>
           <p>
             This service is not directed at children under the age of 13. We do not knowingly collect personal information from children. If you believe a child has provided us with personal data, please contact us so we can delete it.
           </p>
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-base font-semibold text-foreground">8. Security</h2>
+          <h2 className="text-base font-semibold text-foreground">9. Security</h2>
           <p>
             We use industry-standard measures to protect your data in transit (TLS) and at rest. No system is 100 % secure; please use a strong, unique password with any linked account and keep your device secure.
           </p>
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-base font-semibold text-foreground">9. Contact</h2>
+          <h2 className="text-base font-semibold text-foreground">10. Contact</h2>
           <p>
              Questions about this policy? Reach us at <a className="text-foreground font-medium underline underline-offset-2" href="mailto:info@playbraingames.online">info@playbraingames.online</a>. For account or data support, contact <a className="text-foreground font-medium underline underline-offset-2" href="mailto:support@playbraingames.online">support@playbraingames.online</a>. We will respond within 30 days.
           </p>
