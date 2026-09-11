@@ -180,6 +180,10 @@ export default function SudokuHome({
             setActiveGame(null);
             return;
           }
+          if (abandonedId && g.id !== abandonedId) {
+            // A newer game already replaced the abandoned one.
+            sessionStorage.removeItem('sudoku-abandoned-game-id');
+          }
         } catch {}
         setActiveGame(g);
       })
@@ -218,12 +222,38 @@ export default function SudokuHome({
     setLocation(sudokuSetupPath(size, nextDifficulty, safeMode), { replace: true });
   };
 
+  const abandonActiveServerGame = async (game: ActiveGame | null = activeGame) => {
+    if (!game) return;
+
+    // Clear the banner immediately so a delayed active-game refetch cannot
+    // reopen the confirmation dialog while the replacement game is starting.
+    setActiveGame(null);
+    try {
+      sessionStorage.setItem('sudoku-abandoned-game-id', String(game.id));
+    } catch {}
+
+    // Do not make starting a new game depend on a healthy API connection.
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 1500);
+    try {
+      await customFetch(`/api/games/${game.id}/abandon`, {
+        method: 'POST',
+        signal: controller.signal,
+      });
+    } catch {
+      // The sessionStorage marker lets Home retry after navigation.
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  };
+
   const doStart = async (size: GridSize, requestedMode: 'number' | 'alpha' | 'image', difficultyOverride?: Difficulty) => {
     if (startInFlightRef.current) return;
     startInFlightRef.current = true;
     const mode = modesForSize(size).includes(requestedMode) ? requestedMode : 'number';
     const effectiveDifficulty = difficultyOverride ?? difficulty;
     setPendingStart(null);
+    await abandonActiveServerGame();
     const offlineRoute = () =>
       sudokuGamePath(size, effectiveDifficulty, 0, mode, Date.now());
     const clearLegacyOfflineStorage = () => {

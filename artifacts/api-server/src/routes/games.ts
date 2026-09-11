@@ -82,6 +82,19 @@ router.post("/games", async (req, res): Promise<void> => {
     return;
   }
 
+  // A profile can resume only one Sudoku game. Retire any previous active
+  // rows before creating the replacement so a new game cannot leave a stale
+  // Resume Game card behind it.
+  if (parsed.data.profileId != null) {
+    await db
+      .update(gamesTable)
+      .set({ status: "failed" })
+      .where(and(
+        eq(gamesTable.profileId, parsed.data.profileId),
+        eq(gamesTable.status, "active"),
+      ));
+  }
+
   const [game] = await db.insert(gamesTable).values({
     profileId: parsed.data.profileId ?? null,
     puzzleId: parsed.data.puzzleId,

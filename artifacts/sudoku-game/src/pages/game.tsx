@@ -601,11 +601,20 @@ export default function Game({ id }: { id: string }) {
   const createNewGame = useCreateGame();
   const newGameLoading = newGameFetching || createNewGame.isPending;
 
+  const abandonCurrentServerGame = () => {
+    if (gameId <= 0 || game?.status !== "active") return;
+    try {
+      sessionStorage.setItem("sudoku-abandoned-game-id", String(gameId));
+    } catch {}
+    void customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }).catch(() => {});
+  };
+
   // Accepts explicit overrides so callers don't have to wait for state to flush
   const handleNewGame = async (sizeOverride?: 3 | 4 | 6 | 9 | 16, diffOverride?: "easy" | "medium" | "hard" | "expert") => {
     const size = sizeOverride ?? newSize;
     const diff = diffOverride ?? newDiff;
     if (newGameLoading) return;
+    abandonCurrentServerGame();
     setNewGameFetching(true);
     setShowMobileControls(false);
     const offlineRoute = () =>
@@ -655,6 +664,7 @@ export default function Game({ id }: { id: string }) {
     if (quickDifficultyInFlightRef.current) return;
     quickDifficultyInFlightRef.current = true;
     setQuickDifficultyLoading(true);
+    abandonCurrentServerGame();
     const offlineRoute = () =>
       sudokuGamePath(gridSize, nextDifficulty, 0, mode, Date.now());
     const clearStorage = () => {
