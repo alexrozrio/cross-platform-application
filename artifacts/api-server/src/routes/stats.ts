@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { eq, and, desc } from "drizzle-orm";
 import { db, gamesTable, puzzlesTable, memoryGamesTable, profilesTable } from "@workspace/db";
 import { GetPlayerStatsParams, GetPlayerStatsResponse } from "@workspace/api-zod";
+import { hasMeaningfulMemoryActivity, hasMeaningfulSudokuActivity } from "../utils/game-activity";
 
 const router: IRouter = Router();
 
@@ -20,6 +21,8 @@ router.get("/stats/:profileId", async (req, res): Promise<void> => {
       status: gamesTable.status,
       elapsedSeconds: gamesTable.elapsedSeconds,
       mistakeCount: gamesTable.mistakeCount,
+      currentGrid: gamesTable.currentGrid,
+      initialGrid: puzzlesTable.grid,
       completedAt: gamesTable.completedAt,
       difficulty: puzzlesTable.difficulty,
       gridSize: puzzlesTable.gridSize,
@@ -29,8 +32,12 @@ router.get("/stats/:profileId", async (req, res): Promise<void> => {
     .where(eq(gamesTable.profileId, profileId))
     .orderBy(desc(gamesTable.createdAt));
 
-  const totalGames = allGames.length;
-  const wins = allGames.filter((g) => g.status === "completed");
+  // Creating a row is not enough to count as a played game: setup auto-starts
+  // and difficulty changes can create and immediately abandon a row. Count
+  // completed games always, otherwise require either 10 seconds or one move.
+  const meaningfulGames = allGames.filter(hasMeaningfulSudokuActivity);
+  const totalGames = meaningfulGames.length;
+  const wins = meaningfulGames.filter((g) => g.status === "completed");
   const totalWins = wins.length;
   const winRate = totalGames > 0 ? totalWins / totalGames : 0;
 
@@ -46,10 +53,10 @@ router.get("/stats/:profileId", async (req, res): Promise<void> => {
 
   const totalTime = wins.reduce((sum, g) => sum + g.elapsedSeconds, 0);
   const averageTime = totalWins > 0 ? Math.round(totalTime / totalWins) : null;
-  const totalMistakes = allGames.reduce((sum, g) => sum + g.mistakeCount, 0);
+  const totalMistakes = meaningfulGames.reduce((sum, g) => sum + g.mistakeCount, 0);
 
   let currentStreak = 0;
-  for (const game of allGames) {
+  for (const game of meaningfulGames) {
     if (game.status === "completed") currentStreak++;
     else break;
   }
@@ -68,8 +75,9 @@ router.get("/stats/:profileId", async (req, res): Promise<void> => {
     .orderBy(desc(memoryGamesTable.createdAt));
 
   const memoryWins = allMemoryGames.filter((g) => g.status === "completed");
-  const totalMemoryGames = allMemoryGames.length;
-  const totalMemoryWins = memoryWins.length;
+  const meaningfulMemoryGames = allMemoryGames.filter(hasMeaningfulMemoryActivity);
+  const totalMemoryGames = meaningfulMemoryGames.length;
+  const totalMemoryWins = meaningfulMemoryGames.filter((g) => g.status === "completed").length;
   const memoryWinRate = totalMemoryGames > 0 ? totalMemoryWins / totalMemoryGames : 0;
 
   const memoryBestTimes: Record<string, number | null> = { 2: null, 4: null, 6: null, 8: null } as unknown as Record<string, number | null>;

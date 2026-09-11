@@ -67,6 +67,42 @@ router.post("/memory-games", async (req, res): Promise<void> => {
   res.status(201).json({ id: game.id, createdAt: game.createdAt.toISOString() });
 });
 
+// ─── PATCH /memory-games/:id/progress ─────────────────────────────────────────
+
+router.patch("/memory-games/:id/progress", async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+
+  const elapsedSeconds = Number(req.body?.elapsedSeconds);
+  const flips = Number(req.body?.flips);
+  if (!Number.isFinite(elapsedSeconds) || !Number.isFinite(flips)) {
+    res.status(400).json({ error: "elapsedSeconds and flips are required numbers" });
+    return;
+  }
+
+  const safeElapsed = Math.max(0, Math.floor(elapsedSeconds));
+  const safeFlips = Math.max(0, Math.floor(flips));
+  const [game] = await db
+    .update(memoryGamesTable)
+    .set({
+      // Progress requests can overlap with the timer; never move a game
+      // backwards if an older request arrives after a newer one.
+      elapsedSeconds: sql`GREATEST(${memoryGamesTable.elapsedSeconds}, ${safeElapsed})`,
+      flips: sql`GREATEST(${memoryGamesTable.flips}, ${safeFlips})`,
+    })
+    .where(and(eq(memoryGamesTable.id, id), eq(memoryGamesTable.status, "active")))
+    .returning();
+
+  if (!game) {
+    res.status(404).json({ error: "Game not found or already finished" });
+    return;
+  }
+  res.json({ ok: true });
+});
+
 // ─── POST /memory-games/:id/complete ─────────────────────────────────────────
 
 router.post("/memory-games/:id/complete", async (req, res): Promise<void> => {

@@ -273,6 +273,11 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
   // silently losing the result and its gem reward.
   const gameCreationRef = useRef<Promise<number> | null>(null);
   const completionStartedRef = useRef(false);
+  const lastPersistedProgressRef = useRef<{
+    gameId: number | null;
+    elapsed: number;
+    flips: number;
+  }>({ gameId: null, elapsed: 0, flips: 0 });
   const [showAbandonConfirm, setShowAbandonConfirm] = useState(false);
   const restoredRef = useRef(false);
 
@@ -334,6 +339,35 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [phase]);
+
+  // Persist enough progress for statistics to distinguish a real attempt from
+  // a setup auto-start that was immediately replaced or abandoned.
+  useEffect(() => {
+    if (
+      phase !== 'playing' ||
+      gameId === null ||
+      completionStartedRef.current ||
+      (flips === 0 && elapsed < 10)
+    ) {
+      return;
+    }
+
+    const previous = lastPersistedProgressRef.current;
+    if (previous.gameId !== gameId) {
+      lastPersistedProgressRef.current = { gameId, elapsed: 0, flips: 0 };
+    }
+    const current = lastPersistedProgressRef.current;
+    const shouldPersist =
+      flips > current.flips ||
+      elapsed >= 10 && elapsed >= current.elapsed + 5;
+    if (!shouldPersist) return;
+
+    lastPersistedProgressRef.current = { gameId, elapsed, flips };
+    customFetch(`/api/memory-games/${gameId}/progress`, {
+      method: 'PATCH',
+      body: JSON.stringify({ elapsedSeconds: elapsed, flips }),
+    }).catch(() => {});
+  }, [phase, gameId, elapsed, flips]);
 
   const startGame = useCallback(async (size: GridSize, presetGameId?: number) => {
     // Keep the canonical level in the URL while telling a remounted route
