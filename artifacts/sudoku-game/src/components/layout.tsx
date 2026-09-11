@@ -136,7 +136,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Link href="/" className="flex min-w-0 items-center gap-2">
           <img
             src="/brain-games-logo.png"
-            alt="Play Brain Games . Online"
+            alt="Play Brain Games"
             className={[
               "app-header-logo shrink-0",
               isGamePage ? "app-header-logo-game" : "",
@@ -146,7 +146,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             "app-header-brand min-w-0 truncate font-serif font-bold tracking-tight text-primary",
             isGamePage ? "app-header-brand-game" : "",
           ].join(" ")}>
-            Play Brain Games . Online
+            Play Brain Games
           </span>
         </Link>
 
@@ -273,7 +273,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </button>
           </nav>
           <p className="text-[11px] text-muted-foreground/60">
-            © {new Date().getFullYear()} Play Brain Games . Online. All rights reserved.
+            © {new Date().getFullYear()} Play Brain Games. All rights reserved.
           </p>
         </div>
       </footer>

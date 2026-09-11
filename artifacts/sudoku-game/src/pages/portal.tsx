@@ -66,7 +66,7 @@ export default function Portal() {
   const landingPageSchema = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    name: "Play Brain Games . Online",
+    name: "Play Brain Games",
     applicationCategory: "GameApplication",
     operatingSystem: "Web",
     description:
@@ -539,7 +539,7 @@ export default function Portal() {
         {/* Title */}
         <div className="text-center space-y-2 pt-4 bg-card rounded-2xl px-6 py-5 border border-border">
           <h1 className="text-4xl font-serif font-bold tracking-tight">
-            Play Brain Games . Online
+            Free Online Sudoku and Memory Match Games
           </h1>
           <p className="text-muted-foreground text-lg">
             Choose your game and play
@@ -957,7 +957,7 @@ export default function Portal() {
           shown below the quick launch section
           ═══════════════════════════════════════════════════════════ */}
       <div className="md:hidden space-y-6 mt-2">
-        {/* Play Brain Games . Online info — combined and collapsed by default */}
+        {/* Play Brain Games information — combined and collapsed by default */}
         <Collapsible
           open={aboutGamesOpen}
           onOpenChange={setAboutGamesOpen}
@@ -971,7 +971,7 @@ export default function Portal() {
             >
               <span>
                 <span className="block text-lg font-serif font-bold tracking-tight">
-                  Play Brain Games . Online
+                  Play Brain Games Online
                 </span>
                 <span className="text-xs text-muted-foreground">
                   Two classic brain games, endlessly replayable
@@ -984,7 +984,7 @@ export default function Portal() {
                 }`}
               />
               <span className="sr-only">
-                {aboutGamesOpen ? "Collapse" : "Expand"} Play Brain Games . Online information
+                {aboutGamesOpen ? "Collapse" : "Expand"} Play Brain Games information
               </span>
             </button>
           </CollapsibleTrigger>
@@ -1066,7 +1066,7 @@ export default function Portal() {
             Free online Sudoku and Memory Match
           </h2>
           <p className="mt-2">
-            Play Brain Games . Online is a general-audience puzzle site with
+            Play Brain Games Online is a general-audience puzzle site with
             two classic games you can play in a browser: logic-based Sudoku
             and concentration-style Memory Match. Start a quick guest game,
             choose a larger challenge, or sign in when you want your progress

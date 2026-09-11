@@ -8,6 +8,10 @@ export interface PageMetaOptions {
   structuredData?: Record<string, unknown>;
 }
 
+const SITE_URL = "https://playbraingames.online";
+const SITE_NAME = "Play Brain Games";
+const OG_IMAGE = `${SITE_URL}/opengraph.jpg`;
+
 function upsertMeta(attribute: "name" | "property", key: string, content: string) {
   let element = document.head.querySelector<HTMLMetaElement>(
     `meta[data-page-meta="${attribute}:${key}"]`,
@@ -29,8 +33,7 @@ export function usePageMeta({
   structuredData,
 }: PageMetaOptions) {
   useEffect(() => {
-    const origin = window.location.origin;
-    const url = new URL(path, origin).toString();
+    const url = new URL(path, SITE_URL).toString();
 
     document.title = title;
     upsertMeta("name", "description", description);
@@ -38,8 +41,12 @@ export function usePageMeta({
     upsertMeta("property", "og:description", description);
     upsertMeta("property", "og:type", type);
     upsertMeta("property", "og:url", url);
+    upsertMeta("property", "og:site_name", SITE_NAME);
+    upsertMeta("property", "og:locale", "en_US");
+    upsertMeta("property", "og:image", OG_IMAGE);
     upsertMeta("name", "twitter:title", title);
     upsertMeta("name", "twitter:description", description);
+    upsertMeta("name", "twitter:image", OG_IMAGE);
 
     let canonical = document.head.querySelector<HTMLLinkElement>(
       'link[data-page-meta="canonical"]',
