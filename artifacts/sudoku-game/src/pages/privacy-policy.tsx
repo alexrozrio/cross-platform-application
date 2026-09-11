@@ -121,7 +121,13 @@ export default function PrivacyPolicy() {
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">8. Children's Privacy</h2>
           <p>
-            This service is not directed at children under the age of 13. We do not knowingly collect personal information from children. If you believe a child has provided us with personal data, please contact us so we can delete it.
+            Play Brain Games . Online is a general-audience, family-friendly service. It includes optional child-friendly modes, such as Baby and Mini grids, but it is not designed exclusively for children. Younger users should use the Service with a parent or guardian's involvement.
+          </p>
+          <p>
+            Child-friendly guest play does not require a child to provide a name, email address, profile photo, or other direct contact information. Guest play may use a random device identifier and store game progress in the browser so the game can work; these are not intended to identify a child by name. Account creation, Google sign-in, and any sharing of personal information should be handled or approved by a parent or guardian.
+          </p>
+          <p>
+            We do not knowingly request direct personal information from children under 13. If you believe a child has provided us with personal data, please contact us so we can review and delete it where appropriate.
           </p>
         </section>
 

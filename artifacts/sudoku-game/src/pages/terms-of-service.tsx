@@ -16,7 +16,7 @@ export default function TermsOfService() {
 
       <div className="bg-card rounded-2xl px-5 py-4 border border-border">
         <h1 className="text-3xl font-serif font-bold tracking-tight">Terms of Service</h1>
-        <p className="text-muted-foreground mt-1 text-sm">Last updated: July 2026</p>
+        <p className="text-muted-foreground mt-1 text-sm">Last updated: September 11, 2026</p>
       </div>
 
       <div className="prose prose-sm max-w-none space-y-6 text-muted-foreground leading-relaxed bg-card rounded-2xl border border-border px-6 py-5">
@@ -30,7 +30,7 @@ export default function TermsOfService() {
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">2. Eligibility</h2>
           <p>
-            The Service is available to anyone aged 13 or older. By using it you represent that you meet this requirement. Users under 18 should have parental consent.
+            The Service is general-audience and family-friendly, with optional child-friendly game modes. Users under 13 may use those modes with a parent or guardian's involvement, but a parent or guardian should handle account creation, Google sign-in, and any sharing of personal information. Users under 18 should have parental or guardian consent to use the Service.
           </p>
         </section>
 
