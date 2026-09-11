@@ -1,8 +1,15 @@
 import React from "react";
 import { useLocation } from "wouter";
 import { ArrowLeft } from "lucide-react";
+import { usePageMeta } from "@/components/page-meta";
 
 export default function PrivacyPolicy() {
+  usePageMeta({
+    title: "Privacy Policy | Play Brain Games . Online",
+    description:
+      "Read how Play Brain Games . Online handles guest play, Google sign-in, game progress, analytics consent, advertising choices, and children's privacy.",
+    path: "/privacy",
+  });
   const [, setLocation] = useLocation();
 
   return (

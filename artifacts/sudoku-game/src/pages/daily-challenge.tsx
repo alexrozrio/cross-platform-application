@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
+import { usePageMeta } from '@/components/page-meta';
 import { useCreateGame, customFetch } from '@workspace/api-client-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -86,6 +87,12 @@ function StreakDisplay({ streak }: { streak: StreakData }) {
 }
 
 export default function DailyChallenge() {
+  usePageMeta({
+    title: "Daily Sudoku Challenge | Play Today's Puzzle Online",
+    description:
+      "Solve today's shared 9×9 Sudoku challenge, compare your time and mistakes, and build a daily solving streak with other players.",
+    path: "/daily-challenge",
+  });
   const [, setLocation] = useLocation();
   const { profileId } = useAuth();
   const createGame = useCreateGame();

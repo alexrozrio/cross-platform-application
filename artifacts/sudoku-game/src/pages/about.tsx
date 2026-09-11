@@ -2,6 +2,7 @@ import React from "react";
 import { useLocation } from "wouter";
 import { ArrowLeft, Hash, Type, Palette, Trophy, Flame, BarChart2, Gem, Grid3x3, Brain } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { usePageMeta } from "@/components/page-meta";
 
 const SUDOKU_FEATURES = [
   { icon: Hash, label: "Multiple grid sizes", desc: "3×3, 4×4, 9×9, and 16×16 puzzles for every skill level." },
@@ -23,6 +24,12 @@ const SHARED_FEATURES = [
 ];
 
 export default function About() {
+  usePageMeta({
+    title: "About Play Brain Games | Sudoku & Memory Match",
+    description:
+      "Learn about Play Brain Games . Online, a family-friendly site for free Sudoku and Memory Match puzzles, daily challenges, themes, and personal stats.",
+    path: "/about",
+  });
   const [, setLocation] = useLocation();
 
   return (

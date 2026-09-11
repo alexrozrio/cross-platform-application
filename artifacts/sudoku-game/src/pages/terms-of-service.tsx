@@ -1,8 +1,15 @@
 import React from "react";
 import { useLocation } from "wouter";
 import { ArrowLeft } from "lucide-react";
+import { usePageMeta } from "@/components/page-meta";
 
 export default function TermsOfService() {
+  usePageMeta({
+    title: "Terms of Service | Play Brain Games . Online",
+    description:
+      "Read the terms for using Play Brain Games . Online, including guest play, accounts, family-friendly use, acceptable behavior, and game content.",
+    path: "/terms",
+  });
   const [, setLocation] = useLocation();
 
   return (

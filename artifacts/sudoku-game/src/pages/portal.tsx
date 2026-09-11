@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useImageTheme } from "@/hooks/use-image-theme";
+import { usePageMeta } from "@/components/page-meta";
 import { ThemeIcon } from "@/components/theme-icons";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -62,6 +63,23 @@ const GRID_QUICK_START = [
 
 export default function Portal() {
   const [, setLocation] = useLocation();
+  const landingPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "Play Brain Games . Online",
+    applicationCategory: "GameApplication",
+    operatingSystem: "Web",
+    description:
+      "Free online Sudoku and Memory Match games with multiple difficulty levels, daily challenges, themes, and optional progress tracking.",
+    url: new URL("/", window.location.origin).toString(),
+  };
+  usePageMeta({
+    title: "Free Sudoku & Memory Match Games Online",
+    description:
+      "Play free online Sudoku and Memory Match games for all ages. Choose from multiple grids, difficulty levels, daily challenges, themes, and guest play.",
+    path: "/",
+    structuredData: landingPageSchema,
+  });
   const { profileId, isReady } = useAuth();
   const { themeId } = useImageTheme();
   const [loadingSize, setLoadingSize] = useState<number | null>(null);
@@ -1041,6 +1059,49 @@ export default function Portal() {
           </div>
         </div>
       </div>
+
+      <section className="bg-card rounded-2xl border border-border p-5 sm:p-6 space-y-5 text-sm text-muted-foreground leading-relaxed">
+        <div>
+          <h2 className="text-xl font-serif font-bold text-foreground">
+            Free online Sudoku and Memory Match
+          </h2>
+          <p className="mt-2">
+            Play Brain Games . Online is a general-audience puzzle site with
+            two classic games you can play in a browser: logic-based Sudoku
+            and concentration-style Memory Match. Start a quick guest game,
+            choose a larger challenge, or sign in when you want your progress
+            and results to follow you across devices.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <h3 className="font-semibold text-foreground">How Sudoku works</h3>
+            <p className="mt-1">
+              Fill each row, column, and box so every symbol appears exactly
+              once. Baby, Mini, Dual, Classic, and Pro grids make it easy to
+              choose a comfortable starting point or build toward expert
+              16×16 puzzles.
+            </p>
+          </div>
+          <div>
+            <h3 className="font-semibold text-foreground">How Memory Match works</h3>
+            <p className="mt-1">
+              Turn over two cards at a time and remember where each symbol
+              appears. Match every pair while keeping your time and flip count
+              low across boards from 2×4 to 8×8.
+            </p>
+          </div>
+        </div>
+        <div>
+          <h3 className="font-semibold text-foreground">Designed for relaxed replay</h3>
+          <p className="mt-1">
+            Both games offer clear rules, touch-friendly controls, optional
+            themes, and daily challenges. Child-friendly modes are available
+            for family play, while adults and experienced players can choose
+            larger grids and harder settings. No purchase is required to play.
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

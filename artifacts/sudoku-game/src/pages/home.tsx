@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useSearch } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { useImageTheme } from '@/hooks/use-image-theme';
+import { usePageMeta } from '@/components/page-meta';
 import { useCreateGame, useGetProfile, customFetch, generatePuzzle } from '@workspace/api-client-react';
 import { generateOfflinePuzzle } from '@/lib/sudoku-generator';
 import { ThemeIcon } from '@/components/theme-icons';
@@ -103,6 +104,12 @@ export default function SudokuHome({
   modeSlug,
   autoStartFromBookmark = false,
 }: SudokuHomeProps = {}) {
+  usePageMeta({
+    title: "Play Sudoku Online Free | Easy to Expert Puzzles",
+    description:
+      "Play free online Sudoku with 3×3, 4×4, 6×6, 9×9, and 16×16 grids. Choose easy to expert difficulty, use notes and hints, and play as a guest.",
+    path: "/sudoku",
+  });
   const { profileId, isReady, isSignedIn } = useAuth();
   const [location, setLocation] = useLocation();
   const search = useSearch();
@@ -725,6 +732,36 @@ export default function SudokuHome({
           <Scroll className="w-3.5 h-3.5" /> Backstory
         </button>
       </div>
+
+      <section className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-4 text-sm text-muted-foreground leading-relaxed">
+        <h2 className="text-xl font-serif font-bold text-foreground">
+          Play Sudoku online at your own pace
+        </h2>
+        <p>
+          Sudoku is a logic puzzle, not a guessing game. Place each number,
+          letter, or symbol so it appears once in every row, column, and box.
+          Start with a smaller Baby or Mini grid to learn the pattern, or
+          choose Classic 9×9 and Pro 16×16 for a longer challenge.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div>
+            <h3 className="font-semibold text-foreground">Choose your level</h3>
+            <p className="mt-1">Easy, Medium, Hard, and Expert puzzles are available for every grid size.</p>
+          </div>
+          <div>
+            <h3 className="font-semibold text-foreground">Use helpful tools</h3>
+            <p className="mt-1">Pencil notes, undo, keyboard navigation, and optional hints support careful solving.</p>
+          </div>
+          <div>
+            <h3 className="font-semibold text-foreground">Play without pressure</h3>
+            <p className="mt-1">Guest and offline play let you start a puzzle without creating an account.</p>
+          </div>
+        </div>
+        <p>
+          Every puzzle is designed around a single solution. Take your time,
+          check the constraints, and return later if you need a break.
+        </p>
+      </section>
 
       {/* Rules modal */}
       <Dialog open={infoModal === 'rules'} onOpenChange={o => !o && setInfoModal(null)}>

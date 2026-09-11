@@ -3,6 +3,7 @@ import { useLocation, useSearch } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/use-auth';
 import { useImageTheme } from '@/hooks/use-image-theme';
+import { usePageMeta } from '@/components/page-meta';
 import { getTheme } from '@/lib/themes';
 import { useThemeImageSrc } from '@/components/theme-icons';
 import { customFetch, useGetProfile } from '@workspace/api-client-react';
@@ -188,6 +189,15 @@ export interface MemoryMatchProps {
 }
 
 export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {}) {
+  const memoryMetaLabel = bookmarkedSize
+    ? GRID_OPTIONS.find((option) => option.size === bookmarkedSize)?.desc ?? "Puzzle"
+    : "all difficulty levels";
+  usePageMeta({
+    title: `Play Memory Match Online Free | ${memoryMetaLabel}`,
+    description:
+      "Play a free online Memory Match game with image, number, or letter cards. Match pairs across 2×4 to 8×8 boards and improve your best time.",
+    path: difficultySlug ? `/memory/${difficultySlug}` : "/memory",
+  });
   const [, setLocation] = useLocation();
   const search = useSearch();
   const bookmarkedSize = memorySizeFromSlug(difficultySlug);
@@ -818,6 +828,37 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
             <Scroll className="w-3.5 h-3.5" /> Backstory
           </button>
         </div>
+
+        <section className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-4 text-sm text-muted-foreground leading-relaxed">
+          <h2 className="text-xl font-serif font-bold text-foreground">
+            Play Memory Match online
+          </h2>
+          <p>
+            Memory Match is a concentration game built around observation and
+            recall. Turn over two cards, remember the symbols you see, and
+            find every matching pair. You can play with themed images, numbers,
+            or letters, so the same board works for different play styles.
+          </p>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div>
+              <h3 className="font-semibold text-foreground">Start small</h3>
+              <p className="mt-1">The 2×4 beginner board is a quick introduction with four pairs.</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground">Build the challenge</h3>
+              <p className="mt-1">Move through 4×4, 4×8, and 8×8 boards with up to 32 pairs.</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground">Track your result</h3>
+              <p className="mt-1">Faster times and fewer flips help you improve your personal score.</p>
+            </div>
+          </div>
+          <p>
+            The game is designed for short, repeatable rounds on phones,
+            tablets, and desktop browsers. You can play as a guest and choose
+            a family-friendly theme before starting.
+          </p>
+        </section>
 
         {/* Rules modal */}
         <Dialog open={infoModal === 'rules'} onOpenChange={o => !o && setInfoModal(null)}>
