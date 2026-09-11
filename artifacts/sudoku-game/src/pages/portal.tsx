@@ -244,24 +244,40 @@ export default function Portal() {
       <div className="md:hidden space-y-3 mb-6">
         {/* Sudoku quick launch — featured game */}
         <div className="relative isolate overflow-hidden rounded-2xl border-2 border-primary/55 bg-gradient-to-br from-cyan-100 via-sky-50 to-indigo-100 p-4 space-y-3 shadow-xl shadow-primary/20 ring-1 ring-inset ring-white/70 dark:from-cyan-950/80 dark:via-sky-950/75 dark:to-indigo-950/80 dark:ring-white/10">
-          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-400 via-primary to-indigo-500" />
-          <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -left-8 h-28 w-28 rounded-full bg-cyan-300/35 blur-2xl dark:bg-cyan-400/15" />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-400 via-primary to-indigo-500"
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-10 -left-8 h-28 w-28 rounded-full bg-cyan-300/35 blur-2xl dark:bg-cyan-400/15"
+          />
           {/* Puzzle-grid backdrop */}
-          <div aria-hidden="true" className="pointer-events-none absolute -right-2 -top-3 grid h-32 w-32 rotate-6 grid-cols-3 overflow-hidden rounded-2xl border-2 border-primary/20 bg-white/20 opacity-70 dark:bg-white/5">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-2 -top-3 grid h-32 w-32 rotate-6 grid-cols-3 overflow-hidden rounded-2xl border-2 border-primary/20 bg-white/20 opacity-70 dark:bg-white/5"
+          >
             {Array.from({ length: 9 }, (_, i) => (
-              <span key={i} className="flex items-center justify-center border border-primary/10 text-lg font-black text-primary/20">
+              <span
+                key={i}
+                className="flex items-center justify-center border border-primary/10 text-lg font-black text-primary/20"
+              >
                 {[5, 2, 8, 1, 7, 3, 9, 4, 6][i]}
               </span>
             ))}
           </div>
           <div className="relative z-10 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
                 <Grid3X3 className="w-6 h-6" />
               </div>
               <div>
-                <span className="block text-xl font-black leading-tight text-slate-900 dark:text-white">Sudoku</span>
-                <span className="mt-1 inline-flex w-fit rounded-full bg-white/65 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-primary shadow-sm dark:bg-slate-950/30">Number puzzle</span>
+                <span className="block text-xl font-black leading-tight text-slate-900 dark:text-white">
+                  Sudoku
+                </span>
+                <span className="mt-1 inline-flex w-fit rounded-full bg-white/65 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-primary shadow-sm dark:bg-slate-950/30">
+                  Number puzzle
+                </span>
               </div>
             </div>
             <button
@@ -310,11 +326,15 @@ export default function Portal() {
                   : true;
             return validForMode ? (
               <button
-                onClick={() => setLocation(sudokuGamePath(
-                  activeGame.puzzle?.gridSize ?? 9,
-                  activeGame.puzzle?.difficulty ?? "easy",
-                  activeGame.id,
-                ))}
+                onClick={() =>
+                  setLocation(
+                    sudokuGamePath(
+                      activeGame.puzzle?.gridSize ?? 9,
+                      activeGame.puzzle?.difficulty ?? "easy",
+                      activeGame.id,
+                    ),
+                  )
+                }
                 className="w-full flex items-center gap-3 rounded-xl border-2 border-primary/30 bg-card px-4 py-2.5 text-left hover:bg-muted transition-all"
               >
                 <RotateCcw className="w-4 h-4 text-primary shrink-0" />
@@ -336,25 +356,43 @@ export default function Portal() {
 
         {/* Memory Match quick launch — featured game */}
         <div className="relative isolate overflow-hidden rounded-2xl border-2 border-violet-400/60 bg-gradient-to-br from-fuchsia-100 via-violet-50 to-amber-100 p-4 space-y-3 shadow-xl shadow-violet-500/20 ring-1 ring-inset ring-white/70 dark:from-fuchsia-950/75 dark:via-violet-950/80 dark:to-amber-950/60 dark:ring-white/10">
-          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-400" />
-          <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-fuchsia-300/35 blur-2xl dark:bg-fuchsia-400/15" />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-400"
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-fuchsia-300/35 blur-2xl dark:bg-fuchsia-400/15"
+          />
           {/* Stacked card backdrop */}
-          <div aria-hidden="true" className="pointer-events-none absolute right-5 top-2 h-28 w-20 rotate-12 rounded-xl border-2 border-violet-400/30 bg-fuchsia-300/25 opacity-80 shadow-sm dark:bg-violet-400/10">
-            <div className="flex h-full items-center justify-center text-3xl opacity-40">?</div>
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute right-5 top-2 h-28 w-20 rotate-12 rounded-xl border-2 border-violet-400/30 bg-fuchsia-300/25 opacity-80 shadow-sm dark:bg-violet-400/10"
+          >
+            <div className="flex h-full items-center justify-center text-3xl opacity-40">
+              ?
+            </div>
           </div>
-          <div aria-hidden="true" className="pointer-events-none absolute right-14 top-5 h-28 w-20 -rotate-6 rounded-xl border-2 border-violet-400/35 bg-white/55 opacity-90 shadow-sm dark:bg-slate-950/35">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute right-14 top-5 h-28 w-20 -rotate-6 rounded-xl border-2 border-violet-400/35 bg-white/55 opacity-90 shadow-sm dark:bg-slate-950/35"
+          >
             <div className="flex h-full items-center justify-center">
               <ThemeIcon themeId={themeId} value={2} size={30} />
             </div>
           </div>
           <div className="relative z-10 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-500 text-xl text-white shadow-md">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-500 text-xl text-white shadow-md">
                 🃏
               </div>
               <div>
-                <span className="block text-xl font-black leading-tight text-slate-900 dark:text-white">Memory Match</span>
-                <span className="mt-1 inline-flex w-fit rounded-full bg-white/65 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-violet-700 shadow-sm dark:bg-slate-950/30 dark:text-violet-300">Card matching</span>
+                <span className="block text-xl font-black leading-tight text-slate-900 dark:text-white">
+                  Memory Match
+                </span>
+                <span className="mt-1 inline-flex w-fit rounded-full bg-white/65 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-violet-700 shadow-sm dark:bg-slate-950/30 dark:text-violet-300">
+                  Card matching
+                </span>
               </div>
             </div>
             <button
@@ -529,7 +567,6 @@ export default function Portal() {
               </button>
             );
           })()}
-
       </div>
 
       {/* ═══════════════════════════════════════════════════════════
@@ -636,10 +673,18 @@ export default function Portal() {
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Sudoku Card */}
-            <div className="group relative rounded-2xl border-2 border-primary/20 bg-card overflow-hidden">
+            <div className="group relative isolate overflow-hidden rounded-2xl border-2 border-primary/55 bg-gradient-to-br from-cyan-100 via-sky-50 to-indigo-100 shadow-xl shadow-primary/20 ring-1 ring-inset ring-white/70 dark:from-cyan-950/80 dark:via-sky-950/75 dark:to-indigo-950/80 dark:ring-white/10">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-400 via-primary to-indigo-500"
+              />
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -bottom-10 -left-8 h-28 w-28 rounded-full bg-cyan-300/35 blur-2xl dark:bg-cyan-400/15"
+              />
               <button
                 onClick={() => setLocation("/sudoku")}
-                className="w-full text-left p-6 space-y-4 hover:from-primary/15 hover:to-primary/10 hover:border-primary/40 transition-all duration-200"
+                className="relative z-10 w-full text-left p-6 space-y-4 transition-all duration-200 hover:bg-white/20 dark:hover:bg-slate-950/20"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center ring-1 ring-primary/20">
@@ -682,11 +727,15 @@ export default function Portal() {
                         : true;
                   return validForMode ? (
                     <button
-                      onClick={() => setLocation(sudokuGamePath(
-                        activeGame.puzzle?.gridSize ?? 9,
-                        activeGame.puzzle?.difficulty ?? "easy",
-                        activeGame.id,
-                      ))}
+                      onClick={() =>
+                        setLocation(
+                          sudokuGamePath(
+                            activeGame.puzzle?.gridSize ?? 9,
+                            activeGame.puzzle?.difficulty ?? "easy",
+                            activeGame.id,
+                          ),
+                        )
+                      }
                       className="mx-6 mb-3 flex items-center gap-2 rounded-lg bg-primary/10 border border-primary/25 px-3 py-2 text-left hover:bg-primary/20 transition-colors w-[calc(100%-3rem)]"
                     >
                       <RotateCcw className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -751,10 +800,18 @@ export default function Portal() {
             {/* Memory Match Card */}
             {(() => {
               return (
-                <div className="group relative rounded-2xl border-2 border-violet-400/25 bg-card overflow-hidden">
+                <div className="group relative isolate overflow-hidden rounded-2xl border-2 border-violet-400/60 bg-gradient-to-br from-fuchsia-100 via-violet-50 to-amber-100 shadow-xl shadow-violet-500/20 ring-1 ring-inset ring-white/70 dark:from-fuchsia-950/75 dark:via-violet-950/80 dark:to-amber-950/60 dark:ring-white/10">
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-400"
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-fuchsia-300/35 blur-2xl dark:bg-fuchsia-400/15"
+                  />
                   <button
                     onClick={() => setLocation("/memory")}
-                    className="w-full text-left p-6 space-y-4 hover:from-violet-500/15 hover:to-purple-500/10 hover:border-violet-400/40 transition-all duration-200"
+                    className="relative z-10 w-full text-left p-6 space-y-4 transition-all duration-200 hover:bg-white/20 dark:hover:bg-slate-950/20"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-14 h-14 rounded-xl bg-violet-500/10 flex items-center justify-center ring-1 ring-violet-400/20">
@@ -779,7 +836,11 @@ export default function Portal() {
                           key={value}
                           className="inline-flex items-center justify-center opacity-80 group-hover:opacity-100 transition-opacity"
                         >
-                          <ThemeIcon themeId={themeId} value={value} size={22} />
+                          <ThemeIcon
+                            themeId={themeId}
+                            value={value}
+                            size={22}
+                          />
                         </span>
                       ))}
                       <span className="text-muted-foreground/60 text-xs self-end pb-0.5 ml-1">
@@ -984,7 +1045,8 @@ export default function Portal() {
                 }`}
               />
               <span className="sr-only">
-                {aboutGamesOpen ? "Collapse" : "Expand"} Play Brain Games . Online information
+                {aboutGamesOpen ? "Collapse" : "Expand"} Play Brain Games .
+                Online information
               </span>
             </button>
           </CollapsibleTrigger>
@@ -1024,8 +1086,8 @@ export default function Portal() {
                 <div>
                   <p className="font-semibold text-sm">Memory Match</p>
                   <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                    Flip cards to find matching pairs. Beat the clock and minimise
-                    your flips to maximise your score.
+                    Flip cards to find matching pairs. Beat the clock and
+                    minimise your flips to maximise your score.
                   </p>
                 </div>
               </button>
@@ -1060,17 +1122,18 @@ export default function Portal() {
         </div>
       </div>
 
+      <br />
       <section className="bg-card rounded-2xl border border-border p-5 sm:p-6 space-y-5 text-sm text-muted-foreground leading-relaxed">
         <div>
           <h2 className="text-xl font-serif font-bold text-foreground">
             Free online Sudoku and Memory Match
           </h2>
           <p className="mt-2">
-            Play Brain Games . Online is a general-audience puzzle site with
-            two classic games you can play in a browser: logic-based Sudoku
-            and concentration-style Memory Match. Start a quick guest game,
-            choose a larger challenge, or sign in when you want your progress
-            and results to follow you across devices.
+            Play Brain Games . Online is a general-audience puzzle site with two
+            classic games you can play in a browser: logic-based Sudoku and
+            concentration-style Memory Match. Start a quick guest game, choose a
+            larger challenge, or sign in when you want your progress and results
+            to follow you across devices.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -1079,12 +1142,14 @@ export default function Portal() {
             <p className="mt-1">
               Fill each row, column, and box so every symbol appears exactly
               once. Baby, Mini, Dual, Classic, and Pro grids make it easy to
-              choose a comfortable starting point or build toward expert
-              16×16 puzzles.
+              choose a comfortable starting point or build toward expert 16×16
+              puzzles.
             </p>
           </div>
           <div>
-            <h3 className="font-semibold text-foreground">How Memory Match works</h3>
+            <h3 className="font-semibold text-foreground">
+              How Memory Match works
+            </h3>
             <p className="mt-1">
               Turn over two cards at a time and remember where each symbol
               appears. Match every pair while keeping your time and flip count
@@ -1093,12 +1158,14 @@ export default function Portal() {
           </div>
         </div>
         <div>
-          <h3 className="font-semibold text-foreground">Designed for relaxed replay</h3>
+          <h3 className="font-semibold text-foreground">
+            Designed for relaxed replay
+          </h3>
           <p className="mt-1">
             Both games offer clear rules, touch-friendly controls, optional
-            themes, and daily challenges. Child-friendly modes are available
-            for family play, while adults and experienced players can choose
-            larger grids and harder settings. No purchase is required to play.
+            themes, and daily challenges. Child-friendly modes are available for
+            family play, while adults and experienced players can choose larger
+            grids and harder settings. No purchase is required to play.
           </p>
         </div>
       </section>

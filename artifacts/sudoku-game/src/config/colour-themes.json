@@ -29,7 +29,7 @@
   {
     "id": "forest",
     "name": "Forest",
-    "gems": 0,
+    "gems": 10,
     "visible": true,
     "bg": "#f2f8f2",
     "primary": "#2e6b40",
@@ -45,18 +45,9 @@
     "accent": "#f0d8c4"
   },
   {
-    "id": "midnight",
-    "name": "Midnight",
-    "gems": 10,
-    "visible": true,
-    "bg": "#0f0b1a",
-    "primary": "#8b5cf6",
-    "accent": "#2a1f40"
-  },
-  {
     "id": "rose",
     "name": "Rose",
-    "gems": 10,
+    "gems": 20,
     "visible": true,
     "bg": "#fdf5f7",
     "primary": "#a3254e",
@@ -65,7 +56,7 @@
   {
     "id": "emerald",
     "name": "Emerald",
-    "gems": 10,
+    "gems": 20,
     "visible": true,
     "bg": "#f0fdf4",
     "primary": "#059669",
@@ -74,7 +65,7 @@
   {
     "id": "slate",
     "name": "Slate",
-    "gems": 10,
+    "gems": 20,
     "visible": true,
     "bg": "#f8fafc",
     "primary": "#475569",
@@ -83,7 +74,7 @@
   {
     "id": "lavender",
     "name": "Lavender",
-    "gems": 10,
+    "gems": 25,
     "visible": true,
     "bg": "#f5f0ff",
     "primary": "#7c3aed",
@@ -92,7 +83,7 @@
   {
     "id": "amber",
     "name": "Amber",
-    "gems": 10,
+    "gems": 25,
     "visible": true,
     "bg": "#fffbeb",
     "primary": "#d97706",
@@ -101,7 +92,7 @@
   {
     "id": "teal",
     "name": "Teal",
-    "gems": 10,
+    "gems": 25,
     "visible": false,
     "bg": "#f0fdfa",
     "primary": "#0d9488",
@@ -110,7 +101,7 @@
   {
     "id": "crimson",
     "name": "Crimson",
-    "gems": 10,
+    "gems": 25,
     "visible": true,
     "bg": "#fff5f5",
     "primary": "#dc2626",
@@ -119,7 +110,7 @@
   {
     "id": "coral",
     "name": "Coral",
-    "gems": 10,
+    "gems": 25,
     "visible": false,
     "bg": "#fff7f5",
     "primary": "#e05a4e",
@@ -137,16 +128,34 @@
   {
     "id": "mocha",
     "name": "Mocha",
-    "gems": 10,
+    "gems": 25,
     "visible": true,
     "bg": "#faf8f5",
     "primary": "#78503a",
     "accent": "#e8ddd5"
   },
   {
+    "id": "nordic",
+    "name": "Nordic",
+    "gems": 25,
+    "visible": true,
+    "bg": "#f0f4fa",
+    "primary": "#2248a0",
+    "accent": "#d0ddf5"
+  },
+  {
+    "id": "midnight",
+    "name": "Midnight",
+    "gems": 25,
+    "visible": true,
+    "bg": "#0f0b1a",
+    "primary": "#8b5cf6",
+    "accent": "#2a1f40"
+  },
+  {
     "id": "neon",
     "name": "Neon",
-    "gems": 10,
+    "gems": 25,
     "visible": true,
     "bg": "#0a0e10",
     "primary": "#00e676",
@@ -155,7 +164,7 @@
   {
     "id": "cyberpunk",
     "name": "Cyberpunk",
-    "gems": 10,
+    "gems": 25,
     "visible": true,
     "bg": "#0e0815",
     "primary": "#e91e8c",
@@ -164,7 +173,7 @@
   {
     "id": "deepsea",
     "name": "Deep Sea",
-    "gems": 10,
+    "gems": 30,
     "visible": true,
     "bg": "#060f1a",
     "primary": "#00bcd4",
@@ -173,7 +182,7 @@
   {
     "id": "obsidian",
     "name": "Obsidian",
-    "gems": 10,
+    "gems": 30,
     "visible": true,
     "bg": "#0f0c08",
     "primary": "#c9a227",
@@ -196,15 +205,6 @@
     "bg": "#fff7f0",
     "primary": "#d4620a",
     "accent": "#ffdcc2"
-  },
-  {
-    "id": "nordic",
-    "name": "Nordic",
-    "gems": 10,
-    "visible": true,
-    "bg": "#f0f4fa",
-    "primary": "#2248a0",
-    "accent": "#d0ddf5"
   },
   {
     "id": "wine",
