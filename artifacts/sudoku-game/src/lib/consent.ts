@@ -5,6 +5,7 @@ export type ConsentPreferences = {
 
 export const CONSENT_STORAGE_KEY = "brain-games-consent-v1";
 export const CONSENT_CHANGED_EVENT = "brain-games-consent-changed";
+export const CONSENT_OPEN_EVENT = "brain-games-open-consent-settings";
 
 const GOOGLE_ANALYTICS_ID = "G-V8KGSQYF43";
 

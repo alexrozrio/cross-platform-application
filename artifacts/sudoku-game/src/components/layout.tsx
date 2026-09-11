@@ -15,6 +15,7 @@ import { useBadgeNotifier } from "@/hooks/use-badge-notifier";
 import { AchievementUnlockModal } from "@/components/achievement-unlock-modal";
 import { TournamentWinModal } from "@/components/tournament-win-modal";
 import { useThemeBg } from "@/hooks/use-theme-bg";
+import { CONSENT_OPEN_EVENT } from "@/lib/consent";
 
 export function applyAppTheme(theme: string) {
   document.documentElement.setAttribute("data-theme", theme);
@@ -262,6 +263,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
             >
               Contact
             </a>
+            <span aria-hidden="true" className="text-border">·</span>
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event(CONSENT_OPEN_EVENT))}
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Privacy choices
+            </button>
           </nav>
           <p className="text-[11px] text-muted-foreground/60">
             © {new Date().getFullYear()} Play Brain Games . Online. All rights reserved.

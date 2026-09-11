@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import {
   type ConsentPreferences,
   CONSENT_CHANGED_EVENT,
+  CONSENT_OPEN_EVENT,
   getStoredConsent,
   applyGoogleConsent,
   loadGoogleAnalytics,
@@ -77,7 +78,17 @@ export function ConsentManager() {
     };
 
     window.addEventListener(CONSENT_CHANGED_EVENT, handleConsentChange);
-    return () => window.removeEventListener(CONSENT_CHANGED_EVENT, handleConsentChange);
+    const handleOpenPreferences = () => {
+      const current = getStoredConsent() ?? defaultPreferences;
+      setDraft(current);
+      setShowPreferences(true);
+    };
+
+    window.addEventListener(CONSENT_OPEN_EVENT, handleOpenPreferences);
+    return () => {
+      window.removeEventListener(CONSENT_CHANGED_EVENT, handleConsentChange);
+      window.removeEventListener(CONSENT_OPEN_EVENT, handleOpenPreferences);
+    };
   }, []);
 
   const savePreferences = (next: ConsentPreferences) => {
@@ -144,21 +155,6 @@ export function ConsentManager() {
             </div>
           </div>
         </section>
-      )}
-
-      {preferences && !showPreferences && (
-        <button
-          type="button"
-          onClick={() => {
-            setDraft(preferences);
-            setShowPreferences(true);
-          }}
-          className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] right-3 z-[60] inline-flex items-center gap-1.5 rounded-full border border-border bg-card/95 px-3 py-2 text-xs font-medium text-muted-foreground shadow-lg backdrop-blur transition-colors hover:bg-card hover:text-foreground sm:bottom-4 sm:right-4"
-          aria-label="Open privacy choices"
-        >
-          <Cookie className="h-3.5 w-3.5" aria-hidden="true" />
-          Privacy choices
-        </button>
       )}
 
       {showPreferences && (
