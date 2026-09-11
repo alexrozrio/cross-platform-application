@@ -29,7 +29,7 @@ export default function PrivacyPolicy() {
             We also store game-related data you create across both Sudoku and Memory Match: puzzle and game attempts, completion times, scores, settings, and earned badges.
           </p>
           <p>
-            We use Google Analytics to understand how visitors use the Service, such as which pages are visited and how the Service performs. Google Analytics may use cookies or similar identifiers and may process usage and device information on our behalf.
+            If you allow analytics in the privacy choices dialog, we use Google Analytics to understand how visitors use the Service, such as which pages are visited and how the Service performs. Google Analytics may use cookies or similar identifiers and may process usage and device information on our behalf.
           </p>
         </section>
 
@@ -58,7 +58,7 @@ export default function PrivacyPolicy() {
             We use browser local storage to cache your profile ID, device identifier, preferences, and offline game progress between visits. Authentication sessions are managed using secure, server-side session cookies.
           </p>
           <p>
-            Google Analytics may use cookies or similar technologies to measure traffic, usage, and performance. You can manage cookies through your browser settings or opt out of Google Analytics with Google's{" "}
+            Google Analytics is disabled unless you allow it in the privacy choices dialog. If enabled, it may use cookies or similar technologies to measure traffic, usage, and performance. You can change this choice using the Privacy choices button, through your browser settings, or by opting out of Google Analytics with Google's{" "}
             <a
               className="text-foreground font-medium underline underline-offset-2"
               href="https://tools.google.com/dlpage/gaoptout"
@@ -85,7 +85,7 @@ export default function PrivacyPolicy() {
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">5. Third-Party Services</h2>
           <p>
-            We use third-party services to operate and improve the Service, including Google OAuth for sign-in and Google Analytics for usage measurement. These providers may process information according to their own privacy policies and the instructions or settings applicable to their services.
+            We use third-party services to operate and improve the Service, including Google OAuth for sign-in and, if you consent, Google Analytics for usage measurement. These providers may process information according to their own privacy policies and the instructions or settings applicable to their services.
           </p>
           <p>
             If advertising is enabled, Google AdSense may process information to deliver and measure ads. Advertising settings and consent choices may affect whether ads are personalized.
@@ -102,7 +102,7 @@ export default function PrivacyPolicy() {
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">7. Your Choices and Rights</h2>
           <p>
-            You may ask us to provide, correct, or delete the personal information associated with your account. You may also withdraw consent where we rely on consent to process information. Some requests may require us to verify your identity or may be limited by legal obligations.
+            You may ask us to provide, correct, or delete the personal information associated with your account. You may also withdraw consent where we rely on consent to process information by opening Privacy choices at any time. Some requests may require us to verify your identity or may be limited by legal obligations.
           </p>
           <p>
             To make a request, contact us using the details in Section 10. If advertising is enabled, you can also manage Google's advertising personalization choices through{" "}

@@ -11,6 +11,7 @@ import { EventModal } from "@/components/event-modal";
 import { Layout } from "@/components/layout";
 import { PageLoader } from "@/components/page-loader";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { ConsentManager } from "@/components/consent-manager";
 import { modeFromQuery } from "@/lib/sudoku-routes";
 
 // Pages — lazy-loaded so each route only ships the JS it needs, instead of
@@ -150,6 +151,7 @@ export default function App() {
     <WouterRouter base={basePath}>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
+          <ConsentManager />
           <Router />
           <Toaster />
           <SonnerToaster position="top-right" richColors closeButton />
