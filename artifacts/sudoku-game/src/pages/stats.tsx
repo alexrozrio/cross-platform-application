@@ -213,10 +213,10 @@ function MemoryStreakCalendar({ profileId }: { profileId: number }) {
   });
 
   const { data: historyData } = useQuery({
-    queryKey: [`/api/memory-games/history/${profileId}`, month],
+    queryKey: [`/api/memory-challenges/history/${profileId}`, month],
     queryFn: () =>
       customFetch<{ month: string; completedDates: string[] }>(
-        `/api/memory-games/history/${profileId}?month=${month}`,
+        `/api/memory-challenges/history/${profileId}?month=${month}`,
       ),
     enabled: !!profileId,
   });

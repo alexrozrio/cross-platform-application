@@ -157,6 +157,27 @@ router.post("/memory-challenges/complete", async (req, res): Promise<void> => {
     })
     .where(eq(profilesTable.id, profileId));
 
+  // Update memory streak only for daily challenge completions.
+  if (type === "daily") {
+    const today = config.period;
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const [profile] = await db.select().from(profilesTable).where(eq(profilesTable.id, profileId));
+    if (profile) {
+      const last = profile.lastMemoryDate as string | null;
+      let newStreak = profile.memoryStreak ?? 0;
+      if (last === yesterday) {
+        newStreak += 1;
+      } else if (last !== today) {
+        newStreak = 1;
+      }
+      const newLongest = Math.max(newStreak, profile.longestMemoryStreak ?? 0);
+      await db
+        .update(profilesTable)
+        .set({ memoryStreak: newStreak, longestMemoryStreak: newLongest, lastMemoryDate: today })
+        .where(eq(profilesTable.id, profileId));
+    }
+  }
+
   res.json({ alreadyClaimed: false, bonusXp: config.bonusXp, bonusGems: config.bonusGems });
 });
 

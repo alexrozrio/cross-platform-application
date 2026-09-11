@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, desc, and, gte, lt, asc } from "drizzle-orm";
-import { db, memoryGamesTable, profilesTable } from "@workspace/db";
+import { db, memoryGamesTable, memoryChallengeCompletionsTable, profilesTable } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { resolveDuelForMemoryGame } from "./memory-duels";
 
@@ -298,13 +298,37 @@ router.get("/memory-games/streak/:profileId", async (req, res): Promise<void> =>
   if (!profile) { res.status(404).json({ error: "Profile not found" }); return; }
 
   const today = new Date().toISOString().slice(0, 10);
-  const completedToday = (profile.lastMemoryDate as string | null) === today;
+  const dailyRows = await db
+    .select({ period: memoryChallengeCompletionsTable.period })
+    .from(memoryChallengeCompletionsTable)
+    .where(and(
+      eq(memoryChallengeCompletionsTable.profileId, profileId),
+      eq(memoryChallengeCompletionsTable.type, "daily"),
+    ))
+    .orderBy(asc(memoryChallengeCompletionsTable.period));
+
+  const dates = [...new Set(dailyRows.map((row) => row.period).filter(Boolean))] as string[];
+  let currentStreak = 0;
+  let longestStreak = 0;
+  let run = 0;
+  let previousDate: string | null = null;
+  for (const date of dates) {
+    const isConsecutive = previousDate
+      ? Date.parse(`${date}T00:00:00Z`) - Date.parse(`${previousDate}T00:00:00Z`) === 86400000
+      : false;
+    run = isConsecutive ? run + 1 : 1;
+    longestStreak = Math.max(longestStreak, run);
+    previousDate = date;
+  }
+  if (dates.at(-1) === today) {
+    currentStreak = run;
+  }
 
   res.json({
-    currentStreak: profile.memoryStreak ?? 0,
-    longestStreak: profile.longestMemoryStreak ?? 0,
-    lastMemoryDate: (profile.lastMemoryDate as string | null) ?? null,
-    completedToday,
+    currentStreak,
+    longestStreak,
+    lastMemoryDate: dates.at(-1) ?? null,
+    completedToday: dates.at(-1) === today,
   });
 });
 
