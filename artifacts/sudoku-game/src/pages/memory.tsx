@@ -189,6 +189,7 @@ export interface MemoryMatchProps {
 }
 
 export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {}) {
+  const bookmarkedSize = memorySizeFromSlug(difficultySlug);
   const memoryMetaLabel = bookmarkedSize
     ? GRID_OPTIONS.find((option) => option.size === bookmarkedSize)?.desc ?? "Puzzle"
     : "all difficulty levels";
@@ -200,7 +201,6 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
   });
   const [, setLocation] = useLocation();
   const search = useSearch();
-  const bookmarkedSize = memorySizeFromSlug(difficultySlug);
   const { profileId, isReady } = useAuth();
   const { themeId } = useImageTheme();
   const queryClient = useQueryClient();

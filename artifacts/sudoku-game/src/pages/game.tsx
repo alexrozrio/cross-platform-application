@@ -24,6 +24,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { ArrowLeft, Clock, TriangleAlert as AlertTriangle, Lightbulb, Eraser, PenLine, Hash, Type, Image, Flame, Loader as Loader2, RefreshCw, RotateCcw, Undo2, Pause, Play, Volume2, VolumeX, Share2, ChevronDown, Zap, Gem, Trophy } from "lucide-react";
 import { useSound } from "@/hooks/use-sound";
 import { Confetti } from "@/components/confetti";
+import { usePageMeta } from "@/components/page-meta";
 import {
   Select,
   SelectContent,
@@ -342,6 +343,12 @@ export default function Game({ id }: { id: string }) {
   const gameId = parseInt(id, 10);
   const [, setLocation] = useLocation();
   const search = useSearch();
+  usePageMeta({
+    title: "Play Sudoku Online | Play Brain Games . Online",
+    description:
+      "Play a responsive Sudoku puzzle online with multiple grid sizes, difficulty levels, notes, and progress tracking.",
+    path: `/game/${id}`,
+  });
   const params = new URLSearchParams(search);
   const isOfflineRoute = gameId === 0;
   // Offline games use gameId=0, so include the route's unique offlineGame

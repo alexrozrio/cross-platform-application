@@ -1,7 +1,14 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
+import { usePageMeta } from "@/components/page-meta";
 
 export default function NotFound() {
+  usePageMeta({
+    title: "Page Not Found | Play Brain Games . Online",
+    description:
+      "The page you requested could not be found. Return to Play Brain Games . Online to play free Sudoku and Memory Match games.",
+    path: "/",
+  });
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md mx-4">

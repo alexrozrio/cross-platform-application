@@ -7,10 +7,16 @@ import { ArrowLeft, Share2 } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { BADGE_META, formatPeriodLabel } from '@/lib/badge-utils';
 import { BadgeShareSheet } from '@/components/badge-share-sheet';
+import { usePageMeta } from '@/components/page-meta';
 
 export default function BadgeSharePage() {
   const params = useParams<{ token: string }>();
   const [, setLocation] = useLocation();
+  usePageMeta({
+    title: 'Achievement Badge | Play Brain Games . Online',
+    description: 'View a shared achievement badge from Play Brain Games . Online and see how the player performed in the puzzle leaderboard.',
+    path: `/badges/${params.token ?? ''}`,
+  });
   const { data: badge, isLoading, isError } = useGetBadgeShare(params.token ?? '', {
     // A 404 is terminal for a share token. Retrying keeps visitors on the
     // loading state for several seconds before the existing error UI appears.

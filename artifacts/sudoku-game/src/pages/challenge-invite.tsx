@@ -26,6 +26,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
+import { usePageMeta } from "@/components/page-meta";
 import { getLevelFromXp } from "@/lib/levels";
 import { apiUrl } from "@/lib/api-base-url";
 
@@ -198,6 +199,12 @@ function Avatar({ src, name, size = 16 }: { src: string | null; name: string; si
 export default function ChallengeInvitePage({ token }: { token: string }) {
   const { profileId, isSignedIn } = useAuth();
   const [, setLocation] = useLocation();
+  usePageMeta({
+    title: "Puzzle Challenge Invitation | Play Brain Games . Online",
+    description:
+      "Open a shared Sudoku or Memory Match challenge invitation and compete on Play Brain Games . Online.",
+    path: `/invite/${token}`,
+  });
   const [showShare, setShowShare] = useState(false);
   const [declined, setDeclined] = useState(false);
 

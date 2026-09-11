@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
+import { usePageMeta } from "@/components/page-meta";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -260,6 +261,12 @@ function ChallengeLeaderboard({
 
 export default function MemoryChallengePage() {
   const [, setLocation] = useLocation();
+  usePageMeta({
+    title: "Memory Match Challenges | Play Brain Games . Online",
+    description:
+      "Take on daily and weekly Memory Match challenges, improve your recall, and compare results on Play Brain Games . Online.",
+    path: "/memory-challenge",
+  });
   const { profileId } = useAuth();
   const queryClient = useQueryClient();
 

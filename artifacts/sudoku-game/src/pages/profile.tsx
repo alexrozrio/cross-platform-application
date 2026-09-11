@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useSearch, Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { usePageMeta } from "@/components/page-meta";
 import { apiUrl } from "@/lib/api-base-url";
 import {
   useGetProfile,
@@ -60,6 +61,7 @@ import {
   Layers,
   BarChart2,
   ExternalLink,
+  Info,
 } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -567,6 +569,12 @@ type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export default function Profile() {
   const [, setLocation] = useLocation();
+  usePageMeta({
+    title: "Your Puzzle Profile & Stats | Play Brain Games . Online",
+    description:
+      "Review your Sudoku and Memory Match progress, personal bests, achievements, and game preferences.",
+    path: "/profile",
+  });
   const search = useSearch();
   const params = new URLSearchParams(search);
   const tabParam = params.get("tab");

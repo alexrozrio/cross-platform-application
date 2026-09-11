@@ -21,6 +21,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { usePageMeta } from '@/components/page-meta';
 import colourThemesConfig from '@/config/colour-themes.json';
 
 const APP_THEMES = colourThemesConfig
@@ -121,6 +122,12 @@ function MobileCarousel({
 
 export default function Themes() {
   const { themeId, setThemeId } = useImageTheme();
+  usePageMeta({
+    title: "Sudoku & Memory Match Themes | Play Brain Games . Online",
+    description:
+      "Personalise Sudoku and Memory Match with colour themes, backgrounds, fonts, and image icon sets.",
+    path: "/themes",
+  });
   const { profileId } = useAuth();
   const { data: profile, refetch: refetchProfile } = useGetProfile(profileId as number, {
     query: { refetchOnMount: "always", staleTime: 0 },

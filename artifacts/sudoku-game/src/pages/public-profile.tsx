@@ -5,6 +5,7 @@ import { ACHIEVEMENT_META, type AchievementsData } from "@/lib/achievement-utils
 import { Trophy, Gamepad2, Hash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { usePageMeta } from "@/components/page-meta";
 
 interface PublicProfileProps {
   profileId: string;
@@ -21,6 +22,12 @@ type PublicProfile = {
 
 export default function PublicProfilePage({ profileId }: PublicProfileProps) {
   const id = parseInt(profileId);
+  usePageMeta({
+    title: "Player Profile & Achievements | Play Brain Games . Online",
+    description:
+      "View a public Play Brain Games . Online player profile, achievements, and puzzle progress.",
+    path: `/player/${profileId}`,
+  });
 
   const { data: profile, isLoading: profileLoading, isError: profileError } = useQuery<PublicProfile>({
     queryKey: [`/api/profiles/${id}`],

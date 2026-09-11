@@ -26,6 +26,7 @@ import {
   Minus,
 } from "lucide-react";
 import { LevelBadge } from "@/components/level-badge";
+import { usePageMeta } from "@/components/page-meta";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
 import { showEventModal } from "@/hooks/use-event-modal";
@@ -1199,6 +1200,12 @@ function MemoryBoard({ myProfileId }: { myProfileId?: number }) {
 
 export default function Leaderboard() {
   const search = useSearch();
+  usePageMeta({
+    title: "Sudoku & Memory Match Leaderboards | Play Brain Games . Online",
+    description:
+      "Compare Sudoku and Memory Match scores across weekly, monthly, and all-time leaderboards on Play Brain Games . Online.",
+    path: "/leaderboard",
+  });
   const initialTab = (() => {
     const p = new URLSearchParams(search).get("tab") as MainTab | null;
     return (p && ["weekly", "monthly", "alltime", "memory"].includes(p)) ? p : "weekly";

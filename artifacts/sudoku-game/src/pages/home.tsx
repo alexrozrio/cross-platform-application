@@ -104,17 +104,24 @@ export default function SudokuHome({
   modeSlug,
   autoStartFromBookmark = false,
 }: SudokuHomeProps = {}) {
+  const bookmarkedSize = gridSizeFromSlug(gridSlug);
+  const bookmarkedDifficulty = difficultyFromSlug(difficultySlug);
+  const routeTitle = bookmarkedSize && bookmarkedDifficulty
+    ? `${bookmarkedSize}×${bookmarkedSize} ${bookmarkedDifficulty} Sudoku Online | Play Brain Games . Online`
+    : "Play Sudoku Online Free | Easy to Expert Puzzles";
+  const routeDescription = bookmarkedSize && bookmarkedDifficulty
+    ? `Play a ${bookmarkedDifficulty} ${bookmarkedSize}×${bookmarkedSize} Sudoku puzzle online on Play Brain Games . Online.`
+    : "Play free online Sudoku with 3×3, 4×4, 6×6, 9×9, and 16×16 grids. Choose easy to expert difficulty, use notes and hints, and play as a guest.";
   usePageMeta({
-    title: "Play Sudoku Online Free | Easy to Expert Puzzles",
-    description:
-      "Play free online Sudoku with 3×3, 4×4, 6×6, 9×9, and 16×16 grids. Choose easy to expert difficulty, use notes and hints, and play as a guest.",
-    path: "/sudoku",
+    title: routeTitle,
+    description: routeDescription,
+    path: bookmarkedSize && bookmarkedDifficulty
+      ? `/sudoku/${gridSlug}/${difficultySlug}`
+      : "/sudoku",
   });
   const { profileId, isReady, isSignedIn } = useAuth();
   const [location, setLocation] = useLocation();
   const search = useSearch();
-  const bookmarkedSize = gridSizeFromSlug(gridSlug);
-  const bookmarkedDifficulty = difficultyFromSlug(difficultySlug);
   const urlParams = new URLSearchParams(search);
   const sizeParam = urlParams.get('size');
   const queryMode = modeFromQuery(urlParams.get('mode'));

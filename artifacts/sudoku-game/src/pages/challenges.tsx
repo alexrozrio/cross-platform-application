@@ -26,6 +26,7 @@ import { Swords, Trophy, Clock, Search, Gem, CircleCheck as CheckCircle2, Circle
 import { toast } from "sonner";
 import { showEventModal } from "@/hooks/use-event-modal";
 import { LevelBadge } from "@/components/level-badge";
+import { usePageMeta } from "@/components/page-meta";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1200,6 +1201,12 @@ function NewChallengeDialog({
 export default function Challenges() {
   const { profileId } = useAuth();
   const [, setLocation] = useLocation();
+  usePageMeta({
+    title: "Puzzle Challenges & Duels | Play Brain Games . Online",
+    description:
+      "Create and join Sudoku and Memory Match challenges, compare scores, and compete with friends on Play Brain Games . Online.",
+    path: "/challenges",
+  });
   const queryClient = useQueryClient();
   const [showNew, setShowNew] = useState(false);
   const [respondingId, setRespondingId] = useState<number | null>(null);
