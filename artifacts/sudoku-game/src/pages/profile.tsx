@@ -43,9 +43,6 @@ import {
   Trophy,
   Gem,
   Flame,
-  Info,
-  ShieldCheck,
-  FileText,
   Volume2,
   Baby,
   Dumbbell,
@@ -1113,23 +1110,6 @@ export default function Profile() {
         />
       )}
 
-      {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <div className="bg-card rounded-2xl border border-border px-5 py-4 flex flex-col items-center gap-3">
-        <div className="profile-footer-links flex items-center justify-center gap-6">
-          <button onClick={() => setLocation("/about")} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <Info className="w-3.5 h-3.5" /> About
-          </button>
-          <span className="text-border">·</span>
-          <button onClick={() => setLocation("/privacy")} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <ShieldCheck className="w-3.5 h-3.5" /> Privacy Policy
-          </button>
-          <span className="text-border">·</span>
-          <button onClick={() => setLocation("/terms")} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <FileText className="w-3.5 h-3.5" /> Terms
-          </button>
-        </div>
-        <p className="text-xs text-muted-foreground/60">© {new Date().getFullYear()} Play Brain Games . Online. All rights reserved.</p>
-      </div>
     </div>
   );
 }

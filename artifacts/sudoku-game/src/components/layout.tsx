@@ -241,6 +241,34 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
+      <footer className="w-full border-t bg-card/90 px-4 py-4 backdrop-blur-sm pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-4">
+        <div className="mx-auto flex max-w-4xl flex-col items-center gap-2 text-center">
+          <nav aria-label="Site information" className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-xs">
+            <Link href="/about" className="text-muted-foreground transition-colors hover:text-foreground">
+              About
+            </Link>
+            <span aria-hidden="true" className="text-border">·</span>
+            <Link href="/privacy" className="text-muted-foreground transition-colors hover:text-foreground">
+              Privacy Policy
+            </Link>
+            <span aria-hidden="true" className="text-border">·</span>
+            <Link href="/terms" className="text-muted-foreground transition-colors hover:text-foreground">
+              Terms
+            </Link>
+            <span aria-hidden="true" className="text-border">·</span>
+            <a
+              href="mailto:info@playbraingames.online"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Contact
+            </a>
+          </nav>
+          <p className="text-[11px] text-muted-foreground/60">
+            © {new Date().getFullYear()} Play Brain Games . Online. All rights reserved.
+          </p>
+        </div>
+      </footer>
+
       <nav className="md:hidden border-t bg-card pt-2 px-2 flex items-center justify-around fixed bottom-0 left-0 right-0 z-50 isolate shadow-[0_-2px_8px_rgba(0,0,0,0.08)]" style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}>
         {navItems.map((item) => (
           <Link
