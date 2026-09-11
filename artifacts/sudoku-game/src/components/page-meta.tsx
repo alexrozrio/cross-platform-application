@@ -12,6 +12,17 @@ const SITE_URL = "https://playbraingames.online";
 const SITE_NAME = "Play Brain Games . Online";
 const OG_IMAGE = `${SITE_URL}/opengraph.jpg`;
 
+function formatPageTitle(title: string): string {
+  const withoutTrailingBrand = title
+    .replace(new RegExp(`\\s*(?:\\||—|-)\\s*${SITE_NAME.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`), "")
+    .trim();
+
+  if (!withoutTrailingBrand || withoutTrailingBrand === SITE_NAME) {
+    return SITE_NAME;
+  }
+  return `${SITE_NAME} | ${withoutTrailingBrand}`;
+}
+
 function upsertMeta(attribute: "name" | "property", key: string, content: string) {
   let element = document.head.querySelector<HTMLMetaElement>(
     `meta[data-page-meta="${attribute}:${key}"]`,
@@ -34,17 +45,18 @@ export function usePageMeta({
 }: PageMetaOptions) {
   useEffect(() => {
     const url = new URL(path, SITE_URL).toString();
+    const pageTitle = formatPageTitle(title);
 
-    document.title = title;
+    document.title = pageTitle;
     upsertMeta("name", "description", description);
-    upsertMeta("property", "og:title", title);
+    upsertMeta("property", "og:title", pageTitle);
     upsertMeta("property", "og:description", description);
     upsertMeta("property", "og:type", type);
     upsertMeta("property", "og:url", url);
     upsertMeta("property", "og:site_name", SITE_NAME);
     upsertMeta("property", "og:locale", "en_US");
     upsertMeta("property", "og:image", OG_IMAGE);
-    upsertMeta("name", "twitter:title", title);
+    upsertMeta("name", "twitter:title", pageTitle);
     upsertMeta("name", "twitter:description", description);
     upsertMeta("name", "twitter:image", OG_IMAGE);
 
