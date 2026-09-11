@@ -9,7 +9,7 @@ export interface PageMetaOptions {
 }
 
 const SITE_URL = "https://playbraingames.online";
-const SITE_NAME = "Play Brain Games";
+const SITE_NAME = "Play Brain Games . Online";
 const OG_IMAGE = `${SITE_URL}/opengraph.jpg`;
 
 function upsertMeta(attribute: "name" | "property", key: string, content: string) {

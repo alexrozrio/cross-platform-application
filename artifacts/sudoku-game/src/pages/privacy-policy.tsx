@@ -5,9 +5,9 @@ import { usePageMeta } from "@/components/page-meta";
 
 export default function PrivacyPolicy() {
   usePageMeta({
-    title: "Privacy Policy | Play Brain Games",
+    title: "Privacy Policy | Play Brain Games . Online",
     description:
-      "Read how Play Brain Games handles guest play, Google sign-in, game progress, analytics consent, advertising choices, and children's privacy.",
+      "Read how Play Brain Games . Online handles guest play, Google sign-in, game progress, analytics consent, advertising choices, and children's privacy.",
     path: "/privacy",
   });
   const [, setLocation] = useLocation();
@@ -128,7 +128,7 @@ export default function PrivacyPolicy() {
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">8. Children's Privacy</h2>
           <p>
-            Play Brain Games is a general-audience, family-friendly service. It includes optional child-friendly modes, such as Baby and Mini grids, but it is not designed exclusively for children. Younger users should use the Service with a parent or guardian's involvement.
+            Play Brain Games . Online is a general-audience, family-friendly service. It includes optional child-friendly modes, such as Baby and Mini grids, but it is not designed exclusively for children. Younger users should use the Service with a parent or guardian's involvement.
           </p>
           <p>
             Child-friendly guest play does not require a child to provide a name, email address, profile photo, or other direct contact information. Guest play may use a random device identifier and store game progress in the browser so the game can work; these are not intended to identify a child by name. Account creation, Google sign-in, and any sharing of personal information should be handled or approved by a parent or guardian.

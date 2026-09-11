@@ -5,9 +5,9 @@ import { usePageMeta } from "@/components/page-meta";
 
 export default function TermsOfService() {
   usePageMeta({
-    title: "Terms of Service | Play Brain Games",
+    title: "Terms of Service | Play Brain Games . Online",
     description:
-      "Read the terms for using Play Brain Games, including guest play, accounts, family-friendly use, acceptable behavior, and game content.",
+      "Read the terms for using Play Brain Games . Online, including guest play, accounts, family-friendly use, acceptable behavior, and game content.",
     path: "/terms",
   });
   const [, setLocation] = useLocation();
@@ -30,7 +30,7 @@ export default function TermsOfService() {
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">1. Acceptance</h2>
           <p>
-            By accessing or using Play Brain Games, including the Sudoku and Memory Match games ("Service"), you agree to be bound by these Terms. If you do not agree, please stop using the Service immediately.
+            By accessing or using Play Brain Games . Online, including the Sudoku and Memory Match games ("Service"), you agree to be bound by these Terms. If you do not agree, please stop using the Service immediately.
           </p>
         </section>
 
