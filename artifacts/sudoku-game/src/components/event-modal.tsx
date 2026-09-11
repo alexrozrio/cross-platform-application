@@ -4,8 +4,9 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
   Trophy, Handshake, Swords, CheckCircle2, XCircle,
-  TrendingUp, TrendingDown, Star, CalendarDays, Calendar, Gem,
+  TrendingUp, TrendingDown, Star, CalendarDays, Calendar, Gem, Share2,
 } from "lucide-react";
+import { toast } from "sonner";
 import {
   subscribeEventModal, dismissEventModal,
   type EventModalPayload,
@@ -150,8 +151,8 @@ const CONFIGS: Record<EventModalPayload["type"], ModalConfig> = {
           ? `Next milestone: ${p.nextGoalName} at ${p.nextGoalXp?.toLocaleString()} XP`
           : "You've reached the highest rank. Incredible!"
         : "",
-    secondaryLabel: "Awesome!",
-    autoDismiss: 10000,
+    primaryLabel: "Share your rank",
+    secondaryLabel: "Close",
   },
 };
 
@@ -197,7 +198,32 @@ export function EventModal() {
   if (!payload) return null;
   const cfg = CONFIGS[payload.type];
 
+  const shareRank = async () => {
+    if (payload.type !== "rank_up") return;
+
+    const shareUrl = `${window.location.origin}/profile`;
+    const shareText = `I just reached the ${payload.newRank} rank on Play Brain Games . Online! 🎉`;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `I reached ${payload.newRank}!`,
+          text: shareText,
+          url: shareUrl,
+        });
+      } else {
+        await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+        toast.success("Rank announcement copied!");
+      }
+    } catch {
+      // Sharing can be cancelled by the user; keep the modal open.
+    }
+  };
+
   const handlePrimary = () => {
+    if (payload.type === "rank_up") {
+      void shareRank();
+      return;
+    }
     dismissEventModal();
     if (cfg.primaryHref) setLocation(cfg.primaryHref(payload));
   };
@@ -245,6 +271,7 @@ export function EventModal() {
           <div className="flex flex-col gap-2">
             {cfg.primaryLabel && (
               <Button className="w-full" onClick={handlePrimary}>
+                {isRankUp && <Share2 className="w-4 h-4 mr-2" />}
                 {cfg.primaryLabel}
               </Button>
             )}
