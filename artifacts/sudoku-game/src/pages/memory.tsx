@@ -1021,7 +1021,9 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
         <div className="rounded-2xl bg-primary text-primary-foreground p-4 sm:p-6 text-center space-y-2 sm:space-y-3 shadow-lg">
           <div className="text-4xl sm:text-5xl mb-0 sm:mb-1">{winMessage?.emoji ?? '🎉'}</div>
           <h1 className="text-2xl sm:text-3xl leading-tight font-serif font-bold">{winMessage?.headline ?? 'You won!'}</h1>
-          <p className="opacity-80 text-xs sm:text-sm">All {totalPairs} pairs matched</p>
+          <p className="opacity-80 text-xs sm:text-sm">
+            All {totalPairs} pairs matched · {formatTime(elapsed)} · {flips} flip{flips !== 1 ? "s" : ""}
+          </p>
           {winResult && (
             <p className="text-xs sm:text-sm font-semibold text-primary-foreground/90">
               +{winResult.points.toLocaleString()} points · +{winResult.gemsEarned} 💎 gems earned
