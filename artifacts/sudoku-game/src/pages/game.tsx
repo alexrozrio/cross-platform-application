@@ -1626,54 +1626,6 @@ export default function Game({ id }: { id: string }) {
           </div>
         )}
 
-        {isDailyChallengeGame && (
-          <div className="rounded-2xl border-2 border-orange-200/70 bg-gradient-to-r from-orange-50 to-amber-50 p-4 space-y-3 dark:border-orange-800/50 dark:from-orange-950/35 dark:to-amber-950/25">
-            <div className="flex items-start gap-3">
-              <div className="rounded-full bg-orange-100 p-2 text-orange-600 dark:bg-orange-900/50 dark:text-orange-300">
-                <CalendarDays className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="font-bold text-orange-800 dark:text-orange-200">Daily Challenge Complete! 🎊</p>
-                <p className="text-sm text-orange-700/80 dark:text-orange-300/80">
-                  Come back tomorrow for a new puzzle and keep your streak going.
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              className="w-full gap-2 border-orange-300/70 bg-background/70 hover:bg-orange-100/70 dark:border-orange-700/60 dark:hover:bg-orange-900/40"
-              onClick={() => setLocation("/daily-challenge")}
-            >
-              View Daily Challenge
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </div>
-        )}
-
-        {!isDailyChallengeGame && (
-          <div className="rounded-2xl border-2 border-orange-200/70 bg-gradient-to-r from-orange-50 to-amber-50 p-4 space-y-3 dark:border-orange-800/50 dark:from-orange-950/35 dark:to-amber-950/25">
-            <div className="flex items-start gap-3">
-              <div className="rounded-full bg-orange-100 p-2 text-orange-600 dark:bg-orange-900/50 dark:text-orange-300">
-                <CalendarDays className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="font-bold text-orange-800 dark:text-orange-200">Try Today's Daily Challenge</p>
-                <p className="text-sm text-orange-700/80 dark:text-orange-300/80">
-                  Solve the shared Sudoku puzzle and build your daily streak.
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              className="w-full gap-2 border-orange-300/70 bg-background/70 hover:bg-orange-100/70 dark:border-orange-700/60 dark:hover:bg-orange-900/40"
-              onClick={() => setLocation("/daily-challenge")}
-            >
-              Play Daily Challenge
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </div>
-        )}
-
         {/* Challenge result card */}
         {challengeResult && (() => {
           const isChallenger = challengeResult.challengerId === profileId;
@@ -1765,6 +1717,52 @@ export default function Game({ id }: { id: string }) {
             </div>
           </div>
         </div>
+
+        {isDailyChallengeGame ? (
+          <div className="rounded-2xl border-2 border-orange-200/70 bg-gradient-to-r from-orange-50 to-amber-50 p-4 space-y-3 dark:border-orange-800/50 dark:from-orange-950/35 dark:to-amber-950/25">
+            <div className="flex items-start gap-3">
+              <div className="rounded-full bg-orange-100 p-2 text-orange-600 dark:bg-orange-900/50 dark:text-orange-300">
+                <CalendarDays className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="font-bold text-orange-800 dark:text-orange-200">Daily Challenge Complete! 🎊</p>
+                <p className="text-sm text-orange-700/80 dark:text-orange-300/80">
+                  Come back tomorrow for a new puzzle and keep your streak going.
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              className="w-full gap-2 border-orange-300/70 bg-background/70 hover:bg-orange-100/70 dark:border-orange-700/60 dark:hover:bg-orange-900/40"
+              onClick={() => setLocation("/daily-challenge")}
+            >
+              View Daily Challenge
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
+        ) : (
+          <div className="rounded-2xl border-2 border-orange-200/70 bg-gradient-to-r from-orange-50 to-amber-50 p-4 space-y-3 dark:border-orange-800/50 dark:from-orange-950/35 dark:to-amber-950/25">
+            <div className="flex items-start gap-3">
+              <div className="rounded-full bg-orange-100 p-2 text-orange-600 dark:bg-orange-900/50 dark:text-orange-300">
+                <CalendarDays className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="font-bold text-orange-800 dark:text-orange-200">Try Today's Daily Challenge</p>
+                <p className="text-sm text-orange-700/80 dark:text-orange-300/80">
+                  Solve the shared Sudoku puzzle and build your daily streak.
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              className="w-full gap-2 border-orange-300/70 bg-background/70 hover:bg-orange-100/70 dark:border-orange-700/60 dark:hover:bg-orange-900/40"
+              onClick={() => setLocation("/daily-challenge")}
+            >
+              Play Daily Challenge
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
 
         <button
           onClick={() => setLocation("/")}

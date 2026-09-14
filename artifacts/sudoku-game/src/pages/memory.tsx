@@ -1075,6 +1075,33 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
           </div>
         )}
 
+        <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
+          <Button variant="outline" className="w-full gap-2" onClick={() => startGame(gridSize)}>
+            <RotateCcw className="w-4 h-4" /> Play again ({GRID_OPTIONS.find(o => o.size === gridSize)?.desc})
+          </Button>
+
+          <div className="space-y-2">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground text-center">Or start a new game</p>
+            <div className="grid grid-cols-2 gap-2">
+              {filteredGridOptions.map(opt => (
+                <button
+                  key={opt.size}
+                  onClick={() => startGame(opt.size)}
+                  className={[
+                    'flex flex-col items-center gap-1 rounded-xl border-2 py-3 px-2 text-center transition-all',
+                    opt.size === gridSize
+                      ? 'border-primary bg-primary/10 shadow-sm'
+                      : 'border-border bg-background hover:border-primary/40 hover:bg-muted/50',
+                  ].join(' ')}
+                >
+                  <span className="font-black text-base text-primary">{opt.label}</span>
+                  <span className="text-[10px] text-muted-foreground leading-tight">{opt.desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {challengeCompleted && challengeType && (
           <div className="rounded-2xl border-2 border-violet-300/50 bg-gradient-to-r from-violet-50 via-fuchsia-50 to-amber-50 p-4 space-y-3 dark:border-violet-800/50 dark:from-violet-950/35 dark:via-fuchsia-950/25 dark:to-amber-950/20">
             <div className="flex items-start gap-3">
@@ -1138,33 +1165,6 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
             </Button>
           </div>
         )}
-
-        <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
-          <Button variant="outline" className="w-full gap-2" onClick={() => startGame(gridSize)}>
-            <RotateCcw className="w-4 h-4" /> Play again ({GRID_OPTIONS.find(o => o.size === gridSize)?.desc})
-          </Button>
-
-          <div className="space-y-2">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground text-center">Or start a new game</p>
-            <div className="grid grid-cols-2 gap-2">
-              {filteredGridOptions.map(opt => (
-                <button
-                  key={opt.size}
-                  onClick={() => startGame(opt.size)}
-                  className={[
-                    'flex flex-col items-center gap-1 rounded-xl border-2 py-3 px-2 text-center transition-all',
-                    opt.size === gridSize
-                      ? 'border-primary bg-primary/10 shadow-sm'
-                      : 'border-border bg-background hover:border-primary/40 hover:bg-muted/50',
-                  ].join(' ')}
-                >
-                  <span className="font-black text-base text-primary">{opt.label}</span>
-                  <span className="text-[10px] text-muted-foreground leading-tight">{opt.desc}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
 
         <button
           onClick={() => setLocation('/')}
