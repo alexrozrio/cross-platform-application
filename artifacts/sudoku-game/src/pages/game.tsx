@@ -1583,6 +1583,11 @@ export default function Game({ id }: { id: string }) {
           <p className="opacity-80 text-xs sm:text-sm">
             {sizeLabel} {diffLabel} · {formattedTime} · {mistakes} mistake{mistakes !== 1 ? "s" : ""}
           </p>
+          {pointsEarned !== null && (
+            <p className="text-xs sm:text-sm font-semibold text-primary-foreground/90">
+              +{pointsEarned.toLocaleString()} points · +{gemsEarned} 💎 gems earned
+            </p>
+          )}
           <button
             onClick={handleShare}
             className="inline-flex items-center gap-2 mt-1 text-xs sm:text-sm opacity-80 hover:opacity-100 transition-opacity bg-white/15 hover:bg-white/25 rounded-lg px-3 sm:px-4 py-1.5"

@@ -1022,6 +1022,11 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
           <div className="text-4xl sm:text-5xl mb-0 sm:mb-1">{winMessage?.emoji ?? '🎉'}</div>
           <h1 className="text-2xl sm:text-3xl leading-tight font-serif font-bold">{winMessage?.headline ?? 'You won!'}</h1>
           <p className="opacity-80 text-xs sm:text-sm">All {totalPairs} pairs matched</p>
+          {winResult && (
+            <p className="text-xs sm:text-sm font-semibold text-primary-foreground/90">
+              +{winResult.points.toLocaleString()} points · +{winResult.gemsEarned} 💎 gems earned
+            </p>
+          )}
           <button
             onClick={handleShare}
             className="inline-flex items-center gap-2 mt-1 text-xs sm:text-sm opacity-80 hover:opacity-100 transition-opacity bg-white/15 hover:bg-white/25 rounded-lg px-3 sm:px-4 py-1.5"
