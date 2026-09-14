@@ -1574,18 +1574,18 @@ export default function Game({ id }: { id: string }) {
   // ── Full-page Completion result screen ───────────────────────────────────────
   if (isCompleted) {
     return (
-      <div className="max-w-lg mx-auto w-full space-y-6 animate-in fade-in duration-500 pt-4">
+      <div className="max-w-lg mx-auto w-full space-y-4 sm:space-y-6 animate-in fade-in duration-500 pt-2 sm:pt-4">
         <Confetti />
 
-        <div className="rounded-2xl bg-primary text-primary-foreground p-6 text-center space-y-3 shadow-lg">
-          <div className="text-5xl mb-1">{completionMessage.emoji}</div>
-          <h1 className="text-3xl font-serif font-bold">{completionMessage.headline}</h1>
-          <p className="opacity-80 text-sm">
+        <div className="rounded-2xl bg-primary text-primary-foreground p-4 sm:p-6 text-center space-y-2 sm:space-y-3 shadow-lg">
+          <div className="text-4xl sm:text-5xl mb-0 sm:mb-1">{completionMessage.emoji}</div>
+          <h1 className="text-2xl sm:text-3xl leading-tight font-serif font-bold">{completionMessage.headline}</h1>
+          <p className="opacity-80 text-xs sm:text-sm">
             {sizeLabel} {diffLabel} · {formattedTime} · {mistakes} mistake{mistakes !== 1 ? "s" : ""}
           </p>
           <button
             onClick={handleShare}
-            className="inline-flex items-center gap-2 mt-1 text-sm opacity-80 hover:opacity-100 transition-opacity bg-white/15 hover:bg-white/25 rounded-lg px-4 py-1.5"
+            className="inline-flex items-center gap-2 mt-1 text-xs sm:text-sm opacity-80 hover:opacity-100 transition-opacity bg-white/15 hover:bg-white/25 rounded-lg px-3 sm:px-4 py-1.5"
           >
             <Share2 className="w-3.5 h-3.5" />
             Share your result
@@ -1599,15 +1599,51 @@ export default function Game({ id }: { id: string }) {
           </div>
         )}
 
+        <div className="bg-card border border-border rounded-2xl p-3 sm:p-4 space-y-2 sm:space-y-3">
+          <Button
+            variant="outline"
+            className="w-full gap-2"
+            onClick={() => handleNewGame(gridSize as 3 | 4 | 6 | 9 | 16, diff as "easy" | "medium" | "hard" | "expert")}
+            disabled={newGameLoading}
+          >
+            {newGameLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+            Play again ({sizeLabel} {diffLabel})
+          </Button>
+
+          <div className="space-y-2">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground text-center">Or start a new game</p>
+            <div className="grid grid-cols-2 gap-2">
+              {visibleSizes.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => handleNewGame(s, newDiff)}
+                  disabled={newGameLoading}
+                  className={[
+                    "flex flex-col items-center gap-1 rounded-xl border-2 py-2.5 sm:py-3 px-2 text-center transition-all",
+                    s === gridSize
+                      ? "border-primary bg-primary/10 shadow-sm"
+                      : "border-border bg-background hover:border-primary/40 hover:bg-muted/50",
+                  ].join(" ")}
+                >
+                  <span className="font-black text-base text-primary">{s}×{s}</span>
+                  <span className="text-[10px] text-muted-foreground leading-tight">
+                    {s === 3 ? "Child" : s === 4 ? "Mini" : s === 6 ? "Dual" : s === 9 ? "Classic" : "Pro"}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-3 gap-3">
           {[
             { icon: Clock, label: "Time", value: formattedTime },
             { icon: AlertTriangle, label: "Mistakes", value: `${mistakes} / ${MAX_MISTAKES}` },
             { icon: Trophy, label: "Points", value: pointsEarned !== null ? pointsEarned.toLocaleString() : "—" },
           ].map(({ icon: Icon, label, value }) => (
-            <div key={label} className="rounded-xl border bg-card p-4 text-center space-y-1">
+            <div key={label} className="rounded-xl border bg-card p-3 sm:p-4 text-center space-y-1">
               <Icon className="w-4 h-4 text-primary mx-auto" />
-              <p className="text-xl font-black tabular-nums">{value}</p>
+              <p className="text-lg sm:text-xl font-black tabular-nums">{value}</p>
               <p className="text-xs text-muted-foreground">{label}</p>
             </div>
           ))}
@@ -1681,42 +1717,6 @@ export default function Game({ id }: { id: string }) {
             </div>
           );
         })()}
-
-        <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
-          <Button
-            variant="outline"
-            className="w-full gap-2"
-            onClick={() => handleNewGame(gridSize as 3 | 4 | 6 | 9 | 16, diff as "easy" | "medium" | "hard" | "expert")}
-            disabled={newGameLoading}
-          >
-            {newGameLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
-            Play again ({sizeLabel} {diffLabel})
-          </Button>
-
-          <div className="space-y-2">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground text-center">Or start a new game</p>
-            <div className="grid grid-cols-2 gap-2">
-              {visibleSizes.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => handleNewGame(s, newDiff)}
-                  disabled={newGameLoading}
-                  className={[
-                    "flex flex-col items-center gap-1 rounded-xl border-2 py-3 px-2 text-center transition-all",
-                    s === gridSize
-                      ? "border-primary bg-primary/10 shadow-sm"
-                      : "border-border bg-background hover:border-primary/40 hover:bg-muted/50",
-                  ].join(" ")}
-                >
-                  <span className="font-black text-base text-primary">{s}×{s}</span>
-                  <span className="text-[10px] text-muted-foreground leading-tight">
-                    {s === 3 ? "Child" : s === 4 ? "Mini" : s === 6 ? "Dual" : s === 9 ? "Classic" : "Pro"}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
 
         {isDailyChallengeGame ? (
           <div className="rounded-2xl border-2 border-orange-200/70 bg-gradient-to-r from-orange-50 to-amber-50 p-4 space-y-3 dark:border-orange-800/50 dark:from-orange-950/35 dark:to-amber-950/25">
