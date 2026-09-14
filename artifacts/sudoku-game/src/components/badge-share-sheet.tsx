@@ -2,6 +2,7 @@ import React from "react";
 import { toast } from "sonner";
 import { Copy, Share2 } from "lucide-react";
 import { shareOrDownloadShareCard } from "@/lib/share-card";
+import { ShareCardPreview } from "@/components/share-card-preview";
 import {
   Dialog,
   DialogContent,
@@ -63,6 +64,14 @@ export function BadgeShareSheet({
   period,
 }: BadgeShareSheetProps) {
   const text = buildText(badgeTitle, username, points, period);
+  const shareCard = {
+    title: badgeTitle,
+    lines: [`🏆 ${username}`, `${period} · ${points.toLocaleString()} points`, badgeTitle],
+    shareText: text,
+    shareUrl,
+    accent: "#f3b63f",
+    filename: "achievement-badge.png",
+  };
 
   const platforms = [
     {
@@ -113,14 +122,7 @@ export function BadgeShareSheet({
 
   const handleShareImage = async () => {
     try {
-      const result = await shareOrDownloadShareCard({
-        title: badgeTitle,
-        lines: [`🏆 ${username}`, `${period} · ${points.toLocaleString()} points`, badgeTitle],
-        shareText: text,
-        shareUrl,
-        accent: "#f3b63f",
-        filename: "achievement-badge.png",
-      });
+      const result = await shareOrDownloadShareCard(shareCard);
       if (result === "downloaded") {
         toast.success("Badge image downloaded — attach it to your message!", { duration: 3000 });
       }
@@ -142,8 +144,10 @@ export function BadgeShareSheet({
           </DialogDescription>
         </DialogHeader>
 
+        <ShareCardPreview data={shareCard} />
+
         {/* Preview blurb */}
-        <div className="rounded-lg bg-muted/60 border border-border/40 px-4 py-3 text-sm leading-relaxed whitespace-pre-line text-foreground/80">
+        <div className="rounded-lg bg-muted/60 border border-border/40 px-4 py-3 text-xs leading-relaxed whitespace-pre-line text-foreground/80">
           {text}
         </div>
 
@@ -170,6 +174,9 @@ export function BadgeShareSheet({
           <Share2 className="w-4 h-4" />
           Share as image
         </button>
+        <p className="text-[11px] text-muted-foreground text-center">
+          On mobile, this opens apps that accept images. On desktop, download the PNG and attach it to your message.
+        </p>
 
         {/* Copy link */}
         <div className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 overflow-hidden">

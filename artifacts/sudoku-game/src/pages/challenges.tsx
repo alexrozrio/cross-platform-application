@@ -28,6 +28,7 @@ import { showEventModal } from "@/hooks/use-event-modal";
 import { LevelBadge } from "@/components/level-badge";
 import { usePageMeta } from "@/components/page-meta";
 import { shareOrDownloadShareCard } from "@/lib/share-card";
+import { ShareCardPreview } from "@/components/share-card-preview";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -171,6 +172,14 @@ function ChallengeShareSheet({
   const [copied, setCopied] = useState(false);
   const shareUrl = `${window.location.origin}/invite/${shareToken}`;
   const text = `${label} — click to accept and play!`;
+  const shareCard = {
+    title: "Challenge invitation",
+    lines: [label, "Can you beat me?", "Tap the link to accept and play."],
+    shareText: `${text}\n${shareUrl}`,
+    shareUrl,
+    accent: "#8b7cf6",
+    filename: "brain-games-challenge.png",
+  };
   const whatsapp = `https://wa.me/?text=${encodeURIComponent(text + "\n" + shareUrl)}`;
   const telegram = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(text)}`;
   const canNativeShare = typeof navigator !== "undefined" && !!navigator.share;
@@ -189,14 +198,7 @@ function ChallengeShareSheet({
 
   const shareImage = async () => {
     try {
-      const result = await shareOrDownloadShareCard({
-        title: "Challenge invitation",
-        lines: [label, "Can you beat me?", "Tap the link to accept and play."],
-        shareText: `${text}\n${shareUrl}`,
-        shareUrl,
-        accent: "#8b7cf6",
-        filename: "brain-games-challenge.png",
-      });
+      const result = await shareOrDownloadShareCard(shareCard);
       if (result === "downloaded") {
         toast.success("Challenge image downloaded — attach it to your message!", { duration: 3000 });
       }
@@ -214,6 +216,7 @@ function ChallengeShareSheet({
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-1">
+          <ShareCardPreview data={shareCard} />
           {/* Link preview */}
           <div className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 text-xs font-mono break-all text-muted-foreground">
             <LinkIcon className="w-3.5 h-3.5 shrink-0 text-primary" />
@@ -254,6 +257,9 @@ function ChallengeShareSheet({
               <Share2 className="w-4 h-4" />
               Share as image
             </Button>
+            <p className="col-span-2 text-[11px] text-muted-foreground text-center">
+              Share as image uses the device share sheet when available, or downloads a PNG for attaching manually.
+            </p>
             <Button
               variant="outline"
               className={`${canNativeShare ? "" : "col-span-2"} gap-2`}

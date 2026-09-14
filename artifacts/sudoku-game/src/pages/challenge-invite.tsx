@@ -30,6 +30,7 @@ import { usePageMeta } from "@/components/page-meta";
 import { getLevelFromXp } from "@/lib/levels";
 import { apiUrl } from "@/lib/api-base-url";
 import { shareOrDownloadShareCard } from "@/lib/share-card";
+import { ShareCardPreview } from "@/components/share-card-preview";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -87,6 +88,14 @@ function ShareSheet({
   text: string;
 }) {
   const [copied, setCopied] = useState(false);
+  const shareCard = {
+    title: "Brain Games Challenge",
+    lines: [text, "Accept the invite and play!"],
+    shareText: `${text}\n${shareUrl}`,
+    shareUrl,
+    accent: "#8b7cf6",
+    filename: "brain-games-challenge.png",
+  };
 
   const copy = () => {
     navigator.clipboard.writeText(shareUrl).then(() => {
@@ -104,14 +113,7 @@ function ShareSheet({
 
   const shareImage = async () => {
     try {
-      const result = await shareOrDownloadShareCard({
-        title: "Brain Games Challenge",
-        lines: [text, "Accept the invite and play!"],
-        shareText: `${text}\n${shareUrl}`,
-        shareUrl,
-        accent: "#8b7cf6",
-        filename: "brain-games-challenge.png",
-      });
+      const result = await shareOrDownloadShareCard(shareCard);
       if (result === "downloaded") {
         toast.success("Challenge image downloaded — attach it to your message!", { duration: 3000 });
       }
@@ -132,6 +134,7 @@ function ShareSheet({
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-1">
+          <ShareCardPreview data={shareCard} />
           {/* Link preview */}
           <div className="flex items-center gap-2 rounded-lg border bg-muted px-3 py-2 text-xs font-mono break-all text-muted-foreground">
             <ExternalLink className="w-3.5 h-3.5 shrink-0 text-primary" />
@@ -184,6 +187,9 @@ function ShareSheet({
               <Share2 className="w-4 h-4" />
               Share as image
             </Button>
+            <p className="col-span-2 text-[11px] text-muted-foreground text-center">
+              Share as image uses the device share sheet when available, or downloads a PNG for attaching manually.
+            </p>
 
             <Button
               variant="outline"
