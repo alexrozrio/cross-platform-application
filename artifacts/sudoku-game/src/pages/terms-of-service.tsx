@@ -2,6 +2,7 @@ import React from "react";
 import { useLocation } from "wouter";
 import { ArrowLeft } from "lucide-react";
 import { usePageMeta } from "@/components/page-meta";
+import { getLegalReturnPath } from "@/lib/legal-navigation";
 
 export default function TermsOfService() {
   usePageMeta({
@@ -11,11 +12,12 @@ export default function TermsOfService() {
     path: "/terms",
   });
   const [, setLocation] = useLocation();
+  const returnTo = getLegalReturnPath(window.location.search);
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-8 animate-in fade-in duration-500 pb-12">
       <button
-        onClick={() => setLocation("/")}
+        onClick={() => setLocation(returnTo)}
         className="flex items-center gap-1.5 text-sm text-foreground bg-card border border-border rounded-lg px-3 py-1.5 hover:bg-muted transition-colors"
       >
         <ArrowLeft className="w-4 h-4" /> Back

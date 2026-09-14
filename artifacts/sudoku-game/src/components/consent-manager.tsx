@@ -1,6 +1,7 @@
 import React from "react";
 import { Check, Cookie, Settings, X } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { buildLegalHref } from "@/lib/legal-navigation";
 import {
   type ConsentPreferences,
   CONSENT_CHANGED_EVENT,
@@ -54,6 +55,7 @@ function ChoiceRow({
 }
 
 export function ConsentManager() {
+  const [location] = useLocation();
   const [preferences, setPreferences] = React.useState<ConsentPreferences | null>(null);
   const [draft, setDraft] = React.useState<ConsentPreferences>(defaultPreferences);
   const [showPreferences, setShowPreferences] = React.useState(false);
@@ -146,7 +148,7 @@ export function ConsentManager() {
                   Customize
                 </button>
                 <Link
-                  href="/privacy"
+                  href={buildLegalHref("/privacy", location)}
                   className="ml-auto text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
                 >
                   Privacy Policy

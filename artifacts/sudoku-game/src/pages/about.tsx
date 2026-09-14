@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { ArrowLeft, Hash, Type, Palette, Trophy, Flame, BarChart2, Gem, Grid3x3, Brain } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { usePageMeta } from "@/components/page-meta";
+import { getLegalReturnPath } from "@/lib/legal-navigation";
 
 const SUDOKU_FEATURES = [
   { icon: Hash, label: "Multiple grid sizes", desc: "3×3, 4×4, 9×9, and 16×16 puzzles for every skill level." },
@@ -31,11 +32,12 @@ export default function About() {
     path: "/about",
   });
   const [, setLocation] = useLocation();
+  const returnTo = getLegalReturnPath(window.location.search);
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-8 animate-in fade-in duration-500 pb-12">
       <button
-        onClick={() => setLocation("/profile")}
+        onClick={() => setLocation(returnTo)}
         className="flex items-center gap-1.5 text-sm text-foreground bg-card border border-border rounded-lg px-3 py-1.5 hover:bg-muted transition-colors"
       >
         <ArrowLeft className="w-4 h-4" /> Back
