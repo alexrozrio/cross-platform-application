@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Clock, TriangleAlert as AlertTriangle, Lightbulb, Eraser, PenLine, Hash, Type, Image, Flame, Loader as Loader2, RefreshCw, RotateCcw, Undo2, Pause, Play, Volume2, VolumeX, Share2, ChevronDown, Zap, Gem, Trophy } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarDays, Clock, TriangleAlert as AlertTriangle, Lightbulb, Eraser, PenLine, Hash, Type, Image, Flame, Loader as Loader2, RefreshCw, RotateCcw, Undo2, Pause, Play, Volume2, VolumeX, Share2, ChevronDown, Zap, Gem, Trophy } from "lucide-react";
 import { useSound } from "@/hooks/use-sound";
 import { Confetti } from "@/components/confetti";
 import { usePageMeta } from "@/components/page-meta";
@@ -452,6 +452,9 @@ export default function Game({ id }: { id: string }) {
     queryFn: () => customFetch<DailyChallengeInfo>("/api/daily-challenge"),
     staleTime: 5 * 60 * 1000,
   });
+  const isDailyChallengeGame = Boolean(
+    profileId && dailyChallenge && game?.puzzle?.id === dailyChallenge.puzzleId,
+  );
 
   const gridSize = game?.puzzle?.gridSize ?? 9;
   const totalCells = gridSize * gridSize;
@@ -1001,12 +1004,7 @@ export default function Game({ id }: { id: string }) {
                 } catch {}
               }, 800);
 
-              const isDailyChallenge =
-                profileId &&
-                dailyChallenge &&
-                game?.puzzle?.id === dailyChallenge.puzzleId;
-
-              if (isDailyChallenge) {
+              if (isDailyChallengeGame) {
                 try {
                   const streak = await customFetch<StreakData>(
                     `/api/daily-challenge/streak/${profileId}`,
@@ -1041,7 +1039,7 @@ export default function Game({ id }: { id: string }) {
         );
       }
     },
-    [gameId, seconds, mistakes, hints, formattedTime, completeGame, profileId, dailyChallenge, game, queryClient, offlineMode],
+    [gameId, seconds, mistakes, hints, formattedTime, completeGame, profileId, dailyChallenge, game, queryClient, offlineMode, isDailyChallengeGame],
   );
 
   const handleNumberInput = useCallback(
@@ -1625,6 +1623,30 @@ export default function Game({ id }: { id: string }) {
               <Gem className="w-5 h-5 text-cyan-500" />
               <span className="font-black text-lg">+{gemsEarned} 💎</span>
             </div>
+          </div>
+        )}
+
+        {isDailyChallengeGame && (
+          <div className="rounded-2xl border-2 border-orange-200/70 bg-gradient-to-r from-orange-50 to-amber-50 p-4 space-y-3 dark:border-orange-800/50 dark:from-orange-950/35 dark:to-amber-950/25">
+            <div className="flex items-start gap-3">
+              <div className="rounded-full bg-orange-100 p-2 text-orange-600 dark:bg-orange-900/50 dark:text-orange-300">
+                <CalendarDays className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="font-bold text-orange-800 dark:text-orange-200">Daily Challenge Complete! 🎊</p>
+                <p className="text-sm text-orange-700/80 dark:text-orange-300/80">
+                  Come back tomorrow for a new puzzle and keep your streak going.
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              className="w-full gap-2 border-orange-300/70 bg-background/70 hover:bg-orange-100/70 dark:border-orange-700/60 dark:hover:bg-orange-900/40"
+              onClick={() => setLocation("/daily-challenge")}
+            >
+              View Daily Challenge
+              <ArrowRight className="w-4 h-4" />
+            </Button>
           </div>
         )}
 

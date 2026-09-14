@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowLeft, Timer, Repeat2, Trophy, Gem, Star, RotateCcw, Zap, Brain, BarChart2, BookOpen, Keyboard, Scroll, Lightbulb, Volume2, VolumeX, Share2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CalendarDays, Timer, Repeat2, Trophy, Gem, Star, RotateCcw, Zap, Brain, BarChart2, BookOpen, Keyboard, Scroll, Lightbulb, Volume2, VolumeX, Share2 } from 'lucide-react';
 import { useSound } from '@/hooks/use-sound';
 import { Confetti } from '@/components/confetti';
 import { pickCompletionMessage, type CompletionMessage } from '@/lib/completion-messages';
@@ -244,6 +244,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
   const [winMessage, setWinMessage] = useState<CompletionMessage | null>(null);
   const [gameId, setGameId] = useState<number | null>(null);
   const [challengeBonus, setChallengeBonus] = useState<{ bonusXp: number; bonusGems: number } | null>(null);
+  const [challengeCompleted, setChallengeCompleted] = useState(false);
 
   // Read ?challenge=daily|weekly from URL
   const challengeType = (() => {
@@ -388,6 +389,8 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
     setElapsed(0);
     setLockBoard(false);
     setWinResult(null);
+    setChallengeBonus(null);
+    setChallengeCompleted(false);
     setGameId(presetGameId ?? null);
     gameCreationRef.current = presetGameId ? Promise.resolve(presetGameId) : null;
     completionStartedRef.current = false;
@@ -640,6 +643,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
           '/api/memory-challenges/complete',
           { method: 'POST', body: JSON.stringify({ profileId, type: challengeType, elapsedSeconds: currentElapsed, flips: currentFlips, points: pts }) }
         );
+        setChallengeCompleted(true);
         if (!bonus.alreadyClaimed) {
           setChallengeBonus({ bonusXp: bonus.bonusXp, bonusGems: bonus.bonusGems });
         }
@@ -1071,22 +1075,43 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
           </div>
         )}
 
-        {challengeBonus && (
-          <div className="rounded-xl border-2 border-violet-300/50 bg-gradient-to-r from-violet-50 to-purple-50 p-4 space-y-2">
-            <div className="flex items-center gap-2 text-violet-700 font-semibold text-sm">
-              <Brain className="w-4 h-4" />
-              {challengeType === 'daily' ? 'Daily' : 'Weekly'} Challenge Complete! 🎊
-            </div>
-            <div className="flex items-center gap-5">
-              <div className="flex items-center gap-1.5">
-                <Zap className="w-4 h-4 text-yellow-500" />
-                <span className="font-black">+{challengeBonus.bonusXp} bonus XP</span>
+        {challengeCompleted && challengeType && (
+          <div className="rounded-2xl border-2 border-violet-300/50 bg-gradient-to-r from-violet-50 via-fuchsia-50 to-amber-50 p-4 space-y-3 dark:border-violet-800/50 dark:from-violet-950/35 dark:via-fuchsia-950/25 dark:to-amber-950/20">
+            <div className="flex items-start gap-3">
+              <div className="rounded-full bg-violet-100 p-2 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300">
+                {challengeType === 'daily' ? <CalendarDays className="w-5 h-5" /> : <Brain className="w-5 h-5" />}
               </div>
-              <div className="flex items-center gap-1.5">
-                <Gem className="w-4 h-4 text-cyan-500" />
-                <span className="font-black">+{challengeBonus.bonusGems} bonus 💎</span>
+              <div>
+                <p className="font-bold text-violet-800 dark:text-violet-200">
+                  {challengeType === 'daily' ? 'Daily' : 'Weekly'} Challenge Complete! 🎊
+                </p>
+                <p className="text-sm text-violet-700/80 dark:text-violet-300/80">
+                  {challengeType === 'daily'
+                    ? 'Come back tomorrow for a new challenge.'
+                    : 'Come back next week for a new challenge.'}
+                </p>
               </div>
             </div>
+            {challengeBonus && (
+              <div className="flex items-center gap-5">
+                <div className="flex items-center gap-1.5">
+                  <Zap className="w-4 h-4 text-yellow-500" />
+                  <span className="font-black">+{challengeBonus.bonusXp} bonus XP</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Gem className="w-4 h-4 text-cyan-500" />
+                  <span className="font-black">+{challengeBonus.bonusGems} bonus 💎</span>
+                </div>
+              </div>
+            )}
+            <Button
+              variant="outline"
+              className="w-full gap-2 border-violet-300/70 bg-background/70 hover:bg-violet-100/70 dark:border-violet-700/60 dark:hover:bg-violet-900/40"
+              onClick={() => setLocation('/memory-challenge')}
+            >
+              View Memory Challenges
+              <ArrowRight className="w-4 h-4" />
+            </Button>
           </div>
         )}
 
