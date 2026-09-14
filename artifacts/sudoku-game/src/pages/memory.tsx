@@ -1115,6 +1115,30 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
           </div>
         )}
 
+        {challengeType !== 'daily' && (
+          <div className="rounded-2xl border-2 border-violet-300/50 bg-gradient-to-r from-violet-50 via-fuchsia-50 to-amber-50 p-4 space-y-3 dark:border-violet-800/50 dark:from-violet-950/35 dark:via-fuchsia-950/25 dark:to-amber-950/20">
+            <div className="flex items-start gap-3">
+              <div className="rounded-full bg-violet-100 p-2 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300">
+                <CalendarDays className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="font-bold text-violet-800 dark:text-violet-200">Try Today's Daily Challenge</p>
+                <p className="text-sm text-violet-700/80 dark:text-violet-300/80">
+                  Match today's shared cards and keep your daily challenge streak going.
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              className="w-full gap-2 border-violet-300/70 bg-background/70 hover:bg-violet-100/70 dark:border-violet-700/60 dark:hover:bg-violet-900/40"
+              onClick={() => setLocation('/memory-challenge')}
+            >
+              Play Daily Challenge
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+
         <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
           <Button variant="outline" className="w-full gap-2" onClick={() => startGame(gridSize)}>
             <RotateCcw className="w-4 h-4" /> Play again ({GRID_OPTIONS.find(o => o.size === gridSize)?.desc})
