@@ -13,14 +13,7 @@ const SITE_NAME = "Play Brain Games . Online";
 const OG_IMAGE = `${SITE_URL}/opengraph.jpg`;
 
 function formatPageTitle(title: string): string {
-  const withoutTrailingBrand = title
-    .replace(new RegExp(`\\s*(?:\\||—|-)\\s*${SITE_NAME.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`), "")
-    .trim();
-
-  if (!withoutTrailingBrand || withoutTrailingBrand === SITE_NAME) {
-    return SITE_NAME;
-  }
-  return `${SITE_NAME} | ${withoutTrailingBrand}`;
+  return SITE_NAME;
 }
 
 function upsertMeta(attribute: "name" | "property", key: string, content: string) {

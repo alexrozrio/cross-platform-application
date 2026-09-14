@@ -1126,7 +1126,7 @@ export default function Portal() {
       <section className="bg-card rounded-2xl border border-border p-5 sm:p-6 space-y-5 text-sm text-muted-foreground leading-relaxed">
         <div>
           <h2 className="text-xl font-serif font-bold text-foreground">
-            Free online Sudoku and Memory Match
+            Play Brain Games . Online
           </h2>
           <p className="mt-2">
             Play Brain Games . Online is a general-audience puzzle site with two
