@@ -665,7 +665,6 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
       `🔄 ${flips} flip${flips !== 1 ? 's' : ''}`,
       winResult && winResult.points > 0 ? `+${winResult.points.toLocaleString()} pts` : null,
       rank ? `🏅 ${rank} · Play Brain Games . Online` : '🧠 Play Brain Games . Online',
-      '🎮 Play online at Play Brain Games . Online!',
       `🔗 ${appUrl}`,
     ].filter(Boolean).join('\n');
     try {

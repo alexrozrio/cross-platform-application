@@ -1261,7 +1261,6 @@ export default function Game({ id }: { id: string }) {
       `❌ ${mistakes} mistake${mistakes !== 1 ? "s" : ""} · 💡 ${hints} hint${hints !== 1 ? "s" : ""}`,
       pointsEarned !== null ? `+${pointsEarned.toLocaleString()} pts · +${xpGain} XP` : `+${xpGain} XP`,
       rank ? `🏅 ${rank} · Play Brain Games . Online` : "🧠 Play Brain Games . Online",
-      "🎮 Play online at Play Brain Games . Online!",
       `🔗 ${appUrl}`,
     ];
     const text = lines.join("\n");
