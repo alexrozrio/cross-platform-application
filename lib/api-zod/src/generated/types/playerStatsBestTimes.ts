@@ -6,13 +6,4 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type PlayerStatsBestTimes = {
-  /** @nullable */
-  easy?: number | null;
-  /** @nullable */
-  medium?: number | null;
-  /** @nullable */
-  hard?: number | null;
-  /** @nullable */
-  expert?: number | null;
-};
+export type PlayerStatsBestTimes = {[key: string]: number | null};

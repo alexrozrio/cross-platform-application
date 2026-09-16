@@ -18,4 +18,6 @@ export type PlayerStatsMemory = {
   averageFlips?: number | null;
   currentStreak?: number;
   longestStreak?: number;
+  /** @nullable */
+  winStreak?: number | null;
 };

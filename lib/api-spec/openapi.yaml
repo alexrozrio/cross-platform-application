@@ -753,15 +753,8 @@ components:
           type: number
         bestTimes:
           type: object
-          properties:
-            easy:
-              type: ["integer", "null"]
-            medium:
-              type: ["integer", "null"]
-            hard:
-              type: ["integer", "null"]
-            expert:
-              type: ["integer", "null"]
+          additionalProperties:
+            type: ["integer", "null"]
         averageTime:
           type: ["integer", "null"]
         totalMistakes:
@@ -789,6 +782,8 @@ components:
               type: integer
             longestStreak:
               type: integer
+            winStreak:
+              type: ["integer", "null"]
 
     TournamentEntry:
       type: object

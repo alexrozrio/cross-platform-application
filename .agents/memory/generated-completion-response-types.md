@@ -3,8 +3,8 @@ name: Generated completion response types
 description: Runtime completion payloads can be richer than generated client mutation types.
 ---
 
-When a completion endpoint returns a field that the generated frontend mutation type omits, read that field through a narrow local response cast at the API boundary instead of editing generated files.
+When an endpoint returns a field that generated frontend types omit, read it through a narrow local response cast at the API boundary instead of editing generated files. Also check generated Zod response schemas: object parsing strips undeclared keys, even when the TypeScript type appears permissive.
 
-**Why:** The server response contract can include optional reward fields such as XP while the generated mutation type still resolves to the base game model. Editing generated output would be overwritten and could create broader type drift.
+**Why:** The server response contract can include optional reward fields such as XP or dynamic stat keys while generated output still resolves to an older model. Unknown response keys can disappear during runtime validation, so returning them from the route is not enough.
 
-**How to apply:** Keep the server response field typed in any direct customFetch response, and use a narrow cast only where a generated mutation callback needs the omitted field.
+**How to apply:** Update the OpenAPI source and regenerate when the response contract changes. Keep direct customFetch fields typed at the boundary, and use a narrow cast only where a generated mutation callback still omits the field.

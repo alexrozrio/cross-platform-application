@@ -22,6 +22,7 @@ router.get("/stats/:profileId", async (req, res): Promise<void> => {
       mistakeCount: gamesTable.mistakeCount,
       completedAt: gamesTable.completedAt,
       difficulty: puzzlesTable.difficulty,
+      gridSize: puzzlesTable.gridSize,
     })
     .from(gamesTable)
     .innerJoin(puzzlesTable, eq(gamesTable.puzzleId, puzzlesTable.id))
@@ -33,12 +34,14 @@ router.get("/stats/:profileId", async (req, res): Promise<void> => {
   const totalWins = wins.length;
   const winRate = totalGames > 0 ? totalWins / totalGames : 0;
 
-  const bestTimes: Record<string, number | null> = {
-    easy: null, medium: null, hard: null, expert: null,
-  };
-  for (const diff of ["easy", "medium", "hard", "expert"] as const) {
-    const diffWins = wins.filter((g) => g.difficulty === diff);
-    if (diffWins.length > 0) bestTimes[diff] = Math.min(...diffWins.map((g) => g.elapsedSeconds));
+  const bestTimes: Record<string, number | null> = {};
+  for (const size of [3, 4, 6, 9, 16]) {
+    for (const diff of ["easy", "medium", "hard", "expert"] as const) {
+      const matching = wins.filter((g) => g.gridSize === size && g.difficulty === diff);
+      bestTimes[`${size}-${diff}`] = matching.length > 0
+        ? Math.min(...matching.map((g) => g.elapsedSeconds))
+        : null;
+    }
   }
 
   const totalTime = wins.reduce((sum, g) => sum + g.elapsedSeconds, 0);
@@ -68,6 +71,11 @@ router.get("/stats/:profileId", async (req, res): Promise<void> => {
   const totalMemoryGames = allMemoryGames.length;
   const totalMemoryWins = memoryWins.length;
   const memoryWinRate = totalMemoryGames > 0 ? totalMemoryWins / totalMemoryGames : 0;
+  let memoryWinStreak = 0;
+  for (const game of allMemoryGames) {
+    if (game.status === "completed") memoryWinStreak++;
+    else break;
+  }
 
   const memoryBestTimes: Record<string, number | null> = { 2: null, 4: null, 6: null, 8: null } as unknown as Record<string, number | null>;
   for (const size of [2, 4, 6, 8]) {
@@ -103,6 +111,7 @@ router.get("/stats/:profileId", async (req, res): Promise<void> => {
       averageFlips,
       currentStreak: memoryCurrentStreak,
       longestStreak: memoryLongestStreak,
+      winStreak: memoryWinStreak,
     },
   };
 

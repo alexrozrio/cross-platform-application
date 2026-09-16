@@ -484,7 +484,13 @@ function BestTimesMemory({
   mem,
   formatTime,
 }: {
-  mem: { bestTimes?: Record<string, number | null>; averageTime?: number | null; averageFlips?: number | null };
+  mem: {
+    bestTimes?: Record<string, number | null>;
+    averageTime?: number | null;
+    averageFlips?: number | null;
+    totalWins?: number;
+    winStreak?: number;
+  };
   formatTime: (s: number | null | undefined) => string;
 }) {
   const [open, setOpen] = useState(false);
@@ -1081,15 +1087,15 @@ export default function Profile() {
                     <Card className="bg-card border-purple-100 shadow-sm">
                       <CardContent className="p-5 flex flex-col items-center text-center gap-2">
                         <div className="p-3 bg-purple-100 text-purple-700 rounded-full"><Flame className="w-5 h-5" /></div>
-                        <p className="text-xs text-muted-foreground">Daily Streak</p>
-                        <p className="text-2xl font-bold">{mem.currentStreak ?? 0}</p>
+                        <p className="text-xs text-muted-foreground">Win Streak</p>
+                        <p className="text-2xl font-bold">{mem.winStreak ?? 0}</p>
                       </CardContent>
                     </Card>
                     <Card className="bg-card border-purple-100 shadow-sm">
                       <CardContent className="p-5 flex flex-col items-center text-center gap-2">
                         <div className="p-3 bg-blue-100 text-blue-700 rounded-full"><TrendingUp className="w-5 h-5" /></div>
-                        <p className="text-xs text-muted-foreground">Best Streak</p>
-                        <p className="text-2xl font-bold">{mem.longestStreak ?? 0}</p>
+                        <p className="text-xs text-muted-foreground">Total Wins</p>
+                        <p className="text-2xl font-bold">{mem.totalWins ?? 0}</p>
                       </CardContent>
                     </Card>
                   </div>

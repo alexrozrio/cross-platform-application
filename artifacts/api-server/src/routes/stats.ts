@@ -79,6 +79,11 @@ router.get("/stats/:profileId", async (req, res): Promise<void> => {
   const totalMemoryGames = meaningfulMemoryGames.length;
   const totalMemoryWins = meaningfulMemoryGames.filter((g) => g.status === "completed").length;
   const memoryWinRate = totalMemoryGames > 0 ? totalMemoryWins / totalMemoryGames : 0;
+  let memoryWinStreak = 0;
+  for (const game of meaningfulMemoryGames) {
+    if (game.status === "completed") memoryWinStreak++;
+    else break;
+  }
 
   const memoryBestTimes: Record<string, number | null> = { 2: null, 4: null, 6: null, 8: null } as unknown as Record<string, number | null>;
   for (const size of [2, 4, 6, 8]) {
@@ -114,6 +119,7 @@ router.get("/stats/:profileId", async (req, res): Promise<void> => {
       averageFlips,
       currentStreak: memoryCurrentStreak,
       longestStreak: memoryLongestStreak,
+      winStreak: memoryWinStreak,
     },
   };
 
