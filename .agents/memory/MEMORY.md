@@ -8,3 +8,4 @@
 - [API workspace dependency sync](api-workspace-dependency-sync.md) — declared API dependencies can be absent from node_modules after workspace changes; sync the API filter before debugging guest creation.
 - [Offline completion sync](offline-completion-sync.md) — reconnect scoring must be bounded and completion endpoints must atomically guard active games before awarding rewards.
 - [Pnpm lockfile discipline](pnpm-lockfile-discipline.md) — workspace config changes must be lockfile-synced and validated with the pinned pnpm version before Render deploys.
+- [Generated completion response types](generated-completion-response-types.md) — runtime completion payloads can contain XP fields omitted by generated client mutation types; handle the mismatch at the response boundary.

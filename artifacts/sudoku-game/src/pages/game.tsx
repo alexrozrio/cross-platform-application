@@ -842,6 +842,7 @@ export default function Game({ id }: { id: string }) {
   }, [grid, seconds, mistakes, hints, gameId, isCompleted, game]);
 
   const [pointsEarned, setPointsEarned] = useState<number | null>(null);
+  const [xpEarned, setXpEarned] = useState<number | null>(null);
   const [isPersonalBest, setIsPersonalBest] = useState(false);
   const [showMobileControls, setShowMobileControls] = useState(false);
   const completionStartedRef = useRef(false);
@@ -910,9 +911,9 @@ export default function Game({ id }: { id: string }) {
 
               const completionController = new AbortController();
               const completionTimeoutId = window.setTimeout(() => completionController.abort(), 3000);
-              let data: { points?: number; isPersonalBest?: boolean };
+              let data: { points?: number; xpEarned?: number; isPersonalBest?: boolean };
               try {
-                data = await customFetch<{ points?: number; isPersonalBest?: boolean }>(
+                data = await customFetch<{ points?: number; xpEarned?: number; isPersonalBest?: boolean }>(
                   `/api/games/${completionGameId}/complete`,
                   {
                     method: "POST",
@@ -930,6 +931,7 @@ export default function Game({ id }: { id: string }) {
 
               const pts = data.points ?? null;
               setPointsEarned(pts);
+              setXpEarned((data as { xpEarned?: number }).xpEarned ?? null);
               setIsPersonalBest((data as any).isPersonalBest === true);
               if (profileId) {
                 queryClient.invalidateQueries({ queryKey: [`/api/profiles/${profileId}`] });
@@ -987,6 +989,7 @@ export default function Game({ id }: { id: string }) {
 
               const pts = data.points ?? null;
               setPointsEarned(pts);
+              setXpEarned((data as { xpEarned?: number }).xpEarned ?? null);
               setIsPersonalBest((data as any).isPersonalBest === true);
               const msg = pickCompletionMessage(game?.puzzle?.difficulty, game?.puzzle?.gridSize);
               setCompletionMessage(msg);
@@ -1582,6 +1585,7 @@ export default function Game({ id }: { id: string }) {
           <h1 className="text-2xl sm:text-3xl leading-tight font-serif font-bold">{completionMessage.headline}</h1>
           <p className="opacity-80 text-xs sm:text-sm">
             {sizeLabel} {diffLabel} · {formattedTime} · {mistakes} mistake{mistakes !== 1 ? "s" : ""}
+            {xpEarned !== null && ` · +${xpEarned} XP`}
           </p>
           {pointsEarned !== null && (
             <p className="text-xs sm:text-sm font-semibold text-primary-foreground/90">
