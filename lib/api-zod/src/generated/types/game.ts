@@ -21,6 +21,11 @@ export interface Game {
   hintsUsed?: number;
   /** @nullable */
   points?: number | null;
+  /**
+     * XP earned for this game
+     * @nullable
+     */
+  xpEarned?: number | null;
   /** @nullable */
   completedAt?: string | null;
   createdAt: string;

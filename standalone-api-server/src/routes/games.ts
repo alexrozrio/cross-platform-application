@@ -216,6 +216,7 @@ router.post("/games/:id/complete", async (req, res): Promise<void> => {
     ? calcPoints(puzzle.gridSize, puzzle.difficulty, elapsed, mistakes, hints)
     : 0;
   const gemsEarned = calcGems(points);
+  const xpEarned = puzzle ? (XP_PER_DIFFICULTY[puzzle.difficulty] ?? 1) : 1;
 
   const [game] = await db
     .update(gamesTable)
@@ -225,6 +226,7 @@ router.post("/games/:id/complete", async (req, res): Promise<void> => {
       mistakeCount: mistakes,
       hintsUsed: hints,
       points,
+      xpEarned,
       completedAt: new Date(),
     })
     .where(and(eq(gamesTable.id, params.data.id), eq(gamesTable.status, "active")))
@@ -241,7 +243,6 @@ router.post("/games/:id/complete", async (req, res): Promise<void> => {
 
   // Award gems and XP to the player's profile
   if (existing.profileId) {
-    const xpEarned = puzzle ? (XP_PER_DIFFICULTY[puzzle.difficulty] ?? 1) : 1;
     await db
       .update(profilesTable)
       .set({ gems: sql`gems + ${gemsEarned}`, xp: sql`xp + ${xpEarned}` })

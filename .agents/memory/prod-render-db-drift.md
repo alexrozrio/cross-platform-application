@@ -23,3 +23,13 @@ local dev server's behavior as a proxy for it. The API startup now runs an
 idempotent additive compatibility check for profile columns, so Render can
 repair this class of drift before listening. Use a real migration process for
 non-additive changes and still verify the production database after deployment.
+
+Development preview deliberately uses the local `/api` proxy even when the
+shared remote API variable is present; production builds retain the configured
+remote base URL.
+
+**Why:** Otherwise preview can silently show stale production behavior after a
+local API change, making a verified fix appear missing.
+
+**How to apply:** Verify backend changes in preview against the local API
+workflow, then separately verify deployed behavior against Render.

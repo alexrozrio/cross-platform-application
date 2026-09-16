@@ -739,6 +739,8 @@ export default function Game({ id }: { id: string }) {
     if (game && !isCompleted && !isGameOver) {
       if (game.status === "completed") {
         setIsCompleted(true);
+        setPointsEarned(game.points ?? null);
+        setXpEarned(game.xpEarned ?? null);
         localStorage.removeItem(storageKeyGrid);
         localStorage.removeItem(storageKeyNotes);
         localStorage.removeItem(storageKeyElapsed);

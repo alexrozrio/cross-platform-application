@@ -212,6 +212,7 @@ export const GetGameResponse = zod.object({
   "mistakeCount": zod.number(),
   "hintsUsed": zod.number().optional(),
   "points": zod.number().nullish(),
+  "xpEarned": zod.number().nullish().describe('XP earned for this game'),
   "completedAt": zod.string().nullish(),
   "createdAt": zod.string()
 })
@@ -249,6 +250,7 @@ export const SaveGameResponse = zod.object({
   "mistakeCount": zod.number(),
   "hintsUsed": zod.number().optional(),
   "points": zod.number().nullish(),
+  "xpEarned": zod.number().nullish().describe('XP earned for this game'),
   "completedAt": zod.string().nullish(),
   "createdAt": zod.string()
 })
@@ -285,6 +287,7 @@ export const CompleteGameResponse = zod.object({
   "mistakeCount": zod.number(),
   "hintsUsed": zod.number().optional(),
   "points": zod.number().nullish(),
+  "xpEarned": zod.number().nullish().describe('XP earned for this game'),
   "completedAt": zod.string().nullish(),
   "createdAt": zod.string()
 })

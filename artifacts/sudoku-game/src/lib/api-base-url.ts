@@ -13,6 +13,11 @@
 // This must be set at build/dev-start time (Vite inlines VITE_* env vars),
 // so restart the dev server / rebuild after changing it.
 export function getConfiguredApiBaseUrl(): string | null {
+  // Development preview has a local API workflow and Vite proxy. Keep the
+  // preview tied to the current workspace so backend changes are immediately
+  // visible; production builds may still use the configured remote API.
+  if (import.meta.env.DEV) return null;
+
   const raw = import.meta.env.VITE_API_BASE_URL;
   if (!raw) return null;
   const trimmed = raw.trim().replace(/\/+$/, "");

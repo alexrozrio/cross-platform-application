@@ -665,6 +665,9 @@ components:
           type: integer
         points:
           type: ["integer", "null"]
+        xpEarned:
+          type: ["integer", "null"]
+          description: "XP earned for this game"
         completedAt:
           type: ["string", "null"]
         createdAt:
