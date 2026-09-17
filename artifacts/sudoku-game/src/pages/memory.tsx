@@ -1017,20 +1017,22 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
     return (
       <div className="max-w-lg mx-auto w-full space-y-4 sm:space-y-6 animate-in fade-in duration-500 pt-2 sm:pt-4">
         <Confetti />
-        <div className="rounded-2xl bg-primary text-primary-foreground p-4 sm:p-6 text-center space-y-2 sm:space-y-3 shadow-lg">
-          <div className="text-4xl sm:text-5xl mb-0 sm:mb-1">{winMessage?.emoji ?? '🎉'}</div>
-          <h1 className="text-2xl sm:text-3xl leading-tight font-serif font-bold">{winMessage?.headline ?? 'You won!'}</h1>
+        <div className="rounded-2xl bg-primary text-primary-foreground p-3.5 sm:p-4 text-center space-y-1.5 sm:space-y-2 shadow-lg">
+          <div className="text-3xl sm:text-4xl">{winMessage?.emoji ?? '🎉'}</div>
+          <h1 className="text-xl sm:text-2xl leading-tight font-serif font-bold">{winMessage?.headline ?? 'You won!'}</h1>
           <p className="opacity-80 text-xs sm:text-sm">
             All {totalPairs} pairs matched · {formatTime(elapsed)} · {flips} flip{flips !== 1 ? "s" : ""}
           </p>
           {winResult && (
-            <p className="text-xs sm:text-sm font-semibold text-primary-foreground/90">
-              +{winResult.points.toLocaleString()} points · +{winResult.gemsEarned} 💎 gems earned
+            <p className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm sm:text-base font-black text-primary-foreground">
+              <span>+{winResult.points.toLocaleString()} pts</span>
+              <span>+{winResult.gemsEarned} 💎</span>
+              {winResult.xpEarned > 0 && <span>+{winResult.xpEarned} XP</span>}
             </p>
           )}
           <button
             onClick={handleShare}
-            className="inline-flex items-center gap-2 mt-1 text-xs sm:text-sm opacity-80 hover:opacity-100 transition-opacity bg-white/15 hover:bg-white/25 rounded-lg px-3 sm:px-4 py-1.5"
+            className="inline-flex items-center gap-2 mt-0.5 text-xs sm:text-sm opacity-80 hover:opacity-100 transition-opacity bg-white/15 hover:bg-white/25 rounded-lg px-3 sm:px-4 py-1"
           >
             <Share2 className="w-3.5 h-3.5" />
             Share your result

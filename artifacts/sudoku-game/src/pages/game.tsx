@@ -945,24 +945,13 @@ export default function Game({ id }: { id: string }) {
                 queryClient.invalidateQueries({ queryKey: [`/api/stats/${profileId}`] });
               }
 
-              toast.success(`${msg.headline} ${msg.emoji}`, {
-                description: pts
-                  ? `+${pts.toLocaleString()} pts • ${formattedTime}`
-                  : `Time: ${formattedTime} • Mistakes: ${mistakes}`,
-              });
               return true;
             } catch {
               return false;
             }
           };
 
-          void trySyncingCompletion().then((synced) => {
-            if (!synced) {
-              toast.success(`${msg.headline} ${msg.emoji}`, {
-                description: `Time: ${formattedTime} • Mistakes: ${mistakes} • Offline`,
-              });
-            }
-          });
+          void trySyncingCompletion();
           return;
         }
         completeGame.mutate(
@@ -995,12 +984,6 @@ export default function Game({ id }: { id: string }) {
               setIsPersonalBest((data as any).isPersonalBest === true);
               const msg = pickCompletionMessage(game?.puzzle?.difficulty, game?.puzzle?.gridSize);
               setCompletionMessage(msg);
-              toast.success(`${msg.headline} ${msg.emoji}`, {
-                description: pts
-                  ? `+${pts.toLocaleString()} pts • ${formattedTime}`
-                  : `Time: ${formattedTime} • Mistakes: ${mistakes}`,
-              });
-
               // Fetch challenge result (small delay so resolveChallengeForGame can run)
               setTimeout(async () => {
                 try {
@@ -1581,21 +1564,22 @@ export default function Game({ id }: { id: string }) {
       <div className="max-w-lg mx-auto w-full space-y-4 sm:space-y-6 animate-in fade-in duration-500 pt-2 sm:pt-4">
         <Confetti />
 
-        <div className="rounded-2xl bg-primary text-primary-foreground p-4 sm:p-6 text-center space-y-2 sm:space-y-3 shadow-lg">
-          <div className="text-4xl sm:text-5xl mb-0 sm:mb-1">{completionMessage.emoji}</div>
-          <h1 className="text-2xl sm:text-3xl leading-tight font-serif font-bold">{completionMessage.headline}</h1>
+        <div className="rounded-2xl bg-primary text-primary-foreground p-3.5 sm:p-4 text-center space-y-1.5 sm:space-y-2 shadow-lg">
+          <div className="text-3xl sm:text-4xl">{completionMessage.emoji}</div>
+          <h1 className="text-xl sm:text-2xl leading-tight font-serif font-bold">{completionMessage.headline}</h1>
           <p className="opacity-80 text-xs sm:text-sm">
             {sizeLabel} {diffLabel} · {formattedTime} · {mistakes} mistake{mistakes !== 1 ? "s" : ""}
-            {xpEarned !== null && ` · +${xpEarned} XP`}
           </p>
           {pointsEarned !== null && (
-            <p className="text-xs sm:text-sm font-semibold text-primary-foreground/90">
-              +{pointsEarned.toLocaleString()} points · +{gemsEarned} 💎 gems earned
+            <p className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm sm:text-base font-black text-primary-foreground">
+              <span>+{pointsEarned.toLocaleString()} pts</span>
+              <span>+{gemsEarned} 💎</span>
+              {xpEarned !== null && <span>+{xpEarned} XP</span>}
             </p>
           )}
           <button
             onClick={handleShare}
-            className="inline-flex items-center gap-2 mt-1 text-xs sm:text-sm opacity-80 hover:opacity-100 transition-opacity bg-white/15 hover:bg-white/25 rounded-lg px-3 sm:px-4 py-1.5"
+            className="inline-flex items-center gap-2 mt-0.5 text-xs sm:text-sm opacity-80 hover:opacity-100 transition-opacity bg-white/15 hover:bg-white/25 rounded-lg px-3 sm:px-4 py-1"
           >
             <Share2 className="w-3.5 h-3.5" />
             Share your result
