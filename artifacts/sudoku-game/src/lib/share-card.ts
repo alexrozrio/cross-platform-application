@@ -130,10 +130,19 @@ export async function shareOrDownloadShareCard(data: ShareCardData): Promise<"sh
     navigator.canShare({ files: [file] });
 
   if (canShareFile) {
+    // Keep the URL in the native `url` field only. Some share targets such as
+    // WhatsApp turn both a URL in `text` and this field into separate links.
+    const nativeShareText = data.shareUrl
+      ? data.shareText
+          .split("\n")
+          .filter((line) => !line.includes(data.shareUrl!))
+          .join("\n")
+      : data.shareText;
+
     await navigator.share({
       files: [file],
       title: data.title,
-      text: data.shareText,
+      text: nativeShareText,
       url: data.shareUrl,
     });
     return "shared";
