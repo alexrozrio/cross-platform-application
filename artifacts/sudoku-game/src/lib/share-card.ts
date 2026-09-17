@@ -130,20 +130,20 @@ export async function shareOrDownloadShareCard(data: ShareCardData): Promise<"sh
     navigator.canShare({ files: [file] });
 
   if (canShareFile) {
-    // Keep the URL in the native `url` field only. Some share targets such as
-    // WhatsApp turn both a URL in `text` and this field into separate links.
+    // Send the PNG and one text payload. Keeping the URL in `text` instead of
+    // the separate `url` field is more reliable for WhatsApp and other share
+    // targets that can drop file attachments when a URL field is also present.
+    // It also guarantees the link appears exactly once.
     const nativeShareText = data.shareUrl
-      ? data.shareText
-          .split("\n")
-          .filter((line) => !line.includes(data.shareUrl!))
-          .join("\n")
+      ? data.shareText.includes(data.shareUrl)
+        ? data.shareText
+        : `${data.shareText}\n${data.shareUrl}`
       : data.shareText;
 
     await navigator.share({
       files: [file],
       title: data.title,
       text: nativeShareText,
-      url: data.shareUrl,
     });
     return "shared";
   }
