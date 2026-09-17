@@ -30,87 +30,89 @@ export function AchievementUnlockModal({ achievements, onDismiss, profileId }: A
 
   return (
     <Dialog open onOpenChange={(v) => { if (!v) onDismiss(); }}>
-      <DialogContent className="max-w-sm p-0 overflow-hidden rounded-2xl border border-border shadow-2xl bg-card">
-        <DialogTitle className="sr-only">
-          {isSingle ? "Achievement Unlocked" : "Achievements Unlocked"}
-        </DialogTitle>
-        <DialogDescription className="sr-only">
-          You have unlocked {isSingle ? "a new achievement" : `${achievements.length} new achievements`}.
-        </DialogDescription>
+      <DialogContent className="w-[calc(100vw-1rem)] max-w-sm max-h-[calc(100dvh-1rem)] p-0 overflow-hidden rounded-2xl border border-border shadow-2xl bg-card [&>button]:z-20 [&>button]:rounded-full [&>button]:bg-black/15 [&>button]:text-white/90 [&>button]:opacity-100 [&>button]:hover:bg-black/25 [&>button]:hover:text-white">
+        <div className="max-h-[calc(100dvh-1rem)] overflow-y-auto overscroll-contain">
+          <DialogTitle className="sr-only">
+            {isSingle ? "Achievement Unlocked" : "Achievements Unlocked"}
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            You have unlocked {isSingle ? "a new achievement" : `${achievements.length} new achievements`}.
+          </DialogDescription>
 
-        {/* Golden header */}
-        <div className="relative bg-gradient-to-br from-yellow-400 to-amber-500 px-6 pt-8 pb-10 text-center overflow-hidden">
-          {/* Subtle dot pattern */}
-          <div
-            className="absolute inset-0 opacity-10 pointer-events-none"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle, white 1px, transparent 1px)",
-              backgroundSize: "20px 20px",
-            }}
-          />
-          <div className="relative">
-            <div className="flex justify-center mb-3">
-              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center ring-4 ring-white/30">
-                <Trophy className="w-8 h-8 text-white drop-shadow" />
-              </div>
-            </div>
-            <h2 className="text-2xl font-bold tracking-tight text-white">
-              {isSingle ? "Achievement Unlocked!" : `${achievements.length} Achievements Unlocked!`}
-            </h2>
-            <p className="text-white/75 text-sm mt-1">
-              {isSingle ? "You've reached a new milestone!" : "You've reached multiple milestones!"}
-            </p>
-          </div>
-        </div>
-
-        {/* Achievement cards — float over header */}
-        <div className="px-5 -mt-6 space-y-2 max-h-72 overflow-y-auto">
-          {achievements.map((a) => (
+          {/* Golden header */}
+          <div className="relative bg-gradient-to-br from-yellow-400 to-amber-500 px-4 pt-6 pb-8 sm:px-6 sm:pt-8 sm:pb-10 text-center overflow-hidden">
+            {/* Subtle dot pattern */}
             <div
-              key={a.id}
-              className="bg-card rounded-xl shadow-md border border-border/60 p-4 flex items-center gap-3"
-            >
-              <div className="text-3xl leading-none shrink-0">{a.emoji}</div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-foreground leading-tight">{a.title}</p>
-                <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{a.description}</p>
+              className="absolute inset-0 opacity-10 pointer-events-none"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle, white 1px, transparent 1px)",
+                backgroundSize: "20px 20px",
+              }}
+            />
+            <div className="relative">
+              <div className="flex justify-center mb-2 sm:mb-3">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/20 flex items-center justify-center ring-4 ring-white/30">
+                  <Trophy className="w-7 h-7 sm:w-8 sm:h-8 text-white drop-shadow" />
+                </div>
               </div>
-              <div className="shrink-0">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30 dark:text-yellow-400 px-2 py-0.5 rounded-full">
-                  {a.game === "memory" ? "Memory" : "Sudoku"}
-                </span>
-              </div>
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                {isSingle ? "Achievement Unlocked!" : `${achievements.length} Achievements Unlocked!`}
+              </h2>
+              <p className="text-white/75 text-xs sm:text-sm mt-1">
+                {isSingle ? "You've reached a new milestone!" : "You've reached multiple milestones!"}
+              </p>
             </div>
-          ))}
-        </div>
+          </div>
 
-        {/* Actions */}
-        <div className="px-5 pb-6 pt-4 flex flex-col gap-2">
-          <Button
-            onClick={handleViewAchievements}
-            className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl h-11"
-          >
-            View Achievements →
-          </Button>
-          <ShareAchievementButton
-            achievement={achievements.length === 1 ? achievements[0] : undefined}
-            achievements={achievements.length > 1 ? achievements : undefined}
-            variant="full"
-            profileId={profileId ?? undefined}
-            label={
-              achievements.length === 1
-                ? `Share — I have achieved "${achievements[0].title}"!`
-                : `Share my ${achievements.length} achievements!`
-            }
-          />
-          <Button
-            variant="ghost"
-            onClick={onDismiss}
-            className="w-full rounded-xl h-10 text-muted-foreground"
-          >
-            Dismiss
-          </Button>
+          {/* Achievement cards — float over header */}
+          <div className="px-4 sm:px-5 -mt-5 sm:-mt-6 space-y-2 max-h-[38dvh] overflow-y-auto">
+            {achievements.map((a) => (
+              <div
+                key={a.id}
+                className="bg-card rounded-xl shadow-md border border-border/60 p-3 sm:p-4 flex items-center gap-3"
+              >
+                <div className="text-2xl sm:text-3xl leading-none shrink-0">{a.emoji}</div>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-foreground leading-tight">{a.title}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{a.description}</p>
+                </div>
+                <div className="shrink-0">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30 dark:text-yellow-400 px-2 py-0.5 rounded-full">
+                    {a.game === "memory" ? "Memory" : "Sudoku"}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Actions */}
+          <div className="px-4 sm:px-5 pb-4 sm:pb-6 pt-3 sm:pt-4 flex flex-col gap-2">
+            <Button
+              onClick={handleViewAchievements}
+              className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl h-10 sm:h-11"
+            >
+              View Achievements →
+            </Button>
+            <ShareAchievementButton
+              achievement={achievements.length === 1 ? achievements[0] : undefined}
+              achievements={achievements.length > 1 ? achievements : undefined}
+              variant="full"
+              profileId={profileId ?? undefined}
+              label={
+                achievements.length === 1
+                  ? `Share — I have achieved "${achievements[0].title}"!`
+                  : `Share my ${achievements.length} achievements!`
+              }
+            />
+            <Button
+              variant="ghost"
+              onClick={onDismiss}
+              className="w-full rounded-xl h-9 sm:h-10 text-muted-foreground"
+            >
+              Dismiss
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

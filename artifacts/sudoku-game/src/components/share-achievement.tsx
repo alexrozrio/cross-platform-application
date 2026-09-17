@@ -160,13 +160,23 @@ export function ShareAchievementButton({
       </PopoverTrigger>
 
       <PopoverContent
-        className="w-52 p-2 rounded-xl shadow-lg"
+        className="relative w-52 max-h-[calc(100dvh-2rem)] overflow-y-auto p-2 rounded-xl shadow-lg"
         align="end"
         sideOffset={6}
       >
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-2 pb-1.5">
-          Share on
-        </p>
+        <div className="flex items-center justify-between px-2 pb-1.5">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+            Share on
+          </p>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            aria-label="Close share menu"
+            className="inline-flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
         <div className="space-y-0.5">
           {PLATFORMS.map((p) => (
             <a
