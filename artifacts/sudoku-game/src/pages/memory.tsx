@@ -6,6 +6,7 @@ import { useImageTheme } from '@/hooks/use-image-theme';
 import { usePageMeta } from '@/components/page-meta';
 import { getTheme } from '@/lib/themes';
 import { useThemeImageSrc } from '@/components/theme-icons';
+import { MemoryGuide } from '@/components/game-guides';
 import { customFetch, useGetProfile } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -877,36 +878,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
           </button>
         </div>
 
-        <section className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-4 text-sm text-muted-foreground leading-relaxed">
-          <h2 className="text-xl font-serif font-bold text-foreground">
-            Play Memory Match online
-          </h2>
-          <p>
-            Memory Match is a concentration game built around observation and
-            recall. Turn over two cards, remember the symbols you see, and
-            find every matching pair. You can play with themed images, numbers,
-            or letters, so the same board works for different play styles.
-          </p>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div>
-              <h3 className="font-semibold text-foreground">Start small</h3>
-              <p className="mt-1">The 2×4 beginner board is a quick introduction with four pairs.</p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-foreground">Build the challenge</h3>
-              <p className="mt-1">Move through 4×4, 4×8, and 8×8 boards with up to 32 pairs.</p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-foreground">Track your result</h3>
-              <p className="mt-1">Faster times and fewer flips help you improve your personal score.</p>
-            </div>
-          </div>
-          <p>
-            The game is designed for short, repeatable rounds on phones,
-            tablets, and desktop browsers. You can play as a guest and choose
-            a family-friendly theme before starting.
-          </p>
-        </section>
+        <MemoryGuide />
 
         {/* Rules modal */}
         <Dialog open={infoModal === 'rules'} onOpenChange={o => !o && setInfoModal(null)}>

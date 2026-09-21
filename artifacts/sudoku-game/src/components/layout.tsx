@@ -250,6 +250,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
               About
             </Link>
             <span aria-hidden="true" className="text-border">·</span>
+            <Link href="/guides" className="text-muted-foreground transition-colors hover:text-foreground">
+              Guides
+            </Link>
+            <span aria-hidden="true" className="text-border">·</span>
             <Link href={buildLegalHref("/privacy", location)} className="text-muted-foreground transition-colors hover:text-foreground">
               Privacy Policy
             </Link>

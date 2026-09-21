@@ -18,6 +18,7 @@ import { modeFromQuery } from "@/lib/sudoku-routes";
 // one large bundle that has to load before the app becomes interactive.
 const Portal = lazy(() => import("@/pages/portal"));
 const SudokuHome = lazy(() => import("@/pages/home"));
+const Guides = lazy(() => import("@/pages/guides"));
 const Game = lazy(() => import("@/pages/game"));
 function SudokuBookmarkRoute({ params }: { params: { grid: string; difficulty: string } }) {
   const search = useSearch();
@@ -108,6 +109,7 @@ function Router() {
         <Suspense fallback={<PageLoader />}>
           <Switch>
             <Route path="/" component={Portal} />
+            <Route path="/guides" component={Guides} />
             <Route path="/sudoku/:grid/:difficulty" component={SudokuBookmarkRoute} />
             <Route path="/sudoku">
               {() => <SudokuHome />}

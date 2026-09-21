@@ -13,7 +13,7 @@ const SITE_NAME = "Play Brain Games . Online";
 const OG_IMAGE = `${SITE_URL}/opengraph.jpg`;
 
 function formatPageTitle(title: string): string {
-  return SITE_NAME;
+  return title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`;
 }
 
 function upsertMeta(attribute: "name" | "property", key: string, content: string) {
