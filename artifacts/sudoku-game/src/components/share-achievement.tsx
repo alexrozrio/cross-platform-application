@@ -160,7 +160,7 @@ export function ShareAchievementButton({
       </PopoverTrigger>
 
       <PopoverContent
-        className="relative w-52 max-h-[calc(100dvh-2rem)] overflow-y-auto p-2 rounded-xl shadow-lg"
+        className="relative w-[calc(100vw-2rem)] max-w-xs sm:w-52 max-h-[calc(100dvh-2rem)] overflow-y-auto p-2 rounded-xl shadow-lg"
         align="end"
         sideOffset={6}
       >
