@@ -799,10 +799,10 @@ export default function Themes() {
 
       {/* ── Show All Sub-pages (mobile overlay) ──────────────────────── */}
       {showAll !== null && (
-        <div className="fixed inset-0 z-[60] bg-background overflow-y-auto animate-in slide-in-from-right duration-200">
-          <div className="max-w-2xl mx-auto px-4 pb-8 space-y-5">
+        <div className="fixed inset-0 z-[60] h-[100dvh] min-h-0 touch-pan-y overscroll-y-contain overflow-y-auto bg-background animate-in slide-in-from-right duration-200">
+          <div className="max-w-2xl mx-auto min-h-full w-full px-3 pb-[calc(2rem+env(safe-area-inset-bottom))] space-y-5 sm:px-4">
             {/* Header */}
-            <div className="sticky top-0 bg-background/95 backdrop-blur-sm pt-4 pb-3 flex items-center justify-between gap-3 border-b border-border z-10">
+            <div className="sticky top-0 bg-background/95 backdrop-blur-sm pt-[max(1rem,env(safe-area-inset-top))] pb-3 flex items-center justify-between gap-3 border-b border-border z-10">
               <div className="flex items-center gap-3 min-w-0">
                 <button
                   type="button"
@@ -837,7 +837,7 @@ export default function Themes() {
 
             {/* All Colour Themes */}
             {showAll === 'colors' && (
-              <div className="grid grid-cols-3 gap-2 pt-1">
+              <div className="grid grid-cols-2 gap-3 pt-1">
                 {APP_THEMES.map(t => {
                   const selected = activeAppTheme === t.id;
                   const unlocked = isUnlocked('color_theme', t.id);
@@ -851,31 +851,31 @@ export default function Themes() {
                       onClick={() => handleAppTheme(t.id)}
                       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleAppTheme(t.id); }}
                       className={[
-                        'relative rounded-xl border-2 p-2 flex flex-col items-center gap-1.5 transition-all duration-150 cursor-pointer',
+                        'relative min-h-[112px] rounded-xl border-2 p-3 flex flex-col items-center justify-center gap-2 transition-all duration-150 cursor-pointer',
                         selected ? 'border-primary ring-2 ring-primary/30 shadow-sm'
                           : unlocked ? 'border-border hover:border-primary/40'
                           : 'border-border hover:border-amber-400/60',
                       ].join(' ')}
                     >
-                      <div className="w-full h-9 rounded-lg flex items-center justify-center gap-1" style={{ background: t.bg }}>
-                        <div className="w-3 h-3 rounded-full shadow-sm" style={{ background: t.primary }} />
-                        <div className="w-3 h-3 rounded-full shadow-sm" style={{ background: t.accent }} />
+                      <div className="w-full h-10 rounded-lg flex items-center justify-center gap-1.5" style={{ background: t.bg }}>
+                        <div className="w-3.5 h-3.5 rounded-full shadow-sm" style={{ background: t.primary }} />
+                        <div className="w-3.5 h-3.5 rounded-full shadow-sm" style={{ background: t.accent }} />
                       </div>
-                      <span className="text-[10px] font-medium leading-none text-center">{t.label}</span>
+                      <span className="text-xs font-semibold leading-tight text-center">{t.label}</span>
                       {selected ? (
-                        <span className="w-3.5 h-3.5 rounded-full bg-primary flex items-center justify-center">
-                          <Check className="w-2 h-2 text-primary-foreground" />
+                        <span className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                          <Check className="w-3 h-3 text-primary-foreground" />
                         </span>
                       ) : !unlocked ? (
-                        <span className="flex items-center gap-0.5 text-[9px] font-semibold text-amber-600 dark:text-amber-400">
-                          <Gem className="w-2.5 h-2.5" />{cost}
+                        <span className="flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                          <Gem className="w-3 h-3" />{cost} gems
                         </span>
                       ) : null}
-                      {!unlocked && <Lock className="absolute top-1.5 right-1.5 w-2.5 h-2.5 text-amber-500/80" />}
-                      {free && !unlocked && <span className="absolute top-1 left-1 bg-emerald-500 text-white text-[7px] font-bold px-0.5 rounded">FREE</span>}
+                      {!unlocked && <Lock className="absolute top-2 right-2 w-3.5 h-3.5 text-amber-500/80" />}
+                      {free && !unlocked && <span className="absolute top-2 left-2 bg-emerald-500 text-white text-[9px] font-bold px-1 rounded">FREE</span>}
                       <button type="button" onClick={(e) => { e.stopPropagation(); setPreviewColourId(t.id); }}
-                        className="absolute bottom-1 right-1 p-0.5 rounded text-muted-foreground/60 hover:text-foreground hover:bg-black/10" title="Preview">
-                        <Eye className="w-2.5 h-2.5" />
+                        className="absolute bottom-2 right-2 inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground/70 hover:text-foreground hover:bg-black/10" title="Preview">
+                        <Eye className="w-4 h-4" />
                       </button>
                     </div>
                   );
@@ -898,27 +898,27 @@ export default function Themes() {
                       onClick={() => handleFont(f.id)}
                       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleFont(f.id); }}
                       className={[
-                        'relative rounded-xl border-2 p-3 flex flex-col items-center gap-2 transition-all duration-150 cursor-pointer',
+                        'relative min-h-[156px] rounded-xl border-2 p-3 flex flex-col items-center justify-center gap-2 transition-all duration-150 cursor-pointer',
                         selected ? 'border-primary ring-2 ring-primary/30 shadow-sm bg-primary/5'
                           : unlocked ? 'border-border hover:border-primary/40 hover:shadow-sm'
                           : 'border-border hover:border-amber-400/60 hover:shadow-sm',
                       ].join(' ')}
                     >
-                      {!unlocked && <Lock className="absolute top-2 right-2 w-3 h-3 text-amber-500/80" />}
+                      {!unlocked && <Lock className="absolute top-2 right-2 w-4 h-4 text-amber-500/80" />}
                       <span className={['text-3xl font-bold leading-none', !unlocked ? 'opacity-50' : ''].join(' ')} style={f.style}>Aa</span>
-                      <span className="text-[11px] font-medium">{f.label}</span>
+                      <span className="text-xs font-semibold text-center leading-tight">{f.label}</span>
                       {selected ? (
-                        <span className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
-                          <Check className="w-2.5 h-2.5 text-primary-foreground" />
+                        <span className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                          <Check className="w-3 h-3 text-primary-foreground" />
                         </span>
                       ) : !unlocked ? (
-                        <span className="flex items-center gap-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
-                          <Gem className="w-2.5 h-2.5" />{cost} gems
+                        <span className="flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                          <Gem className="w-3 h-3" />{cost} gems
                         </span>
                       ) : null}
                       <button type="button" onClick={(e) => { e.stopPropagation(); setPreviewFontId(f.id); }}
-                        className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-foreground border border-border rounded-md px-2 py-0.5 hover:bg-muted/50 transition-colors mt-0.5">
-                        <Eye className="w-2.5 h-2.5" /> Preview
+                        className="inline-flex min-h-9 items-center justify-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 hover:bg-muted/50 transition-colors mt-0.5">
+                        <Eye className="w-3.5 h-3.5" /> Preview
                       </button>
                     </div>
                   );
