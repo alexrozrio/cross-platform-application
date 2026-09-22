@@ -1385,7 +1385,10 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
       >
         {cards.map(card => (
           <MemoryCard
-            key={card.id}
+            // Card ids are reused by every new deck. Including the board size
+            // prevents React from carrying a previous game's image component
+            // across a 4-pair → 8-pair switch.
+            key={`${gridSize}-${card.id}-${card.value}`}
             card={card}
             themeId={themeId}
             onClick={() => handleCardClick(card.id)}

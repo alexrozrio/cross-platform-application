@@ -2168,18 +2168,37 @@ export function useThemeImageSrc(themeId: string, value: number): string | null 
   const base = import.meta.env.BASE_URL ?? '/';
   const key = `${themeId}/${value}`;
 
-  const [src, setSrc] = React.useState<string | null | undefined>(() =>
-    _probeCache.has(key) ? (_probeCache.get(key) ?? null) : undefined
-  );
+  const [result, setResult] = React.useState<{ key: string; src: string | null | undefined }>(() => ({
+    key,
+    src: _probeCache.has(key) ? (_probeCache.get(key) ?? null) : undefined,
+  }));
+
+  // A Memory Match card component can be reused for a different card when the
+  // grid size changes. Do not expose the previous card's image while the new
+  // value is being resolved.
+  const src = result.key === key ? result.src : undefined;
 
   React.useEffect(() => {
+    let active = true;
+
     if (_probeCache.has(key)) {
-      setSrc(_probeCache.get(key) ?? null);
-      return;
+      setResult({ key, src: _probeCache.get(key) ?? null });
+      return () => {
+        active = false;
+      };
     }
-    // Fire the probe; result updates state via setSrc
-    probeThemeImage(base, themeId, value).then(setSrc);
-  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    setResult({ key, src: undefined });
+    // Fire the probe; ignore a late result if this hook has moved to another
+    // theme/value or the component has unmounted.
+    probeThemeImage(base, themeId, value).then((nextSrc) => {
+      if (active) setResult({ key, src: nextSrc });
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [base, key, themeId, value]);
 
   return src;
 }
