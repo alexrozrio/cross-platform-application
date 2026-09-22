@@ -21,11 +21,17 @@ function upsertMeta(attribute: "name" | "property", key: string, content: string
     `meta[data-page-meta="${attribute}:${key}"]`,
   );
   if (!element) {
+    element = document.head.querySelector<HTMLMetaElement>(
+      `meta[${attribute}="${key}"]`,
+    );
+  }
+  if (!element) {
     element = document.createElement("meta");
     element.setAttribute("data-page-meta", `${attribute}:${key}`);
     element.setAttribute(attribute, key);
     document.head.appendChild(element);
   }
+  element.setAttribute("data-page-meta", `${attribute}:${key}`);
   element.content = content;
 }
 
@@ -57,11 +63,16 @@ export function usePageMeta({
       'link[data-page-meta="canonical"]',
     );
     if (!canonical) {
+      canonical = document.head.querySelector<HTMLLinkElement>(
+        'link[rel="canonical"]',
+      );
+    }
+    if (!canonical) {
       canonical = document.createElement("link");
       canonical.rel = "canonical";
-      canonical.setAttribute("data-page-meta", "canonical");
       document.head.appendChild(canonical);
     }
+    canonical.setAttribute("data-page-meta", "canonical");
     canonical.href = url;
 
     let jsonLd = document.head.querySelector<HTMLScriptElement>(
