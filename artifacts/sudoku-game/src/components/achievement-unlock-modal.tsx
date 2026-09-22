@@ -66,7 +66,7 @@ export function AchievementUnlockModal({ achievements, onDismiss, profileId }: A
           </div>
 
           {/* Achievement cards — float over header */}
-          <div className="px-4 sm:px-5 -mt-5 sm:-mt-6 space-y-2 max-h-[38dvh] overflow-y-auto">
+          <div className="relative z-10 px-4 sm:px-5 -mt-5 sm:-mt-6 space-y-2 max-h-[38dvh] overflow-y-auto">
             {achievements.map((a) => (
               <div
                 key={a.id}
