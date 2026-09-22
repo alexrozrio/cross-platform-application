@@ -4,10 +4,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { useImageTheme } from "@/hooks/use-image-theme";
 import { usePageMeta } from "@/components/page-meta";
 import { ThemeIcon } from "@/components/theme-icons";
-import { Badge } from "@/components/ui/badge";
 import {
   Grid3x2 as Grid3X3,
-  Sparkles,
   Loader as Loader2,
   RotateCcw,
   Flame,
@@ -42,21 +40,6 @@ interface MemorySession {
   savedAt: number;
   cards: { matched: boolean }[];
 }
-
-const COMING_SOON = [
-  {
-    title: "Word Search",
-    description: "Find hidden words in a letter grid",
-    icon: "🔤",
-    color: "from-emerald-500/20 to-teal-500/20 border-emerald-200/60",
-  },
-  {
-    title: "Minesweeper",
-    description: "Clear the field without hitting mines",
-    icon: "💣",
-    color: "from-rose-500/20 to-orange-500/20 border-rose-200/60",
-  },
-];
 
 const GRID_QUICK_START = [
   { size: 3, label: "3×3", sublabel: "Baby" },
@@ -973,40 +956,6 @@ export default function Portal() {
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Coming soon (desktop) */}
-        <div className="bg-card rounded-2xl border border-border p-5">
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5" /> Coming Soon
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {COMING_SOON.map((game) => (
-              <div
-                key={game.title}
-                className="rounded-2xl border border-border bg-muted p-6 space-y-3 opacity-60 cursor-not-allowed select-none"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-xl bg-white/40 flex items-center justify-center text-3xl">
-                    {game.icon}
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold font-serif">
-                      {game.title}
-                    </h2>
-                    <Badge
-                      variant="outline"
-                      className="text-xs mt-0.5 border-current/30"
-                    >
-                      Soon
-                    </Badge>
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {game.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* ═══════════════════════════════════════════════════════════
@@ -1091,31 +1040,6 @@ export default function Portal() {
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Coming soon (mobile) — last */}
-        <div className="bg-card rounded-2xl border border-border p-4">
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5" /> Coming Soon
-          </p>
-          <div className="grid grid-cols-2 gap-3">
-            {COMING_SOON.map((game) => (
-              <div
-                key={game.title}
-                className="rounded-2xl border border-border bg-muted p-4 space-y-1.5 opacity-60 cursor-not-allowed select-none"
-              >
-                <span className="text-2xl">{game.icon}</span>
-                <div>
-                  <p className="font-bold text-sm">{game.title}</p>
-                  <Badge
-                    variant="outline"
-                    className="text-xs mt-0.5 border-current/30"
-                  >
-                    Soon
-                  </Badge>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
 
       <br />
