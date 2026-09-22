@@ -127,8 +127,8 @@ function ShareSheet({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
+      <DialogContent className="max-w-[calc(100vw-1rem)] max-h-[calc(100dvh-1rem)] overflow-y-auto overscroll-contain p-4 sm:max-w-sm sm:p-6">
+        <DialogHeader className="pr-10">
           <DialogTitle className="flex items-center gap-2">
             <Share2 className="w-5 h-5 text-primary" /> Share Challenge
           </DialogTitle>
