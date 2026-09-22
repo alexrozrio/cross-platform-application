@@ -37,6 +37,7 @@ import { pickCompletionMessage } from "@/lib/completion-messages";
 import { getLevelFromXp } from "@/lib/levels";
 import gameFeatures from "@/config/game-features.json";
 import { sudokuGamePath } from "@/lib/sudoku-routes";
+import { rememberSudokuDifficulty } from "@/lib/sudoku-preferences";
 import { shareOrDownloadShareCard } from "@/lib/share-card";
 
 interface DailyChallengeInfo { puzzleId: number; date: string; }
@@ -602,6 +603,20 @@ export default function Game({ id }: { id: string }) {
     }
   }, [game?.puzzle?.gridSize, game?.puzzle?.difficulty]);
 
+  // Keep Home's quick-start difficulty aligned with the last Sudoku the player
+  // actually opened, including games started from bookmarks or game controls.
+  useEffect(() => {
+    const currentDifficulty = game?.puzzle?.difficulty;
+    if (
+      currentDifficulty === "easy" ||
+      currentDifficulty === "medium" ||
+      currentDifficulty === "hard" ||
+      currentDifficulty === "expert"
+    ) {
+      rememberSudokuDifficulty(currentDifficulty);
+    }
+  }, [game?.puzzle?.difficulty]);
+
   const createNewGame = useCreateGame();
   const newGameLoading = newGameFetching || createNewGame.isPending;
 
@@ -618,6 +633,7 @@ export default function Game({ id }: { id: string }) {
     const size = sizeOverride ?? newSize;
     const diff = diffOverride ?? newDiff;
     if (newGameLoading) return;
+    rememberSudokuDifficulty(diff);
     abandonCurrentServerGame();
     setNewGameFetching(true);
     setShowMobileControls(false);
@@ -668,6 +684,7 @@ export default function Game({ id }: { id: string }) {
     if (quickDifficultyInFlightRef.current) return;
     quickDifficultyInFlightRef.current = true;
     setQuickDifficultyLoading(true);
+    rememberSudokuDifficulty(nextDifficulty);
     abandonCurrentServerGame();
     const offlineRoute = () =>
       sudokuGamePath(gridSize, nextDifficulty, 0, mode, Date.now());
