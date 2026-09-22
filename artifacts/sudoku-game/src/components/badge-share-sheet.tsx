@@ -126,6 +126,7 @@ export function BadgeShareSheet({
       if (result === "downloaded") {
         toast.success("Badge image downloaded — attach it to your message!", { duration: 3000 });
       }
+      onClose();
     } catch {
       toast.error("Could not create the badge image");
     }
@@ -135,7 +136,7 @@ export function BadgeShareSheet({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent className="mx-2 w-[calc(100vw-1rem)] max-w-md max-h-[calc(100dvh-1rem)] overflow-y-auto p-4 gap-3 sm:mx-auto sm:w-full sm:gap-4 sm:p-6 rounded-xl sm:rounded-lg">
+      <DialogContent className="mx-2 w-[calc(100vw-1rem)] max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto p-4 gap-3 sm:mx-auto sm:w-full sm:gap-4 sm:p-6 rounded-xl sm:rounded-lg">
         <DialogHeader>
           <DialogTitle>Share your badge</DialogTitle>
           <DialogDescription className="sr-only">
@@ -143,11 +144,8 @@ export function BadgeShareSheet({
           </DialogDescription>
         </DialogHeader>
 
-        <ShareCardPreview data={shareCard} />
-
-        {/* Preview blurb */}
-        <div className="rounded-lg bg-muted/60 border border-border/40 px-4 py-3 text-xs leading-relaxed whitespace-pre-line text-foreground/80">
-          {text}
+        <div className="mx-auto w-full max-w-[18rem] sm:max-w-[22rem]">
+          <ShareCardPreview data={shareCard} />
         </div>
 
         {/* Platform grid — 2 columns, each button full-width within its cell */}
@@ -156,7 +154,10 @@ export function BadgeShareSheet({
             <button
               key={p.id}
               type="button"
-              onClick={() => handleOpen(p.href)}
+              onClick={() => {
+                handleOpen(p.href);
+                onClose();
+              }}
               className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-white text-sm font-medium transition-colors active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-primary ${p.bg}`}
             >
               {p.icon}
