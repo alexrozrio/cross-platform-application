@@ -19,6 +19,11 @@ import { getLevelFromXp } from "@/lib/levels";
 import { getTheme } from "@/lib/themes";
 import { sudokuGamePath } from "@/lib/sudoku-routes";
 import {
+  getLastPlayedDifficulty,
+  LAST_GRID_SIZE_KEY,
+  rememberSudokuDifficulty,
+} from "@/lib/sudoku-preferences";
+import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
@@ -152,23 +157,14 @@ export default function Portal() {
     if (loadingSize !== null) return;
     setLoadingSize(size);
 
-    const difficulty = (() => {
-      try {
-        const stored = localStorage.getItem("sudoku-last-difficulty");
-        return stored && ["easy", "medium", "hard", "expert"].includes(stored)
-          ? stored
-          : "easy";
-      } catch {
-        return "easy";
-      }
-    })();
+    const difficulty = getLastPlayedDifficulty();
 
     // Always pre-generate an offline puzzle immediately — this is instant (bank lookup).
     // Whatever happens with the API, the user can play right away.
     try {
       generateOfflinePuzzle(difficulty, size);
-      localStorage.setItem("sudoku-last-grid-size", String(size));
-      localStorage.setItem("sudoku-last-difficulty", difficulty);
+      localStorage.setItem(LAST_GRID_SIZE_KEY, String(size));
+      rememberSudokuDifficulty(difficulty);
     } catch {
       /* ignore */
     }

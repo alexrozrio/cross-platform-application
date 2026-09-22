@@ -27,6 +27,12 @@ import {
   type SudokuGridSize,
   type SudokuRouteMode,
 } from '@/lib/sudoku-routes';
+import {
+  LAST_GRID_SIZE_KEY,
+  getLastPlayedDifficulty,
+  getLastPlayedGridSize,
+  rememberSudokuDifficulty,
+} from '@/lib/sudoku-preferences';
 import gameFeatures from '@/config/game-features.json';
 
 interface ActiveGame {
@@ -69,28 +75,6 @@ const GRID_OPTIONS: { size: GridSize; label: string; sublabel: string; difficult
 const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard', 'expert'];
 
 type InfoModal = 'rules' | 'controls' | 'backstory' | null;
-
-const LAST_GRID_SIZE_KEY  = 'sudoku-last-grid-size';
-const LAST_DIFFICULTY_KEY = 'sudoku-last-difficulty';
-
-function getLastPlayedGridSize(): GridSize | null {
-  try {
-    const stored = Number(localStorage.getItem(LAST_GRID_SIZE_KEY));
-    return [3, 4, 6, 9, 16].includes(stored) ? (stored as GridSize) : null;
-  } catch {
-    return null;
-  }
-}
-
-function getLastPlayedDifficulty(): Difficulty {
-  try {
-    const stored = localStorage.getItem(LAST_DIFFICULTY_KEY);
-    if (stored && ['easy', 'medium', 'hard', 'expert'].includes(stored)) {
-      return stored as Difficulty;
-    }
-  } catch { /* ignore */ }
-  return 'easy';
-}
 
 export interface SudokuHomeProps {
   gridSlug?: string;
@@ -268,7 +252,7 @@ export default function SudokuHome({
     try {
       generateOfflinePuzzle(effectiveDifficulty, size);
       localStorage.setItem(LAST_GRID_SIZE_KEY, String(size));
-      localStorage.setItem(LAST_DIFFICULTY_KEY, effectiveDifficulty);
+      rememberSudokuDifficulty(effectiveDifficulty);
     } catch { /* ignore */ }
 
     const browserIsOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
@@ -370,6 +354,7 @@ export default function SudokuHome({
   // immediately at the current grid size.
   const handleDifficultyAutoStart = (value: Difficulty) => {
     setDifficulty(value);
+    rememberSudokuDifficulty(value);
     updateBookmarkUrl(gridSize, value);
     if (startInFlightRef.current) return;
     const activeMatchesPick =
@@ -489,6 +474,7 @@ export default function SudokuHome({
                     handleDifficultyAutoStart(d);
                   } else {
                     setDifficulty(d);
+                    rememberSudokuDifficulty(d);
                     updateBookmarkUrl(gridSize, d, selectedMode);
                   }
                 }}
@@ -687,6 +673,7 @@ export default function SudokuHome({
             <Select value={difficulty} onValueChange={v => {
               const nextDifficulty = v as Difficulty;
               setDifficulty(nextDifficulty);
+              rememberSudokuDifficulty(nextDifficulty);
               updateBookmarkUrl(gridSize, nextDifficulty);
             }} disabled={isLoading}>
               <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
