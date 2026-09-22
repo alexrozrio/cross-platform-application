@@ -875,7 +875,6 @@ function NewChallengeDialog({
           gameType: "sudoku",
         });
       }
-      if (challenge.challengerGameId) setLocation(`/game/${challenge.challengerGameId}`);
     },
     onError: () => toast.error("Failed to create challenge link"),
   });
@@ -894,7 +893,6 @@ function NewChallengeDialog({
           gridSize: duel.gridSize,
         });
       }
-      if (duel.challengerGameId) setLocation(`/memory?duelGameId=${duel.challengerGameId}&gridSize=${duel.gridSize}`);
     },
     onError: () => toast.error("Failed to create challenge link"),
   });
