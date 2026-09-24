@@ -9,3 +9,4 @@
 - [Offline completion sync](offline-completion-sync.md) — reconnect scoring must be bounded and completion endpoints must atomically guard active games before awarding rewards.
 - [Pnpm lockfile discipline](pnpm-lockfile-discipline.md) — workspace config changes must be lockfile-synced and validated with the pinned pnpm version before Render deploys.
 - [Generated completion response types](generated-completion-response-types.md) — runtime completion payloads can contain XP fields omitted by generated client mutation types; handle the mismatch at the response boundary.
+- [Artifact manifest updates](artifact-manifest-updates.md) — protected artifact.toml files must be replaced through the validated manifest flow, not edited directly.

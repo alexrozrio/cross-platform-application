@@ -23,6 +23,82 @@ publicDir = "artifacts/sudoku-game/dist/public"
 serve = "static"
 
 [[services.production.rewrites]]
+from = "/"
+to = "/index.html"
+
+[[services.production.rewrites]]
+from = "/guides"
+to = "/guides/index.html"
+
+[[services.production.rewrites]]
+from = "/guides/"
+to = "/guides/index.html"
+
+[[services.production.rewrites]]
+from = "/sudoku"
+to = "/sudoku/index.html"
+
+[[services.production.rewrites]]
+from = "/sudoku/"
+to = "/sudoku/index.html"
+
+[[services.production.rewrites]]
+from = "/memory"
+to = "/memory/index.html"
+
+[[services.production.rewrites]]
+from = "/memory/"
+to = "/memory/index.html"
+
+[[services.production.rewrites]]
+from = "/daily-challenge"
+to = "/daily-challenge/index.html"
+
+[[services.production.rewrites]]
+from = "/daily-challenge/"
+to = "/daily-challenge/index.html"
+
+[[services.production.rewrites]]
+from = "/leaderboard"
+to = "/leaderboard/index.html"
+
+[[services.production.rewrites]]
+from = "/leaderboard/"
+to = "/leaderboard/index.html"
+
+[[services.production.rewrites]]
+from = "/challenges"
+to = "/challenges/index.html"
+
+[[services.production.rewrites]]
+from = "/challenges/"
+to = "/challenges/index.html"
+
+[[services.production.rewrites]]
+from = "/about"
+to = "/about/index.html"
+
+[[services.production.rewrites]]
+from = "/about/"
+to = "/about/index.html"
+
+[[services.production.rewrites]]
+from = "/privacy"
+to = "/privacy/index.html"
+
+[[services.production.rewrites]]
+from = "/privacy/"
+to = "/privacy/index.html"
+
+[[services.production.rewrites]]
+from = "/terms"
+to = "/terms/index.html"
+
+[[services.production.rewrites]]
+from = "/terms/"
+to = "/terms/index.html"
+
+[[services.production.rewrites]]
 from = "/*"
 to = "/index.html"
 
