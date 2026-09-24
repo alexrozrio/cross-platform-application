@@ -140,15 +140,20 @@ const publicPages = [
     intro:
       "Challenge another player to a Sudoku duel or Memory Match competition. Compare scores, replay finished challenges, and earn gem rewards for wins.",
     sections: [
-      ["Sudoku challenges", "Choose a supported Sudoku grid and difficulty, then see who earns the higher score."],
-      ["Memory Match duels", "Compete on the same Memory Match board and compare speed, flips, and final points."],
-      ["Private invitations", "Sign in to create challenges and share an invitation link with the person you want to play."],
+      ["What challenges are", "A challenge lets two players compete on the same Sudoku puzzle or Memory Match board. Each player completes their own round, then the higher score wins."],
+      ["How invitations work", "Sign in, create a challenge, and share the invitation link with a friend. They can open the link, sign in, and accept the duel."],
+      ["How scoring works", "Scores reward speed and difficulty while accounting for mistakes, hints, or extra card flips. The winner earns gems; ties reward both players."],
     ],
     links: [
       ["/sudoku", "Practice Sudoku first"],
       ["/memory", "Practice Memory Match first"],
       ["/about", "Learn about Play Brain Games"],
     ],
+    cta: {
+      href: "/api/login",
+      label: "Sign in to start a challenge",
+      description: "Create a duel, invite a friend, and track your results.",
+    },
     schemaType: "CollectionPage",
   },
   {
@@ -284,6 +289,14 @@ function buildStaticContent(page) {
         `<a class="font-semibold text-primary underline-offset-2 hover:underline" href="${href}">${escapeHtml(label)}</a>`,
     )
     .join('<span aria-hidden="true" class="text-muted-foreground">·</span>');
+  const cta = page.cta
+    ? `
+      <section class="rounded-2xl border border-primary/25 bg-primary/5 px-5 py-5 text-center">
+        <h2 class="text-lg font-semibold text-foreground">Ready to challenge someone?</h2>
+        <p class="mt-2 text-sm text-muted-foreground">${escapeHtml(page.cta.description)}</p>
+        <a class="mt-4 inline-flex rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground" href="${page.cta.href}">${escapeHtml(page.cta.label)}</a>
+      </section>`
+    : "";
 
   return `
     <main class="mx-auto w-full max-w-3xl space-y-5 px-4 py-6 sm:px-6" aria-label="${escapeHtml(page.heading)}">
@@ -293,6 +306,7 @@ function buildStaticContent(page) {
         <p class="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">${escapeHtml(page.intro)}</p>
       </header>
       <div class="grid gap-4 sm:grid-cols-3">${sections}</div>
+      ${cta}
       <nav class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border border-border bg-card px-5 py-4 text-sm" aria-label="Related pages">
         ${links}
       </nav>
