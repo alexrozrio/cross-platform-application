@@ -799,8 +799,8 @@ export default function Themes() {
 
       {/* ── Show All Sub-pages (mobile overlay) ──────────────────────── */}
       {showAll !== null && (
-        // Stay above app chrome, but below Radix dialogs opened from this view.
-        <div className="fixed inset-0 z-40 h-[100dvh] min-h-0 touch-pan-y overscroll-y-contain overflow-y-auto bg-background animate-in slide-in-from-right duration-200">
+        // Stay above app chrome; dialogs opened from this view opt into a higher layer.
+        <div className="fixed inset-0 z-[60] h-[100dvh] min-h-0 touch-pan-y overscroll-y-contain overflow-y-auto bg-background animate-in slide-in-from-right duration-200">
           <div className="max-w-2xl mx-auto min-h-full w-full px-3 pb-[calc(2rem+env(safe-area-inset-bottom))] space-y-5 sm:px-4">
             {/* Header */}
             <div className="sticky top-0 bg-background/95 backdrop-blur-sm pt-[max(1rem,env(safe-area-inset-top))] pb-3 flex items-center justify-between gap-3 border-b border-border z-10">
@@ -1018,7 +1018,7 @@ export default function Themes() {
         const ctCanAfford = gems >= ctCost;
         return (
           <Dialog open={!!previewColourId} onOpenChange={(open) => { if (!open) setPreviewColourId(null); }}>
-            <DialogContent className="max-w-sm max-h-[calc(100dvh-2rem)] p-0 overflow-y-auto overscroll-contain">
+            <DialogContent className={`max-w-sm max-h-[calc(100dvh-2rem)] p-0 overflow-y-auto overscroll-contain ${showAll ? 'z-[70]' : ''}`} overlayClassName={showAll ? 'z-[70]' : undefined}>
               <DialogHeader className="px-5 pt-5 pb-0">
                 <DialogTitle>{ct.label} Theme</DialogTitle>
                 <DialogDescription>Colour palette preview</DialogDescription>
@@ -1103,7 +1103,7 @@ export default function Themes() {
         const ftCanAfford = gems >= ftCost;
         return (
           <Dialog open={!!previewFontId} onOpenChange={(open) => { if (!open) setPreviewFontId(null); }}>
-            <DialogContent className="max-w-sm max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
+            <DialogContent className={`max-w-sm max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain ${showAll ? 'z-[70]' : ''}`} overlayClassName={showAll ? 'z-[70]' : undefined}>
               <DialogHeader>
                 <DialogTitle>{ft.label} Font</DialogTitle>
                 <DialogDescription>How text looks throughout the app</DialogDescription>
@@ -1185,7 +1185,7 @@ export default function Themes() {
         const canAfford = gems >= ovCost;
         return (
           <Dialog open={!!overviewThemeId} onOpenChange={(open) => { if (!open) setOverviewThemeId(null); }}>
-            <DialogContent className="max-w-sm">
+            <DialogContent className={`max-w-sm ${showAll ? 'z-[70]' : ''}`} overlayClassName={showAll ? 'z-[70]' : undefined}>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                   <span className="text-xl">{ovTheme.preview}</span>
@@ -1259,7 +1259,7 @@ export default function Themes() {
 
       {/* ── Unlock Confirmation Dialog ────────────────────────────────── */}
       <Dialog open={!!pendingUnlock} onOpenChange={(open) => { if (!open) setPendingUnlock(null); }}>
-        <DialogContent>
+        <DialogContent className={showAll ? 'z-[70]' : undefined} overlayClassName={showAll ? 'z-[70]' : undefined}>
           <DialogHeader>
             <DialogTitle>Unlock {pendingUnlock?.label}?</DialogTitle>
             <DialogDescription>

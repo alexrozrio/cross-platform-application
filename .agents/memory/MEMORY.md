@@ -11,3 +11,4 @@
 - [Generated completion response types](generated-completion-response-types.md) — runtime completion payloads can contain XP fields omitted by generated client mutation types; handle the mismatch at the response boundary.
 - [Artifact manifest updates](artifact-manifest-updates.md) — protected artifact.toml files must be replaced through the validated manifest flow, not edited directly.
 - [Custom-domain trailing slashes](trailing-slash-seo.md) — live Cloudflare hosting normalizes public route URLs to trailing slashes with a 307.
+- [Theme overlay stacking](theme-overlay-stacking.md) — keep the mobile full-screen layer over app chrome and raise nested dialogs locally.
