@@ -499,6 +499,9 @@ export default function Game({ id }: { id: string }) {
   useEffect(() => {
     return () => setGameResultVisible(false);
   }, [setGameResultVisible]);
+  useEffect(() => {
+    if (isCompleted) window.scrollTo(0, 0);
+  }, [isCompleted]);
   const [isGameOver, setIsGameOver] = useState(false);
   const [challengeResult, setChallengeResult] = useState<null | {
     id: number; status: string; winnerId: number | null;
@@ -1591,6 +1594,13 @@ export default function Game({ id }: { id: string }) {
         <div className="rounded-2xl bg-primary text-primary-foreground p-3.5 sm:p-4 text-center space-y-1.5 sm:space-y-2 shadow-lg">
           <div className="text-3xl sm:text-4xl">{completionMessage.emoji}</div>
           <h1 className="text-xl sm:text-2xl leading-tight font-serif font-bold">{completionMessage.headline}</h1>
+          <button
+            onClick={handleShare}
+            className="inline-flex min-h-10 items-center gap-2 mt-1 rounded-lg bg-white/20 px-4 py-2 text-sm font-semibold hover:bg-white/30 transition-colors"
+          >
+            <Share2 className="w-4 h-4" />
+            Share your result
+          </button>
           <p className="opacity-80 text-xs sm:text-sm">
             {sizeLabel} {diffLabel} · {formattedTime} · {mistakes} mistake{mistakes !== 1 ? "s" : ""}
           </p>
@@ -1601,13 +1611,6 @@ export default function Game({ id }: { id: string }) {
               {xpEarned !== null && <span>+{xpEarned} XP</span>}
             </p>
           )}
-          <button
-            onClick={handleShare}
-            className="inline-flex items-center gap-2 mt-0.5 text-xs sm:text-sm opacity-80 hover:opacity-100 transition-opacity bg-white/15 hover:bg-white/25 rounded-lg px-3 sm:px-4 py-1"
-          >
-            <Share2 className="w-3.5 h-3.5" />
-            Share your result
-          </button>
         </div>
 
         {isPersonalBest && (
