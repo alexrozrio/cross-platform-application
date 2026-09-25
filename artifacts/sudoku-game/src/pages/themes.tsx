@@ -844,14 +844,13 @@ export default function Themes() {
                   const free = isFreeItem('color_theme', t.id);
                   const cost = getItemCost('color_theme', t.id);
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={t.id}
-                      role="button"
-                      tabIndex={0}
+                      aria-pressed={selected}
                       onClick={() => handleAppTheme(t.id)}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleAppTheme(t.id); }}
                       className={[
-                        'relative min-h-[112px] rounded-xl border-2 p-3 flex flex-col items-center justify-center gap-2 transition-all duration-150 cursor-pointer',
+                        'relative min-h-[132px] w-full touch-manipulation rounded-xl border-2 p-3 pb-4 flex flex-col items-center justify-center gap-2 text-foreground text-center transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                         selected ? 'border-primary ring-2 ring-primary/30 shadow-sm'
                           : unlocked ? 'border-border hover:border-primary/40'
                           : 'border-border hover:border-amber-400/60',
@@ -873,11 +872,7 @@ export default function Themes() {
                       ) : null}
                       {!unlocked && <Lock className="absolute top-2 right-2 w-3.5 h-3.5 text-amber-500/80" />}
                       {free && !unlocked && <span className="absolute top-2 left-2 bg-emerald-500 text-white text-[9px] font-bold px-1 rounded">FREE</span>}
-                      <button type="button" onClick={(e) => { e.stopPropagation(); setPreviewColourId(t.id); }}
-                        className="absolute bottom-2 right-2 inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground/70 hover:text-foreground hover:bg-black/10" title="Preview">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
