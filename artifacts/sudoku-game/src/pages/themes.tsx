@@ -799,7 +799,8 @@ export default function Themes() {
 
       {/* ── Show All Sub-pages (mobile overlay) ──────────────────────── */}
       {showAll !== null && (
-        <div className="fixed inset-0 z-[60] h-[100dvh] min-h-0 touch-pan-y overscroll-y-contain overflow-y-auto bg-background animate-in slide-in-from-right duration-200">
+        // Stay above app chrome, but below Radix dialogs opened from this view.
+        <div className="fixed inset-0 z-40 h-[100dvh] min-h-0 touch-pan-y overscroll-y-contain overflow-y-auto bg-background animate-in slide-in-from-right duration-200">
           <div className="max-w-2xl mx-auto min-h-full w-full px-3 pb-[calc(2rem+env(safe-area-inset-bottom))] space-y-5 sm:px-4">
             {/* Header */}
             <div className="sticky top-0 bg-background/95 backdrop-blur-sm pt-[max(1rem,env(safe-area-inset-top))] pb-3 flex items-center justify-between gap-3 border-b border-border z-10">
