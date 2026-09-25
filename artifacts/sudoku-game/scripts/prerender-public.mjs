@@ -280,8 +280,10 @@ function buildStaticContent(page) {
     .join("");
   const links = page.links
     .map(
-      ([href, label]) =>
-        `<a class="font-semibold text-primary underline-offset-2 hover:underline" href="${href}">${escapeHtml(label)}</a>`,
+      ([href, label]) => {
+        const publicHref = href === "/" || href.endsWith("/") ? href : `${href}/`;
+        return `<a class="font-semibold text-primary underline-offset-2 hover:underline" href="${publicHref}">${escapeHtml(label)}</a>`;
+      },
     )
     .join('<span aria-hidden="true" class="text-muted-foreground">·</span>');
   const cta = page.cta
@@ -312,7 +314,9 @@ async function prerender() {
   let template = await readFile(sourcePath, "utf8");
 
   for (const page of publicPages) {
-    const url = `${siteUrl}${page.route === "/" ? "/" : page.route}`;
+    const publicRoute =
+      page.route === "/" || page.route.endsWith("/") ? page.route : `${page.route}/`;
+    const url = `${siteUrl}${publicRoute}`;
     let html = template;
     html = replaceOnce(html, /<title>[^<]*<\/title>/i, `<title>${escapeHtml(page.title)}</title>`, "title");
     html = replaceMeta(html, "name", "description", page.description);

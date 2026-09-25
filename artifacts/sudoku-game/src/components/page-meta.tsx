@@ -12,6 +12,14 @@ const SITE_URL = "https://playbraingames.online";
 const SITE_NAME = "Play Brain Games . Online";
 const OG_IMAGE = `${SITE_URL}/opengraph.jpg`;
 
+function canonicalUrl(path: string): string {
+  const url = new URL(path, SITE_URL);
+  if (url.pathname !== "/" && !url.pathname.endsWith("/")) {
+    url.pathname += "/";
+  }
+  return url.toString();
+}
+
 function formatPageTitle(title: string): string {
   return title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`;
 }
@@ -43,7 +51,7 @@ export function usePageMeta({
   structuredData,
 }: PageMetaOptions) {
   useEffect(() => {
-    const url = new URL(path, SITE_URL).toString();
+    const url = canonicalUrl(path);
     const pageTitle = formatPageTitle(title);
 
     document.title = pageTitle;
