@@ -39,6 +39,7 @@ import gameFeatures from "@/config/game-features.json";
 import { sudokuGamePath } from "@/lib/sudoku-routes";
 import { rememberSudokuDifficulty } from "@/lib/sudoku-preferences";
 import { shareOrDownloadShareCard } from "@/lib/share-card";
+import { useGameResultVisibility } from "@/components/game-result-visibility-context";
 
 interface DailyChallengeInfo { puzzleId: number; date: string; }
 interface StreakData { currentStreak: number; longestStreak: number; completedToday: boolean; }
@@ -494,6 +495,10 @@ export default function Game({ id }: { id: string }) {
   const [mistakes, setMistakes] = useState(0);
   const [hints, setHints] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
+  const setGameResultVisible = useGameResultVisibility();
+  useEffect(() => {
+    return () => setGameResultVisible(false);
+  }, [setGameResultVisible]);
   const [isGameOver, setIsGameOver] = useState(false);
   const [challengeResult, setChallengeResult] = useState<null | {
     id: number; status: string; winnerId: number | null;
@@ -755,6 +760,7 @@ export default function Game({ id }: { id: string }) {
   useEffect(() => {
     if (game && !isCompleted && !isGameOver) {
       if (game.status === "completed") {
+        setGameResultVisible(true);
         setIsCompleted(true);
         setPointsEarned(game.points ?? null);
         setXpEarned(game.xpEarned ?? null);
@@ -876,6 +882,7 @@ export default function Game({ id }: { id: string }) {
         if (completionStartedRef.current) return;
         completionStartedRef.current = true;
         sounds.complete();
+        setGameResultVisible(true);
         setIsCompleted(true);
         if (offlineMode) {
           localStorage.removeItem(storageKeyGrid);

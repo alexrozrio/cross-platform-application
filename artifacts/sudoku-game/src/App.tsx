@@ -7,7 +7,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/use-auth";
 import { useLoginReward } from "@/hooks/use-login-reward";
 import { LoginRewardModal } from "@/components/login-reward-modal";
-import { EventModal } from "@/components/event-modal";
 import { Layout } from "@/components/layout";
 import { PageLoader } from "@/components/page-loader";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -103,7 +102,6 @@ function Router() {
           totalGems={rewardState.result.totalGems}
         />
       )}
-      <EventModal />
       <Layout>
         <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>

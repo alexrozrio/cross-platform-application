@@ -14,6 +14,8 @@ import { useAchievementNotifier } from "@/hooks/use-achievement-notifier";
 import { useBadgeNotifier } from "@/hooks/use-badge-notifier";
 import { AchievementUnlockModal } from "@/components/achievement-unlock-modal";
 import { TournamentWinModal } from "@/components/tournament-win-modal";
+import { EventModal } from "@/components/event-modal";
+import { GameResultVisibilityContext } from "@/components/game-result-visibility-context";
 import { useThemeBg } from "@/hooks/use-theme-bg";
 import { CONSENT_OPEN_EVENT } from "@/lib/consent";
 import { buildLegalHref } from "@/lib/legal-navigation";
@@ -57,6 +59,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { profileId, isSignedIn, replitUser } = useAuth();
   const { data: profile } = useGetProfile(profileId as number);
   const pendingCount = usePendingChallengeCount(profileId);
+  const [isGameResultVisible, setGameResultVisible] = React.useState(false);
 
   // Track the active colour theme; updated immediately on selection (before profile refetch)
   const [activeBgTheme, setActiveBgTheme] = React.useState(profile?.theme ?? 'light');
@@ -128,8 +131,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           />
         </>
       )}
-      <TournamentWinModal badges={pendingBadges} onDismiss={dismissBadge} />
-      <AchievementUnlockModal achievements={newlyUnlocked} onDismiss={dismiss} profileId={profileId} />
+      <TournamentWinModal badges={pendingBadges} onDismiss={dismissBadge} nonBlocking={isGameResultVisible} />
+      <AchievementUnlockModal achievements={newlyUnlocked} onDismiss={dismiss} profileId={profileId} nonBlocking={isGameResultVisible} />
+      <EventModal nonBlocking={isGameResultVisible} />
       <header className={[
         "app-header border-b bg-card flex items-center justify-between sticky top-0 z-50 isolate shadow-sm",
         isGamePage ? "app-header-game px-3 md:px-6" : "app-header-standard px-6",
@@ -240,7 +244,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         ].join(" ")}
         style={{ paddingBottom: "calc(5rem + env(safe-area-inset-bottom, 0px))" }}
       >
-        {children}
+        <GameResultVisibilityContext.Provider value={setGameResultVisible}>
+          {children}
+        </GameResultVisibilityContext.Provider>
       </main>
 
       <footer className="w-full border-t bg-card/90 px-4 py-4 backdrop-blur-sm pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-4">

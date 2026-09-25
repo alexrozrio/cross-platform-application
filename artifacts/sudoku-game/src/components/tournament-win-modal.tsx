@@ -39,9 +39,10 @@ function formatPeriod(period: string): string {
 interface Props {
   badges: BadgeRow[];
   onDismiss: (id: number) => void;
+  nonBlocking?: boolean;
 }
 
-export function TournamentWinModal({ badges, onDismiss }: Props) {
+export function TournamentWinModal({ badges, onDismiss, nonBlocking = false }: Props) {
   const [, setLocation] = useLocation();
 
   if (badges.length === 0) return null;
@@ -62,8 +63,15 @@ export function TournamentWinModal({ badges, onDismiss }: Props) {
       <Confetti count={120} />
 
       {/* Modal backdrop */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-        <div className="relative w-full max-w-sm bg-card border-2 border-primary/30 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+      <div className={[
+        nonBlocking
+          ? "fixed inset-x-2 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-[60] flex justify-center p-0 pointer-events-none sm:inset-x-auto sm:left-auto sm:right-6 sm:bottom-6 sm:w-96"
+          : "fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300",
+      ].join(" ")}>
+        <div className={[
+          "relative w-full max-w-sm bg-card border-2 border-primary/30 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300",
+          nonBlocking ? "pointer-events-auto max-h-[calc(100dvh-7rem)] overflow-y-auto" : "",
+        ].join(" ")}>
 
           {/* Top decorative band */}
           <div className="h-2 w-full bg-gradient-to-r from-amber-400 via-primary to-violet-500" />

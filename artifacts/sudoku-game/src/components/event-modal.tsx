@@ -181,7 +181,7 @@ function AutoDismissBar({ ms }: { ms: number }) {
 
 // ── Main modal ─────────────────────────────────────────────────────────────────
 
-export function EventModal() {
+export function EventModal({ nonBlocking = false }: { nonBlocking?: boolean }) {
   const [payload, setPayload] = useState<EventModalPayload | null>(null);
   const [, setLocation] = useLocation();
 
@@ -242,8 +242,19 @@ export function EventModal() {
     : undefined;
 
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) dismissEventModal(); }}>
-      <DialogContent className="max-w-sm p-0 overflow-hidden border-0 shadow-2xl gap-0">
+    <Dialog open modal={!nonBlocking} onOpenChange={(open) => { if (!open) dismissEventModal(); }}>
+      <DialogContent
+        className={[
+          "max-w-sm p-0 overflow-hidden border-0 shadow-2xl gap-0",
+          nonBlocking
+            ? "w-[calc(100vw-1rem)] !top-auto !translate-y-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] max-h-[calc(100dvh-7rem)] overflow-y-auto sm:bottom-6 sm:max-h-[calc(100dvh-3rem)]"
+            : "",
+        ].join(" ")}
+        overlayClassName={nonBlocking ? "pointer-events-none bg-transparent" : undefined}
+        onInteractOutside={(event) => {
+          if (nonBlocking) event.preventDefault();
+        }}
+      >
         {/* Coloured hero band */}
         <div
           className={heroBgStyle ? undefined : `${cfg.iconBg}`}
