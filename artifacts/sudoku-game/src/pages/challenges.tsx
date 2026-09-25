@@ -27,7 +27,6 @@ import { toast } from "sonner";
 import { showEventModal } from "@/hooks/use-event-modal";
 import { LevelBadge } from "@/components/level-badge";
 import { usePageMeta } from "@/components/page-meta";
-import { apiUrl } from "@/lib/api-base-url";
 import { shareOrDownloadShareCard } from "@/lib/share-card";
 import { ShareCardPreview } from "@/components/share-card-preview";
 
@@ -1227,7 +1226,7 @@ function NewChallengeDialog({
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function Challenges() {
-  const { profileId, isSignedIn } = useAuth();
+  const { profileId } = useAuth();
   const [, setLocation] = useLocation();
   usePageMeta({
     title: "Puzzle Challenges & Duels | Play Brain Games . Online",
@@ -1429,70 +1428,6 @@ export default function Challenges() {
         d.challengerId === profileId ? d.challengerPoints : d.challengedPoints;
       return myPoints == null;
     }).length;
-
-  if (!isSignedIn) {
-    const handleSignIn = () => {
-      const from = encodeURIComponent(window.location.href);
-      window.location.href = apiUrl(`/api/login?from=${from}`);
-    };
-
-    return (
-      <div className="max-w-2xl mx-auto w-full space-y-6 animate-in fade-in duration-500 pb-12">
-        <div className="space-y-1 bg-card rounded-2xl px-5 py-4 border border-border">
-          <h1 className="text-3xl font-serif font-bold tracking-tight">
-            Puzzle Challenges &amp; Duels
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Compete in Sudoku and Memory Match games with another player.
-          </p>
-        </div>
-
-        <section className="rounded-2xl border border-border bg-card px-5 py-5 text-sm leading-relaxed text-muted-foreground">
-          <h2 className="text-lg font-semibold text-foreground">What challenges are</h2>
-          <p className="mt-2">
-            A challenge lets two players compete on the same Sudoku puzzle or
-            Memory Match board. Each player completes their own round, then the
-            higher score wins.
-          </p>
-        </section>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <section className="rounded-2xl border border-border bg-card px-5 py-5 text-sm leading-relaxed text-muted-foreground">
-            <h2 className="text-base font-semibold text-foreground">
-              How invitations work
-            </h2>
-            <p className="mt-2">
-              Sign in, create a challenge, and share the invitation link with a
-              friend. They can open the link, sign in, and accept the duel.
-            </p>
-          </section>
-          <section className="rounded-2xl border border-border bg-card px-5 py-5 text-sm leading-relaxed text-muted-foreground">
-            <h2 className="text-base font-semibold text-foreground">
-              How scoring works
-            </h2>
-            <p className="mt-2">
-              Scores reward speed and difficulty while accounting for mistakes,
-              hints, or extra card flips. The winner earns gems; ties reward
-              both players.
-            </p>
-          </section>
-        </div>
-
-        <Card>
-          <CardContent className="pt-8 pb-8 flex flex-col items-center gap-3 text-center">
-            <Swords className="w-10 h-10 text-muted-foreground/40" />
-            <div>
-              <h2 className="font-semibold text-foreground">Ready to challenge someone?</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Sign in to create a duel, invite a friend, and track your results.
-              </p>
-            </div>
-            <Button onClick={handleSignIn}>Sign in to start a challenge</Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   const isLoading = activeTab === "sudoku" ? challengesLoading : duelsLoading;
 
@@ -1768,6 +1703,42 @@ export default function Challenges() {
           )}
         </div>
       )}
+
+      <section
+        aria-labelledby="challenge-help-heading"
+        className="rounded-2xl border border-border bg-card px-5 py-5 text-sm leading-relaxed text-muted-foreground"
+      >
+        <h2 id="challenge-help-heading" className="text-lg font-semibold text-foreground">
+          How challenges work
+        </h2>
+        <p className="mt-2">
+          No account is needed to start a challenge. Choose the Challenge button,
+          select Sudoku or Memory Match, and create a game for a friend.
+        </p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <div>
+            <h3 className="font-semibold text-foreground">What challenges are</h3>
+            <p className="mt-1">
+              Both players compete on the same puzzle or board, and the higher
+              score wins.
+            </p>
+          </div>
+          <div>
+            <h3 className="font-semibold text-foreground">How invitations work</h3>
+            <p className="mt-1">
+              Share the invitation link. Your friend can open it and accept the
+              challenge without signing in.
+            </p>
+          </div>
+          <div>
+            <h3 className="font-semibold text-foreground">How scoring works</h3>
+            <p className="mt-1">
+              Speed, difficulty, mistakes, hints, or card flips affect the
+              result. Winners earn gems and ties reward both players.
+            </p>
+          </div>
+        </div>
+      </section>
 
       <NewChallengeDialog
         open={showNew}

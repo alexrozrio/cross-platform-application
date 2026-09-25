@@ -138,10 +138,10 @@ const publicPages = [
       "Create and join Sudoku and Memory Match challenges, compare scores, and compete with friends.",
     heading: "Puzzle Challenges & Duels",
     intro:
-      "Challenge another player to a Sudoku duel or Memory Match competition. Compare scores, replay finished challenges, and earn gem rewards for wins.",
+      "Create a Sudoku duel or Memory Match competition without signing in. Share an invitation link, compare scores, and replay finished challenges.",
     sections: [
       ["What challenges are", "A challenge lets two players compete on the same Sudoku puzzle or Memory Match board. Each player completes their own round, then the higher score wins."],
-      ["How invitations work", "Sign in, create a challenge, and share the invitation link with a friend. They can open the link, sign in, and accept the duel."],
+      ["How invitations work", "Create a challenge and share the invitation link with a friend. They can open the link and accept the duel without signing in."],
       ["How scoring works", "Scores reward speed and difficulty while accounting for mistakes, hints, or extra card flips. The winner earns gems; ties reward both players."],
     ],
     links: [
@@ -149,11 +149,6 @@ const publicPages = [
       ["/memory", "Practice Memory Match first"],
       ["/about", "Learn about Play Brain Games"],
     ],
-    cta: {
-      href: "/api/login",
-      label: "Sign in to start a challenge",
-      description: "Create a duel, invite a friend, and track your results.",
-    },
     schemaType: "CollectionPage",
   },
   {
