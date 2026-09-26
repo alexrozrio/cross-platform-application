@@ -22,13 +22,11 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  LogIn,
   ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
 import { usePageMeta } from "@/components/page-meta";
 import { getLevelFromXp } from "@/lib/levels";
-import { apiUrl } from "@/lib/api-base-url";
 import { shareOrDownloadShareCard } from "@/lib/share-card";
 import { ShareCardPreview } from "@/components/share-card-preview";
 
@@ -230,7 +228,7 @@ function Avatar({ src, name, size = 16 }: { src: string | null; name: string; si
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function ChallengeInvitePage({ token }: { token: string }) {
-  const { profileId, isSignedIn } = useAuth();
+  const { profileId, isReady, isSignedIn } = useAuth();
   const [, setLocation] = useLocation();
   usePageMeta({
     title: "Puzzle Challenge Invitation | Play Brain Games . Online",
@@ -401,21 +399,15 @@ export default function ChallengeInvitePage({ token }: { token: string }) {
                 </>
               ) : null}
             </div>
-          ) : !isSignedIn ? (
-            /* Not signed in */
+          ) : !isReady || !profileId ? (
+            /* Set up the device guest profile before accepting */
             <div className="text-center space-y-3 py-2">
               <p className="text-sm text-muted-foreground">
-                Sign in to accept this challenge and play!
+                Setting up guest play…
               </p>
-              <Button
-                className="w-full gap-2"
-                onClick={() => {
-                  const from = encodeURIComponent(window.location.href);
-                  window.location.href = apiUrl(`/api/login?from=${from}`);
-                }}
-              >
-                <LogIn className="w-4 h-4" /> Sign in to accept
-              </Button>
+              <p className="text-xs text-muted-foreground">
+                You can accept this challenge without signing in.
+              </p>
             </div>
           ) : isMyChallenge ? (
             /* Own challenge */
@@ -433,11 +425,16 @@ export default function ChallengeInvitePage({ token }: { token: string }) {
               <p className="text-xs text-muted-foreground">You're not the intended recipient.</p>
             </div>
           ) : (
-            /* Open challenge, signed-in user can accept */
+            /* Open challenge — guests and signed-in players can accept */
             <div className="space-y-3">
               <p className="text-sm text-center text-muted-foreground">
                 Beat <strong>{invite.challengerUsername}</strong>'s score to win <strong>10 gems 💎</strong>
               </p>
+              {!isSignedIn && (
+                <p className="text-xs text-center text-muted-foreground">
+                  Playing as a guest is fine. Sign in is optional and only syncs your progress across devices.
+                </p>
+              )}
               <div className="flex gap-2">
                 <Button
                   variant="outline"
