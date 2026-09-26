@@ -1,0 +1,1 @@
+export const ACHIEVEMENT_COMPLETION_EVENT = "brain-games-game-completed";

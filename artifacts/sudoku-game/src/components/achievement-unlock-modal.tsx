@@ -10,10 +10,9 @@ interface AchievementUnlockModalProps {
   achievements: AchievementMeta[];
   onDismiss: () => void;
   profileId?: number | null;
-  nonBlocking?: boolean;
 }
 
-export function AchievementUnlockModal({ achievements, onDismiss, profileId, nonBlocking = false }: AchievementUnlockModalProps) {
+export function AchievementUnlockModal({ achievements, onDismiss, profileId }: AchievementUnlockModalProps) {
   const [, setLocation] = useLocation();
 
   if (achievements.length === 0) return null;
@@ -30,20 +29,12 @@ export function AchievementUnlockModal({ achievements, onDismiss, profileId, non
   const isSingle = achievements.length === 1;
 
   return (
-    <Dialog open modal={!nonBlocking} onOpenChange={(v) => { if (!v) onDismiss(); }}>
+    <Dialog open onOpenChange={(v) => { if (!v) onDismiss(); }}>
       <DialogContent
-        className={[
-          "w-[calc(100vw-1rem)] max-w-sm p-0 overflow-hidden rounded-2xl border border-border shadow-2xl bg-card [&>button]:z-20 [&>button]:rounded-full [&>button]:bg-black/15 [&>button]:text-white/90 [&>button]:opacity-100 [&>button]:hover:bg-black/25 [&>button]:hover:text-white",
-          nonBlocking
-            ? "!top-auto !translate-y-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] max-h-[55dvh] sm:bottom-6 sm:max-h-[calc(100dvh-3rem)]"
-            : "max-h-[calc(100dvh-1rem)]",
-        ].join(" ")}
-        overlayClassName={nonBlocking ? "pointer-events-none bg-transparent" : undefined}
-        onInteractOutside={(event) => {
-          if (nonBlocking) event.preventDefault();
-        }}
+        className="z-[80] w-[calc(100vw-1rem)] max-w-sm max-h-[calc(100dvh-1rem)] p-0 overflow-hidden rounded-2xl border border-border shadow-2xl bg-card [&>button]:z-20 [&>button]:rounded-full [&>button]:bg-black/15 [&>button]:text-white/90 [&>button]:opacity-100 [&>button]:hover:bg-black/25 [&>button]:hover:text-white"
+        overlayClassName="z-[70]"
       >
-        <div className={`overflow-y-auto overscroll-contain ${nonBlocking ? "max-h-[55dvh]" : "max-h-[calc(100dvh-1rem)]"}`}>
+        <div className="max-h-[calc(100dvh-1rem)] overflow-y-auto overscroll-contain">
           <DialogTitle className="sr-only">
             {isSingle ? "Achievement Unlocked" : "Achievements Unlocked"}
           </DialogTitle>

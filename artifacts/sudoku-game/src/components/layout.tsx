@@ -132,7 +132,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </>
       )}
       <TournamentWinModal badges={pendingBadges} onDismiss={dismissBadge} nonBlocking={isGameResultVisible} />
-      <AchievementUnlockModal achievements={newlyUnlocked} onDismiss={dismiss} profileId={profileId} nonBlocking={isGameResultVisible} />
+      <AchievementUnlockModal achievements={newlyUnlocked} onDismiss={dismiss} profileId={profileId} />
       <EventModal nonBlocking={isGameResultVisible} />
       <header className={[
         "app-header border-b bg-card flex items-center justify-between sticky top-0 z-50 isolate shadow-sm",

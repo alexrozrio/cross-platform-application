@@ -21,6 +21,7 @@ import { pickCompletionMessage, type CompletionMessage } from '@/lib/completion-
 import { getLevelFromXp } from '@/lib/levels';
 import { toast } from 'sonner';
 import { shareOrDownloadShareCard } from '@/lib/share-card';
+import { ACHIEVEMENT_COMPLETION_EVENT } from '@/lib/achievement-events';
 import {
   type GridSize, type DisplayMode, type Card,
   shuffle, getPairs, buildDeck, formatTime, ALPHA_LABELS, getCardLabel,
@@ -632,6 +633,9 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
 
     // Trigger achievement detection and refresh profile XP/gems
     if (profileId) {
+      window.dispatchEvent(new CustomEvent(ACHIEVEMENT_COMPLETION_EVENT, {
+        detail: { profileId },
+      }));
       queryClient.invalidateQueries({ queryKey: [`/api/profiles/${profileId}`] });
       queryClient.invalidateQueries({ queryKey: [`/api/achievements/${profileId}`] });
       queryClient.invalidateQueries({ queryKey: [`/api/stats/${profileId}`] });

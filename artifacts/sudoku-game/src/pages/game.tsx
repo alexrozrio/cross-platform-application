@@ -40,6 +40,7 @@ import { sudokuGamePath } from "@/lib/sudoku-routes";
 import { rememberSudokuDifficulty } from "@/lib/sudoku-preferences";
 import { shareOrDownloadShareCard } from "@/lib/share-card";
 import { useGameResultVisibility } from "@/components/game-result-visibility-context";
+import { ACHIEVEMENT_COMPLETION_EVENT } from "@/lib/achievement-events";
 
 interface DailyChallengeInfo { puzzleId: number; date: string; }
 interface StreakData { currentStreak: number; longestStreak: number; completedToday: boolean; }
@@ -963,6 +964,9 @@ export default function Game({ id }: { id: string }) {
               setXpEarned((data as { xpEarned?: number }).xpEarned ?? null);
               setIsPersonalBest((data as any).isPersonalBest === true);
               if (profileId) {
+                 window.dispatchEvent(new CustomEvent(ACHIEVEMENT_COMPLETION_EVENT, {
+                   detail: { profileId },
+                 }));
                 queryClient.invalidateQueries({ queryKey: [`/api/profiles/${profileId}`] });
                 await queryClient.refetchQueries({
                   queryKey: [`/api/profiles/${profileId}`],
@@ -996,11 +1000,14 @@ export default function Game({ id }: { id: string }) {
               localStorage.removeItem(storageKeyNotes);
               localStorage.removeItem(storageKeyElapsed);
               if (profileId) {
+                window.dispatchEvent(new CustomEvent(ACHIEVEMENT_COMPLETION_EVENT, {
+                  detail: { profileId },
+                }));
                 queryClient.invalidateQueries({ queryKey: [`/api/profiles/${profileId}`] });
-                 await queryClient.refetchQueries({
-                   queryKey: [`/api/profiles/${profileId}`],
-                   type: "active",
-                 });
+                await queryClient.refetchQueries({
+                  queryKey: [`/api/profiles/${profileId}`],
+                  type: "active",
+                });
                 queryClient.invalidateQueries({ queryKey: [`/api/achievements/${profileId}`] });
                 queryClient.invalidateQueries({ queryKey: [`/api/stats/${profileId}`] });
               }
@@ -1290,7 +1297,7 @@ export default function Game({ id }: { id: string }) {
     } catch {
       try {
         await navigator.clipboard.writeText(text);
-        toast.success("Result copied to clipboard!", { duration: 2500 });
+        toast.success("Sharing didn't complete. Result text copied — paste it into your message.", { duration: 3500 });
       } catch {
         // user cancelled or clipboard blocked — silent
       }

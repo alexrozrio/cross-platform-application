@@ -1,7 +1,8 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
 import { ACHIEVEMENT_META, type AchievementsData, type AchievementMeta } from "@/lib/achievement-utils";
+import { ACHIEVEMENT_COMPLETION_EVENT } from "@/lib/achievement-events";
 
 interface StoredState {
   initialized: true;
@@ -29,12 +30,31 @@ function saveState(profileId: number, ids: Set<string>) {
 
 export function useAchievementNotifier(profileId: number | null) {
   const [newlyUnlocked, setNewlyUnlocked] = useState<AchievementMeta[]>([]);
+  const completionPendingRef = useRef(false);
 
-  const { data } = useQuery<AchievementsData>({
+  const { data, refetch } = useQuery<AchievementsData>({
     queryKey: [`/api/achievements/${profileId}`],
     queryFn: () => customFetch<AchievementsData>(`/api/achievements/${profileId}`),
     enabled: !!profileId,
   });
+
+  useEffect(() => {
+    if (!profileId) return;
+
+    const handleGameCompleted = (event: Event) => {
+      const completedProfileId = (event as CustomEvent<{ profileId?: number }>).detail?.profileId;
+      if (completedProfileId !== undefined && completedProfileId !== profileId) return;
+
+      // A completion can happen before the initial achievements request
+      // resolves. Keep this flag so that response is treated as the
+      // post-completion state rather than silently becoming the baseline.
+      completionPendingRef.current = true;
+      void refetch();
+    };
+
+    window.addEventListener(ACHIEVEMENT_COMPLETION_EVENT, handleGameCompleted);
+    return () => window.removeEventListener(ACHIEVEMENT_COMPLETION_EVENT, handleGameCompleted);
+  }, [profileId, refetch]);
 
   useEffect(() => {
     if (!data || !profileId) return;
@@ -46,10 +66,20 @@ export function useAchievementNotifier(profileId: number | null) {
     );
 
     const stored = loadState(profileId);
+    const completionPending = completionPendingRef.current;
 
     if (!stored) {
-      // First ever visit — silently initialize; don't blast all historical achievements
+      // First ever visit is normally silent so historical achievements are not
+      // replayed. If a completion happened before the first response arrived,
+      // these are the achievements unlocked by that completion.
       saveState(profileId, currentUnlocked);
+      if (completionPending) {
+        const metas = [...currentUnlocked]
+          .map((id) => ACHIEVEMENT_META.find((a) => a.id === id))
+          .filter((m): m is AchievementMeta => Boolean(m));
+        if (metas.length > 0) setNewlyUnlocked(metas);
+      }
+      completionPendingRef.current = false;
       return;
     }
 
@@ -68,6 +98,7 @@ export function useAchievementNotifier(profileId: number | null) {
         setNewlyUnlocked(metas);
       }
     }
+    completionPendingRef.current = false;
   }, [data, profileId]);
 
   const dismiss = useCallback(() => setNewlyUnlocked([]), []);
