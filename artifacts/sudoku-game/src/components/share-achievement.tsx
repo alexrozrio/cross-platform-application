@@ -160,9 +160,11 @@ export function ShareAchievementButton({
       </PopoverTrigger>
 
       <PopoverContent
-        className="relative w-[calc(100vw-2rem)] max-w-xs sm:w-52 max-h-[calc(100dvh-2rem)] overflow-y-auto p-2 rounded-xl shadow-lg"
+        className="relative z-[100] w-[calc(100vw-2rem)] max-w-xs sm:w-52 max-h-[calc(100dvh-2rem)] overflow-y-auto p-2 rounded-xl shadow-lg"
         align="end"
+        side={variant === "full" ? "top" : undefined}
         sideOffset={6}
+        collisionPadding={12}
       >
         <div className="flex items-center justify-between px-2 pb-1.5">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
