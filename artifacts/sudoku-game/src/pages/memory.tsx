@@ -247,6 +247,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
   const [gameId, setGameId] = useState<number | null>(null);
   const [challengeBonus, setChallengeBonus] = useState<{ bonusXp: number; bonusGems: number } | null>(null);
   const [challengeCompleted, setChallengeCompleted] = useState(false);
+  const [completedDuelId, setCompletedDuelId] = useState<number | null>(null);
 
   // Read ?challenge=daily|weekly from URL
   const challengeType = (() => {
@@ -261,6 +262,35 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
     const d = parseInt(p.get('duelGameId') ?? '', 10);
     return isNaN(d) ? null : d;
   })();
+
+  useEffect(() => {
+    setCompletedDuelId(null);
+    if (phase !== 'won' || !duelGameId || !profileId) return;
+
+    let cancelled = false;
+    customFetch<Array<{
+      id: number;
+      challengerGameId: number | null;
+      challengedGameId: number | null;
+      status: string;
+    }>>(`/api/memory-duels/for/${profileId}`)
+      .then((duels) => {
+        if (cancelled) return;
+        const completedDuel = duels.find(
+          (duel) =>
+            duel.status === 'completed' &&
+            (duel.challengerGameId === duelGameId || duel.challengedGameId === duelGameId),
+        );
+        setCompletedDuelId(completedDuel?.id ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setCompletedDuelId(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [duelGameId, phase, profileId]);
 
   const hasSpecialGameQuery = Boolean(challengeType || duelGameId);
 
@@ -1026,6 +1056,15 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
           <Button variant="outline" className="w-full gap-2" onClick={() => startGame(gridSize)}>
             <RotateCcw className="w-4 h-4" /> Play again ({GRID_OPTIONS.find(o => o.size === gridSize)?.desc})
           </Button>
+          {completedDuelId && (
+            <Button
+              variant="outline"
+              className="w-full gap-2"
+              onClick={() => setLocation(`/challenges?rematchDuelId=${completedDuelId}`)}
+            >
+              <RotateCcw className="w-4 h-4" /> Rematch
+            </Button>
+          )}
 
           <div className="space-y-2">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground text-center">Or start a new game</p>

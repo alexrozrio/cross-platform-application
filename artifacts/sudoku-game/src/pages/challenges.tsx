@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { customFetch, useGetProfile } from "@workspace/api-client-react";
@@ -501,6 +501,16 @@ function ChallengeCard({
                 <Share2 className="w-3 h-3" /> Share
               </Button>
             )}
+            {challenge.status === "completed" && onRematch && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-xs gap-1"
+                onClick={() => onRematch(challenge)}
+              >
+                <RotateCcw className="w-3 h-3" /> Rematch
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>
@@ -687,6 +697,16 @@ function MemoryDuelCard({
                 <Share2 className="w-3 h-3" /> Share
               </Button>
             )}
+            {duel.status === "completed" && onRematch && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-xs gap-1"
+                onClick={() => onRematch(duel)}
+              >
+                <RotateCcw className="w-3 h-3" /> Rematch
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>
@@ -793,6 +813,7 @@ function NewChallengeDialog({
 
   React.useEffect(() => {
     if (open && initialData) {
+      setDialogMode("player");
       setSelected(initialData.opponent);
       setGameType(initialData.gameType);
       if (initialData.difficulty) setDifficulty(initialData.difficulty);
@@ -1227,7 +1248,10 @@ function NewChallengeDialog({
 
 export default function Challenges() {
   const { profileId } = useAuth();
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
+  const queryParams = new URLSearchParams(location.split("?")[1] ?? "");
+  const rematchChallengeId = Number(queryParams.get("rematchChallengeId") ?? "");
+  const rematchDuelId = Number(queryParams.get("rematchDuelId") ?? "");
   usePageMeta({
     title: "Puzzle Challenges & Duels | Play Brain Games . Online",
     description:
@@ -1239,9 +1263,20 @@ export default function Challenges() {
   const [respondingId, setRespondingId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<GameType>("sudoku");
   const [shareSheetData, setShareSheetData] = useState<{ token: string; label: string } | null>(null);
+  const [rematchData, setRematchData] = useState<RematchData | null>(null);
 
   const handleShare = useCallback((token: string, label: string) => {
     setShareSheetData({ token, label });
+  }, []);
+
+  const openNewChallenge = useCallback(() => {
+    setRematchData(null);
+    setShowNew(true);
+  }, []);
+
+  const closeNewChallenge = useCallback(() => {
+    setShowNew(false);
+    setRematchData(null);
   }, []);
 
   const { data: profile } = useGetProfile(profileId as number);
@@ -1382,6 +1417,87 @@ export default function Challenges() {
     [setLocation, profileId],
   );
 
+  const handleSudokuRematch = useCallback(
+    (challenge: ChallengeDetail) => {
+      const isChallenger = challenge.challengerId === profileId;
+      const opponentId = isChallenger ? challenge.challengedId : challenge.challengerId;
+      if (!opponentId) {
+        toast.error("This challenge no longer has an opponent.");
+        return;
+      }
+
+      setRematchData({
+        opponent: {
+          id: opponentId,
+          username: isChallenger ? challenge.challengedUsername : challenge.challengerUsername,
+          avatar: isChallenger ? challenge.challengedAvatar : challenge.challengerAvatar,
+          gems: 0,
+        },
+        gameType: "sudoku",
+        difficulty: challenge.difficulty,
+        sudokuGridSize: challenge.gridSize as SudokuGridSize,
+      });
+      setShowNew(true);
+    },
+    [profileId],
+  );
+
+  const handleMemoryRematch = useCallback(
+    (duel: MemoryDuelDetail) => {
+      const isChallenger = duel.challengerId === profileId;
+      const opponentId = isChallenger ? duel.challengedId : duel.challengerId;
+      if (!opponentId) {
+        toast.error("This duel no longer has an opponent.");
+        return;
+      }
+
+      setRematchData({
+        opponent: {
+          id: opponentId,
+          username: isChallenger ? duel.challengedUsername : duel.challengerUsername,
+          avatar: isChallenger ? duel.challengedAvatar : duel.challengerAvatar,
+          gems: 0,
+        },
+        gameType: "memory",
+        memoryGridSize: duel.gridSize as MemoryGridSize,
+      });
+      setShowNew(true);
+    },
+    [profileId],
+  );
+
+  useEffect(() => {
+    if (showNew || !challenges || !Number.isFinite(rematchChallengeId) || rematchChallengeId <= 0) {
+      return;
+    }
+    const challenge = challenges.find(
+      (item) => item.id === rematchChallengeId && item.status === "completed",
+    );
+    if (!challenge) return;
+
+    handleSudokuRematch(challenge);
+    setLocation("/challenges", { replace: true });
+  }, [
+    challenges,
+    handleSudokuRematch,
+    rematchChallengeId,
+    setLocation,
+    showNew,
+  ]);
+
+  useEffect(() => {
+    if (showNew || !duels || !Number.isFinite(rematchDuelId) || rematchDuelId <= 0) {
+      return;
+    }
+    const duel = duels.find(
+      (item) => item.id === rematchDuelId && item.status === "completed",
+    );
+    if (!duel) return;
+
+    handleMemoryRematch(duel);
+    setLocation("/challenges", { replace: true });
+  }, [duels, handleMemoryRematch, rematchDuelId, setLocation, showNew]);
+
   // ── Derived lists ─────────────────────────────────────────────────────────────
 
   const pending =
@@ -1459,7 +1575,7 @@ export default function Challenges() {
             <Brain className="w-3.5 h-3.5 text-primary" />
             <span className="hidden sm:inline">Memory</span>
           </Link>
-          <Button size="sm" className="gap-1.5" onClick={() => setShowNew(true)}>
+          <Button size="sm" className="gap-1.5" onClick={openNewChallenge}>
             <Swords className="w-4 h-4" />
             Challenge
           </Button>
@@ -1517,6 +1633,7 @@ export default function Challenges() {
                   onAccept={handleAccept}
                   onDecline={handleDecline}
                   onPlay={handlePlay}
+                   onRematch={handleSudokuRematch}
                   onShare={handleShare}
                   isResponding={respondingId === c.id}
                 />
@@ -1537,6 +1654,7 @@ export default function Challenges() {
                   onAccept={handleAccept}
                   onDecline={handleDecline}
                   onPlay={handlePlay}
+                   onRematch={handleSudokuRematch}
                   onShare={handleShare}
                   isResponding={respondingId === c.id}
                 />
@@ -1557,6 +1675,7 @@ export default function Challenges() {
                   onAccept={handleAccept}
                   onDecline={handleDecline}
                   onPlay={handlePlay}
+                   onRematch={handleSudokuRematch}
                   onShare={handleShare}
                   isResponding={respondingId === c.id}
                 />
@@ -1576,6 +1695,7 @@ export default function Challenges() {
                   onAccept={handleAccept}
                   onDecline={handleDecline}
                   onPlay={handlePlay}
+                   onRematch={handleSudokuRematch}
                   onShare={handleShare}
                   isResponding={false}
                 />
@@ -1593,7 +1713,7 @@ export default function Challenges() {
                   Challenge another player to a head-to-head Sudoku battle.
                   Winner takes 10 gems!
                 </p>
-                <Button className="mt-2 gap-2" onClick={() => setShowNew(true)}>
+                <Button className="mt-2 gap-2" onClick={openNewChallenge}>
                   <Swords className="w-4 h-4" /> Send your first challenge
                 </Button>
               </CardContent>
@@ -1616,6 +1736,7 @@ export default function Challenges() {
                   onAccept={handleDuelAccept}
                   onDecline={handleDuelDecline}
                   onPlay={handleDuelPlay}
+                   onRematch={handleMemoryRematch}
                   onShare={handleShare}
                   isResponding={respondingId === d.id}
                 />
@@ -1636,6 +1757,7 @@ export default function Challenges() {
                   onAccept={handleDuelAccept}
                   onDecline={handleDuelDecline}
                   onPlay={handleDuelPlay}
+                   onRematch={handleMemoryRematch}
                   onShare={handleShare}
                   isResponding={respondingId === d.id}
                 />
@@ -1656,6 +1778,7 @@ export default function Challenges() {
                   onAccept={handleDuelAccept}
                   onDecline={handleDuelDecline}
                   onPlay={handleDuelPlay}
+                   onRematch={handleMemoryRematch}
                   onShare={handleShare}
                   isResponding={respondingId === d.id}
                 />
@@ -1675,6 +1798,7 @@ export default function Challenges() {
                   onAccept={handleDuelAccept}
                   onDecline={handleDuelDecline}
                   onPlay={handleDuelPlay}
+                   onRematch={handleMemoryRematch}
                   onShare={handleShare}
                   isResponding={false}
                 />
@@ -1694,7 +1818,7 @@ export default function Challenges() {
                 </p>
                 <Button
                   className="mt-2 gap-2 bg-violet-600 hover:bg-violet-700"
-                  onClick={() => setShowNew(true)}
+                  onClick={openNewChallenge}
                 >
                   <Brain className="w-4 h-4" /> Send a memory duel
                 </Button>
@@ -1742,9 +1866,10 @@ export default function Challenges() {
 
       <NewChallengeDialog
         open={showNew}
-        onClose={() => setShowNew(false)}
+        onClose={closeNewChallenge}
         myProfileId={profileId}
         gameMode={gameMode}
+        initialData={rematchData ?? undefined}
         onShareCreated={(data) => {
           setShareSheetData({
             token: data.token,

@@ -1742,6 +1742,15 @@ export default function Game({ id }: { id: string }) {
               {isWinner && (
                 <p className="text-xs text-yellow-700 dark:text-yellow-400 font-semibold text-center">+10 💎 bonus awarded!</p>
               )}
+              {!isPending && (
+                <Button
+                  variant="outline"
+                  className="w-full gap-2"
+                  onClick={() => setLocation(`/challenges?rematchChallengeId=${challengeResult.id}`)}
+                >
+                  <RotateCcw className="w-4 h-4" /> Rematch
+                </Button>
+              )}
             </div>
           );
         })()}
