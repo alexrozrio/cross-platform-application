@@ -129,7 +129,7 @@ export default function Themes() {
     path: "/themes",
   });
   const { profileId } = useAuth();
-  const { data: profile, refetch: refetchProfile } = useGetProfile(profileId as number, {
+  const { data: profile } = useGetProfile(profileId as number, {
     query: { refetchOnMount: "always", staleTime: 0 },
   });
   const updateProfile = useUpdateProfile();
@@ -219,21 +219,21 @@ export default function Themes() {
   };
 
   const confirmUnlock = () => {
-    if (!pendingUnlock || !profileId) return;
+    const itemToUnlock = pendingUnlock;
+    if (!itemToUnlock || !profileId) return;
     unlockMutation.mutate(
-      { itemType: pendingUnlock.type, itemId: pendingUnlock.id },
+      { itemType: itemToUnlock.type, itemId: itemToUnlock.id },
       {
         onSuccess: () => {
-          toast.success(`${pendingUnlock.label} unlocked!`);
-          refetchProfile();
-          if (pendingUnlock.type === 'color_theme') {
-            setActiveAppTheme(pendingUnlock.id);
-            applyAppTheme(pendingUnlock.id);
-            if (profileId) updateProfile.mutate({ id: profileId, data: { theme: pendingUnlock.id } });
-          } else if (pendingUnlock.type === 'font') {
-            setFontId(pendingUnlock.id as FontThemeId);
-          } else if (pendingUnlock.type === 'icon_set') {
-            setThemeId(pendingUnlock.id as ThemeId);
+          toast.success(`${itemToUnlock.label} unlocked!`);
+          if (itemToUnlock.type === 'color_theme') {
+            setActiveAppTheme(itemToUnlock.id);
+            applyAppTheme(itemToUnlock.id);
+            if (profileId) updateProfile.mutate({ id: profileId, data: { theme: itemToUnlock.id } });
+          } else if (itemToUnlock.type === 'font') {
+            setFontId(itemToUnlock.id as FontThemeId);
+          } else if (itemToUnlock.type === 'icon_set') {
+            setThemeId(itemToUnlock.id as ThemeId);
           }
           setPendingUnlock(null);
         },

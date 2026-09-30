@@ -33,9 +33,11 @@ export function useUnlockItem(profileId: number | null) {
         method: "POST",
         body: JSON.stringify({ profileId, itemType, itemId }),
       }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["unlocks", profileId] });
-      queryClient.invalidateQueries({ queryKey: [`/api/profiles/${profileId}`] });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["unlocks", profileId] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/profiles/${profileId}`] }),
+      ]);
     },
   });
 }
