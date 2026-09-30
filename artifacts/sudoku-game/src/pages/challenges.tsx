@@ -216,7 +216,9 @@ function ChallengeShareSheet({
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-1">
-          <ShareCardPreview data={shareCard} />
+          <div className="challenge-share-card-preview">
+            <ShareCardPreview data={shareCard} />
+          </div>
           {/* Link preview */}
           <div className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 text-xs font-mono break-all text-muted-foreground">
             <LinkIcon className="w-3.5 h-3.5 shrink-0 text-primary" />
@@ -262,7 +264,7 @@ function ChallengeShareSheet({
             </p>
             <Button
               variant="outline"
-              className={`${canNativeShare ? "" : "col-span-2"} gap-2`}
+              className={`${canNativeShare ? "" : "col-span-2"} gap-2 challenge-share-copy-button`}
               onClick={copy}
             >
               {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}

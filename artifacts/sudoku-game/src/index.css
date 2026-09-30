@@ -1356,3 +1356,22 @@ button, [role="button"] {
 .sudoku-cell.border-b-thick {
   border-bottom: 2px solid hsl(var(--foreground));
 }
+
+@media (max-width: 767px) {
+  html[data-font-size="extra-large"] .challenge-share-card-preview > div {
+    display: flex;
+    justify-content: center;
+  }
+
+  html[data-font-size="extra-large"] .challenge-share-card-preview img {
+    width: auto;
+    height: 6rem;
+    max-width: 100%;
+  }
+
+  html[data-font-size="extra-large"] .challenge-share-copy-button {
+    grid-column: span 2 / span 2;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+}
