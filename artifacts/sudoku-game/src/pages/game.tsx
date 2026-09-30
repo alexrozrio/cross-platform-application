@@ -1924,7 +1924,11 @@ export default function Game({ id }: { id: string }) {
               </Select>
             </div>
           )}
-          <div className={`flex items-center gap-1 font-semibold ${
+          <div className={`items-center gap-1 font-semibold ${
+            fontSizeId === "large" || fontSizeId === "extra-large"
+              ? "hidden md:flex"
+              : "flex"
+          } ${
             mistakes === 0 ? "text-muted-foreground"
             : mistakes === 1 ? "text-orange-500"
             : "text-red-500"
