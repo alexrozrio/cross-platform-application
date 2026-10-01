@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, and } from "drizzle-orm";
 import { db, gamesTable, puzzlesTable, dailyChallengesTable, memoryGamesTable, profilesTable } from "@workspace/db";
+import { countAchievementProgress, SUDOKU_ACHIEVEMENT_TARGETS } from "../utils/achievement-progress";
 
 const router: IRouter = Router();
 
@@ -36,42 +37,53 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
   const dailyCount = dailyRows.length;
   const loginStreak = profile?.loginStreak ?? 0;
 
-  const minTime    = totalWins > 0 ? Math.min(...completedSudoku.map(g => g.elapsedSeconds)) : Infinity;
-  const hasPerfect = completedSudoku.some(g => g.mistakeCount === 0);
-  const hasNoHints = completedSudoku.some(g => g.hintsUsed === 0);
-  const hasExpert  = completedSudoku.some(g => g.difficulty === "expert");
-  const hasHard    = completedSudoku.some(g => g.difficulty === "hard");
-  const hasMedium  = completedSudoku.some(g => g.difficulty === "medium");
-  const hasEasy    = completedSudoku.some(g => g.difficulty === "easy");
+  // Repeat-play targets spread unlocks over multiple games instead of awarding
+  // several grid and skill achievements for a single first-game completion.
+  const gridTarget = SUDOKU_ACHIEVEMENT_TARGETS.gridPerSize;
+  const gridCounts = new Map<number, number>();
+  for (const game of completedSudoku) {
+    gridCounts.set(game.gridSize, (gridCounts.get(game.gridSize) ?? 0) + 1);
+  }
+  const gridSizes = [3, 4, 6, 9, 16];
+  const gridProgress = gridSizes.filter(size => (gridCounts.get(size) ?? 0) >= gridTarget).length;
+  const has3x3 = (gridCounts.get(3) ?? 0) >= gridTarget;
+  const has4x4 = (gridCounts.get(4) ?? 0) >= gridTarget;
+  const has6x6 = (gridCounts.get(6) ?? 0) >= gridTarget;
+  const has9x9 = (gridCounts.get(9) ?? 0) >= gridTarget;
+  const has16x16 = (gridCounts.get(16) ?? 0) >= gridTarget;
+  const hasAllGrids = gridProgress === gridSizes.length;
 
-  // Grid size completions
-  const has3x3   = completedSudoku.some(g => g.gridSize === 3);
-  const has4x4   = completedSudoku.some(g => g.gridSize === 4);
-  const has6x6   = completedSudoku.some(g => g.gridSize === 6);
-  const has9x9   = completedSudoku.some(g => g.gridSize === 9);
-  const has16x16 = completedSudoku.some(g => g.gridSize === 16);
-  const hasAllGrids = has3x3 && has4x4 && has6x6 && has9x9 && has16x16;
+  const perfectCount = completedSudoku.filter(g => g.mistakeCount === 0).length;
+  const noHintsCount = completedSudoku.filter(g => g.hintsUsed === 0).length;
+  const expertCount = completedSudoku.filter(g => g.difficulty === "expert").length;
+  const difficultyCounts = {
+    easy: completedSudoku.filter(g => g.difficulty === "easy").length,
+    medium: completedSudoku.filter(g => g.difficulty === "medium").length,
+    hard: completedSudoku.filter(g => g.difficulty === "hard").length,
+    expert: expertCount,
+  };
+  const difficultyTarget = SUDOKU_ACHIEVEMENT_TARGETS.eachDifficulty;
+  const difficultyProgress = Object.values(difficultyCounts)
+    .filter(count => count >= difficultyTarget).length;
+  const hasAllDifficulties = difficultyProgress === 4;
 
-  // Advanced skill
-  const hasFlawlessExpert  = completedSudoku.some(g => g.difficulty === "expert" && g.mistakeCount === 0);
-  const hasFlawlessHard    = completedSudoku.some(g => g.difficulty === "hard"   && g.mistakeCount === 0);
-  const hasHintFreeHard    = completedSudoku.some(g => g.difficulty === "hard"   && g.hintsUsed === 0);
-  const hasHintFreeExpert  = completedSudoku.some(g => g.difficulty === "expert" && g.hintsUsed === 0);
-  const hasBigBrain        = completedSudoku.some(g => g.difficulty === "expert" && g.gridSize === 9 && g.mistakeCount === 0 && g.hintsUsed === 0);
-  const hasComebackKid     = completedSudoku.some(g => g.mistakeCount === 2);
-  const hasAllDifficulties = hasEasy && hasMedium && hasHard && hasExpert;
+  const flawlessExpertCount = completedSudoku.filter(g => g.difficulty === "expert" && g.mistakeCount === 0).length;
+  const flawlessHardCount = completedSudoku.filter(g => g.difficulty === "hard" && g.mistakeCount === 0).length;
+  const hintFreeHardCount = completedSudoku.filter(g => g.difficulty === "hard" && g.hintsUsed === 0).length;
+  const hintFreeExpertCount = completedSudoku.filter(g => g.difficulty === "expert" && g.hintsUsed === 0).length;
+  const bigBrainCount = completedSudoku.filter(g =>
+    g.difficulty === "expert" && g.gridSize === 9 && g.mistakeCount === 0 && g.hintsUsed === 0
+  ).length;
+  const comebackCount = completedSudoku.filter(g => g.mistakeCount === 2).length;
 
-  // Counts & per-grid speed
-  const perfectCount  = completedSudoku.filter(g => g.mistakeCount === 0).length;
-  const noHintsCount  = completedSudoku.filter(g => g.hintsUsed === 0).length;
-  const expertCount   = completedSudoku.filter(g => g.difficulty === "expert").length;
-
-  const sudoku4x4Games  = completedSudoku.filter(g => g.gridSize === 4);
-  const best4x4Sudoku   = sudoku4x4Games.length  > 0 ? Math.min(...sudoku4x4Games.map(g => g.elapsedSeconds))  : Infinity;
-  const expertGames     = completedSudoku.filter(g => g.difficulty === "expert");
-  const bestExpertTime  = expertGames.length      > 0 ? Math.min(...expertGames.map(g => g.elapsedSeconds))     : Infinity;
+  const sudoku4x4Games = completedSudoku.filter(g => g.gridSize === 4);
+  const expertGames = completedSudoku.filter(g => g.difficulty === "expert");
   const sudoku16x16Games = completedSudoku.filter(g => g.gridSize === 16);
-  const best16x16Time   = sudoku16x16Games.length > 0 ? Math.min(...sudoku16x16Games.map(g => g.elapsedSeconds)) : Infinity;
+  const speedDemonCount = completedSudoku.filter(g => g.elapsedSeconds < 300).length;
+  const lightningCount = completedSudoku.filter(g => g.elapsedSeconds < 120).length;
+  const speed4x4Count = sudoku4x4Games.filter(g => g.elapsedSeconds < 60).length;
+  const speedExpertCount = expertGames.filter(g => g.elapsedSeconds < 600).length;
+  const speed16x16Count = sudoku16x16Games.filter(g => g.elapsedSeconds < 900).length;
 
   // ── Memory Match data ──────────────────────────────────────────────────────
   const completedMemory = await db
@@ -126,38 +138,36 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
     legend:           { unlocked: totalWins >= 500, progress: Math.min(totalWins, 500), total: 500 },
 
     // ── Sudoku: Grid Explorer ────────────────────────────────────────────────
-    baby_steps:       { unlocked: has3x3,   progress: has3x3   ? 1 : 0, total: 1 },
-    mini_master:      { unlocked: has4x4,   progress: has4x4   ? 1 : 0, total: 1 },
-    dual_master:      { unlocked: has6x6,   progress: has6x6   ? 1 : 0, total: 1 },
-    classic_champ:    { unlocked: has9x9,   progress: has9x9   ? 1 : 0, total: 1 },
-    pro_player:       { unlocked: has16x16, progress: has16x16 ? 1 : 0, total: 1 },
-    all_grids:        { unlocked: hasAllGrids,
-      progress: [has3x3, has4x4, has6x6, has9x9, has16x16].filter(Boolean).length, total: 5 },
+    baby_steps:       countAchievementProgress(gridCounts.get(3) ?? 0, gridTarget),
+    mini_master:      countAchievementProgress(gridCounts.get(4) ?? 0, gridTarget),
+    dual_master:      countAchievementProgress(gridCounts.get(6) ?? 0, gridTarget),
+    classic_champ:    countAchievementProgress(gridCounts.get(9) ?? 0, gridTarget),
+    pro_player:       countAchievementProgress(gridCounts.get(16) ?? 0, gridTarget),
+    all_grids:        { unlocked: hasAllGrids, progress: gridProgress, total: gridSizes.length },
 
     // ── Sudoku: Difficulty ───────────────────────────────────────────────────
-    medium_solver:    { unlocked: hasMedium,          progress: hasMedium          ? 1 : 0, total: 1 },
-    hard_solver:      { unlocked: hasHard,            progress: hasHard            ? 1 : 0, total: 1 },
-    expert_solver:    { unlocked: hasExpert,          progress: hasExpert          ? 1 : 0, total: 1 },
-    all_difficulties: { unlocked: hasAllDifficulties,
-      progress: [hasEasy, hasMedium, hasHard, hasExpert].filter(Boolean).length, total: 4 },
+    medium_solver:    countAchievementProgress(difficultyCounts.medium, SUDOKU_ACHIEVEMENT_TARGETS.medium),
+    hard_solver:      countAchievementProgress(difficultyCounts.hard, SUDOKU_ACHIEVEMENT_TARGETS.hard),
+    expert_solver:    countAchievementProgress(expertCount, SUDOKU_ACHIEVEMENT_TARGETS.expert),
+    all_difficulties: { unlocked: hasAllDifficulties, progress: difficultyProgress, total: 4 },
     expert_5:         { unlocked: expertCount >= 5,   progress: Math.min(expertCount, 5),   total: 5 },
-    flawless_expert:  { unlocked: hasFlawlessExpert,  progress: hasFlawlessExpert  ? 1 : 0, total: 1 },
-    flawless_hard:    { unlocked: hasFlawlessHard,    progress: hasFlawlessHard    ? 1 : 0, total: 1 },
+    flawless_expert:  countAchievementProgress(flawlessExpertCount, SUDOKU_ACHIEVEMENT_TARGETS.flawlessDifficulty),
+    flawless_hard:    countAchievementProgress(flawlessHardCount, SUDOKU_ACHIEVEMENT_TARGETS.flawlessDifficulty),
 
     // ── Sudoku: Skill ────────────────────────────────────────────────────────
-    perfectionist:    { unlocked: hasPerfect,         progress: hasPerfect         ? 1 : 0, total: 1 },
+    perfectionist:    countAchievementProgress(perfectCount, SUDOKU_ACHIEVEMENT_TARGETS.perfectionist),
     perfectionist_5:  { unlocked: perfectCount >= 5,  progress: Math.min(perfectCount, 5),  total: 5 },
-    no_hints:         { unlocked: hasNoHints,         progress: hasNoHints         ? 1 : 0, total: 1 },
+    no_hints:         countAchievementProgress(noHintsCount, SUDOKU_ACHIEVEMENT_TARGETS.noHints),
     no_hints_10:      { unlocked: noHintsCount >= 10, progress: Math.min(noHintsCount, 10), total: 10 },
-    hint_free_hard:   { unlocked: hasHintFreeHard,    progress: hasHintFreeHard    ? 1 : 0, total: 1 },
-    hint_free_expert: { unlocked: hasHintFreeExpert,  progress: hasHintFreeExpert  ? 1 : 0, total: 1 },
-    big_brain:        { unlocked: hasBigBrain,        progress: hasBigBrain        ? 1 : 0, total: 1 },
-    comeback_kid:     { unlocked: hasComebackKid,     progress: hasComebackKid     ? 1 : 0, total: 1 },
-    speed_demon:      { unlocked: minTime <= 300,     progress: minTime <= 300     ? 1 : 0, total: 1 },
-    lightning:        { unlocked: minTime <= 120,     progress: minTime <= 120     ? 1 : 0, total: 1 },
-    speed_4x4:        { unlocked: best4x4Sudoku <= 60,  progress: best4x4Sudoku <= 60  ? 1 : 0, total: 1 },
-    speed_expert:     { unlocked: bestExpertTime <= 600, progress: bestExpertTime <= 600 ? 1 : 0, total: 1 },
-    speed_16x16:      { unlocked: best16x16Time <= 900,  progress: best16x16Time <= 900  ? 1 : 0, total: 1 },
+    hint_free_hard:   countAchievementProgress(hintFreeHardCount, SUDOKU_ACHIEVEMENT_TARGETS.hintFreeDifficulty),
+    hint_free_expert: countAchievementProgress(hintFreeExpertCount, SUDOKU_ACHIEVEMENT_TARGETS.hintFreeDifficulty),
+    big_brain:        countAchievementProgress(bigBrainCount, SUDOKU_ACHIEVEMENT_TARGETS.bigBrain),
+    comeback_kid:     countAchievementProgress(comebackCount, SUDOKU_ACHIEVEMENT_TARGETS.comeback),
+    speed_demon:      countAchievementProgress(speedDemonCount, SUDOKU_ACHIEVEMENT_TARGETS.speedDemon),
+    lightning:        countAchievementProgress(lightningCount, SUDOKU_ACHIEVEMENT_TARGETS.lightning),
+    speed_4x4:        countAchievementProgress(speed4x4Count, SUDOKU_ACHIEVEMENT_TARGETS.speedByGrid),
+    speed_expert:     countAchievementProgress(speedExpertCount, SUDOKU_ACHIEVEMENT_TARGETS.speedByGrid),
+    speed_16x16:      countAchievementProgress(speed16x16Count, SUDOKU_ACHIEVEMENT_TARGETS.speedByGrid),
 
     // ── Sudoku: Daily ────────────────────────────────────────────────────────
     daily_devotion:   { unlocked: dailyCount >= 7,   progress: Math.min(dailyCount, 7),   total: 7   },

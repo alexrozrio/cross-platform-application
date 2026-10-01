@@ -72,4 +72,14 @@ describe('ACHIEVEMENT_META', () => {
     expect(sudokuGroups).toContain('Difficulty');
     expect(sudokuGroups).toContain('Skill');
   });
+
+  it('describes Sudoku achievements as repeat-play goals', () => {
+    const byId = new Map(ACHIEVEMENT_META.map(a => [a.id, a]));
+    expect(byId.get('baby_steps')?.description).toContain('3 3×3');
+    expect(byId.get('medium_solver')?.description).toContain('3 Medium');
+    expect(byId.get('hard_solver')?.description).toContain('5 Hard');
+    expect(byId.get('expert_solver')?.description).toContain('10 Expert');
+    expect(byId.get('perfectionist')?.description).toContain('3 Sudoku');
+    expect(byId.get('no_hints')?.description).toContain('5 Sudoku');
+  });
 });
