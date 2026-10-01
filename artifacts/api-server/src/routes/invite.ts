@@ -48,10 +48,7 @@ router.get("/invite/:token", async (req, res): Promise<void> => {
   if (!found) { res.status(404).json({ error: "Invite not found" }); return; }
 
   const { type, record } = found;
-  if (await expireInvitationIfDue(found)) {
-    res.status(410).json({ error: "Challenge invite has expired" });
-    return;
-  }
+  const isExpired = await expireInvitationIfDue(found);
 
   const [challenger] = await db
     .select()
@@ -65,7 +62,7 @@ router.get("/invite/:token", async (req, res): Promise<void> => {
   const base = {
     type,
     id: record.id,
-    status: record.status,
+    status: isExpired ? "expired" : record.status,
     shareToken: record.shareToken,
     challengerId: record.challengerId,
     challengedId: record.challengedId ?? null,

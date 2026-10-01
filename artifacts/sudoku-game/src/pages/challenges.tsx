@@ -1861,8 +1861,10 @@ export default function Challenges() {
           <div>
             <h3 className="font-semibold text-foreground">How invitations work</h3>
             <p className="mt-1">
-              Share the invitation link. Your friend can open it and accept the
-              challenge without signing in.
+              Share the invitation link. Your friend can accept as a guest,
+              without signing in. Invitations expire after 7 days if nobody
+              accepts. If one expires, its link still lets players start a solo
+              game or send a fresh challenge.
             </p>
           </div>
           <div>

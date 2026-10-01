@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useLocation } from "wouter";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -23,19 +23,21 @@ import {
   XCircle,
   Clock,
   ExternalLink,
+  RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { usePageMeta } from "@/components/page-meta";
 import { getLevelFromXp } from "@/lib/levels";
 import { shareOrDownloadShareCard } from "@/lib/share-card";
 import { ShareCardPreview } from "@/components/share-card-preview";
+import { sudokuSetupPath } from "@/lib/sudoku-routes";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface InviteInfo {
   type: "sudoku" | "memory";
   id: number;
-  status: "pending" | "accepted" | "declined" | "completed";
+  status: "pending" | "accepted" | "declined" | "completed" | "expired";
   shareToken: string | null;
   challengerId: number;
   challengedId: number | null;
@@ -230,6 +232,7 @@ function Avatar({ src, name, size = 16 }: { src: string | null; name: string; si
 export default function ChallengeInvitePage({ token }: { token: string }) {
   const { profileId, isReady, isSignedIn } = useAuth();
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
   usePageMeta({
     title: "Puzzle Challenge Invitation | Play Brain Games . Online",
     description:
@@ -244,6 +247,14 @@ export default function ChallengeInvitePage({ token }: { token: string }) {
     queryFn: () => customFetch<InviteInfo>(`/api/invite/${token}`),
     retry: false,
   });
+
+  const isMyChallenge = invite?.challengerId === profileId;
+  const reChallengeTargetId = isMyChallenge
+    ? invite?.challengedId ?? null
+    : invite?.challengerId ?? null;
+  const reChallengeTargetName = isMyChallenge
+    ? invite?.challengedUsername ?? "your friend"
+    : invite?.challengerUsername ?? "your friend";
 
   const acceptMutation = useMutation({
     mutationFn: () =>
@@ -260,6 +271,7 @@ export default function ChallengeInvitePage({ token }: { token: string }) {
       }
     },
     onError: (err: Error) => {
+      void queryClient.invalidateQueries({ queryKey: ["invite", token] });
       toast.error(err.message ?? "Failed to accept challenge");
     },
   });
@@ -274,11 +286,88 @@ export default function ChallengeInvitePage({ token }: { token: string }) {
       setDeclined(true);
       toast("Challenge declined.");
     },
-    onError: () => toast.error("Failed to decline challenge"),
+    onError: () => {
+      void queryClient.invalidateQueries({ queryKey: ["invite", token] });
+      toast.error("Failed to decline challenge");
+    },
   });
 
-  const isMyChallenge = invite?.challengerId === profileId;
+  const reChallengeSudokuMutation = useMutation({
+    mutationFn: () => {
+      if (
+        !invite ||
+        invite.status !== "expired" ||
+        typeof profileId !== "number" ||
+        typeof reChallengeTargetId !== "number"
+      ) {
+        throw new Error("Guest play is still being prepared.");
+      }
+      return customFetch<{ challengerGameId: number | null }>("/api/challenges", {
+        method: "POST",
+        data: {
+          challengerId: profileId,
+          challengedId: reChallengeTargetId,
+          difficulty: invite.difficulty ?? "medium",
+          gridSize: invite.gridSize,
+        },
+      });
+    },
+    onSuccess: ({ challengerGameId }) => {
+      void queryClient.invalidateQueries({ queryKey: ["challenges"] });
+      toast.success(`A new Sudoku challenge was sent to ${reChallengeTargetName}.`, {
+        description: "You can play now as a guest while they decide.",
+      });
+      setLocation(challengerGameId ? `/game/${challengerGameId}` : "/challenges");
+    },
+    onError: (err: Error) => toast.error(err.message || "Could not send the new challenge"),
+  });
+
+  const reChallengeMemoryMutation = useMutation({
+    mutationFn: () => {
+      if (
+        !invite ||
+        invite.status !== "expired" ||
+        typeof profileId !== "number" ||
+        typeof reChallengeTargetId !== "number"
+      ) {
+        throw new Error("Guest play is still being prepared.");
+      }
+      return customFetch<{ challengerGameId: number | null; gridSize: number }>(
+        "/api/memory-duels",
+        {
+          method: "POST",
+          data: {
+            challengerId: profileId,
+            challengedId: reChallengeTargetId,
+            gridSize: invite.gridSize,
+          },
+        },
+      );
+    },
+    onSuccess: ({ challengerGameId, gridSize }) => {
+      void queryClient.invalidateQueries({ queryKey: ["memory-duels"] });
+      toast.success(`A new Memory Match challenge was sent to ${reChallengeTargetName}.`, {
+        description: "You can play now as a guest while they decide.",
+      });
+      setLocation(
+        challengerGameId
+          ? `/memory?duelGameId=${challengerGameId}&gridSize=${gridSize}`
+          : "/challenges",
+      );
+    },
+    onError: (err: Error) => toast.error(err.message || "Could not send the new challenge"),
+  });
+
   const isTargeted = invite?.challengedId !== null && invite?.challengedId !== profileId;
+  const canReChallenge =
+    invite?.status === "expired" &&
+    isReady &&
+    typeof profileId === "number" &&
+    typeof reChallengeTargetId === "number" &&
+    reChallengeTargetId !== profileId &&
+    (!isTargeted || isMyChallenge);
+  const isReChallenging =
+    reChallengeSudokuMutation.isPending || reChallengeMemoryMutation.isPending;
   const shareUrl = `${window.location.origin}/invite/${token}`;
 
   const shareText = invite
@@ -316,10 +405,18 @@ export default function ChallengeInvitePage({ token }: { token: string }) {
       {/* Header */}
       <div className="bg-card border border-border rounded-2xl px-5 py-4 text-center space-y-2">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 text-xs font-semibold border border-rose-200 dark:border-rose-800">
-          <Swords className="w-3.5 h-3.5" /> Challenge Invite
+          {invite.status === "expired" ? (
+            <>
+              <Clock className="w-3.5 h-3.5" /> Expired Invite
+            </>
+          ) : (
+            <>
+              <Swords className="w-3.5 h-3.5" /> Challenge Invite
+            </>
+          )}
         </div>
         <h1 className="text-2xl font-serif font-bold tracking-tight">
-          You've been challenged!
+          {invite.status === "expired" ? "This challenge has expired" : "You've been challenged!"}
         </h1>
       </div>
 
@@ -374,11 +471,67 @@ export default function ChallengeInvitePage({ token }: { token: string }) {
         <CardContent className="px-5 py-4 space-y-4">
           {invite.status === "pending" && (
             <p className="text-center text-xs text-muted-foreground">
-              This invitation expires 7 days after it was created if no one accepts it.
+              This invitation expires 7 days after it was created if nobody accepts. You can
+              accept as a guest—no sign-in is required. If it expires, you can still play solo
+              or send a fresh challenge.
             </p>
           )}
           {/* Status / action area */}
-          {invite.status !== "pending" || declined ? (
+          {invite.status === "expired" ? (
+            <div className="space-y-3 py-2 text-center">
+              <Clock className="mx-auto h-9 w-9 text-amber-500" />
+              <p className="font-semibold">This invitation was not accepted within 7 days.</p>
+              <p className="text-sm text-muted-foreground">
+                The original challenge can no longer be accepted. You can still play
+                {invite.type === "sudoku" ? " Sudoku" : " Memory Match"} as a guest, without
+                signing in.
+              </p>
+              <div className="grid gap-2 pt-1">
+                <Button
+                  className="w-full gap-2"
+                  onClick={() =>
+                    setLocation(
+                      invite.type === "sudoku"
+                        ? sudokuSetupPath(invite.gridSize, invite.difficulty ?? "medium")
+                        : `/memory?size=${invite.gridSize}`,
+                    )
+                  }
+                >
+                  {invite.type === "sudoku" ? (
+                    <Grid2x2 className="h-4 w-4" />
+                  ) : (
+                    <Brain className="h-4 w-4" />
+                  )}
+                  Play {invite.type === "sudoku" ? "Sudoku" : "Memory Match"} as a guest
+                </Button>
+                {canReChallenge && (
+                  <Button
+                    variant="outline"
+                    className="w-full gap-2"
+                    disabled={isReChallenging}
+                    onClick={() =>
+                      invite.type === "sudoku"
+                        ? reChallengeSudokuMutation.mutate()
+                        : reChallengeMemoryMutation.mutate()
+                    }
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                    {isReChallenging
+                      ? "Sending new challenge…"
+                      : `Challenge ${reChallengeTargetName} again`}
+                  </Button>
+                )}
+              </div>
+              {invite.status === "expired" && !isReady && (
+                <p className="text-xs text-muted-foreground">Preparing guest play…</p>
+              )}
+              {invite.status === "expired" && isReady && typeof profileId !== "number" && (
+                <p className="text-xs text-muted-foreground">
+                  You can start a guest game. A new challenge is unavailable until a guest profile is ready.
+                </p>
+              )}
+            </div>
+          ) : invite.status !== "pending" || declined ? (
             <div className="text-center py-4 space-y-2">
               {(invite.status === "accepted" || (invite.status === "pending" && !declined)) ? (
                 <>
@@ -481,14 +634,16 @@ export default function ChallengeInvitePage({ token }: { token: string }) {
       </Card>
 
       {/* Badge row */}
-      <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
-        <Badge variant="outline" className="gap-1 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40">
-          🏆 Winner gets 10 gems
-        </Badge>
-        <Badge variant="outline" className="gap-1 bg-card">
-          ⚡ Score more points to win
-        </Badge>
-      </div>
+      {invite.status !== "expired" && (
+        <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
+          <Badge variant="outline" className="gap-1 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40">
+            🏆 Winner gets 10 gems
+          </Badge>
+          <Badge variant="outline" className="gap-1 bg-card">
+            ⚡ Score more points to win
+          </Badge>
+        </div>
+      )}
 
       <ShareSheet
         open={showShare}
