@@ -63,6 +63,9 @@ export function usePageMeta({
     upsertMeta("property", "og:site_name", SITE_NAME);
     upsertMeta("property", "og:locale", "en_US");
     upsertMeta("property", "og:image", OG_IMAGE);
+    upsertMeta("property", "og:image:type", "image/jpeg");
+    upsertMeta("property", "og:image:width", "1200");
+    upsertMeta("property", "og:image:height", "630");
     upsertMeta("name", "twitter:title", pageTitle);
     upsertMeta("name", "twitter:description", description);
     upsertMeta("name", "twitter:image", OG_IMAGE);
