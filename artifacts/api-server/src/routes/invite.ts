@@ -8,6 +8,7 @@
 
 import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
+import { expireInvitationIfDue } from "../utils/challenge-expiry";
 import {
   db,
   challengesTable,
@@ -47,6 +48,10 @@ router.get("/invite/:token", async (req, res): Promise<void> => {
   if (!found) { res.status(404).json({ error: "Invite not found" }); return; }
 
   const { type, record } = found;
+  if (await expireInvitationIfDue(found)) {
+    res.status(410).json({ error: "Challenge invite has expired" });
+    return;
+  }
 
   const [challenger] = await db
     .select()
@@ -97,6 +102,10 @@ router.post("/invite/:token/accept", async (req, res): Promise<void> => {
   if (!found) { res.status(404).json({ error: "Invite not found" }); return; }
 
   const { type, record } = found;
+  if (await expireInvitationIfDue(found)) {
+    res.status(410).json({ error: "Challenge invite has expired" });
+    return;
+  }
 
   if (record.challengerId === profileId) {
     res.status(400).json({ error: "You cannot accept your own challenge" });
@@ -166,6 +175,10 @@ router.post("/invite/:token/decline", async (req, res): Promise<void> => {
   if (!found) { res.status(404).json({ error: "Invite not found" }); return; }
 
   const { type, record } = found;
+  if (await expireInvitationIfDue(found)) {
+    res.status(410).json({ error: "Challenge invite has expired" });
+    return;
+  }
 
   if (record.challengerId === profileId) {
     res.status(400).json({ error: "You cannot decline your own challenge" });

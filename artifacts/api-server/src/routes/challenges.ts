@@ -1,10 +1,12 @@
 import { Router, type IRouter } from "express";
-import { eq, or, and } from "drizzle-orm";
+import { eq, or, and, ne, gte } from "drizzle-orm";
 import { db, challengesTable, profilesTable, puzzlesTable, gamesTable } from "@workspace/db";
 import { generatePuzzle } from "../lib/sudoku";
 import { sql } from "drizzle-orm";
 import { sendChallengeNotification } from "../lib/email";
 import { randomBytes } from "node:crypto";
+import { expireInvitationIfDue } from "../utils/challenge-expiry";
+import { getChallengeExpiryCutoff } from "../utils/challenge-expiry-policy";
 
 const router: IRouter = Router();
 
@@ -160,7 +162,15 @@ router.get("/challenges/for/:profileId", async (req, res): Promise<void> => {
   const challenges = await db
     .select()
     .from(challengesTable)
-    .where(or(eq(challengesTable.challengerId, profileId), eq(challengesTable.challengedId, profileId)))
+    .where(
+      and(
+        or(eq(challengesTable.challengerId, profileId), eq(challengesTable.challengedId, profileId)),
+        or(
+          ne(challengesTable.status, "pending"),
+          gte(challengesTable.createdAt, getChallengeExpiryCutoff()),
+        ),
+      ),
+    )
     .orderBy(challengesTable.createdAt);
 
   const details = await Promise.all(challenges.map(formatChallenge));
@@ -184,6 +194,10 @@ router.get("/challenges/for-game/:gameId", async (req, res): Promise<void> => {
     res.status(404).json({ error: "No challenge for this game" });
     return;
   }
+  if (await expireInvitationIfDue({ type: "sudoku", record: challenge })) {
+    res.status(410).json({ error: "Challenge has expired" });
+    return;
+  }
 
   res.json(await formatChallenge(challenge));
 });
@@ -198,6 +212,10 @@ router.get("/challenges/:id", async (req, res): Promise<void> => {
   const [challenge] = await db.select().from(challengesTable).where(eq(challengesTable.id, id));
   if (!challenge) {
     res.status(404).json({ error: "Challenge not found" });
+    return;
+  }
+  if (await expireInvitationIfDue({ type: "sudoku", record: challenge })) {
+    res.status(410).json({ error: "Challenge has expired" });
     return;
   }
 
@@ -220,6 +238,10 @@ router.patch("/challenges/:id/respond", async (req, res): Promise<void> => {
   const [challenge] = await db.select().from(challengesTable).where(eq(challengesTable.id, id));
   if (!challenge) {
     res.status(404).json({ error: "Challenge not found" });
+    return;
+  }
+  if (await expireInvitationIfDue({ type: "sudoku", record: challenge })) {
+    res.status(410).json({ error: "Challenge has expired" });
     return;
   }
   if (challenge.status !== "pending") {

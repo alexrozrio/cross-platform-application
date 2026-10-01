@@ -204,7 +204,7 @@ function ShareSheet({
           </div>
 
           <p className="text-[11px] text-muted-foreground text-center">
-            Anyone can accept an open challenge link. A challenge sent to a specific player can only be accepted by that player.
+            Anyone can accept an open challenge link. A challenge sent to a specific player can only be accepted by that player. Unaccepted challenges expire after 7 days.
           </p>
         </div>
       </DialogContent>
@@ -372,6 +372,11 @@ export default function ChallengeInvitePage({ token }: { token: string }) {
         </div>
 
         <CardContent className="px-5 py-4 space-y-4">
+          {invite.status === "pending" && (
+            <p className="text-center text-xs text-muted-foreground">
+              This invitation expires 7 days after it was created if no one accepts it.
+            </p>
+          )}
           {/* Status / action area */}
           {invite.status !== "pending" || declined ? (
             <div className="text-center py-4 space-y-2">

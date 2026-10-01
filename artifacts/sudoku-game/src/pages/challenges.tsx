@@ -35,7 +35,7 @@ import { ShareCardPreview } from "@/components/share-card-preview";
 type Difficulty = "easy" | "medium" | "hard" | "expert";
 type SudokuGridSize = 3 | 4 | 6 | 9 | 16;
 type MemoryGridSize = 2 | 4 | 6 | 8;
-type ChallengeStatus = "pending" | "accepted" | "declined" | "completed";
+type ChallengeStatus = "pending" | "accepted" | "declined" | "completed" | "expired";
 type GameType = "sudoku" | "memory";
 
 interface ChallengeDetail {
@@ -273,7 +273,7 @@ function ChallengeShareSheet({
           </div>
 
           <p className="text-[11px] text-muted-foreground text-center">
-            Anyone can accept an open challenge link. A challenge sent to a specific player can only be accepted by that player.
+            Anyone can accept an open challenge link. A challenge sent to a specific player can only be accepted by that player. Unaccepted challenges expire after 7 days.
           </p>
         </div>
       </DialogContent>
@@ -307,6 +307,15 @@ function StatusBadge({ status }: { status: ChallengeStatus }) {
         className="text-slate-500 border-slate-300 bg-slate-50 text-xs"
       >
         Declined
+      </Badge>
+    );
+  if (status === "expired")
+    return (
+      <Badge
+        variant="outline"
+        className="text-slate-500 border-slate-300 bg-slate-50 text-xs"
+      >
+        Expired
       </Badge>
     );
   return (
@@ -1556,8 +1565,8 @@ export default function Challenges() {
           <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight leading-tight">
             Challenges
           </h1>
-          <p className="text-sm text-muted-foreground hidden sm:block">
-            Beat your opponent's score to win 10 gems.
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Beat your opponent&apos;s score to win 10 gems. Unaccepted challenges expire after 7 days.
           </p>
         </div>
         <div className="font-size-mobile-actions flex items-center gap-1.5 shrink-0">
