@@ -10,6 +10,7 @@ import {
   UpdateProfileBody,
   UpdateProfileResponse,
 } from "@workspace/api-zod";
+import { generateGuestUsername } from "../utils/guest-username";
 
 const router: IRouter = Router();
 
@@ -52,9 +53,8 @@ router.post("/profiles/sync", async (req, res): Promise<void> => {
     return;
   }
 
-  // Generate a username if none provided
-  const suffix = Math.random().toString(36).substring(2, 7).toUpperCase();
-  const autoUsername = username ?? `Player${suffix}`;
+  // Give anonymous profiles a memorable name while retaining a random suffix.
+  const autoUsername = username ?? generateGuestUsername();
 
   const [newProfile] = await db.insert(profilesTable).values({
     username: autoUsername,
