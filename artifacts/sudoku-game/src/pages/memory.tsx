@@ -694,7 +694,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
     const sizeLabel = GRID_OPTIONS.find(o => o.size === gridSize)?.label ?? `${gridSize}×${gridSize}`;
     const diffLabel = GRID_OPTIONS.find(o => o.size === gridSize)?.desc.split(' · ')[0] ?? '';
     const rank = profile ? getLevelFromXp(profile.xp ?? 0).name : null;
-    const appUrl = `${window.location.origin}${memoryBookmarkPath(gridSize)}`;
+    const appUrl = `${window.location.origin}${memoryBookmarkPath(gridSize)}?start=1`;
     const lines = [
       `${winMessage?.emoji ?? '🎉'} Matched all ${getPairs(gridSize)} pairs (${sizeLabel} ${diffLabel}) in ${formatTime(elapsed)}!`,
       `🔄 ${flips} flip${flips !== 1 ? 's' : ''}`,
