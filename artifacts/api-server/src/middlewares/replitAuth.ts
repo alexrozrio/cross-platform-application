@@ -6,6 +6,10 @@ import connectPg from "connect-pg-simple";
 import { db, users } from "@workspace/db";
 import { profilesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import {
+  getAllowedAuthReturnOrigin,
+  getSafeAuthReturnUrl,
+} from "../lib/origin-policy";
 
 // Secure cookies when running on Replit or in production
 const isSecure =
@@ -104,20 +108,6 @@ function frontendUrl(): string {
     return `https://${process.env.REPLIT_DEV_DOMAIN}`;
   }
   return "http://localhost:19093";
-}
-
-// Decode the frontend origin passed via OAuth state and validate it is safe.
-// We only allow http(s) origins so an attacker cannot inject javascript: URLs.
-function safeReturnUrl(raw: string | undefined, fallback: string): string {
-  if (!raw) return fallback;
-  try {
-    const decoded = Buffer.from(raw, "base64url").toString("utf8");
-    const url = new URL(decoded);
-    if (url.protocol === "http:" || url.protocol === "https:") return decoded;
-  } catch {
-    // invalid base64 or URL — fall through to fallback
-  }
-  return fallback;
 }
 
 // ─── Dev auto-login ───────────────────────────────────────────────────────────
@@ -257,10 +247,14 @@ export async function setupAuth(app: Express) {
   // The frontend passes its own origin as a base64url-encoded "from" query
   // param so the server can redirect back to whichever host initiated login
   // (localhost:19093, Replit dev domain, production URL, etc.) without needing
-  // a separate FRONTEND_URL env var per environment.
+  // a separate FRONTEND_URL env var per environment. Only configured web
+  // origins are carried through OAuth state.
   app.get("/api/login", (req, res, next) => {
     const from = req.query.from as string | undefined;
-    const state = from ? Buffer.from(from).toString("base64url") : undefined;
+    const allowedReturnOrigin = getAllowedAuthReturnOrigin(from);
+    const state = allowedReturnOrigin
+      ? Buffer.from(allowedReturnOrigin).toString("base64url")
+      : undefined;
     passport.authenticate("google", {
       scope: ["openid", "email", "profile"],
       ...(state ? { state } : {}),
@@ -273,7 +267,10 @@ export async function setupAuth(app: Express) {
     (req: any, res) => {
       // Decode the frontend origin from the OAuth state parameter so we
       // redirect back to wherever the user originally came from.
-      const redirectTo = safeReturnUrl(req.query.state as string | undefined, defaultRedirectTo);
+      const redirectTo = getSafeAuthReturnUrl(
+        req.query.state as string | undefined,
+        defaultRedirectTo,
+      );
 
       // Explicitly save the session to the store before redirecting.
       // Without this, the redirect can race ahead of the async DB write,
@@ -287,7 +284,7 @@ export async function setupAuth(app: Express) {
 
   app.get("/api/logout", (req: any, res) => {
     const from = req.query.from as string | undefined;
-    const redirectTo = safeReturnUrl(
+    const redirectTo = getSafeAuthReturnUrl(
       from ? Buffer.from(from).toString("base64url") : undefined,
       defaultRedirectTo,
     );

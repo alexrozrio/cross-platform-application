@@ -5,6 +5,7 @@ import { setupAuth } from "./middlewares/replitAuth";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { startTournamentScheduler } from "./utils/scheduler";
+import { originPolicy } from "./lib/origin-policy";
 
 const app: Express = express();
 
@@ -28,7 +29,18 @@ app.use(
   }),
 );
 
-app.use(cors({ credentials: true, origin: true }));
+app.use(
+  cors({
+    credentials: true,
+    origin(origin, callback) {
+      if (origin && originPolicy.corsOrigins.has(origin)) {
+        callback(null, origin);
+        return;
+      }
+      callback(null, false);
+    },
+  }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
