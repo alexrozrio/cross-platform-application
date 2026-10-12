@@ -5,7 +5,7 @@
 - [Offline game object stability](offline-game-object-stability.md) — memoize fallback game data; rebuilding it during render can retrigger initialization effects and cause React error #185.
 - [Sudoku bookmark URLs](sudoku-bookmark-urls.md) — setup URLs are safe to bookmark; game URLs add gameId and preserve mode/offline state.
 - [Memory direct-start routes](memory-direct-start.md) — use `start=1` when canonicalizing a level link that must open directly into a game.
-- [API workspace dependency sync](api-workspace-dependency-sync.md) — declared API dependencies can be absent from node_modules after workspace changes; sync the API filter before debugging guest creation.
+- [Workspace dependency sync](api-workspace-dependency-sync.md) — when declared package imports are missing, install the target workspace and its dependency closure before changing code.
 - [Offline completion sync](offline-completion-sync.md) — reconnect scoring must be bounded and completion endpoints must atomically guard active games before awarding rewards.
 - [Pnpm lockfile discipline](pnpm-lockfile-discipline.md) — workspace config changes must be lockfile-synced and validated with the pinned pnpm version before Render deploys.
 - [Generated completion response types](generated-completion-response-types.md) — runtime completion payloads can contain XP fields omitted by generated client mutation types; handle the mismatch at the response boundary.

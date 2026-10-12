@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Play Brain Games</string>
+    <string name="title_activity_main">Play Brain Games</string>
+    <string name="package_name">online.playbraingames.app</string>
+    <string name="custom_url_scheme">online.playbraingames.app</string>
+</resources>
