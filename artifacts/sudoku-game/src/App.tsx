@@ -1,6 +1,8 @@
 import React, { Suspense, lazy } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation, useSearch } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { App as CapacitorApp } from "@capacitor/app";
+import { Capacitor } from "@capacitor/core";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +14,7 @@ import { PageLoader } from "@/components/page-loader";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ConsentManager } from "@/components/consent-manager";
 import { modeFromQuery } from "@/lib/sudoku-routes";
+import { invitePathFromAppUrl } from "@/lib/app-links";
 
 // Pages — lazy-loaded so each route only ships the JS it needs, instead of
 // one large bundle that has to load before the app becomes interactive.
@@ -83,6 +86,35 @@ const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 function Router() {
   const { rewardState, claimReward, dismissReward } = useLoginReward();
   const [, setLocation] = useLocation();
+
+  React.useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    let disposed = false;
+    let listener: { remove: () => Promise<void> } | undefined;
+    const openInvite = (url: string) => {
+      const path = invitePathFromAppUrl(url);
+      if (path) setLocation(path);
+    };
+
+    void CapacitorApp.addListener("appUrlOpen", ({ url }) => openInvite(url))
+      .then((handle) => {
+        if (disposed) void handle.remove();
+        else listener = handle;
+      })
+      .catch((error) => console.warn("Could not register app-link listener", error));
+
+    void CapacitorApp.getLaunchUrl()
+      .then((launch) => {
+        if (!disposed && launch?.url) openInvite(launch.url);
+      })
+      .catch((error) => console.warn("Could not read app launch URL", error));
+
+    return () => {
+      disposed = true;
+      if (listener) void listener.remove();
+    };
+  }, [setLocation]);
 
   const handleDismiss = React.useCallback(() => {
     dismissReward();

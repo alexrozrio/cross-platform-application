@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { customFetch, useGetProfile } from "@workspace/api-client-react";
+import { Capacitor } from "@capacitor/core";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,6 +30,7 @@ import { LevelBadge } from "@/components/level-badge";
 import { usePageMeta } from "@/components/page-meta";
 import { shareOrDownloadShareCard } from "@/lib/share-card";
 import { ShareCardPreview } from "@/components/share-card-preview";
+import { challengeInviteUrl } from "@/lib/app-links";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -170,7 +172,7 @@ function ChallengeShareSheet({
   label: string;
 }) {
   const [copied, setCopied] = useState(false);
-  const shareUrl = `${window.location.origin}/invite/${shareToken}`;
+  const shareUrl = challengeInviteUrl(shareToken, Capacitor.isNativePlatform());
   const text = `${label} — click to accept and play!`;
   const shareCard = {
     title: "Challenge invitation",
