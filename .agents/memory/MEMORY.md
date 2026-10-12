@@ -13,3 +13,4 @@
 - [Custom-domain trailing slashes](trailing-slash-seo.md) — live Cloudflare hosting normalizes public route URLs to trailing slashes with a 307.
 - [Theme overlay stacking](theme-overlay-stacking.md) — keep the mobile full-screen layer over app chrome and raise nested dialogs locally.
 - [Completion sharing overlays](completion-sharing-overlays.md) — keep achievement unlocks modal; other celebrations stay non-blocking while the result is visible.
+- [Capacitor Node compatibility](capacitor-node-compatibility.md) — keep Capacitor packages on a major version supported by the workspace Node runtime.
