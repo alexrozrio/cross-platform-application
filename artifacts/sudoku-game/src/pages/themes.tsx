@@ -1016,13 +1016,12 @@ export default function Themes() {
         const ctSelected = activeAppTheme === ct.id;
         const ctCost = getItemCost('color_theme', ct.id);
         const ctCanAfford = gems >= ctCost;
-        const ctBackground = THEME_BG_DEFAULTS[ct.id] ?? null;
         return (
           <Dialog open={!!previewColourId} onOpenChange={(open) => { if (!open) setPreviewColourId(null); }}>
             <DialogContent className={`max-w-sm max-h-[calc(100dvh-2rem)] p-0 overflow-y-auto overscroll-contain ${showAll ? 'z-[70]' : ''}`} overlayClassName={showAll ? 'z-[70]' : undefined}>
               <DialogHeader className="px-5 pt-5 pb-0">
                 <DialogTitle>{ct.label} Theme</DialogTitle>
-                <DialogDescription>Colour palette and background preview</DialogDescription>
+                <DialogDescription>Colour palette preview</DialogDescription>
               </DialogHeader>
 
               {/* Mini app mockup */}
@@ -1065,18 +1064,6 @@ export default function Themes() {
                   </div>
                 </div>
               </div>
-
-              {ctBackground && (
-                <div className="mx-5 mt-3 space-y-1.5">
-                  <p className="text-xs font-medium text-muted-foreground">System background</p>
-                  <div
-                    role="img"
-                    aria-label={`${ct.label} system background preview`}
-                    className="h-24 rounded-xl border border-border bg-cover bg-center"
-                    style={{ backgroundImage: `url("${ctBackground}")` }}
-                  />
-                </div>
-              )}
 
               <div className="px-5 pb-5 pt-3 border-t border-border mt-3">
                 {ctSelected ? (

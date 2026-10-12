@@ -4,7 +4,6 @@ import { useGetProfile, useUpdateProfile } from '@workspace/api-client-react';
 
 const STORAGE_PREFIX = 'brain-games-bg-custom-';
 const ENABLED_KEY    = 'brain-games-bg-enabled';
-const ROSE_BACKGROUND_URL = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/backgrounds/rose.jpg`;
 
 /** Default Unsplash background images keyed by colour-theme ID */
 export const THEME_BG_DEFAULTS: Record<string, string> = {
@@ -14,7 +13,7 @@ export const THEME_BG_DEFAULTS: Record<string, string> = {
   forest:    'https://images.unsplash.com/photo-1448375240586-882707db888b?w=1920&q=80&auto=format&fit=crop',
   sunset:    'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1920&q=80&auto=format&fit=crop',
   midnight:  'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1920&q=80&auto=format&fit=crop',
-  rose:      ROSE_BACKGROUND_URL,
+  rose:      'https://images.unsplash.com/photo-1548460616-5d3ef2e0e0b2?w=1920&q=80&auto=format&fit=crop',
   emerald:   'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&q=80&auto=format&fit=crop',
   slate:     'https://images.unsplash.com/photo-1440688807730-73e4e2169fb8?w=1920&q=80&auto=format&fit=crop',
   lavender:  'https://images.unsplash.com/photo-1499002238440-d264edd596ec?w=1920&q=80&auto=format&fit=crop',
