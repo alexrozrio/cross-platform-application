@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
-import { eq, or, ilike, ne, and } from "drizzle-orm";
-import { db, profilesTable } from "@workspace/db";
+import { createHash, randomBytes } from "node:crypto";
+import { eq, ilike, ne, and, gt, isNull } from "drizzle-orm";
+import { db, profilesTable, guestProfileTransferCodesTable } from "@workspace/db";
 import { gemsForLoginStreak } from "../config/login-rewards";
 import {
   CreateProfileBody,
@@ -64,6 +65,88 @@ router.post("/profiles/sync", async (req, res): Promise<void> => {
   }).returning();
 
   res.status(201).json(GetProfileResponse.parse({ ...newProfile, createdAt: newProfile.createdAt.toISOString() }));
+});
+
+// ─── Transfer a guest profile to another browser or installed app ─────────────
+
+router.post("/profiles/:id/transfer-code", async (req, res): Promise<void> => {
+  const id = Number(req.params.id);
+  const { deviceId } = req.body as { deviceId?: unknown };
+  if (!Number.isSafeInteger(id) || id < 1 || typeof deviceId !== "string" || deviceId.length < 1 || deviceId.length > 200) {
+    res.status(400).json({ error: "Invalid guest profile" });
+    return;
+  }
+
+  const [profile] = await db
+    .select({ id: profilesTable.id })
+    .from(profilesTable)
+    .where(and(
+      eq(profilesTable.id, id),
+      eq(profilesTable.deviceId, deviceId),
+      isNull(profilesTable.replitUserId),
+      isNull(profilesTable.clerkUserId),
+    ));
+  if (!profile) {
+    res.status(404).json({ error: "Guest profile not found" });
+    return;
+  }
+
+  const code = randomBytes(8).toString("hex").toUpperCase();
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+  const codeHash = createHash("sha256").update(code).digest("hex");
+
+  await db.delete(guestProfileTransferCodesTable)
+    .where(eq(guestProfileTransferCodesTable.profileId, id));
+  await db.insert(guestProfileTransferCodesTable).values({
+    profileId: id,
+    codeHash,
+    expiresAt,
+  });
+
+  res.status(201).json({
+    code: code.match(/.{1,4}/g)?.join("-") ?? code,
+    expiresAt: expiresAt.toISOString(),
+  });
+});
+
+router.post("/profiles/restore-guest", async (req, res): Promise<void> => {
+  const rawCode = (req.body as { code?: unknown })?.code;
+  const code = typeof rawCode === "string" ? rawCode.replace(/[\s-]/g, "").toUpperCase() : "";
+  if (!/^[A-F0-9]{16}$/.test(code)) {
+    res.status(400).json({ error: "This transfer code is invalid, expired, or already used." });
+    return;
+  }
+
+  const now = new Date();
+  const codeHash = createHash("sha256").update(code).digest("hex");
+  const [transfer] = await db.update(guestProfileTransferCodesTable)
+    .set({ consumedAt: now })
+    .where(and(
+      eq(guestProfileTransferCodesTable.codeHash, codeHash),
+      isNull(guestProfileTransferCodesTable.consumedAt),
+      gt(guestProfileTransferCodesTable.expiresAt, now),
+    ))
+    .returning();
+  if (!transfer) {
+    res.status(400).json({ error: "This transfer code is invalid, expired, or already used." });
+    return;
+  }
+
+  const [profile] = await db.select({
+    id: profilesTable.id,
+    deviceId: profilesTable.deviceId,
+    username: profilesTable.username,
+  }).from(profilesTable).where(and(
+    eq(profilesTable.id, transfer.profileId),
+    isNull(profilesTable.replitUserId),
+    isNull(profilesTable.clerkUserId),
+  ));
+  if (!profile?.deviceId) {
+    res.status(400).json({ error: "This transfer code is invalid, expired, or already used." });
+    return;
+  }
+
+  res.json({ profileId: profile.id, deviceId: profile.deviceId, username: profile.username });
 });
 
 // ─── Search profiles ─────────────────────────────────────────────────────────

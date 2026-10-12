@@ -26,6 +26,7 @@ interface AuthContextType {
   replitUser: ReplitUser | null;
   isSignedIn: boolean;
   setProfileId: (id: number | null) => void;
+  restoreGuestProfile: (code: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -34,6 +35,9 @@ const AuthContext = createContext<AuthContextType>({
   replitUser: null,
   isSignedIn: false,
   setProfileId: () => {},
+  restoreGuestProfile: async () => {
+    throw new Error('Guest profile restore is unavailable.');
+  },
 });
 
 export function AuthProvider({
@@ -64,6 +68,30 @@ export function AuthProvider({
       localStorage.removeItem('sudoku-profile-id');
     }
     setProfileIdState(id);
+  };
+
+  const restoreGuestProfile = async (code: string) => {
+    const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
+    const res = await fetch(apiUrl(`${basePath}/api/profiles/restore-guest`), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code }),
+      credentials: 'include',
+    });
+    const result = await res.json().catch(() => ({})) as {
+      profileId?: number;
+      deviceId?: string;
+      error?: string;
+    };
+    if (!res.ok) {
+      throw new Error(result.error ?? 'Could not restore this guest profile.');
+    }
+    if (typeof result.profileId !== 'number' || !Number.isSafeInteger(result.profileId) || typeof result.deviceId !== 'string' || !result.deviceId) {
+      throw new Error('The server returned an invalid guest profile.');
+    }
+
+    localStorage.setItem('sudoku-device-id', result.deviceId);
+    setProfileId(result.profileId);
   };
 
   useEffect(() => {
@@ -140,7 +168,7 @@ export function AuthProvider({
   }, [isLoaded, replitUser]);
 
   return (
-    <AuthContext.Provider value={{ profileId, isReady, replitUser, isSignedIn: !!replitUser, setProfileId }}>
+    <AuthContext.Provider value={{ profileId, isReady, replitUser, isSignedIn: !!replitUser, setProfileId, restoreGuestProfile }}>
       {children}
     </AuthContext.Provider>
   );

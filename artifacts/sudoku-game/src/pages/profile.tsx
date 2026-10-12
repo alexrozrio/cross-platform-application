@@ -16,6 +16,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Form,
   FormControl,
   FormDescription,
@@ -62,6 +72,7 @@ import {
   BarChart2,
   ExternalLink,
   Info,
+  Copy,
 } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -586,7 +597,7 @@ export default function Profile() {
   const tabParam = params.get("tab");
   const sectionParam = params.get("section");
 
-  const { profileId, isSignedIn, replitUser } = useAuth();
+  const { profileId, isSignedIn, replitUser, restoreGuestProfile } = useAuth();
   const { data: profile, isLoading } = useGetProfile(profileId as number, {
     query: { refetchOnMount: "always", staleTime: 0 },
   });
@@ -594,6 +605,11 @@ export default function Profile() {
 
   // Stats tab
   const [gameTab, setGameTab] = useState<GameTab>(tabParam === "memory" ? "memory" : "sudoku");
+  const [transferCode, setTransferCode] = useState("");
+  const [restoreCode, setRestoreCode] = useState("");
+  const [isGeneratingTransferCode, setIsGeneratingTransferCode] = useState(false);
+  const [isRestoringGuest, setIsRestoringGuest] = useState(false);
+  const [restoreConfirmationOpen, setRestoreConfirmationOpen] = useState(false);
   useEffect(() => {
     if (tabParam === "memory") setGameTab("memory");
     else if (tabParam === "sudoku") setGameTab("sudoku");
@@ -642,6 +658,53 @@ export default function Profile() {
       toast.success("Settings saved");
     } catch {
       toast.error("Failed to save settings");
+    }
+  };
+
+  const createGuestTransferCode = async () => {
+    if (!profileId) return;
+    const deviceId = localStorage.getItem("sudoku-device-id");
+    if (!deviceId) {
+      toast.error("This device's guest identity is not available. Reload and try again.");
+      return;
+    }
+    setIsGeneratingTransferCode(true);
+    try {
+      const result = await customFetch<{ code: string; expiresAt: string }>(
+        `/api/profiles/${profileId}/transfer-code`,
+        { method: "POST", data: { deviceId } },
+      );
+      setTransferCode(result.code);
+      toast.success("Transfer code created. It can be used once for the next 10 minutes.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not create a transfer code.");
+    } finally {
+      setIsGeneratingTransferCode(false);
+    }
+  };
+
+  const copyGuestTransferCode = async () => {
+    if (!transferCode) return;
+    try {
+      await navigator.clipboard.writeText(transferCode);
+      toast.success("Transfer code copied.");
+    } catch {
+      toast.error("Copy is unavailable here. Select and copy the code instead.");
+    }
+  };
+
+  const submitGuestRestore = async () => {
+    setIsRestoringGuest(true);
+    try {
+      await restoreGuestProfile(restoreCode.replace(/-/g, ""));
+      setTransferCode("");
+      setRestoreCode("");
+      setRestoreConfirmationOpen(false);
+      toast.success("Guest profile restored.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not restore this guest profile.");
+    } finally {
+      setIsRestoringGuest(false);
     }
   };
 
@@ -731,8 +794,82 @@ export default function Profile() {
               <LogIn className="w-4 h-4" /> Sign in
             </Button>
           )}
+          {!isSignedIn && (
+            <div className="space-y-4 border-t border-border pt-4">
+              <div className="space-y-1">
+                <p className="text-sm font-semibold">Use this guest profile on another device</p>
+                <p className="text-xs text-muted-foreground">
+                  Create a one-use code here, then enter it in the other browser or installed app. Both devices will use this guest profile. The code expires after 10 minutes.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={createGuestTransferCode}
+                disabled={!profileId || isGeneratingTransferCode}
+              >
+                {isGeneratingTransferCode ? "Creating code…" : transferCode ? "Create a new transfer code" : "Create transfer code"}
+              </Button>
+              {transferCode && (
+                <div className="flex gap-2">
+                  <Input aria-label="Guest profile transfer code" value={transferCode} readOnly className="font-mono text-center tracking-wider" />
+                  <Button type="button" variant="outline" size="icon" onClick={copyGuestTransferCode} aria-label="Copy transfer code">
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+              <div className="space-y-2">
+                <label htmlFor="guest-restore-code" className="text-sm font-medium">Restore a guest profile</label>
+                <div className="flex gap-2">
+                  <Input
+                    id="guest-restore-code"
+                    value={restoreCode}
+                    onChange={(event) => {
+                      const raw = event.target.value.toUpperCase().replace(/[^A-F0-9]/g, "").slice(0, 16);
+                      setRestoreCode(raw.match(/.{1,4}/g)?.join("-") ?? raw);
+                    }}
+                    placeholder="ABCD-1234-5678-9ABC"
+                    autoCapitalize="characters"
+                    autoComplete="off"
+                    className="font-mono tracking-wider"
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => setRestoreConfirmationOpen(true)}
+                    disabled={restoreCode.replace(/-/g, "").length !== 16}
+                  >
+                    Restore
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={restoreConfirmationOpen} onOpenChange={setRestoreConfirmationOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Switch to this guest profile?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This device will switch to the profile in the code; profiles are not merged. If this device has guest progress you want to keep, create a transfer code for it first. Switching does not delete its server-side progress.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isRestoringGuest}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isRestoringGuest}
+              onClick={(event) => {
+                event.preventDefault();
+                void submitGuestRestore();
+              }}
+            >
+              {isRestoringGuest ? "Restoring…" : "Switch profile"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* ── Level / XP ───────────────────────────────────────────────────── */}
       {profileId && profile && (

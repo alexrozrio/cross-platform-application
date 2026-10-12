@@ -14,3 +14,4 @@
 - [Theme overlay stacking](theme-overlay-stacking.md) — keep the mobile full-screen layer over app chrome and raise nested dialogs locally.
 - [Completion sharing overlays](completion-sharing-overlays.md) — keep achievement unlocks modal; other celebrations stay non-blocking while the result is visible.
 - [Capacitor Node compatibility](capacitor-node-compatibility.md) — keep Capacitor packages on a major version supported by the workspace Node runtime.
+- [Guest profile transfer](guest-profile-transfer.md) — restore cross-storage guest identities with an owner-verified, one-use code; never expose profile IDs as restore credentials.

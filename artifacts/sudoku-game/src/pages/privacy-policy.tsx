@@ -25,14 +25,14 @@ export default function PrivacyPolicy() {
 
       <div className="bg-card rounded-2xl px-5 py-4 border border-border">
         <h1 className="text-3xl font-serif font-bold tracking-tight">Privacy Policy</h1>
-        <p className="text-muted-foreground mt-1 text-sm">Last updated: September 10, 2026</p>
+        <p className="text-muted-foreground mt-1 text-sm">Last updated: October 12, 2026</p>
       </div>
 
       <div className="prose prose-sm max-w-none space-y-6 text-muted-foreground leading-relaxed bg-card rounded-2xl border border-border px-6 py-5">
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">1. Information We Collect</h2>
           <p>
-            When you play as a guest we assign your device a random identifier stored only in your browser. When you sign in with Google we receive your name, profile photo, and email address from your Google account and store them to personalise your experience.
+            When you play as a guest we assign your device a random identifier, which is stored in that browser or app's local storage. You can transfer a guest profile between devices using a short-lived, one-use code. When you sign in with Google we receive your name, profile photo, and email address from your Google account and store them to personalise your experience.
           </p>
           <p>
             We also store game-related data you create across both Sudoku and Memory Match: puzzle and game attempts, completion times, scores, settings, and earned badges.
@@ -64,7 +64,7 @@ export default function PrivacyPolicy() {
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">4. Cookies, Analytics & Local Storage</h2>
           <p>
-            We use browser local storage to cache your profile ID, device identifier, preferences, and offline game progress between visits. Authentication sessions are managed using secure, server-side session cookies.
+            We use local storage in your browser or installed app to cache your profile ID, device identifier, preferences, and offline game progress between visits. Guest profiles can be transferred to another device using a short-lived, one-use code. Authentication sessions are managed using secure, server-side session cookies.
           </p>
           <p>
             Google Analytics is disabled unless you allow it in the privacy choices dialog. If enabled, it may use cookies or similar technologies to measure traffic, usage, and performance. You can change this choice using the Privacy choices button, through your browser settings, or by opting out of Google Analytics with Google's{" "}
@@ -133,7 +133,7 @@ export default function PrivacyPolicy() {
             Play Brain Games . Online is a general-audience, family-friendly service. It includes optional child-friendly modes, such as Baby and Mini grids, but it is not designed exclusively for children. Younger users should use the Service with a parent or guardian's involvement.
           </p>
           <p>
-            Child-friendly guest play does not require a child to provide a name, email address, profile photo, or other direct contact information. Guest play may use a random device identifier and store game progress in the browser so the game can work; these are not intended to identify a child by name. Account creation, Google sign-in, and any sharing of personal information should be handled or approved by a parent or guardian.
+            Child-friendly guest play does not require a child to provide a name, email address, profile photo, or other direct contact information. Guest play may use a random device identifier and store game progress in local browser or app storage so the game can work; these are not intended to identify a child by name. A short-lived transfer code can move a guest profile between devices. Account creation, Google sign-in, and any sharing of personal information should be handled or approved by a parent or guardian.
           </p>
           <p>
             We do not knowingly request direct personal information from children under 13. If you believe a child has provided us with personal data, please contact us so we can review and delete it where appropriate.

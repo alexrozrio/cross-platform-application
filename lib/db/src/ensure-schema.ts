@@ -32,6 +32,16 @@ export async function ensureDatabaseSchema(): Promise<void> {
     `ALTER TABLE profiles ADD COLUMN IF NOT EXISTS last_memory_date date`,
     `ALTER TABLE profiles ADD COLUMN IF NOT EXISTS xp integer NOT NULL DEFAULT 0`,
     `ALTER TABLE profiles ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now()`,
+    `CREATE TABLE IF NOT EXISTS guest_profile_transfer_codes (
+      id serial PRIMARY KEY,
+      profile_id integer NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+      code_hash text NOT NULL UNIQUE,
+      expires_at timestamptz NOT NULL,
+      consumed_at timestamptz,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )`,
+    `CREATE INDEX IF NOT EXISTS guest_profile_transfer_codes_profile_id_idx
+      ON guest_profile_transfer_codes(profile_id)`,
   ];
 
   for (const statement of statements) {
