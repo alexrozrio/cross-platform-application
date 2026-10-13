@@ -1,0 +1,41 @@
+D:\Project\Cross-Platform-Game\artifacts\sudoku-game\android>.\gradlew.bat assembleDebug
+Downloading https://services.gradle.org/distributions/gradle-8.11.1-all.zip
+
+Exception in thread "main" javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+        at sun.security.ssl.Alerts.getSSLException(Alerts.java:192)
+        at sun.security.ssl.SSLSocketImpl.fatal(SSLSocketImpl.java:1917)
+        at sun.security.ssl.Handshaker.fatalSE(Handshaker.java:301)
+        at sun.security.ssl.Handshaker.fatalSE(Handshaker.java:295)
+        at sun.security.ssl.ClientHandshaker.serverCertificate(ClientHandshaker.java:1471)
+        at sun.security.ssl.ClientHandshaker.processMessage(ClientHandshaker.java:212)
+        at sun.security.ssl.Handshaker.processLoop(Handshaker.java:936)
+        at sun.security.ssl.Handshaker.process_record(Handshaker.java:871)
+        at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:1043)
+        at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1343)
+        at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1371)
+        at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1355)
+        at sun.net.www.protocol.https.HttpsClient.afterConnect(HttpsClient.java:563)
+        at sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:185)
+        at sun.net.www.protocol.http.HttpURLConnection.followRedirect0(HttpURLConnection.java:2648)
+        at sun.net.www.protocol.http.HttpURLConnection.followRedirect(HttpURLConnection.java:2574)
+        at sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1768)
+        at sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1439)
+        at sun.net.www.protocol.https.HttpsURLConnectionImpl.getInputStream(HttpsURLConnectionImpl.java:254)
+        at org.gradle.wrapper.Install.forceFetch(SourceFile:2)
+        at org.gradle.wrapper.Install$1.call(SourceFile:8)
+        at org.gradle.wrapper.GradleWrapperMain.main(SourceFile:67)
+Caused by: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+        at sun.security.validator.PKIXValidator.doBuild(PKIXValidator.java:387)
+        at sun.security.validator.PKIXValidator.engineValidate(PKIXValidator.java:292)
+        at sun.security.validator.Validator.validate(Validator.java:260)
+        at sun.security.ssl.X509TrustManagerImpl.validate(X509TrustManagerImpl.java:324)
+        at sun.security.ssl.X509TrustManagerImpl.checkTrusted(X509TrustManagerImpl.java:229)
+        at sun.security.ssl.X509TrustManagerImpl.checkServerTrusted(X509TrustManagerImpl.java:124)
+        at sun.security.ssl.ClientHandshaker.serverCertificate(ClientHandshaker.java:1453)
+        ... 17 more
+Caused by: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+        at sun.security.provider.certpath.SunCertPathBuilder.build(SunCertPathBuilder.java:145)
+        at sun.security.provider.certpath.SunCertPathBuilder.engineBuild(SunCertPathBuilder.java:131)
+        at java.security.cert.CertPathBuilder.build(CertPathBuilder.java:280)
+        at sun.security.validator.PKIXValidator.doBuild(PKIXValidator.java:382)
+        ... 23 more
