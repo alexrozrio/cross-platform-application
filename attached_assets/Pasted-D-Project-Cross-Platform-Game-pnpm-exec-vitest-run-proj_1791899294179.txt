@@ -1,0 +1,13 @@
+D:\Project\Cross-Platform-Game> pnpm exec vitest run --project sudoku-game
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Startup Error ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Error: No projects matched the filter "sudoku-game".
+    at Vitest._setServer (file:///D:/Project/Cross-Platform-Game/node_modules/.pnpm/vitest@4.1.11_@types+node@2_b5067b95c52aab7d91870ce7f468396e/node_modules/vitest/dist/chunks/cli-api.CnMVyzaz.js:13232:22)
+    at BasicMinimalPluginContext.handler (file:///D:/Project/Cross-Platform-Game/node_modules/.pnpm/vitest@4.1.11_@types+node@2_b5067b95c52aab7d91870ce7f468396e/node_modules/vitest/dist/chunks/cli-api.CnMVyzaz.js:14258:5)
+    at _createServer (file:///D:/Project/Cross-Platform-Game/node_modules/.pnpm/vite@8.2.2_@types+node@25.9_2f8dac546e0b00330e35e159893646e5/node_modules/vite/dist/node/chunks/node.js:26631:84)
+    at createViteServer (file:///D:/Project/Cross-Platform-Game/node_modules/.pnpm/vitest@4.1.11_@types+node@2_b5067b95c52aab7d91870ce7f468396e/node_modules/vitest/dist/chunks/cli-api.CnMVyzaz.js:8902:17)
+    at createVitest (file:///D:/Project/Cross-Platform-Game/node_modules/.pnpm/vitest@4.1.11_@types+node@2_b5067b95c52aab7d91870ce7f468396e/node_modules/vitest/dist/chunks/cli-api.CnMVyzaz.js:14288:18)
+    at prepareVitest (file:///D:/Project/Cross-Platform-Game/node_modules/.pnpm/vitest@4.1.11_@types+node@2_b5067b95c52aab7d91870ce7f468396e/node_modules/vitest/dist/chunks/cli-api.CnMVyzaz.js:14655:14)
+    at startVitest (file:///D:/Project/Cross-Platform-Game/node_modules/.pnpm/vitest@4.1.11_@types+node@2_b5067b95c52aab7d91870ce7f468396e/node_modules/vitest/dist/chunks/cli-api.CnMVyzaz.js:14598:14)
+    at start (file:///D:/Project/Cross-Platform-Game/node_modules/.pnpm/vitest@4.1.11_@types+node@2_b5067b95c52aab7d91870ce7f468396e/node_modules/vitest/dist/chunks/cac.uFydS1Z4.js:2340:15)
+    at CAC.run (file:///D:/Project/Cross-Platform-Game/node_modules/.pnpm/vitest@4.1.11_@types+node@2_b5067b95c52aab7d91870ce7f468396e/node_modules/vitest/dist/chunks/cac.uFydS1Z4.js:2318:2)
