@@ -24,6 +24,21 @@ allprojects {
     }
 }
 
+subprojects {
+    configurations.configureEach {
+        resolutionStrategy.eachDependency { dependency ->
+            if (dependency.requested.group == "org.jetbrains.kotlin" &&
+                dependency.requested.name in [
+                    "kotlin-stdlib",
+                    "kotlin-stdlib-jdk7",
+                    "kotlin-stdlib-jdk8"
+                ]) {
+                dependency.useVersion("1.8.22")
+            }
+        }
+    }
+}
+
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
