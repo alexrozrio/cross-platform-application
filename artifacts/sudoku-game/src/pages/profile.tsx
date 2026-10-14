@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useSearch, Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { usePageMeta } from "@/components/page-meta";
-import { apiUrl } from "@/lib/api-base-url";
+import { signOut, startGoogleSignIn } from "@/lib/native-auth";
 import {
   useGetProfile,
   useUpdateProfile,
@@ -782,14 +782,14 @@ export default function Profile() {
             <Button
               variant="outline"
               className="w-full gap-2 text-destructive hover:text-destructive"
-              onClick={() => { const from = encodeURIComponent(window.location.origin); window.location.href = apiUrl(`/api/logout?from=${from}`); }}
+              onClick={() => { void signOut().catch((error: unknown) => toast.error(error instanceof Error ? error.message : "Could not sign out.")); }}
             >
               <LogOut className="w-4 h-4" /> Sign out
             </Button>
           ) : (
             <Button
               className="w-full gap-2"
-              onClick={() => { const from = encodeURIComponent(window.location.origin); window.location.href = apiUrl(`/api/login?from=${from}`); }}
+              onClick={() => { void startGoogleSignIn().catch((error: unknown) => toast.error(error instanceof Error ? error.message : "Could not start Google sign-in.")); }}
             >
               <LogIn className="w-4 h-4" /> Sign in
             </Button>

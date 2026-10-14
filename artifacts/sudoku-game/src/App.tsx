@@ -15,6 +15,12 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { ConsentManager } from "@/components/consent-manager";
 import { modeFromQuery } from "@/lib/sudoku-routes";
 import { invitePathFromAppUrl } from "@/lib/app-links";
+import { nativeAuthCallbackFromAppUrl } from "@/lib/app-links";
+import {
+  cancelNativeGoogleSignIn,
+  completeNativeGoogleSignIn,
+} from "@/lib/native-auth";
+import { toast } from "sonner";
 
 // Pages — lazy-loaded so each route only ships the JS it needs, instead of
 // one large bundle that has to load before the app becomes interactive.
@@ -92,12 +98,36 @@ function Router() {
 
     let disposed = false;
     let listener: { remove: () => Promise<void> } | undefined;
-    const openInvite = (url: string) => {
+    const openAppUrl = (url: string) => {
+      const authCallback = nativeAuthCallbackFromAppUrl(url);
+      if (authCallback) {
+        if (authCallback.code) {
+          void completeNativeGoogleSignIn(authCallback.code).catch(
+            (error: unknown) => {
+              void cancelNativeGoogleSignIn();
+              toast.error(
+                error instanceof Error
+                  ? error.message
+                  : "Google sign-in failed. Please try again.",
+              );
+            },
+          );
+        } else {
+          void cancelNativeGoogleSignIn();
+          toast.error(
+            authCallback.error === "cancelled"
+              ? "Google sign-in was cancelled."
+              : "Google sign-in failed. Please try again.",
+          );
+        }
+        return;
+      }
+
       const path = invitePathFromAppUrl(url);
       if (path) setLocation(path);
     };
 
-    void CapacitorApp.addListener("appUrlOpen", ({ url }) => openInvite(url))
+    void CapacitorApp.addListener("appUrlOpen", ({ url }) => openAppUrl(url))
       .then((handle) => {
         if (disposed) void handle.remove();
         else listener = handle;
@@ -106,7 +136,7 @@ function Router() {
 
     void CapacitorApp.getLaunchUrl()
       .then((launch) => {
-        if (!disposed && launch?.url) openInvite(launch.url);
+        if (!disposed && launch?.url) openAppUrl(launch.url);
       })
       .catch((error) => console.warn("Could not read app launch URL", error));
 

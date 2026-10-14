@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useGetProfile } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
-import { apiUrl } from "@/lib/api-base-url";
+import { signOut, startGoogleSignIn } from "@/lib/native-auth";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Trophy, User, Home, Palette, LogIn, LogOut, Gem, Swords } from "lucide-react";
 import { useFontTheme } from "@/hooks/use-font-theme";
@@ -19,6 +19,7 @@ import { GameResultVisibilityContext } from "@/components/game-result-visibility
 import { useThemeBg } from "@/hooks/use-theme-bg";
 import { CONSENT_OPEN_EVENT } from "@/lib/consent";
 import { buildLegalHref } from "@/lib/legal-navigation";
+import { toast } from "sonner";
 
 export function applyAppTheme(theme: string) {
   document.documentElement.setAttribute("data-theme", theme);
@@ -105,12 +106,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
     href === "/" ? location === "/" : location.startsWith(href);
 
   const handleSignInOut = () => {
-    const from = encodeURIComponent(window.location.origin);
-    if (isSignedIn) {
-      window.location.href = apiUrl(`/api/logout?from=${from}`);
-    } else {
-      window.location.href = apiUrl(`/api/login?from=${from}`);
-    }
+    const action = isSignedIn ? signOut() : startGoogleSignIn();
+    void action.catch((error: unknown) => {
+      toast.error(
+        error instanceof Error ? error.message : "Could not complete sign-in.",
+      );
+    });
   };
 
   return (

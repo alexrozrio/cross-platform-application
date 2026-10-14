@@ -1,11 +1,11 @@
+import { createHash, randomBytes } from "node:crypto";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import passport from "passport";
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import connectPg from "connect-pg-simple";
-import { db, users } from "@workspace/db";
-import { profilesTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { db, profilesTable, sessions, users } from "@workspace/db";
+import { and, eq, gt, sql } from "drizzle-orm";
 import {
   getAllowedAuthReturnOrigin,
   getSafeAuthReturnUrl,
@@ -14,6 +14,108 @@ import {
 // Secure cookies when running on Replit or in production
 const isSecure =
   !!process.env.REPLIT_DEV_DOMAIN || process.env.NODE_ENV === "production";
+const NATIVE_AUTH_SCHEME = "online.playbraingames.app";
+const NATIVE_AUTH_TTL_MS = 10 * 60 * 1000;
+const NATIVE_AUTH_HANDOFF_TTL_MS = 5 * 60 * 1000;
+const PKCE_CHALLENGE_PATTERN = /^[A-Za-z0-9_-]{43}$/;
+const PKCE_VERIFIER_PATTERN = /^[A-Za-z0-9._~-]{43,128}$/;
+
+interface NativeAuthState {
+  codeChallenge: string;
+  createdAt: number;
+}
+
+interface AuthenticatedUser {
+  userId: string;
+  profileId: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  photo: string;
+}
+
+function isNativeAuthState(value: unknown): value is NativeAuthState {
+  if (!value || typeof value !== "object") return false;
+  const state = value as Partial<NativeAuthState>;
+  return (
+    typeof state.codeChallenge === "string" &&
+    PKCE_CHALLENGE_PATTERN.test(state.codeChallenge) &&
+    typeof state.createdAt === "number" &&
+    Date.now() - state.createdAt <= NATIVE_AUTH_TTL_MS &&
+    Date.now() >= state.createdAt
+  );
+}
+
+function isAuthenticatedUser(value: unknown): value is AuthenticatedUser {
+  if (!value || typeof value !== "object") return false;
+  const user = value as Partial<AuthenticatedUser>;
+  return (
+    typeof user.userId === "string" &&
+    typeof user.profileId === "number" &&
+    typeof user.email === "string" &&
+    typeof user.firstName === "string" &&
+    typeof user.lastName === "string" &&
+    typeof user.photo === "string"
+  );
+}
+
+async function createNativeAuthHandoff(
+  user: AuthenticatedUser,
+  codeChallenge: string,
+): Promise<string> {
+  const expire = new Date(Date.now() + NATIVE_AUTH_HANDOFF_TTL_MS);
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const code = randomBytes(32).toString("base64url");
+    const inserted = await db
+      .insert(sessions)
+      .values({
+        sid: code,
+        expire,
+        sess: {
+          cookie: {
+            originalMaxAge: NATIVE_AUTH_HANDOFF_TTL_MS,
+            expires: expire.toISOString(),
+            httpOnly: true,
+            secure: isSecure,
+            path: "/",
+          },
+          nativeAuthHandoff: { codeChallenge, user },
+        },
+      })
+      .onConflictDoNothing()
+      .returning({ sid: sessions.sid });
+
+    if (inserted.length > 0) return code;
+  }
+  throw new Error("Could not create a native sign-in handoff.");
+}
+
+async function consumeNativeAuthHandoff(
+  code: string,
+  codeChallenge: string,
+): Promise<AuthenticatedUser | null> {
+  const [row] = await db
+    .delete(sessions)
+    .where(
+      and(
+        eq(sessions.sid, code),
+        gt(sessions.expire, new Date()),
+        sql`${sessions.sess}->'nativeAuthHandoff'->>'codeChallenge' = ${codeChallenge}`,
+      ),
+    )
+    .returning({ sess: sessions.sess });
+
+  if (!row) return null;
+  const sess = row.sess as
+    | { nativeAuthHandoff?: { user?: unknown } }
+    | null;
+  const user = sess?.nativeAuthHandoff?.user;
+  return isAuthenticatedUser(user) ? user : null;
+}
+
+function pkceChallengeForVerifier(verifier: string): string {
+  return createHash("sha256").update(verifier).digest("base64url");
+}
 
 // ─── Session ─────────────────────────────────────────────────────────────────
 
@@ -180,6 +282,22 @@ export async function setupAuth(app: Express) {
   passport.serializeUser((user: any, cb) => cb(null, user));
   passport.deserializeUser((user: any, cb) => cb(null, user));
 
+  app.post("/api/native/logout", (req: any, res, next) => {
+    req.logout((logoutError: Error | null) => {
+      if (logoutError) return next(logoutError);
+      req.session.destroy((destroyError: Error | null) => {
+        if (destroyError) return next(destroyError);
+        res.clearCookie("connect.sid", {
+          path: "/",
+          httpOnly: true,
+          secure: isSecure,
+          sameSite: isSecure ? "none" : "lax",
+        });
+        res.json({ ok: true });
+      });
+    });
+  });
+
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
@@ -189,6 +307,17 @@ export async function setupAuth(app: Express) {
       res.status(503).json({
         message:
           "Sign in unavailable. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to enable Google sign-in.",
+      });
+    });
+    app.get("/api/native/login", (_req, res) => {
+      res.status(503).json({
+        message:
+          "Sign in unavailable. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to enable Google sign-in.",
+      });
+    });
+    app.post("/api/native-auth/exchange", (_req, res) => {
+      res.status(503).json({
+        message: "Native sign-in is unavailable until Google sign-in is configured.",
       });
     });
     app.get("/api/callback/google", (_req, res) => res.redirect("/"));
@@ -207,6 +336,8 @@ export async function setupAuth(app: Express) {
         clientID: clientId,
         clientSecret: clientSecret,
         callbackURL: googleCallbackUrl(),
+        state: true,
+        pkce: true,
       },
       async (_accessToken, _refreshToken, profile, done) => {
         try {
@@ -243,44 +374,123 @@ export async function setupAuth(app: Express) {
   );
 
   const defaultRedirectTo = frontendUrl();
-
-  // The frontend passes its own origin as a base64url-encoded "from" query
-  // param so the server can redirect back to whichever host initiated login
-  // (localhost:19093, Replit dev domain, production URL, etc.) without needing
-  // a separate FRONTEND_URL env var per environment. Only configured web
-  // origins are carried through OAuth state.
-  app.get("/api/login", (req, res, next) => {
-    const from = req.query.from as string | undefined;
-    const allowedReturnOrigin = getAllowedAuthReturnOrigin(from);
-    const state = allowedReturnOrigin
-      ? Buffer.from(allowedReturnOrigin).toString("base64url")
-      : undefined;
+  const beginGoogleAuth = (req: any, res: any, next: any) =>
     passport.authenticate("google", {
       scope: ["openid", "email", "profile"],
-      ...(state ? { state } : {}),
+    })(req, res, next);
+
+  // Preserve the browser destination in the server session. Passport owns the
+  // OAuth state parameter and PKCE verifier so both are validated on callback.
+  app.get("/api/login", (req: any, res, next) => {
+    const from = req.query.from as string | undefined;
+    req.session.authReturnOrigin = getAllowedAuthReturnOrigin(from);
+    delete req.session.nativeAuth;
+    beginGoogleAuth(req, res, next);
+  });
+
+  app.get("/api/native/login", (req: any, res, next) => {
+    const codeChallenge = req.query.code_challenge;
+    if (
+      typeof codeChallenge !== "string" ||
+      !PKCE_CHALLENGE_PATTERN.test(codeChallenge)
+    ) {
+      res.status(400).json({ message: "Invalid native sign-in request." });
+      return;
+    }
+
+    req.session.nativeAuth = { codeChallenge, createdAt: Date.now() };
+    delete req.session.authReturnOrigin;
+    return beginGoogleAuth(req, res, next);
+  });
+
+  app.get("/api/callback/google", (req: any, res, next) => {
+    passport.authenticate("google", (authError: Error | null, user: any) => {
+      const nativeState = isNativeAuthState(req.session?.nativeAuth)
+        ? req.session.nativeAuth
+        : null;
+      const redirectToWeb =
+        getAllowedAuthReturnOrigin(req.session?.authReturnOrigin) ??
+        defaultRedirectTo;
+      const redirectToNative = (result: "cancelled" | "failed") =>
+        `${NATIVE_AUTH_SCHEME}://auth/google?error=${result}`;
+      const clearPendingFlow = () => {
+        delete req.session.nativeAuth;
+        delete req.session.authReturnOrigin;
+      };
+      const saveAndRedirect = (url: string) => {
+        req.session.save((saveError: Error | null) => {
+          if (saveError) return next(saveError);
+          res.redirect(url);
+        });
+      };
+
+      if (authError || !user) {
+        if (authError) {
+          console.warn("Google OAuth did not complete:", authError.message);
+        }
+        const failureUrl = nativeState
+          ? redirectToNative("failed")
+          : redirectToWeb;
+        clearPendingFlow();
+        return saveAndRedirect(failureUrl);
+      }
+
+      req.logIn(user, (loginError: Error | null) => {
+        if (loginError) return next(loginError);
+
+        if (nativeState) {
+          void createNativeAuthHandoff(user, nativeState.codeChallenge)
+            .then((code) => {
+              clearPendingFlow();
+              saveAndRedirect(
+                `${NATIVE_AUTH_SCHEME}://auth/google?code=${encodeURIComponent(code)}`,
+              );
+            })
+            .catch((handoffError) => {
+              console.error("Could not create native OAuth handoff:", handoffError);
+              clearPendingFlow();
+              saveAndRedirect(redirectToNative("failed"));
+            });
+          return;
+        }
+
+        clearPendingFlow();
+        saveAndRedirect(redirectToWeb);
+      });
     })(req, res, next);
   });
 
-  app.get(
-    "/api/callback/google",
-    passport.authenticate("google", { failureRedirect: defaultRedirectTo }),
-    (req: any, res) => {
-      // Decode the frontend origin from the OAuth state parameter so we
-      // redirect back to wherever the user originally came from.
-      const redirectTo = getSafeAuthReturnUrl(
-        req.query.state as string | undefined,
-        defaultRedirectTo,
-      );
+  app.post("/api/native-auth/exchange", (req: any, res, next) => {
+    const code = req.body?.code;
+    const verifier = req.body?.verifier;
+    if (
+      typeof code !== "string" ||
+      !PKCE_CHALLENGE_PATTERN.test(code) ||
+      typeof verifier !== "string" ||
+      !PKCE_VERIFIER_PATTERN.test(verifier)
+    ) {
+      res.status(400).json({ message: "Invalid native sign-in code." });
+      return;
+    }
 
-      // Explicitly save the session to the store before redirecting.
-      // Without this, the redirect can race ahead of the async DB write,
-      // causing the very next /api/auth/user request to see no session.
-      req.session.save((err: Error | null) => {
-        if (err) console.error("Session save error after OAuth:", err);
-        res.redirect(redirectTo);
-      });
-    },
-  );
+    void consumeNativeAuthHandoff(code, pkceChallengeForVerifier(verifier))
+      .then((user) => {
+        if (!user) {
+          res
+            .status(401)
+            .json({ message: "This sign-in expired or could not be verified." });
+          return;
+        }
+        req.logIn(user, (loginError: Error | null) => {
+          if (loginError) return next(loginError);
+          req.session.save((saveError: Error | null) => {
+            if (saveError) return next(saveError);
+            res.json({ ok: true });
+          });
+        });
+      })
+      .catch(next);
+  });
 
   app.get("/api/logout", (req: any, res) => {
     const from = req.query.from as string | undefined;
