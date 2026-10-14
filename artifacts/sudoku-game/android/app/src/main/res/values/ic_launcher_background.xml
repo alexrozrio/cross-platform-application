@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#FFFFFF</color>
+    <!-- Branded navy background behind the adaptive launcher foreground. -->
+    <color name="ic_launcher_background">#071A63</color>
 </resources>

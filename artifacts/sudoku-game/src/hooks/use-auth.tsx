@@ -126,6 +126,8 @@ export function AuthProvider({
     prevUserIdRef.current = currentUserId;
 
     const syncProfile = async () => {
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), 2500);
       try {
         let body: Record<string, string>;
 
@@ -150,6 +152,7 @@ export function AuthProvider({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
           credentials: 'include',
+          signal: controller.signal,
         });
 
         if (res.ok) {
@@ -160,6 +163,7 @@ export function AuthProvider({
       } catch {
         // Network error — keep whatever profileId is already cached
       } finally {
+        window.clearTimeout(timeoutId);
         setIsReady(true);
       }
     };
