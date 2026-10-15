@@ -1,0 +1,6 @@
+# Copy this file to key.properties and replace the values locally.
+# storeFile is relative to the android/ directory.
+storeFile=app/upload-key.jks
+storePassword=REPLACE_WITH_YOUR_KEYSTORE_PASSWORD
+keyAlias=upload
+keyPassword=REPLACE_WITH_YOUR_KEY_PASSWORD
