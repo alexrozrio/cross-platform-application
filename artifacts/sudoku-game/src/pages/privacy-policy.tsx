@@ -38,7 +38,7 @@ export default function PrivacyPolicy() {
             We also store game-related data you create across both Sudoku and Memory Match: puzzle and game attempts, completion times, scores, settings, and earned badges.
           </p>
           <p>
-            If you allow analytics in the privacy choices dialog, we use Google Analytics to understand how visitors use the Service, such as which pages are visited and how the Service performs. Google Analytics may use cookies or similar identifiers and may process usage and device information on our behalf.
+            If you allow analytics in the privacy choices dialog, we use Google Analytics 4 to understand how visitors use the Service, such as which pages are visited and how the Service performs. The analytics tag loads only after you opt in. It may use cookies or similar identifiers and process usage, browser/device information, and general location inferred from network information. We do not send a Google Analytics user ID.
           </p>
         </section>
 
@@ -104,7 +104,9 @@ export default function PrivacyPolicy() {
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">6. Data Retention</h2>
           <p>
-            Your profile and game history — including both Sudoku and Memory Match activity — are retained as long as your account is active. You can delete your data at any time by contacting us — see Section 10.
+            Your profile and game history — including both Sudoku and Memory Match activity — are retained while your account is active. You can permanently delete your account and associated server data from the app's Account page or through our{" "}
+            <a className="text-foreground font-medium underline underline-offset-2" href="/account-deletion">account deletion page</a>.
+            The deletion flow also clears local app data on the device used to submit the request. Local copies on other devices must be cleared on those devices. If you cannot sign in, contact us using Section 10.
           </p>
         </section>
 
@@ -114,7 +116,9 @@ export default function PrivacyPolicy() {
             You may ask us to provide, correct, or delete the personal information associated with your account. You may also withdraw consent where we rely on consent to process information by opening Privacy choices at any time. Some requests may require us to verify your identity or may be limited by legal obligations.
           </p>
           <p>
-            To make a request, contact us using the details in Section 10. If advertising is enabled, you can also manage Google's advertising personalization choices through{" "}
+            To delete an account, use the in-app Account page or our{" "}
+            <a className="text-foreground font-medium underline underline-offset-2" href="/account-deletion">account deletion page</a>.
+            If you cannot access your account, contact us using the details in Section 10. If advertising is enabled, you can also manage Google's advertising personalization choices through{" "}
             <a
               className="text-foreground font-medium underline underline-offset-2"
               href="https://adssettings.google.com/"

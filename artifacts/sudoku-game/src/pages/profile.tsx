@@ -73,6 +73,7 @@ import {
   ExternalLink,
   Info,
   Copy,
+  Trash2,
 } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -792,6 +793,17 @@ export default function Profile() {
               onClick={() => { void startGoogleSignIn().catch((error: unknown) => toast.error(error instanceof Error ? error.message : "Could not start Google sign-in.")); }}
             >
               <LogIn className="w-4 h-4" /> Sign in
+            </Button>
+          )}
+          {isSignedIn && (
+            <Button
+              asChild
+              variant="outline"
+              className="w-full gap-2 text-destructive hover:text-destructive"
+            >
+              <Link href="/account-deletion">
+                <Trash2 className="w-4 h-4" /> Delete account and data
+              </Link>
             </Button>
           )}
           {!isSignedIn && (

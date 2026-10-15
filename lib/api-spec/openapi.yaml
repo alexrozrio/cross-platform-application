@@ -25,7 +25,21 @@ tags:
     description: Achievement badges
   - name: challenges
     description: Player vs Player challenges
+  - name: accounts
+    description: Account and personal data management
 paths:
+  /account:
+    delete:
+      operationId: deleteAccount
+      tags: [accounts]
+      summary: Permanently delete the signed-in account and associated data
+      description: Requires the signed-in account session. Deletes the account profile, game history, and related account data.
+      responses:
+        "204":
+          description: Account and associated data deleted
+        "401":
+          description: Authentication required
+
   /healthz:
     get:
       operationId: healthCheck

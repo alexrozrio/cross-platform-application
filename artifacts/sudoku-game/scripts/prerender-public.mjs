@@ -192,6 +192,25 @@ const publicPages = [
     schemaType: "WebPage",
   },
   {
+    route: "/account-deletion",
+    title: "Delete Your Account and Data | Play Brain Games . Online",
+    description:
+      "Request deletion of your Play Brain Games account and associated Sudoku, Memory Match, and profile data.",
+    heading: "Delete Your Account and Data",
+    intro:
+      "You can permanently delete your Play Brain Games account and associated server data from the app's Account page. Sign in to the account you want deleted, then confirm the deletion request.",
+    sections: [
+      ["What will be deleted", "Your account identity, profile, game history, statistics, badges, and related challenge records will be removed from our servers."],
+      ["Local app data", "The deletion flow clears local app data on the device used to submit the request. Clear app storage on any other devices to remove locally saved copies there."],
+      ["Can't sign in?", "Email support@playbraingames.online with an account deletion request. We may need to verify account ownership before processing it."],
+    ],
+    links: [
+      ["/privacy", "Read the Privacy Policy"],
+      ["/profile", "Open the Account page"],
+    ],
+    schemaType: "WebPage",
+  },
+  {
     route: "/terms",
     title: "Terms of Service | Play Brain Games . Online",
     description:

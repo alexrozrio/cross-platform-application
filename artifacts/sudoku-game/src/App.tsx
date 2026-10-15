@@ -73,6 +73,7 @@ const DailyChallenge = lazy(() => import("@/pages/daily-challenge"));
 const Challenges = lazy(() => import("@/pages/challenges"));
 const About = lazy(() => import("@/pages/about"));
 const PrivacyPolicy = lazy(() => import("@/pages/privacy-policy"));
+const AccountDeletion = lazy(() => import("@/pages/account-deletion"));
 const TermsOfService = lazy(() => import("@/pages/terms-of-service"));
 const MemoryMatch = lazy(() => import("@/pages/memory"));
 function MemoryBookmarkRoute({ params }: { params: { difficulty: string } }) {
@@ -198,6 +199,7 @@ function Router() {
             </Route>
             <Route path="/about" component={About} />
             <Route path="/privacy" component={PrivacyPolicy} />
+            <Route path="/account-deletion" component={AccountDeletion} />
             <Route path="/terms" component={TermsOfService} />
             <Route component={NotFound} />
           </Switch>
