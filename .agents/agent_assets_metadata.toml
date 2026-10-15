@@ -1,5 +1,4 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "1x9VDY5e1XiAO2HnF59rF"
@@ -42,3 +41,17 @@ id = "J1yZx25jgjy-FhW0CQwz8"
 uri = "file://artifacts/sudoku-game/public/themes/superhero/9.png"
 type = "image"
 title = "generated_image"
+
+[[outputs]]
+id = "2gqMtdQin5fVVZBgd7sk8"
+uri = "file://artifacts/sudoku-game/play-store-assets/play-store-icon-512.png"
+type = "image"
+title = "Google Play app icon"
+description = "512×512 RGBA PNG, under 1 MB, prepared from the current app icon for the Play Store listing."
+logical_id = "52935162-623e-4dde-9f65-d885e9934094"
+content_hash = "sha256:1c6afef035ed2d5a0dc13b27cef5280cea392ba796ae88378e447ee61c2726ad"
+size = 416457
+mtime_ms = 1792064227354
+storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:9cb85dae-212b-49c3-b2c9-1a55c669ac43/52935162-623e-4dde-9f65-d885e9934094/3d78af16-4c81-444d-83eb-d0afc067204f"
+storage_version_token = "1792064305616907"
+content_type = "image/png"
