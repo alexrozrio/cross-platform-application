@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useLocation, useSearch } from 'wouter';
+import { Link, useLocation, useSearch } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/use-auth';
 import { useImageTheme } from '@/hooks/use-image-theme';
 import { usePageMeta } from '@/components/page-meta';
 import { getTheme } from '@/lib/themes';
 import { useThemeImageSrc } from '@/components/theme-icons';
-import { MemoryGuide } from '@/components/game-guides';
 import { customFetch, useGetProfile } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -912,7 +911,21 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
           </button>
         </div>
 
-        <MemoryGuide />
+        <section className="rounded-2xl border border-violet-400/25 bg-card p-5 sm:p-6">
+          <h2 className="text-xl font-serif font-bold text-foreground">
+            See a sample matching strategy
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            The full guide demonstrates how to remember revealed card positions,
+            use a consistent scan, and choose between four board sizes.
+          </p>
+          <Link
+            href="/guides/#memory-guide-title"
+            className="mt-4 inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
+          >
+            Read the Memory Match guide
+          </Link>
+        </section>
 
         {/* Rules modal */}
         <Dialog open={infoModal === 'rules'} onOpenChange={o => !o && setInfoModal(null)}>

@@ -62,6 +62,24 @@ export function SudokuGuide() {
         </div>
       </div>
 
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 sm:p-5">
+        <h3 className={subheadingClass}>Worked example: a 4×4 placement</h3>
+        <p className="mt-2">
+          The dot marks one empty cell. In row 2, the only missing symbol is 2.
+          Column 4 is also missing 2, and the top-right 2×2 box needs 2 as well,
+          so all three constraints agree on the same move.
+        </p>
+        <figure className="mt-3">
+          <pre className="overflow-x-auto rounded-lg border border-border/70 bg-background p-3 text-center font-mono text-sm leading-7 text-foreground">
+            {"1 2 │ 3 4\n3 4 │ 1 ·\n───┼───\n2 1 │ 4 3\n4 3 │ 2 1"}
+          </pre>
+          <figcaption className="mt-2 text-xs">
+            Place 2 in row 2, column 4, then re-check the row, column, and box
+            affected by that placement.
+          </figcaption>
+        </figure>
+      </div>
+
       <div>
         <h3 className={subheadingClass}>Choosing a Sudoku grid</h3>
         <div className="mt-2 overflow-x-auto rounded-xl border border-border/70">
@@ -202,6 +220,28 @@ export function MemoryGuide() {
             layout becomes familiar.
           </p>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-violet-400/25 bg-violet-500/5 p-4 sm:p-5">
+        <h3 className={subheadingClass}>A sample Memory Match sequence</h3>
+        <ol className="mt-2 list-decimal space-y-2 pl-5">
+          <li>
+            Reveal row 1, column 1 and see a star. Reveal row 1, column 2 and
+            see a moon; because they do not match, both cards turn face-down.
+          </li>
+          <li>
+            Later, row 2, column 1 reveals a star. Pair it with the remembered
+            star at row 1, column 1.
+          </li>
+          <li>
+            Keep the moon&apos;s location in mind. When its matching card appears,
+            use the remembered position instead of searching the whole board
+            again.
+          </li>
+        </ol>
+        <p className="mt-3 text-xs">
+          The positions are illustrative; each new game shuffles its own board.
+        </p>
       </div>
 
       <div>

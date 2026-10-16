@@ -35,13 +35,15 @@ const publicPages = [
     route: "/guides",
     title: "Puzzle Guides: Sudoku & Memory Match | Play Brain Games . Online",
     description:
-      "Learn how to play Sudoku and Memory Match, choose the right board, improve your approach, and understand daily challenges.",
+      "Learn Sudoku and Memory Match with practical strategies, a worked 4×4 Sudoku move, a sample card sequence, and board-size guidance.",
     heading: "Puzzle Guides: Sudoku & Memory Match",
     intro:
-      "Learn the rules and build a calmer solving approach with practical guides for Sudoku and Memory Match. Start with the board that fits your experience, then practice at your own pace.",
+      "Use these practical guides to learn the rules, work through a sample move, and choose a board that fits your experience. The examples use the same row, column, box, and card-position ideas you can apply while playing.",
     sections: [
       ["Sudoku guide", "Use rows, columns, boxes, notes, and elimination to narrow down possibilities before making each move."],
+      ["Worked 4×4 move", "In the sample board, row 2 is missing 2. Column 4 and the top-right 2×2 box are also missing 2, so the row, column, and box all confirm the same placement: row 2, column 4."],
       ["Memory Match guide", "Create a reliable visual memory of the board, reduce unnecessary flips, and improve your time with repeat practice."],
+      ["Sample card sequence", "If row 1, column 1 reveals a star and row 1, column 2 reveals a moon, remember both positions after the mismatch. When a star appears at row 2, column 1 later, pair it with the remembered star."],
       ["Choose your next challenge", "Play as a guest, return to an unfinished round, or try a daily challenge when you want a shared goal."],
     ],
     links: [

@@ -7,7 +7,7 @@ export default function Guides() {
   usePageMeta({
     title: "Puzzle Guides: Sudoku & Memory Match | Play Brain Games . Online",
     description:
-      "Learn how to play Sudoku and Memory Match, choose the right board, improve your approach, and understand daily challenges on Play Brain Games . Online.",
+      "Learn Sudoku and Memory Match with practical strategies, a worked 4×4 Sudoku move, a sample card sequence, and board-size guidance.",
     path: "/guides",
     type: "article",
   });

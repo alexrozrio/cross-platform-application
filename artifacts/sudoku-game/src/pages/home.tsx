@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation, useSearch } from 'wouter';
+import { Link, useLocation, useSearch } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { useImageTheme } from '@/hooks/use-image-theme';
 import { usePageMeta } from '@/components/page-meta';
 import { useCreateGame, useGetProfile, customFetch, generatePuzzle } from '@workspace/api-client-react';
 import { generateOfflinePuzzle } from '@/lib/sudoku-generator';
 import { ThemeIcon } from '@/components/theme-icons';
-import { SudokuGuide } from '@/components/game-guides';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
@@ -758,7 +757,22 @@ export default function SudokuHome({
         </button>
       </div>
 
-      <SudokuGuide />
+      <section className="rounded-2xl border border-primary/20 bg-card p-5 sm:p-6">
+        <h2 className="text-xl font-serif font-bold text-foreground">
+          Want a worked Sudoku example?
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          The puzzle guide walks through a worked 4×4 placement using its row,
+          column, and box constraints, then explains candidate notes and how to
+          choose a board size.
+        </p>
+        <Link
+          href="/guides/#sudoku-guide-title"
+          className="mt-4 inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
+        >
+          Read the Sudoku guide
+        </Link>
+      </section>
 
       {/* Rules modal */}
       <Dialog open={infoModal === 'rules'} onOpenChange={o => !o && setInfoModal(null)}>
