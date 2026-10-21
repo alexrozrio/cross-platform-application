@@ -74,11 +74,42 @@ const publicPages = [
     intro:
       "Use these practical guides to learn the rules, work through a sample move, and choose a board that fits your experience. The examples use the same row, column, box, and card-position ideas you can apply while playing.",
     sections: [
-      ["Sudoku guide", "Use rows, columns, boxes, notes, and elimination to narrow down possibilities before making each move."],
-      ["Worked 4×4 move", "In the sample board, row 2 is missing 2. Column 4 and the top-right 2×2 box are also missing 2, so the row, column, and box all confirm the same placement: row 2, column 4."],
-      ["Memory Match guide", "Create a reliable visual memory of the board, reduce unnecessary flips, and improve your time with repeat practice."],
-      ["Sample card sequence", "If row 1, column 1 reveals a star and row 1, column 2 reveals a moon, remember both positions after the mismatch. When a star appears at row 2, column 1 later, pair it with the remembered star."],
-      ["Choose your next challenge", "Play as a guest, return to an unfinished round, or try a daily challenge when you want a shared goal."],
+      [
+        "Sudoku rules: row, column, and box",
+        "Each symbol must appear once in every row, column, and marked box. A symbol missing from a row may still be blocked from a particular cell by its column or box, so check all three groups before placing it. On smaller grids the symbol set and box shape change, but the same elimination method applies.",
+      ],
+      [
+        "A repeatable Sudoku solving loop",
+        "Scan a row, column, or box and list the symbols it is missing. For each empty cell, rule out symbols already present in its row, column, or box. Place a symbol only when one candidate remains; when several remain, record notes and continue elsewhere. After every placement, update the affected groups and scan them again for a new single.",
+      ],
+      [
+        "Worked example: a 4×4 placement",
+        "Starting board, with a dot for the empty cell: 1 2 | 3 4; 3 4 | 1 .; 2 1 | 4 3; 4 3 | 2 1. Row 2 is missing 2. Column 4 is also missing 2, and the top-right 2×2 box needs 2 as well. All three constraints agree: place 2 in row 2, column 4, then re-check that row, column, and box.",
+      ],
+      [
+        "Choosing a Sudoku grid",
+        "A 3×3 or 4×4 board keeps the symbol set small for a first try. A 6×6 board adds more candidates while staying compact. The 9×9 grid is the familiar standard format, while 16×16 uses a larger symbol set and takes more concentration. Choose a size that lets you reason comfortably rather than rushing.",
+      ],
+      [
+        "Memory Match rules",
+        "Cards start face-down. Reveal two cards on each turn: a matching pair stays visible, while a mismatch turns face-down again. The goal is to remember both what you saw and where it appeared. Each new board is shuffled, so a remembered position only applies to that round.",
+      ],
+      [
+        "A reliable Memory Match routine",
+        "Work through the board in a consistent order instead of flipping randomly. Notice the location of every revealed card, and keep both positions in mind after a mismatch. When you know where both cards in a pair are, match them before searching for more. Building a reliable map first can prevent extra flips; speed can improve as the layout becomes familiar.",
+      ],
+      [
+        "Memory Match board sizes",
+        "The 2×4 board has 4 pairs for a short warm-up. A 4×4 board has 8 pairs, a 4×8 board has 16, and an 8×8 board has 32. Larger boards require you to retain more card locations. Images, numbers, and letters use the same matching rules, so choose the display style that is easiest for you to scan.",
+      ],
+      [
+        "Sample Memory Match sequence",
+        "Suppose row 1, column 1 shows a star and row 1, column 2 shows a moon. They do not match, so both turn face-down. Later, row 2, column 1 reveals a star: pair it with the remembered star at row 1, column 1. Keep the moon's position in mind for when its partner appears. These positions are examples only; each round shuffles its own board.",
+      ],
+      [
+        "Play as a guest or save progress",
+        "You can start a puzzle without creating an account. Guest play is useful for a quick session; signing in is optional and lets the site associate completed results, rewards, and personal progress with your profile across devices.",
+      ],
     ],
     links: [
       ["/sudoku", "Start a Sudoku puzzle"],
