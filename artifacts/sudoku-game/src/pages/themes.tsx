@@ -125,7 +125,7 @@ export default function Themes() {
   usePageMeta({
     title: "Sudoku & Memory Match Themes | Play Brain Games . Online",
     description:
-      "Personalise Sudoku and Memory Match with colour themes, backgrounds, fonts, and image icon sets.",
+      "Personalise Sudoku and Memory Match with curated colour palettes, fonts, image icon sets and system backgrounds. Preview styles and unlock selected themes with gems.",
     path: "/themes",
   });
   const { profileId } = useAuth();
@@ -249,7 +249,7 @@ export default function Themes() {
   return (
     <div className="max-w-2xl mx-auto w-full space-y-10 animate-in fade-in duration-500">
       <div className="bg-card rounded-2xl px-5 py-4 border border-border">
-        <h1 className="text-3xl font-serif font-bold tracking-tight">Themes</h1>
+        <h1 className="text-3xl font-serif font-bold tracking-tight">Sudoku &amp; Memory Match Themes</h1>
         <p className="text-muted-foreground mt-1">
           Personalise the look, feel, and typography of the app. Locked items can be unlocked with gems.
         </p>

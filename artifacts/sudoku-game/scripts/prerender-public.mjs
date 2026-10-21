@@ -27,9 +27,43 @@ const publicPages = [
     links: [
       ["/sudoku", "Play Sudoku online"],
       ["/memory", "Play Memory Match online"],
+      ["/themes", "Browse game themes"],
       ["/guides", "Read the puzzle guides"],
     ],
     schemaType: "WebApplication",
+  },
+  {
+    route: "/themes",
+    title: "Sudoku & Memory Match Themes | Play Brain Games . Online",
+    description:
+      "Personalise Sudoku and Memory Match with curated colour palettes, fonts, image icon sets and system backgrounds. Preview styles and unlock selected themes with gems.",
+    heading: "Sudoku & Memory Match Themes",
+    intro:
+      "Choose a curated colour palette, switch on a system-provided background, and explore font and image-symbol options across Sudoku and Memory Match. Preview styles before applying them; some themes can be unlocked with gems.",
+    sections: [
+      [
+        "Curated colour palettes",
+        "Choose Classic, Dark, Forest, or another available colour theme. The selected palette changes the look of the app without changing puzzle rules.",
+      ],
+      [
+        "System-provided backgrounds",
+        "Turn the background image for the selected theme on or off. Your choice is saved to your profile and appears behind games.",
+      ],
+      [
+        "Fonts and image-symbol sets",
+        "Adjust text styles and browse themed image icons used in Sudoku and Memory Match. Preview available choices before selecting one.",
+      ],
+      [
+        "Unlockable options",
+        "Some themes can be unlocked with in-game gems. Classic, Dark, and Forest colour themes are free.",
+      ],
+    ],
+    links: [
+      ["/sudoku", "Play Sudoku with a new theme"],
+      ["/memory", "Use themes in Memory Match"],
+      ["/guides", "Read the puzzle guides"],
+    ],
+    schemaType: "CollectionPage",
   },
   {
     route: "/guides",
@@ -68,6 +102,7 @@ const publicPages = [
     ],
     links: [
       ["/guides", "Learn Sudoku strategies"],
+      ["/themes", "Explore Sudoku themes"],
       ["/daily-challenge", "Solve today's Sudoku challenge"],
       ["/leaderboard", "View the Sudoku leaderboard"],
     ],
@@ -88,6 +123,7 @@ const publicPages = [
     ],
     links: [
       ["/guides", "Read the Memory Match guide"],
+      ["/themes", "Browse game themes"],
       ["/memory-challenge", "Try a memory challenge"],
       ["/leaderboard", "View the Memory leaderboard"],
     ],
