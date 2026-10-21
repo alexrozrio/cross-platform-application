@@ -1,4 +1,4 @@
-import { and, eq, lte } from "drizzle-orm";
+import { and, eq, lte, or } from "drizzle-orm";
 import { db, challengesTable, memoryDuelsTable } from "@workspace/db";
 import { getChallengeExpiryCutoff, isChallengeInvitationExpired } from "./challenge-expiry-policy";
 
@@ -47,7 +47,7 @@ export async function expireInvitationIfDue(
   return true;
 }
 
-export async function expirePendingInvitations(now = new Date()) {
+export async function expirePendingInvitationsForProfile(profileId: number, now = new Date()) {
   const cutoff = getChallengeExpiryCutoff(now);
   const [expiredSudoku, expiredMemory] = await Promise.all([
     db
@@ -57,6 +57,10 @@ export async function expirePendingInvitations(now = new Date()) {
         and(
           eq(challengesTable.status, "pending"),
           lte(challengesTable.createdAt, cutoff),
+          or(
+            eq(challengesTable.challengerId, profileId),
+            eq(challengesTable.challengedId, profileId),
+          ),
         ),
       )
       .returning({ id: challengesTable.id }),
@@ -67,6 +71,10 @@ export async function expirePendingInvitations(now = new Date()) {
         and(
           eq(memoryDuelsTable.status, "pending"),
           lte(memoryDuelsTable.createdAt, cutoff),
+          or(
+            eq(memoryDuelsTable.challengerId, profileId),
+            eq(memoryDuelsTable.challengedId, profileId),
+          ),
         ),
       )
       .returning({ id: memoryDuelsTable.id }),

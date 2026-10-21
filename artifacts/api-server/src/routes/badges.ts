@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, desc } from "drizzle-orm";
 import { db, badgesTable, profilesTable } from "@workspace/db";
+import { ensureTournamentAwards } from "../utils/awards";
 
 const router: IRouter = Router();
 
@@ -35,6 +36,8 @@ router.get("/badges/:profileId", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Invalid profileId" });
     return;
   }
+
+  await ensureTournamentAwards();
 
   const badges = await db
     .select()

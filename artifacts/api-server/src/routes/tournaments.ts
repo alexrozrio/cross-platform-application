@@ -9,6 +9,7 @@ import {
   formatPeriodLabel,
   getNthPreviousWeekPeriod,
 } from "../utils/periods";
+import { ensureTournamentAwards } from "../utils/awards";
 
 const router: IRouter = Router();
 
@@ -16,6 +17,8 @@ const VALID_GRID_SIZES = new Set([3, 4, 6, 9, 16]);
 const VALID_TYPES = new Set(["weekly", "monthly"]);
 
 router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
+  await ensureTournamentAwards();
+
   const rawType = String(req.query.type ?? "weekly");
   const type = VALID_TYPES.has(rawType) ? (rawType as "weekly" | "monthly") : "weekly";
   const rawGridSize = req.query.gridSize !== undefined ? Number(req.query.gridSize) : undefined;

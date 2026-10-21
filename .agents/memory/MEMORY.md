@@ -16,3 +16,4 @@
 - [Capacitor Node compatibility](capacitor-node-compatibility.md) — keep Capacitor packages on a major version supported by the workspace Node runtime.
 - [Guest profile transfer](guest-profile-transfer.md) — restore cross-storage guest identities with an owner-verified, one-use code; never expose profile IDs as restore credentials.
 - [Avoid Replit-specific app dependencies](avoid-replit-app-dependencies.md) — keep the Sudoku app's runtime/build dependencies platform-neutral.
+- [Neon idle compute](neon-idle-compute.md) — keep expiration and badge maintenance request-driven so idle compute can suspend without changing the seven-day cutoff.

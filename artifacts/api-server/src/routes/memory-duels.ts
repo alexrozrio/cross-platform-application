@@ -3,7 +3,7 @@ import { eq, or, and, ne, gte } from "drizzle-orm";
 import { db, memoryDuelsTable, memoryGamesTable, profilesTable } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
-import { expireInvitationIfDue } from "../utils/challenge-expiry";
+import { expireInvitationIfDue, expirePendingInvitationsForProfile } from "../utils/challenge-expiry";
 import { getChallengeExpiryCutoff } from "../utils/challenge-expiry-policy";
 
 const router: IRouter = Router();
@@ -115,6 +115,8 @@ router.get("/memory-duels/for/:profileId", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Invalid profileId" });
     return;
   }
+
+  await expirePendingInvitationsForProfile(profileId);
 
   const duels = await db
     .select()

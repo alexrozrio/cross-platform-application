@@ -5,7 +5,7 @@ import { generatePuzzle } from "../lib/sudoku";
 import { sql } from "drizzle-orm";
 import { sendChallengeNotification } from "../lib/email";
 import { randomBytes } from "node:crypto";
-import { expireInvitationIfDue } from "../utils/challenge-expiry";
+import { expireInvitationIfDue, expirePendingInvitationsForProfile } from "../utils/challenge-expiry";
 import { getChallengeExpiryCutoff } from "../utils/challenge-expiry-policy";
 
 const router: IRouter = Router();
@@ -158,6 +158,8 @@ router.get("/challenges/for/:profileId", async (req, res): Promise<void> => {
     res.status(400).json({ error: "Invalid profileId" });
     return;
   }
+
+  await expirePendingInvitationsForProfile(profileId);
 
   const challenges = await db
     .select()

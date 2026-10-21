@@ -10,6 +10,8 @@ import { logger } from "../lib/logger";
 
 const WEEKLY_GEMS = [20, 10, 5];
 const MONTHLY_GEMS = [50, 30, 15];
+let lastAwardsCheckDate: string | null = null;
+let awardsCheckInFlight: Promise<void> | null = null;
 
 async function awardBadgesForPeriod(
   period: string,
@@ -112,4 +114,27 @@ export async function awardPreviousPeriodBadges(): Promise<void> {
       logger.info({ period: prevMonth, count }, "Monthly tournament badges awarded");
     }
   }
+}
+
+/**
+ * Run the idempotent awards check only when a user requests tournament/badge
+ * data. This avoids scheduled database queries while the app is idle.
+ */
+export function ensureTournamentAwards(): Promise<void> {
+  const today = new Date().toISOString().slice(0, 10);
+  if (lastAwardsCheckDate === today) return Promise.resolve();
+  if (awardsCheckInFlight) return awardsCheckInFlight;
+
+  awardsCheckInFlight = awardPreviousPeriodBadges()
+    .then(() => {
+      lastAwardsCheckDate = today;
+    })
+    .catch((err) => {
+      logger.error({ err }, "Tournament award check failed on request");
+    })
+    .finally(() => {
+      awardsCheckInFlight = null;
+    });
+
+  return awardsCheckInFlight;
 }
