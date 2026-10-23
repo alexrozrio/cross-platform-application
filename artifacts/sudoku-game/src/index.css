@@ -1309,6 +1309,23 @@
   }
 }
 
+/* Android 15+ enforces edge-to-edge for this app's target SDK. Keep the app
+   header below the status bar and camera cutout in the installed Android app,
+   without changing the mobile website or iOS app layout. */
+@media (max-width: 767px) {
+  html.capacitor-android .app-header-standard {
+    padding-top: calc(
+      12px + max(24px, env(safe-area-inset-top, 0px))
+    );
+  }
+
+  html.capacitor-android .app-header-game {
+    padding-top: calc(
+      6px + max(24px, env(safe-area-inset-top, 0px))
+    );
+  }
+}
+
 /* Eliminate 300 ms tap delay on older Android / Samsung Internet */
 * {
   -webkit-tap-highlight-color: transparent;
