@@ -740,149 +740,6 @@ export default function Profile() {
         <p className="text-muted-foreground">Your profile, stats, and game preferences.</p>
       </div>
 
-      {/* ── Identity ─────────────────────────────────────────────────────── */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            {isSignedIn ? <User className="w-4 h-4" /> : <Smartphone className="w-4 h-4" />}
-            {isSignedIn ? "Signed-in Account" : "Anonymous (Device)"}
-          </CardTitle>
-          {!isSignedIn && (
-            <CardDescription className="text-xs">
-              Sign in to sync your progress across devices.
-            </CardDescription>
-          )}
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {isSignedIn && replitUser ? (
-            <div className="flex items-center gap-4">
-              {replitUser.profileImageUrl && (
-                <img src={replitUser.profileImageUrl} alt="" className="w-14 h-14 rounded-full object-cover border-2 border-border" />
-              )}
-              <div className="min-w-0">
-                <p className="font-semibold truncate">
-                  {profile?.username ?? (
-                    replitUser.firstName && replitUser.lastName
-                      ? `${replitUser.firstName} ${replitUser.lastName}`
-                      : replitUser.firstName ?? replitUser.email ?? "User"
-                  )}
-                </p>
-                {replitUser.email && <p className="text-sm text-muted-foreground truncate">{replitUser.email}</p>}
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center text-xl">🎮</div>
-              <div>
-                <p className="font-semibold">{profile?.username}</p>
-                <p className="text-xs text-muted-foreground">Playing on this device only</p>
-              </div>
-            </div>
-          )}
-          {isSignedIn ? (
-            <Button
-              variant="outline"
-              className="w-full gap-2 text-destructive hover:text-destructive"
-              onClick={() => { void signOut().catch((error: unknown) => toast.error(error instanceof Error ? error.message : "Could not sign out.")); }}
-            >
-              <LogOut className="w-4 h-4" /> Sign out
-            </Button>
-          ) : (
-            <Button
-              className="w-full gap-2"
-              onClick={() => { void startGoogleSignIn().catch((error: unknown) => toast.error(error instanceof Error ? error.message : "Could not start Google sign-in.")); }}
-            >
-              <LogIn className="w-4 h-4" /> Sign in
-            </Button>
-          )}
-          {isSignedIn && (
-            <Button
-              asChild
-              variant="outline"
-              className="w-full gap-2 text-destructive hover:text-destructive"
-            >
-              <Link href="/account-deletion">
-                <Trash2 className="w-4 h-4" /> Delete account and data
-              </Link>
-            </Button>
-          )}
-          {!isSignedIn && (
-            <div className="space-y-4 border-t border-border pt-4">
-              <div className="space-y-1">
-                <p className="text-sm font-semibold">Use this guest profile on another device</p>
-                <p className="text-xs text-muted-foreground">
-                  Create a one-use code here, then enter it in the other browser or installed app. Both devices will use this guest profile. The code expires after 10 minutes.
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={createGuestTransferCode}
-                disabled={!profileId || isGeneratingTransferCode}
-              >
-                {isGeneratingTransferCode ? "Creating code…" : transferCode ? "Create a new transfer code" : "Create transfer code"}
-              </Button>
-              {transferCode && (
-                <div className="flex gap-2">
-                  <Input aria-label="Guest profile transfer code" value={transferCode} readOnly className="font-mono text-center tracking-wider" />
-                  <Button type="button" variant="outline" size="icon" onClick={copyGuestTransferCode} aria-label="Copy transfer code">
-                    <Copy className="w-4 h-4" />
-                  </Button>
-                </div>
-              )}
-              <div className="space-y-2">
-                <label htmlFor="guest-restore-code" className="text-sm font-medium">Restore a guest profile</label>
-                <div className="flex gap-2">
-                  <Input
-                    id="guest-restore-code"
-                    value={restoreCode}
-                    onChange={(event) => {
-                      const raw = event.target.value.toUpperCase().replace(/[^A-F0-9]/g, "").slice(0, 16);
-                      setRestoreCode(raw.match(/.{1,4}/g)?.join("-") ?? raw);
-                    }}
-                    placeholder="ABCD-1234-5678-9ABC"
-                    autoCapitalize="characters"
-                    autoComplete="off"
-                    className="font-mono tracking-wider"
-                  />
-                  <Button
-                    type="button"
-                    onClick={() => setRestoreConfirmationOpen(true)}
-                    disabled={restoreCode.replace(/-/g, "").length !== 16}
-                  >
-                    Restore
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <AlertDialog open={restoreConfirmationOpen} onOpenChange={setRestoreConfirmationOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Switch to this guest profile?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This device will switch to the profile in the code; profiles are not merged. If this device has guest progress you want to keep, create a transfer code for it first. Switching does not delete its server-side progress.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isRestoringGuest}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              disabled={isRestoringGuest}
-              onClick={(event) => {
-                event.preventDefault();
-                void submitGuestRestore();
-              }}
-            >
-              {isRestoringGuest ? "Restoring…" : "Switch profile"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
       {/* ── Level / XP ───────────────────────────────────────────────────── */}
       {profileId && profile && (
         <>
@@ -1044,6 +901,149 @@ export default function Profile() {
           </CardContent>
         </Card>
       )}
+
+      {/* ── Identity ─────────────────────────────────────────────────────── */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            {isSignedIn ? <User className="w-4 h-4" /> : <Smartphone className="w-4 h-4" />}
+            {isSignedIn ? "Signed-in Account" : "Anonymous (Device)"}
+          </CardTitle>
+          {!isSignedIn && (
+            <CardDescription className="text-xs">
+              Sign in to sync your progress across devices.
+            </CardDescription>
+          )}
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {isSignedIn && replitUser ? (
+            <div className="flex items-center gap-4">
+              {replitUser.profileImageUrl && (
+                <img src={replitUser.profileImageUrl} alt="" className="w-14 h-14 rounded-full object-cover border-2 border-border" />
+              )}
+              <div className="min-w-0">
+                <p className="font-semibold truncate">
+                  {profile?.username ?? (
+                    replitUser.firstName && replitUser.lastName
+                      ? `${replitUser.firstName} ${replitUser.lastName}`
+                      : replitUser.firstName ?? replitUser.email ?? "User"
+                  )}
+                </p>
+                {replitUser.email && <p className="text-sm text-muted-foreground truncate">{replitUser.email}</p>}
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center text-xl">🎮</div>
+              <div>
+                <p className="font-semibold">{profile?.username}</p>
+                <p className="text-xs text-muted-foreground">Playing on this device only</p>
+              </div>
+            </div>
+          )}
+          {isSignedIn ? (
+            <Button
+              variant="outline"
+              className="w-full gap-2 text-destructive hover:text-destructive"
+              onClick={() => { void signOut().catch((error: unknown) => toast.error(error instanceof Error ? error.message : "Could not sign out.")); }}
+            >
+              <LogOut className="w-4 h-4" /> Sign out
+            </Button>
+          ) : (
+            <Button
+              className="w-full gap-2"
+              onClick={() => { void startGoogleSignIn().catch((error: unknown) => toast.error(error instanceof Error ? error.message : "Could not start Google sign-in.")); }}
+            >
+              <LogIn className="w-4 h-4" /> Sign in
+            </Button>
+          )}
+          {isSignedIn && (
+            <Button
+              asChild
+              variant="outline"
+              className="w-full gap-2 text-destructive hover:text-destructive"
+            >
+              <Link href="/account-deletion">
+                <Trash2 className="w-4 h-4" /> Delete account and data
+              </Link>
+            </Button>
+          )}
+          {!isSignedIn && (
+            <div className="space-y-4 border-t border-border pt-4">
+              <div className="space-y-1">
+                <p className="text-sm font-semibold">Use this guest profile on another device</p>
+                <p className="text-xs text-muted-foreground">
+                  Create a one-use code here, then enter it in the other browser or installed app. Both devices will use this guest profile. The code expires after 10 minutes.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={createGuestTransferCode}
+                disabled={!profileId || isGeneratingTransferCode}
+              >
+                {isGeneratingTransferCode ? "Creating code…" : transferCode ? "Create a new transfer code" : "Create transfer code"}
+              </Button>
+              {transferCode && (
+                <div className="flex gap-2">
+                  <Input aria-label="Guest profile transfer code" value={transferCode} readOnly className="font-mono text-center tracking-wider" />
+                  <Button type="button" variant="outline" size="icon" onClick={copyGuestTransferCode} aria-label="Copy transfer code">
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+              <div className="space-y-2">
+                <label htmlFor="guest-restore-code" className="text-sm font-medium">Restore a guest profile</label>
+                <div className="flex gap-2">
+                  <Input
+                    id="guest-restore-code"
+                    value={restoreCode}
+                    onChange={(event) => {
+                      const raw = event.target.value.toUpperCase().replace(/[^A-F0-9]/g, "").slice(0, 16);
+                      setRestoreCode(raw.match(/.{1,4}/g)?.join("-") ?? raw);
+                    }}
+                    placeholder="ABCD-1234-5678-9ABC"
+                    autoCapitalize="characters"
+                    autoComplete="off"
+                    className="font-mono tracking-wider"
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => setRestoreConfirmationOpen(true)}
+                    disabled={restoreCode.replace(/-/g, "").length !== 16}
+                  >
+                    Restore
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <AlertDialog open={restoreConfirmationOpen} onOpenChange={setRestoreConfirmationOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Switch to this guest profile?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This device will switch to the profile in the code; profiles are not merged. If this device has guest progress you want to keep, create a transfer code for it first. Switching does not delete its server-side progress.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isRestoringGuest}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isRestoringGuest}
+              onClick={(event) => {
+                event.preventDefault();
+                void submitGuestRestore();
+              }}
+            >
+              {isRestoringGuest ? "Restoring…" : "Switch profile"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* ── Statistics ───────────────────────────────────────────────────── */}
       {profileId && (
