@@ -243,7 +243,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             ? "px-2 py-2 sm:px-4 md:px-8 md:py-8 md:pb-8"
             : "px-2 py-4 sm:px-4 md:px-8 md:py-8 md:pb-8",
         ].join(" ")}
-        style={{ paddingBottom: "calc(5rem + env(safe-area-inset-bottom, 0px))" }}
+        style={{ paddingBottom: "calc(5rem + max(env(safe-area-inset-bottom, 0px), var(--native-safe-area-inset-bottom, 0px)))" }}
       >
         <GameResultVisibilityContext.Provider value={setGameResultVisible}>
           {children}
@@ -290,7 +290,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </footer>
 
-      <nav className="md:hidden border-t bg-card pt-2 px-2 flex items-center justify-around fixed bottom-0 left-0 right-0 z-50 isolate shadow-[0_-2px_8px_rgba(0,0,0,0.08)]" style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}>
+      <nav className="md:hidden border-t bg-card pt-2 px-2 flex items-center justify-around fixed bottom-0 left-0 right-0 z-50 isolate shadow-[0_-2px_8px_rgba(0,0,0,0.08)]" style={{ paddingBottom: "calc(0.75rem + max(env(safe-area-inset-bottom, 0px), var(--native-safe-area-inset-bottom, 0px)))" }}>
         {navItems.map((item) => (
           <Link
             key={item.href}

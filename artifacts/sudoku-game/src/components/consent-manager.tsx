@@ -108,7 +108,7 @@ export function ConsentManager() {
         <section
           role="dialog"
           aria-labelledby="consent-title"
-          className="fixed inset-x-3 bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] z-[70] mx-auto max-w-2xl rounded-2xl border border-border bg-card p-4 shadow-2xl sm:inset-x-auto sm:bottom-4 sm:left-4 sm:right-auto"
+          className="fixed inset-x-3 bottom-[calc(5.25rem+max(env(safe-area-inset-bottom,0px),var(--native-safe-area-inset-bottom,0px)))] z-[70] mx-auto max-w-2xl rounded-2xl border border-border bg-card p-4 shadow-2xl sm:inset-x-auto sm:bottom-4 sm:left-4 sm:right-auto"
         >
           <div className="flex items-start gap-3">
             <div className="mt-0.5 rounded-full bg-primary/10 p-2 text-primary">

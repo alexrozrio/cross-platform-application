@@ -65,7 +65,7 @@ export function TournamentWinModal({ badges, onDismiss, nonBlocking = false }: P
       {/* Modal backdrop */}
       <div className={[
         nonBlocking
-          ? "fixed inset-x-2 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-[60] flex justify-center p-0 pointer-events-none sm:inset-x-auto sm:left-auto sm:right-6 sm:bottom-6 sm:w-96"
+          ? "fixed inset-x-2 bottom-[calc(5.5rem+max(env(safe-area-inset-bottom,0px),var(--native-safe-area-inset-bottom,0px)))] z-[60] flex justify-center p-0 pointer-events-none sm:inset-x-auto sm:left-auto sm:right-6 sm:bottom-6 sm:w-96"
           : "fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300",
       ].join(" ")}>
         <div className={[

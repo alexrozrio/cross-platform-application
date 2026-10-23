@@ -1315,14 +1315,42 @@
 @media (max-width: 767px) {
   html.capacitor-android .app-header-standard {
     padding-top: calc(
-      12px + max(24px, env(safe-area-inset-top, 0px))
+      12px + max(24px, env(safe-area-inset-top, 0px), var(--native-safe-area-inset-top, 0px))
     );
   }
 
   html.capacitor-android .app-header-game {
     padding-top: calc(
-      6px + max(24px, env(safe-area-inset-top, 0px))
+      6px + max(24px, env(safe-area-inset-top, 0px), var(--native-safe-area-inset-top, 0px))
     );
+  }
+
+  html.capacitor-android .app-header-standard {
+    padding-left: max(1.5rem, env(safe-area-inset-left, 0px), var(--native-safe-area-inset-left, 0px));
+    padding-right: max(1.5rem, env(safe-area-inset-right, 0px), var(--native-safe-area-inset-right, 0px));
+  }
+
+  html.capacitor-android .app-header-game {
+    padding-left: max(0.75rem, env(safe-area-inset-left, 0px), var(--native-safe-area-inset-left, 0px));
+    padding-right: max(0.75rem, env(safe-area-inset-right, 0px), var(--native-safe-area-inset-right, 0px));
+  }
+
+  html.capacitor-android main {
+    padding-left: max(0.5rem, env(safe-area-inset-left, 0px), var(--native-safe-area-inset-left, 0px));
+    padding-right: max(0.5rem, env(safe-area-inset-right, 0px), var(--native-safe-area-inset-right, 0px));
+  }
+
+  html.capacitor-android footer {
+    padding-left: max(1rem, env(safe-area-inset-left, 0px), var(--native-safe-area-inset-left, 0px));
+    padding-right: max(1rem, env(safe-area-inset-right, 0px), var(--native-safe-area-inset-right, 0px));
+    padding-bottom: calc(
+      5rem + max(env(safe-area-inset-bottom, 0px), var(--native-safe-area-inset-bottom, 0px))
+    );
+  }
+
+  html.capacitor-android nav {
+    padding-left: max(0.5rem, env(safe-area-inset-left, 0px), var(--native-safe-area-inset-left, 0px));
+    padding-right: max(0.5rem, env(safe-area-inset-right, 0px), var(--native-safe-area-inset-right, 0px));
   }
 }
 

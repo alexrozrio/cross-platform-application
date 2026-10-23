@@ -247,7 +247,7 @@ export function EventModal({ nonBlocking = false }: { nonBlocking?: boolean }) {
         className={[
           "max-w-sm p-0 overflow-hidden border-0 shadow-2xl gap-0",
           nonBlocking
-            ? "w-[calc(100vw-1rem)] !top-auto !translate-y-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] max-h-[calc(100dvh-7rem)] overflow-y-auto sm:bottom-6 sm:max-h-[calc(100dvh-3rem)]"
+            ? "w-[calc(100vw-1rem)] !top-auto !translate-y-0 bottom-[calc(5.5rem+max(env(safe-area-inset-bottom,0px),var(--native-safe-area-inset-bottom,0px)))] max-h-[calc(100dvh-7rem)] overflow-y-auto sm:bottom-6 sm:max-h-[calc(100dvh-3rem)]"
             : "",
         ].join(" ")}
         overlayClassName={nonBlocking ? "pointer-events-none bg-transparent" : undefined}
