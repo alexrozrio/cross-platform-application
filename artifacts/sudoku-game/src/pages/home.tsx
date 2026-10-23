@@ -310,15 +310,14 @@ export default function SudokuHome({
     }
   };
 
-  // A canonical bookmark is an explicit request to play that exact variant,
-  // rather than to open the setup screen. Wait for auth readiness so a
-  // signed-in user does not get sent to offline mode while Clerk is loading.
+  // A canonical bookmark is an explicit request to play that exact variant.
+  // Start it even while auth/profile sync is pending; doStart can open the
+  // bundled offline puzzle immediately and sync results later if possible.
   useEffect(() => {
     if (
       !autoStartFromBookmark ||
       !bookmarkedSize ||
       !bookmarkedDifficulty ||
-      !isReady ||
       bookmarkStartRef.current
     ) {
       return;
@@ -330,7 +329,6 @@ export default function SudokuHome({
     bookmarkedSize,
     bookmarkedDifficulty,
     bookmarkedMode,
-    isReady,
   ]);
 
   const handleSelectSize = (size: GridSize) => {

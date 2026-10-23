@@ -456,9 +456,10 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
 
   // Auto-start when ?size= or ?duelGameId= is in the URL (skip if restored from localStorage)
   const startGameRef = useRef(startGame);
+  const autoStartTriggeredRef = useRef(false);
   useEffect(() => { startGameRef.current = startGame; }, [startGame]);
   useEffect(() => {
-    if (restoredRef.current || !isReady) return;
+    if (restoredRef.current || autoStartTriggeredRef.current) return;
     const params = new URLSearchParams(search);
     const duelId = parseInt(params.get('duelGameId') ?? '', 10);
     const gs = bookmarkedSize ?? parseInt(params.get('gridSize') ?? params.get('size') ?? '', 10);
@@ -468,18 +469,21 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
     // behavior.
     if (bookmarkedSize && !startImmediately) return;
     if (bookmarkedSize && startImmediately) {
+      autoStartTriggeredRef.current = true;
       startGameRef.current(bookmarkedSize);
       return;
     }
     if (!isNaN(duelId) && [2, 4, 6, 8].includes(gs)) {
+      autoStartTriggeredRef.current = true;
       startGameRef.current(gs as GridSize, duelId);
       return;
     }
     const s = gs;
     if ([2, 4, 6, 8].includes(s)) {
+      autoStartTriggeredRef.current = true;
       startGameRef.current(s as GridSize);
     }
-  }, [search, bookmarkedSize, isReady]);
+  }, [search, bookmarkedSize]);
 
   useEffect(() => {
     if (bookmarkedSize && phase === 'setup' && bookmarkedSize !== gridSize) {

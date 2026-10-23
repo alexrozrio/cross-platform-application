@@ -156,17 +156,17 @@ function Router() {
 
   return (
     <AuthProvider onProfileSynced={claimReward}>
-      {rewardState.show && rewardState.result && (
-        <LoginRewardModal
-          open={rewardState.show}
-          onClose={handleDismiss}
-          gemsAwarded={rewardState.result.gemsAwarded}
-          loginStreak={rewardState.result.loginStreak}
-          totalGems={rewardState.result.totalGems}
-        />
-      )}
-      <Layout>
-        <ErrorBoundary>
+      <ErrorBoundary>
+        {rewardState.show && rewardState.result && (
+          <LoginRewardModal
+            open={rewardState.show}
+            onClose={handleDismiss}
+            gemsAwarded={rewardState.result.gemsAwarded}
+            loginStreak={rewardState.result.loginStreak}
+            totalGems={rewardState.result.totalGems}
+          />
+        )}
+        <Layout>
         <Suspense fallback={<PageLoader />}>
           <Switch>
             <Route path="/" component={Portal} />
@@ -204,8 +204,8 @@ function Router() {
             <Route component={NotFound} />
           </Switch>
         </Suspense>
-        </ErrorBoundary>
-      </Layout>
+        </Layout>
+      </ErrorBoundary>
     </AuthProvider>
   );
 }

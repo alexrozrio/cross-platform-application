@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import { AlertTriangle, RefreshCw, Home, Grid3X3, Brain } from "lucide-react";
+import MemoryMatchPage from "@/pages/memory";
 
 const OFFLINE_PUZZLE =
   "530070000" +
@@ -26,6 +27,7 @@ const OFFLINE_SOLUTION =
 interface State {
   hasError: boolean;
   error: Error | null;
+  recoveryGame: "sudoku" | "memory" | null;
 }
 
 function OfflineSudokuFallback() {
@@ -132,7 +134,7 @@ export class ErrorBoundary extends React.Component<
 > {
   constructor(props: { children: React.ReactNode }) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, recoveryGame: null };
   }
 
   static getDerivedStateFromError(error: Error): State {
@@ -146,6 +148,9 @@ export class ErrorBoundary extends React.Component<
   render() {
     if (!this.state.hasError) return this.props.children;
 
+    if (this.state.recoveryGame === "sudoku") return <OfflineSudokuFallback />;
+    if (this.state.recoveryGame === "memory") return <MemoryMatchPage />;
+
     // A grid click should never strand a player on the generic error page.
     // Keep the fallback deliberately independent from Game so it can render
     // even when Game's state/effect tree is the source of the crash.
@@ -154,42 +159,41 @@ export class ErrorBoundary extends React.Component<
     }
 
     return (
-      <div className="min-h-[60vh] flex items-center justify-center px-4">
-        <div className="bg-card border border-border rounded-2xl p-8 max-w-sm w-full text-center space-y-4 shadow-lg">
-          <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
-            <AlertTriangle className="w-7 h-7 text-destructive" />
+      <div className="min-h-[70vh] flex items-center justify-center px-4 py-8">
+        <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 max-w-md w-full text-center space-y-5 shadow-lg">
+          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+            <Grid3X3 className="w-7 h-7 text-primary" />
           </div>
           <div className="space-y-1">
-            <h2 className="text-lg font-bold">Something went wrong</h2>
+            <h2 className="text-lg font-bold">Choose a game to keep playing</h2>
             <p className="text-sm text-muted-foreground">
-              The page ran into an unexpected error. Try refreshing or go back home.
+              Sudoku and Memory Match can be played locally. Online profile and reward features may be unavailable.
             </p>
           </div>
-          {this.state.error?.message && (
-            <p className="text-xs font-mono text-muted-foreground bg-muted rounded-lg px-3 py-2 text-left break-all">
-              {this.state.error.message}
-            </p>
-          )}
-          <div className="flex gap-2 justify-center">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Button
+              className="w-full gap-2"
+              onClick={() => this.setState({ recoveryGame: "sudoku" })}
+            >
+              <Grid3X3 className="w-4 h-4" /> Play Sudoku
+            </Button>
             <Button
               variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={() => window.location.reload()}
+              className="w-full gap-2"
+              onClick={() => this.setState({ recoveryGame: "memory" })}
             >
-              <RefreshCw className="w-4 h-4" /> Refresh
-            </Button>
-            <Button
-              size="sm"
-              className="gap-2"
-              onClick={() => {
-                this.setState({ hasError: false, error: null });
-                window.location.href = "/";
-              }}
-            >
-              <Home className="w-4 h-4" /> Go Home
+              <Brain className="w-4 h-4" /> Play Memory Match
             </Button>
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2"
+            onClick={() => window.location.reload()}
+          >
+            <RefreshCw className="w-4 h-4" /> Reload app
+            <Home className="w-4 h-4" />
+          </Button>
         </div>
       </div>
     );
