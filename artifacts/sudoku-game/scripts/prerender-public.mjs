@@ -15,20 +15,25 @@ const publicPages = [
     route: "/",
     title: "Free Sudoku & Memory Match Games Online | Play Brain Games . Online",
     description:
-      "Play free online Sudoku and Memory Match games for all ages. Choose multiple grids, difficulty levels, daily challenges, themes, and guest play.",
+      "Play browser-based Sudoku and Memory Match with practical solving and recall routines, flexible board sizes, guest play, and optional synced progress.",
     heading: "Free Sudoku & Memory Match Games Online",
     intro:
-      "Play free browser-based Sudoku and Memory Match puzzles at your own pace. Choose a quick beginner board or a harder challenge, then keep practicing without an account.",
+      "Choose Sudoku when you want to reason through rows, columns, and boxes, or Memory Match when you want to remember card positions. Both games can be started as a guest, with board choices for short sessions and larger challenges.",
     sections: [
-      ["Sudoku puzzles for every level", "Solve 3×3, 4×4, 6×6, 9×9, or 16×16 boards with easy, medium, hard, and expert difficulty options."],
-      ["Memory Match card games", "Find matching pairs on boards from a quick 2×4 warm-up to a demanding 8×8 memory challenge."],
-      ["Daily challenges and progress", "Return for a shared daily Sudoku puzzle, leaderboards, themes, optional sign-in, and personal statistics."],
+      ["Choose a Sudoku grid you can reason through", "Baby 3×3, Mini 4×4, and Dual 6×6 boards keep the symbol set compact. Classic 9×9 is the familiar standard, while Pro 16×16 is a longer challenge. Easy, medium, hard, and expert settings change puzzle difficulty independently of board size."],
+      ["Use constraints instead of guessing", "A legal placement must fit the row, column, and marked box. Start with a group that has few empty cells, list its missing symbols, and check which candidates remain in each cell. When more than one candidate fits, use notes and revisit the cell after a nearby placement."],
+      ["Build a location map in Memory Match", "Turn over two cards at a time. If they match, they stay visible; if not, remember both positions before they turn face-down again. Scanning in a consistent order helps you connect a symbol to a location when you see it later."],
+      ["Choose a Memory Match board", "The 2×4 Beginner board has 4 pairs, 4×4 Easy has 8, 8×4 Medium has 16, and 8×8 Hard has 32. A small board is useful for learning the routine; larger boards ask you to remember more locations. Completion time and flips contribute to the result."],
+      ["Change the display without changing the rules", "Sudoku and Memory Match can use numbers, letters, or curated image symbols where those modes are available. Themes change the appearance of the board, while the same puzzle and matching rules still apply."],
+      ["Play as a guest or keep progress in a profile", "You can start a game without an account. Optional Google sign-in connects game statistics, achievements, and streaks to a profile so progress can sync across devices."],
+      ["Use daily challenges for a shared benchmark", "The daily Sudoku challenge gives players the same 9×9 medium puzzle for that date. Memory Match also has daily and weekly challenges. Leaderboards compare recorded results for people who choose to take part."],
     ],
     links: [
       ["/sudoku", "Play Sudoku online"],
       ["/memory", "Play Memory Match online"],
       ["/themes", "Browse game themes"],
       ["/guides", "Read the puzzle guides"],
+      ["/about", "Learn how the games work"],
     ],
     schemaType: "WebApplication",
   },
@@ -100,7 +105,7 @@ const publicPages = [
       ],
       [
         "Memory Match board sizes",
-        "The 2×4 board has 4 pairs for a short warm-up. A 4×4 board has 8 pairs, a 4×8 board has 16, and an 8×8 board has 32. Larger boards require you to retain more card locations. Images, numbers, and letters use the same matching rules, so choose the display style that is easiest for you to scan.",
+        "The 2×4 board has 4 pairs for a short warm-up. A 4×4 board has 8 pairs, an 8×4 board has 16, and an 8×8 board has 32. Larger boards require you to retain more card locations. Images, numbers, and letters use the same matching rules, so choose the display style that is easiest for you to scan.",
       ],
       [
         "Sample Memory Match sequence",
@@ -122,14 +127,17 @@ const publicPages = [
     route: "/sudoku",
     title: "Play Sudoku Online Free | Easy to Expert Puzzles",
     description:
-      "Play free online Sudoku with 3×3, 4×4, 6×6, 9×9, and 16×16 grids. Choose easy to expert difficulty, use notes and hints, and play as a guest.",
+      "Play free online Sudoku from 3×3 to 16×16. Learn a row, column, and box solving routine, use candidate notes, and play as a guest.",
     heading: "Play Sudoku Online Free",
     intro:
-      "Choose a Sudoku grid size and difficulty, then solve a fresh puzzle in your browser. No account is required to start playing.",
+      "Choose a grid and difficulty, then use the same logic on every board: each symbol must fit its row, column, and marked box. Guest play is available without an account.",
     sections: [
-      ["Multiple Sudoku grid sizes", "Try 3×3 Baby, 4×4 Mini, 6×6 Dual, 9×9 Classic, or 16×16 Pro boards."],
-      ["Easy to expert difficulty", "Build confidence with an easier board or test your logic with hard and expert puzzles."],
-      ["Helpful ways to practice", "Use notes, hints, themes, and optional progress tracking while you improve your solving routine."],
+      ["What makes a placement valid", "Each symbol must appear once in every row, column, and marked box. Before filling a cell, check all three groups; a symbol missing from a row may still be ruled out by its column or box."],
+      ["Start where the choices are fewest", "Look for a row, column, or box with only a few empty cells. List its missing symbols, then test each empty cell against its intersecting groups. A cell with one remaining candidate is a supported move; after placing it, scan those groups again."],
+      ["Use candidate notes deliberately", "When several symbols still fit, record the possibilities in pencil mode instead of guessing. As other cells are solved, update the notes. A candidate can be removed when the same symbol is placed elsewhere in its row, column, or box."],
+      ["Choose board size before difficulty", "3×3 Baby, 4×4 Mini, and 6×6 Dual boards use fewer cells. 9×9 Classic is the standard layout, and 16×16 Pro uses a larger symbol set. If a puzzle feels crowded, reduce the grid or difficulty rather than rushing."],
+      ["Number, letter, and image-symbol play", "The smaller grids also support letter or image-symbol modes. These display options change the symbols you enter, not the Sudoku constraints. Every row, column, and marked box still needs one of each symbol."],
+      ["Compare practice on the daily board", "The daily challenge uses the same 9×9 medium puzzle for everyone that day. You can compare completion time and mistakes on an identical board, then return to a regular puzzle when you want to choose a different size or difficulty."],
     ],
     links: [
       ["/guides", "Learn Sudoku strategies"],
@@ -143,20 +151,23 @@ const publicPages = [
     route: "/memory",
     title: "Play Memory Match Online Free | All Difficulty Levels",
     description:
-      "Play a free online Memory Match game with image, number, or letter cards. Match pairs across 2×4 to 8×8 boards and improve your best time.",
+      "Play Memory Match with number, letter, or image cards. Learn a repeatable recall strategy and choose a 2×4, 4×4, 8×4, or 8×8 board.",
     heading: "Play Memory Match Online Free",
     intro:
-      "Flip cards, remember their positions, and match every pair. Choose a compact warm-up board or a larger game designed to test your recall.",
+      "All cards start face-down. Reveal two on each move and remember their positions; a matching pair stays visible, while a mismatch turns back over after a short pause.",
     sections: [
-      ["Four board sizes", "Play 2×4 Beginner, 4×4 Easy, 4×8 Medium, or 8×8 Hard Memory Match boards."],
-      ["Choose your card style", "Use themed images, numbers, or letters to make each round feel different."],
-      ["Practice and improve", "Track your flips and elapsed time locally, then try again to beat your best result."],
+      ["Build a location map", "Scan in a consistent order, such as left to right across each row. When two cards do not match, remember both locations. If you see one of those symbols again, use the earlier position to complete the pair instead of making a random guess."],
+      ["Select a board for the time you have", "The 2×4 Beginner board contains 4 pairs, 4×4 Easy has 8, 8×4 Medium has 16, and 8×8 Hard has 32. Begin with fewer pairs while learning the routine, then expand the board when you want to track more positions."],
+      ["Use the card style that is easiest to scan", "Choose numbers, letters, or themed image symbols. The display can change between sessions, but a match is always two cards with the same symbol."],
+      ["Understand flips, time, and results", "The game records how long the round takes and how many flips you make. Faster completion and fewer flips contribute to a higher score. You can replay a board to practise remembering positions more efficiently."],
+      ["Play as a guest or sync your results", "You can start a round without signing in. Optional Google sign-in connects your results and profile statistics across devices. Daily and weekly challenges provide another way to practise the same kind of recall."],
     ],
     links: [
       ["/guides", "Read the Memory Match guide"],
-      ["/themes", "Browse game themes"],
+      ["/themes", "Browse card themes"],
       ["/memory-challenge", "Try a memory challenge"],
       ["/leaderboard", "View the Memory leaderboard"],
+      ["/about", "Learn about both games"],
     ],
     schemaType: "WebApplication",
   },
@@ -224,18 +235,22 @@ const publicPages = [
     route: "/about",
     title: "About Play Brain Games . Online | Sudoku & Memory Match",
     description:
-      "Learn about Play Brain Games . Online, a family-friendly site for free Sudoku and Memory Match puzzles, daily challenges, themes, and personal stats.",
+      "Learn how Play Brain Games combines practical Sudoku and Memory Match sessions, daily challenges, guest play, optional synced progress, and player support.",
     heading: "About Play Brain Games . Online",
     intro:
-      "Play Brain Games . Online brings together free Sudoku and Memory Match games for first-time solvers, experienced players, and families.",
+      "Play Brain Games . Online brings together two familiar puzzle formats with adjustable boards, practical guides, daily challenges, and guest play.",
     sections: [
-      ["Sudoku with flexible formats", "Play child-friendly Baby and Mini grids, classic 9×9 puzzles, or pro-level 16×16 boards with number, letter, and image themes."],
-      ["Memory Match for quick or long sessions", "Match pairs on boards from a 2×4 warm-up to an 8×8 challenge using the same themed card sets."],
-      ["Optional progress features", "Sign in to sync stats, achievements, leaderboards, rewards, and streaks across devices; guest play remains available."],
+      ["Two games, two kinds of attention", "Sudoku is a logic puzzle: each symbol must fit its row, column, and marked box. Memory Match is a recall game: reveal two cards, remember their positions, and use those locations to find pairs."],
+      ["Board choices for different experience levels", "Sudoku ranges from small 3×3, 4×4, and 6×6 grids through 9×9 Classic and 16×16 Pro. Memory Match ranges from a 2×4 board with 4 pairs to an 8×8 board with 32 pairs."],
+      ["Progress is optional", "Start as a guest without signing in. Google sign-in connects profile statistics, achievements, and streaks so progress can sync across devices. The games remain available without a profile."],
+      ["Daily practice and shared results", "The daily Sudoku challenge gives players the same 9×9 medium puzzle for that date. Memory Match has daily and weekly challenges, while leaderboards show recorded results for players who choose to participate."],
+      ["Privacy and account control", "The Privacy Policy describes how account and game-progress information is used. The account deletion page explains how to request removal of an account and associated server data."],
     ],
     links: [
       ["/sudoku", "Play Sudoku"],
       ["/memory", "Play Memory Match"],
+      ["/guides", "Read the puzzle guides"],
+      ["/account-deletion", "Account deletion"],
       ["/privacy", "Read the privacy policy"],
     ],
     schemaType: "AboutPage",
@@ -390,7 +405,7 @@ function buildStaticContent(page) {
         <h1 class="mt-2 text-3xl font-serif font-bold tracking-tight sm:text-4xl">${escapeHtml(page.heading)}</h1>
         <p class="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">${escapeHtml(page.intro)}</p>
       </header>
-      <div class="grid gap-4 sm:grid-cols-3">${sections}</div>
+      <div class="grid gap-4 sm:grid-cols-2">${sections}</div>
       ${cta}
       <nav class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border border-border bg-card px-5 py-4 text-sm" aria-label="Related pages">
         ${links}

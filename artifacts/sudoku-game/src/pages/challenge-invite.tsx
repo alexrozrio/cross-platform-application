@@ -62,7 +62,7 @@ const DIFF_COLORS: Record<string, string> = {
 const MEMORY_LABELS: Record<number, string> = {
   2: "2×4 Beginner (4 pairs)",
   4: "4×4 Easy (8 pairs)",
-  6: "4×8 Medium (16 pairs)",
+  6: "8×4 Medium (16 pairs)",
   8: "8×8 Hard (32 pairs)",
 };
 

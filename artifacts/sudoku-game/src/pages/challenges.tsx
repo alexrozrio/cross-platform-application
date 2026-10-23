@@ -112,7 +112,7 @@ const SUDOKU_GRID_LABELS: Record<number, string> = {
 const MEMORY_GRID_LABELS: Record<number, string> = {
   2: "2×4 Beginner",
   4: "4×4 Easy",
-  6: "4×8 Medium",
+  6: "8×4 Medium",
   8: "8×8 Hard",
 };
 
@@ -750,7 +750,7 @@ const SUDOKU_SIZE_OPTIONS: { value: SudokuGridSize; label: string }[] = [
 const MEMORY_SIZE_OPTIONS: { value: MemoryGridSize; label: string }[] = [
   { value: 2, label: '2×4 Beginner · 4 pairs' },
   { value: 4, label: '4×4 Easy · 8 pairs' },
-  { value: 6, label: '4×8 Medium · 16 pairs' },
+  { value: 6, label: '8×4 Medium · 16 pairs' },
   { value: 8, label: '8×8 Hard · 32 pairs' },
 ];
 

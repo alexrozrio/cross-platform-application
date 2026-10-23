@@ -198,7 +198,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
   usePageMeta({
     title: `Play Memory Match Online Free | ${memoryMetaLabel}`,
     description:
-      "Play a free online Memory Match game with image, number, or letter cards. Match pairs across 2×4 to 8×8 boards and improve your best time.",
+      "Play Memory Match with number, letter, or image cards. Learn a repeatable recall strategy and choose a 2×4, 4×4, 8×4, or 8×8 board.",
     path: difficultySlug ? `/memory/${difficultySlug}` : "/memory",
   });
   const [, setLocation] = useLocation();
@@ -911,19 +911,59 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
           </button>
         </div>
 
-        <section className="rounded-2xl border border-violet-400/25 bg-card p-5 sm:p-6">
-          <h2 className="text-xl font-serif font-bold text-foreground">
-            See a sample matching strategy
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            The full guide demonstrates how to remember revealed card positions,
-            use a consistent scan, and choose between four board sizes.
-          </p>
+        <section className="rounded-2xl border border-violet-400/25 bg-card p-5 sm:p-6 space-y-4">
+          <div>
+            <h2 className="text-xl font-serif font-bold text-foreground">
+              How to play and improve at Memory Match
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+              Every card begins face-down. Turn over two cards per move: a
+              matching pair stays visible, while a mismatch turns back over
+              after a short pause. The useful information is not only the
+              symbol—it is the position where you saw it.
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 text-sm text-muted-foreground leading-relaxed">
+            <article>
+              <h3 className="font-semibold text-foreground">Build a location map</h3>
+              <p className="mt-1">
+                Scan the board in a consistent order, such as left to right
+                across each row. When two cards do not match, remember both
+                locations. If one of those symbols appears again, use the
+                earlier position instead of turning over a random card.
+              </p>
+            </article>
+            <article>
+              <h3 className="font-semibold text-foreground">Pick a board that fits your session</h3>
+              <p className="mt-1">
+                The 2×4 Beginner board has 4 pairs, 4×4 Easy has 8, 8×4 Medium
+                has 16, and 8×8 Hard has 32. Start smaller while learning the
+                routine; larger boards ask you to keep more locations in mind.
+              </p>
+            </article>
+            <article>
+              <h3 className="font-semibold text-foreground">Choose how cards look</h3>
+              <p className="mt-1">
+                Switch between numbers, letters, and themed image symbols.
+                Display style changes the cards, not the matching rule: find
+                the two cards with the same symbol.
+              </p>
+            </article>
+            <article>
+              <h3 className="font-semibold text-foreground">Understand your result</h3>
+              <p className="mt-1">
+                The result records your completion time and flips. A faster
+                finish with fewer flips earns a stronger score. You can start
+                as a guest; signing in is optional for profile statistics and
+                synced progress.
+              </p>
+            </article>
+          </div>
           <Link
             href="/guides/#memory-guide-title"
-            className="mt-4 inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
+            className="inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
           >
-            Read the Memory Match guide
+            Read the full Memory Match guide
           </Link>
         </section>
 

@@ -28,7 +28,7 @@ export default function About() {
   usePageMeta({
       title: "About Play Brain Games . Online | Sudoku & Memory Match",
     description:
-        "Learn about Play Brain Games . Online, a family-friendly site for free Sudoku and Memory Match puzzles, daily challenges, themes, and personal stats.",
+        "Learn how Play Brain Games combines practical Sudoku and Memory Match sessions, daily challenges, guest play, optional synced progress, and player support.",
     path: "/about",
   });
   const [, setLocation] = useLocation();
@@ -123,12 +123,52 @@ export default function About() {
         </div>
       </div>
 
-      <div className="space-y-2 text-sm text-muted-foreground leading-relaxed bg-card rounded-2xl border border-border px-5 py-4">
-        <h2 className="text-base font-semibold text-foreground">Stack</h2>
+      <section className="space-y-3 text-sm text-muted-foreground leading-relaxed bg-card rounded-2xl border border-border px-5 py-4">
+        <h2 className="text-base font-semibold text-foreground">Play first; create an account only if you want synced progress</h2>
         <p>
-          Built with React, TypeScript, Express, and PostgreSQL. Puzzles and memory boards are generated server-side with difficulty tuning. Sign in with Google to sync your progress across devices. The whole thing runs on Replit.
+          Guest play lets you start a puzzle without signing in. Google sign-in
+          is optional and connects your profile so statistics, achievements,
+          streaks, and saved progress can follow you across devices. A profile
+          is not needed to learn the rules or try a board.
         </p>
-      </div>
+        <p>
+          The Privacy Policy explains the information used for accounts and
+          game progress. If you later want to remove an account, the account
+          deletion page describes the available steps.
+        </p>
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
+          <a className="font-medium text-foreground underline underline-offset-2" href="/privacy/">
+            Privacy Policy
+          </a>
+          <a className="font-medium text-foreground underline underline-offset-2" href="/account-deletion/">
+            Account deletion
+          </a>
+        </div>
+      </section>
+
+      <section className="space-y-3 text-sm text-muted-foreground leading-relaxed bg-card rounded-2xl border border-border px-5 py-4">
+        <h2 className="text-base font-semibold text-foreground">Daily practice and comparisons</h2>
+        <p>
+          The daily Sudoku challenge gives players the same 9×9 medium puzzle
+          for that day, so completion time and mistakes can be compared on the
+          same board. Memory Match also offers daily and weekly challenges.
+          Weekly, monthly, and all-time leaderboards show recorded game results
+          for players who choose to take part.
+        </p>
+        <p>
+          These features are optional. You can use the game pages for a quiet
+          solo session, read the puzzle guides for step-by-step strategies, or
+          visit the leaderboards to compare results.
+        </p>
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
+          <a className="font-medium text-foreground underline underline-offset-2" href="/guides/">
+            Puzzle guides
+          </a>
+          <a className="font-medium text-foreground underline underline-offset-2" href="/leaderboard/">
+            Leaderboards
+          </a>
+        </div>
+      </section>
 
       <div className="text-sm text-muted-foreground bg-card rounded-2xl border border-border px-5 py-4">
         <h2 className="text-base font-semibold text-foreground mb-1">Get in touch</h2>

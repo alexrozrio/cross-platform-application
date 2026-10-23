@@ -1057,7 +1057,7 @@ function MemoryScoringGuide() {
               </div>
               {[
                 { mode: "👶 Kids",  sizes: "4 pairs (2×4) · 8 pairs (4×4)",   cls: "text-green-700" },
-                { mode: "🧑 Adult", sizes: "16 pairs (4×8) · 32 pairs (8×8)", cls: "text-blue-700"  },
+                { mode: "🧑 Adult", sizes: "16 pairs (8×4) · 32 pairs (8×8)", cls: "text-blue-700"  },
                 { mode: "🌍 4 All", sizes: "All four sizes",                   cls: "text-violet-700" },
               ].map((row, i) => (
                 <div

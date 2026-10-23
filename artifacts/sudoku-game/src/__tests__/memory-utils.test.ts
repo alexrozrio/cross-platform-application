@@ -8,7 +8,7 @@ import {
 describe('getPairs', () => {
   it('returns 4 pairs for 2×4 grid (size=2)', () => expect(getPairs(2)).toBe(4));
   it('returns 8 pairs for 4×4 grid (size=4)', () => expect(getPairs(4)).toBe(8));
-  it('returns 16 pairs for 4×8 grid (size=6)', () => expect(getPairs(6)).toBe(16));
+  it('returns 16 pairs for 8×4 grid (size=6)', () => expect(getPairs(6)).toBe(16));
   it('returns 32 pairs for 8×8 grid (size=8)', () => expect(getPairs(8)).toBe(32));
 
   it('total card count equals 2 × pairs', () => {

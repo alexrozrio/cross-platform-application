@@ -181,7 +181,7 @@ export function MemoryGuide() {
         </p>
         <p>
           Start with the 2×4 board for a quick introduction, then move through
-          4×4, 4×8, and 8×8 boards as you become comfortable. The image, number,
+          4×4, 8×4, and 8×8 boards as you become comfortable. The image, number,
           and letter display styles use the same board rules, so you can choose
           the format that is easiest to scan.
         </p>
@@ -267,7 +267,7 @@ export function MemoryGuide() {
                 <td className="px-3 py-2">Regular casual play</td>
               </tr>
               <tr>
-                <td className="px-3 py-2 font-semibold text-foreground">4×8</td>
+                <td className="px-3 py-2 font-semibold text-foreground">8×4</td>
                 <td className="px-3 py-2">16</td>
                 <td className="px-3 py-2">A longer memory challenge</td>
               </tr>

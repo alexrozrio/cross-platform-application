@@ -23,7 +23,7 @@ export function shuffle<T>(arr: T[]): T[] {
 export function getPairs(gridSize: GridSize): number {
   if (gridSize === 2) return 4;  // 2×4  = 8 cards  = 4 pairs
   if (gridSize === 4) return 8;  // 4×4  = 16 cards = 8 pairs
-  if (gridSize === 6) return 16; // 4×8  = 32 cards = 16 pairs
+  if (gridSize === 6) return 16; // 8×4 = 32 cards = 16 pairs
   return 32;                     // 8×8  = 64 cards = 32 pairs
 }
 

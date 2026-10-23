@@ -95,7 +95,7 @@ export default function SudokuHome({
     : "Play Sudoku Online Free | Easy to Expert Puzzles";
   const routeDescription = bookmarkedSize && bookmarkedDifficulty
     ? `Play a ${bookmarkedDifficulty} ${bookmarkedSize}×${bookmarkedSize} Sudoku puzzle online on Play Brain Games . Online.`
-    : "Play free online Sudoku with 3×3, 4×4, 6×6, 9×9, and 16×16 grids. Choose easy to expert difficulty, use notes and hints, and play as a guest.";
+    : "Play free online Sudoku on 3×3 to 16×16 grids. Learn a row, column, and box solving routine, use candidate notes, and play as a guest.";
   usePageMeta({
     title: routeTitle,
     description: routeDescription,
@@ -757,22 +757,65 @@ export default function SudokuHome({
         </button>
       </div>
 
-      <section className="rounded-2xl border border-primary/20 bg-card p-5 sm:p-6">
-        <h2 className="text-xl font-serif font-bold text-foreground">
-          Want a worked Sudoku example?
-        </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          The puzzle guide walks through a worked 4×4 placement using its row,
-          column, and box constraints, then explains candidate notes and how to
-          choose a board size.
-        </p>
-        <Link
-          href="/guides/#sudoku-guide-title"
-          className="mt-4 inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
-        >
-          Read the Sudoku guide
-        </Link>
-      </section>
+      {!bookmarkedSize && (
+        <section className="rounded-2xl border border-primary/20 bg-card p-5 sm:p-6 space-y-4">
+          <div>
+            <h2 className="text-xl font-serif font-bold text-foreground">
+              A practical way to solve Sudoku
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+              Sudoku is a placement puzzle, not an arithmetic test. A correct
+              move follows from the symbols already present in the same row,
+              column, and box. This game offers boards from 3×3 to 16×16, so you
+              can practise the same logic on a size that feels manageable.
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 text-sm text-muted-foreground leading-relaxed">
+            <article>
+              <h3 className="font-semibold text-foreground">Look for the most constrained group</h3>
+              <p className="mt-1">
+                Scan a row, column, or box with only a few empty cells. Note
+                which symbols are missing, then check each empty cell against
+                its other two groups. If only one symbol can fit, place it and
+                check the affected groups again.
+              </p>
+            </article>
+            <article>
+              <h3 className="font-semibold text-foreground">Use notes when a cell has options</h3>
+              <p className="mt-1">
+                If a cell could still hold more than one symbol, switch to
+                pencil mode and record the candidates rather than guessing.
+                After placing a value, revisit nearby notes and remove
+                candidates that are no longer possible.
+              </p>
+            </article>
+            <article>
+              <h3 className="font-semibold text-foreground">Choose size before raising difficulty</h3>
+              <p className="mt-1">
+                Baby, Mini, and Dual grids use fewer cells; Classic 9×9 is the
+                familiar format; Pro 16×16 uses a larger symbol set. If a board
+                feels crowded, reduce its size or difficulty first, then move
+                up when you can solve it without rushing.
+              </p>
+            </article>
+            <article>
+              <h3 className="font-semibold text-foreground">Keep the rules when you change symbols</h3>
+              <p className="mt-1">
+                Number mode follows the standard display. Letter and image
+                symbols are available on smaller grids. The symbols look
+                different, but every row, column, and marked box still needs
+                one of each symbol.
+              </p>
+            </article>
+          </div>
+          <Link
+            href="/guides/#sudoku-guide-title"
+            className="inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
+          >
+            Read the worked Sudoku guide
+          </Link>
+        </section>
+      )}
 
       {/* Rules modal */}
       <Dialog open={infoModal === 'rules'} onOpenChange={o => !o && setInfoModal(null)}>

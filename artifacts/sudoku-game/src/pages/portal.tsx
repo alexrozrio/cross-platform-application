@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useImageTheme } from "@/hooks/use-image-theme";
 import { usePageMeta } from "@/components/page-meta";
@@ -58,13 +58,13 @@ export default function Portal() {
     applicationCategory: "GameApplication",
     operatingSystem: "Web",
     description:
-      "Free online Sudoku and Memory Match games with multiple difficulty levels, daily challenges, themes, and optional progress tracking.",
+      "Play browser-based Sudoku and Memory Match with practical solving and recall guides, flexible board sizes, guest play, and optional synced progress.",
     url: new URL("/", window.location.origin).toString(),
   };
   usePageMeta({
     title: "Free Sudoku & Memory Match Games Online",
     description:
-      "Play free online Sudoku and Memory Match games for all ages. Choose from multiple grids, difficulty levels, daily challenges, themes, and guest play.",
+      "Play free browser-based Sudoku and Memory Match. Choose a board, learn practical solving and recall routines, and play as a guest or sync progress.",
     path: "/",
     structuredData: landingPageSchema,
   });
@@ -90,7 +90,7 @@ export default function Portal() {
   const ALL_MEMORY_OPTIONS = [
     { size: 2, label: "2×4", sub: "4 pairs" },
     { size: 4, label: "4×4", sub: "8 pairs" },
-    { size: 6, label: "4×8", sub: "16 pairs" },
+    { size: 6, label: "8×4", sub: "16 pairs" },
     { size: 8, label: "8×8", sub: "32 pairs" },
   ];
   const visibleMemoryOptions = ALL_MEMORY_OPTIONS.filter((opt) =>
@@ -415,7 +415,7 @@ export default function Portal() {
             const matched = memorySession.cards.filter((c) => c.matched).length;
             const total = memorySession.cards.length / 2;
             const sizeLabel =
-              gs === 2 ? "2×4" : gs === 4 ? "4×4" : gs === 6 ? "4×8" : "8×8";
+              gs === 2 ? "2×4" : gs === 4 ? "4×4" : gs === 6 ? "8×4" : "8×8";
             return (
               <button
                 onClick={() => setLocation("/memory")}
@@ -847,7 +847,7 @@ export default function Portal() {
                           : gs === 4
                             ? "4×4"
                             : gs === 6
-                              ? "4×8"
+                              ? "8×4"
                               : "8×8";
                       return (
                         <button
@@ -1046,47 +1046,71 @@ export default function Portal() {
       <section className="bg-card rounded-2xl border border-border p-5 sm:p-6 space-y-5 text-sm text-muted-foreground leading-relaxed">
         <div>
           <h2 className="text-xl font-serif font-bold text-foreground">
-            Play Brain Games . Online
+            Choose a puzzle, then adjust the challenge
           </h2>
           <p className="mt-2">
-            Play Brain Games . Online is a general-audience puzzle site with two
-            classic games you can play in a browser: logic-based Sudoku and
-            concentration-style Memory Match. Start a quick guest game, choose a
-            larger challenge, or sign in when you want your progress and results
-            to follow you across devices.
+            Play Brain Games . Online brings together two games that reward
+            different kinds of attention. Sudoku asks you to compare rows,
+            columns, and boxes before placing a symbol. Memory Match asks you to
+            remember where cards appeared. Both can be started in a browser
+            without creating an account.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <h3 className="font-semibold text-foreground">How Sudoku works</h3>
+            <h3 className="font-semibold text-foreground">Choosing a Sudoku board</h3>
             <p className="mt-1">
-              Fill each row, column, and box so every symbol appears exactly
-              once. Baby, Mini, Dual, Classic, and Pro grids make it easy to
-              choose a comfortable starting point or build toward expert 16×16
-              puzzles.
+              Start with a 3×3 Baby, 4×4 Mini, or 6×6 Dual grid if you want fewer
+              cells to track. The 9×9 Classic board is the familiar standard,
+              while 16×16 Pro gives experienced players a larger symbol set.
+              Easy, medium, hard, and expert settings let you change the puzzle
+              difficulty separately from its size.
             </p>
           </div>
           <div>
-            <h3 className="font-semibold text-foreground">
-              How Memory Match works
-            </h3>
+            <h3 className="font-semibold text-foreground">A steady Sudoku routine</h3>
             <p className="mt-1">
-              Turn over two cards at a time and remember where each symbol
-              appears. Match every pair while keeping your time and flip count
-              low across boards from 2×4 to 8×8.
+              Check a row, column, or box with only a few empty cells. List the
+              symbols it still needs, then rule out any candidate already used
+              by an intersecting group. Place a symbol only when the remaining
+              constraints support it; use pencil notes when a cell still has
+              several possibilities.
+            </p>
+          </div>
+          <div>
+            <h3 className="font-semibold text-foreground">Remember card positions</h3>
+            <p className="mt-1">
+              In Memory Match, turn over two cards at a time. A pair stays
+              visible; a mismatch turns face-down again, so remember both
+              locations before moving on. A consistent scan—such as working
+              across each row—can make it easier to recall where a symbol was
+              seen.
+            </p>
+          </div>
+          <div>
+            <h3 className="font-semibold text-foreground">Choose symbols and track progress</h3>
+            <p className="mt-1">
+              Smaller Sudoku boards also support letter or image-symbol play,
+              and Memory Match can use numbers, letters, or themed icons. These
+              styles change what you see, not the rules. Guest play is available
+              immediately; optional Google sign-in syncs profile progress and
+              statistics across devices.
             </p>
           </div>
         </div>
-        <div>
-          <h3 className="font-semibold text-foreground">
-            Designed for relaxed replay
-          </h3>
-          <p className="mt-1">
-            Both games offer clear rules, touch-friendly controls, optional
-            themes, and daily challenges. Child-friendly modes are available for
-            family play, while adults and experienced players can choose larger
-            grids and harder settings. No purchase is required to play.
-          </p>
+        <div className="flex flex-wrap gap-x-5 gap-y-2 border-t border-border pt-4">
+          <Link href="/sudoku" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Sudoku setup
+          </Link>
+          <Link href="/memory" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Memory Match setup
+          </Link>
+          <Link href="/guides" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Read the puzzle guides
+          </Link>
+          <Link href="/daily-challenge" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Try today’s Sudoku challenge
+          </Link>
         </div>
       </section>
     </div>
