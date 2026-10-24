@@ -13,6 +13,7 @@
 - [Artifact manifest updates](artifact-manifest-updates.md) — protected artifact.toml files must be replaced through the validated manifest flow, not edited directly.
 - [Custom-domain trailing slashes](trailing-slash-seo.md) — live Cloudflare hosting normalizes public route URLs to trailing slashes with a 307.
 - [Theme overlay stacking](theme-overlay-stacking.md) — keep the mobile full-screen layer over app chrome and raise nested dialogs locally.
+- [Mobile overlay safe areas](mobile-overlay-safe-areas.md) — centered dialogs and bottom-pinned notifications need separate Android-safe sizing rules.
 - [Completion sharing overlays](completion-sharing-overlays.md) — keep achievement unlocks modal; other celebrations stay non-blocking while the result is visible.
 - [Capacitor Node compatibility](capacitor-node-compatibility.md) — keep Capacitor packages on a major version supported by the workspace Node runtime.
 - [Guest profile transfer](guest-profile-transfer.md) — restore cross-storage guest identities with an owner-verified, one-use code; never expose profile IDs as restore credentials.

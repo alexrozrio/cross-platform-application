@@ -1313,6 +1313,192 @@
    header below the status bar and camera cutout in the installed Android app,
    without changing the mobile website or iOS app layout. */
 @media (max-width: 767px) {
+  .safe-area-modal-content {
+    --app-modal-safe-top: max(
+      env(safe-area-inset-top, 0px),
+      var(--native-safe-area-inset-top, 0px)
+    );
+    --app-modal-safe-bottom: max(
+      env(safe-area-inset-bottom, 0px),
+      var(--native-safe-area-inset-bottom, 0px)
+    );
+    top: calc(
+      (100dvh + var(--app-modal-safe-top) - var(--app-modal-safe-bottom)) / 2
+    );
+    width: calc(100vw - 1rem);
+    max-height: calc(
+      100dvh - var(--app-modal-safe-top) - var(--app-modal-safe-bottom) - 1rem
+    );
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .safe-area-nonblocking-modal {
+    bottom: calc(
+      5.5rem + max(
+        env(safe-area-inset-bottom, 0px),
+        var(--native-safe-area-inset-bottom, 0px)
+      )
+    );
+    max-height: calc(
+      100dvh
+      - max(env(safe-area-inset-top, 0px), var(--native-safe-area-inset-top, 0px))
+      - max(env(safe-area-inset-bottom, 0px), var(--native-safe-area-inset-bottom, 0px))
+      - 6.5rem
+    );
+  }
+
+  .safe-area-sheet-content {
+    padding-top: max(
+      1.5rem,
+      env(safe-area-inset-top, 0px),
+      var(--native-safe-area-inset-top, 0px)
+    );
+    padding-bottom: calc(
+      1.5rem + max(
+        env(safe-area-inset-bottom, 0px),
+        var(--native-safe-area-inset-bottom, 0px)
+      )
+    );
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .safe-area-sheet-content[data-side="top"],
+  .safe-area-sheet-content[data-side="bottom"] {
+    max-height: calc(
+      100dvh
+      - max(env(safe-area-inset-top, 0px), var(--native-safe-area-inset-top, 0px))
+      - max(env(safe-area-inset-bottom, 0px), var(--native-safe-area-inset-bottom, 0px))
+    );
+  }
+
+  .safe-area-sheet-close {
+    top: max(
+      1rem,
+      env(safe-area-inset-top, 0px),
+      var(--native-safe-area-inset-top, 0px)
+    );
+    right: max(
+      1rem,
+      env(safe-area-inset-right, 0px),
+      var(--native-safe-area-inset-right, 0px)
+    );
+  }
+
+  .safe-area-drawer-content {
+    max-height: calc(
+      100dvh
+      - max(env(safe-area-inset-top, 0px), var(--native-safe-area-inset-top, 0px))
+      - max(env(safe-area-inset-bottom, 0px), var(--native-safe-area-inset-bottom, 0px))
+      - 1rem
+    );
+    padding-bottom: calc(
+      1.5rem + max(
+        env(safe-area-inset-bottom, 0px),
+        var(--native-safe-area-inset-bottom, 0px)
+      )
+    );
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .safe-area-toast-viewport {
+    max-height: 100dvh;
+    padding-top: calc(
+      1rem + max(
+        env(safe-area-inset-top, 0px),
+        var(--native-safe-area-inset-top, 0px)
+      )
+    );
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .safe-area-consent-banner {
+    bottom: calc(
+      5.25rem + max(
+        env(safe-area-inset-bottom, 0px),
+        var(--native-safe-area-inset-bottom, 0px)
+      )
+    );
+    max-height: calc(
+      100dvh
+      - max(env(safe-area-inset-top, 0px), var(--native-safe-area-inset-top, 0px))
+      - max(env(safe-area-inset-bottom, 0px), var(--native-safe-area-inset-bottom, 0px))
+      - 6.25rem
+    );
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .safe-area-consent-backdrop {
+    padding-top: max(
+      0.75rem,
+      env(safe-area-inset-top, 0px),
+      var(--native-safe-area-inset-top, 0px)
+    );
+    padding-bottom: max(
+      0.75rem,
+      env(safe-area-inset-bottom, 0px),
+      var(--native-safe-area-inset-bottom, 0px)
+    );
+  }
+
+  .safe-area-consent-panel {
+    max-height: calc(
+      100dvh
+      - max(env(safe-area-inset-top, 0px), var(--native-safe-area-inset-top, 0px))
+      - max(env(safe-area-inset-bottom, 0px), var(--native-safe-area-inset-bottom, 0px))
+      - 1.5rem
+    );
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .tournament-win-backdrop:not(.tournament-win-backdrop-nonblocking) {
+    padding: max(
+      1rem,
+      env(safe-area-inset-top, 0px),
+      env(safe-area-inset-right, 0px),
+      env(safe-area-inset-bottom, 0px),
+      env(safe-area-inset-left, 0px),
+      var(--native-safe-area-inset-top, 0px),
+      var(--native-safe-area-inset-right, 0px),
+      var(--native-safe-area-inset-bottom, 0px),
+      var(--native-safe-area-inset-left, 0px)
+    );
+  }
+
+  .tournament-win-card {
+    max-height: calc(
+      100dvh
+      - max(env(safe-area-inset-top, 0px), var(--native-safe-area-inset-top, 0px))
+      - max(env(safe-area-inset-bottom, 0px), var(--native-safe-area-inset-bottom, 0px))
+      - 2rem
+    );
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .tournament-win-backdrop-nonblocking {
+    bottom: calc(
+      5.5rem + max(
+        env(safe-area-inset-bottom, 0px),
+        var(--native-safe-area-inset-bottom, 0px)
+      )
+    );
+  }
+
+  .tournament-win-backdrop-nonblocking .tournament-win-card {
+    max-height: calc(
+      100dvh
+      - max(env(safe-area-inset-top, 0px), var(--native-safe-area-inset-top, 0px))
+      - max(env(safe-area-inset-bottom, 0px), var(--native-safe-area-inset-bottom, 0px))
+      - 6.5rem
+    );
+  }
+
   .mobile-bottom-nav {
     padding-bottom: calc(
       0.75rem + max(
@@ -1366,6 +1552,178 @@
       24px,
       env(safe-area-inset-top, 0px),
       var(--native-safe-area-inset-top, 0px)
+    );
+  }
+
+  html.capacitor-android .safe-area-modal-content {
+    --app-modal-safe-top: max(
+      24px,
+      env(safe-area-inset-top, 0px),
+      var(--native-safe-area-inset-top, 0px)
+    );
+    --app-modal-safe-bottom: max(
+      24px,
+      env(safe-area-inset-bottom, 0px),
+      var(--native-safe-area-inset-bottom, 0px)
+    );
+  }
+
+  html.capacitor-android .safe-area-nonblocking-modal {
+    bottom: calc(
+      5.5rem + max(
+        24px,
+        env(safe-area-inset-bottom, 0px),
+        var(--native-safe-area-inset-bottom, 0px)
+      )
+    );
+    max-height: calc(
+      100dvh
+      - max(24px, env(safe-area-inset-top, 0px), var(--native-safe-area-inset-top, 0px))
+      - max(24px, env(safe-area-inset-bottom, 0px), var(--native-safe-area-inset-bottom, 0px))
+      - 6.5rem
+    );
+  }
+
+  html.capacitor-android .safe-area-sheet-content {
+    padding-top: max(
+      24px,
+      env(safe-area-inset-top, 0px),
+      var(--native-safe-area-inset-top, 0px)
+    );
+    padding-bottom: calc(
+      1.5rem + max(
+        24px,
+        env(safe-area-inset-bottom, 0px),
+        var(--native-safe-area-inset-bottom, 0px)
+      )
+    );
+  }
+
+  html.capacitor-android .safe-area-sheet-content[data-side="top"],
+  html.capacitor-android .safe-area-sheet-content[data-side="bottom"] {
+    max-height: calc(
+      100dvh
+      - max(24px, env(safe-area-inset-top, 0px), var(--native-safe-area-inset-top, 0px))
+      - max(24px, env(safe-area-inset-bottom, 0px), var(--native-safe-area-inset-bottom, 0px))
+    );
+  }
+
+  html.capacitor-android .safe-area-sheet-close {
+    top: max(
+      24px,
+      env(safe-area-inset-top, 0px),
+      var(--native-safe-area-inset-top, 0px)
+    );
+    right: max(
+      24px,
+      env(safe-area-inset-right, 0px),
+      var(--native-safe-area-inset-right, 0px)
+    );
+  }
+
+  html.capacitor-android .safe-area-drawer-content {
+    max-height: calc(
+      100dvh
+      - max(24px, env(safe-area-inset-top, 0px), var(--native-safe-area-inset-top, 0px))
+      - max(24px, env(safe-area-inset-bottom, 0px), var(--native-safe-area-inset-bottom, 0px))
+      - 1rem
+    );
+    padding-bottom: calc(
+      1.5rem + max(
+        24px,
+        env(safe-area-inset-bottom, 0px),
+        var(--native-safe-area-inset-bottom, 0px)
+      )
+    );
+  }
+
+  html.capacitor-android .safe-area-toast-viewport {
+    padding-top: calc(
+      1rem + max(
+        24px,
+        env(safe-area-inset-top, 0px),
+        var(--native-safe-area-inset-top, 0px)
+      )
+    );
+  }
+
+  html.capacitor-android .safe-area-consent-banner {
+    bottom: calc(
+      5.25rem + max(
+        24px,
+        env(safe-area-inset-bottom, 0px),
+        var(--native-safe-area-inset-bottom, 0px)
+      )
+    );
+    max-height: calc(
+      100dvh
+      - max(24px, env(safe-area-inset-top, 0px), var(--native-safe-area-inset-top, 0px))
+      - max(24px, env(safe-area-inset-bottom, 0px), var(--native-safe-area-inset-bottom, 0px))
+      - 6.25rem
+    );
+  }
+
+  html.capacitor-android .safe-area-consent-backdrop {
+    padding-top: max(
+      24px,
+      env(safe-area-inset-top, 0px),
+      var(--native-safe-area-inset-top, 0px)
+    );
+    padding-bottom: max(
+      24px,
+      env(safe-area-inset-bottom, 0px),
+      var(--native-safe-area-inset-bottom, 0px)
+    );
+  }
+
+  html.capacitor-android .safe-area-consent-panel {
+    max-height: calc(
+      100dvh
+      - max(24px, env(safe-area-inset-top, 0px), var(--native-safe-area-inset-top, 0px))
+      - max(24px, env(safe-area-inset-bottom, 0px), var(--native-safe-area-inset-bottom, 0px))
+      - 1.5rem
+    );
+  }
+
+  html.capacitor-android .tournament-win-backdrop:not(.tournament-win-backdrop-nonblocking) {
+    padding: max(
+      24px,
+      env(safe-area-inset-top, 0px),
+      env(safe-area-inset-right, 0px),
+      env(safe-area-inset-bottom, 0px),
+      env(safe-area-inset-left, 0px),
+      var(--native-safe-area-inset-top, 0px),
+      var(--native-safe-area-inset-right, 0px),
+      var(--native-safe-area-inset-bottom, 0px),
+      var(--native-safe-area-inset-left, 0px)
+    );
+  }
+
+  html.capacitor-android .tournament-win-card {
+    max-height: calc(
+      100dvh
+      - max(24px, env(safe-area-inset-top, 0px), var(--native-safe-area-inset-top, 0px))
+      - max(24px, env(safe-area-inset-bottom, 0px), var(--native-safe-area-inset-bottom, 0px))
+      - 2rem
+    );
+  }
+
+  html.capacitor-android .tournament-win-backdrop-nonblocking {
+    bottom: calc(
+      5.5rem + max(
+        24px,
+        env(safe-area-inset-bottom, 0px),
+        var(--native-safe-area-inset-bottom, 0px)
+      )
+    );
+  }
+
+  html.capacitor-android .tournament-win-backdrop-nonblocking .tournament-win-card {
+    max-height: calc(
+      100dvh
+      - max(24px, env(safe-area-inset-top, 0px), var(--native-safe-area-inset-top, 0px))
+      - max(24px, env(safe-area-inset-bottom, 0px), var(--native-safe-area-inset-bottom, 0px))
+      - 6.5rem
     );
   }
 

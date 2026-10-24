@@ -65,11 +65,11 @@ export function TournamentWinModal({ badges, onDismiss, nonBlocking = false }: P
       {/* Modal backdrop */}
       <div className={[
         nonBlocking
-          ? "fixed inset-x-2 bottom-[calc(5.5rem+max(env(safe-area-inset-bottom,0px),var(--native-safe-area-inset-bottom,0px)))] z-[60] flex justify-center p-0 pointer-events-none sm:inset-x-auto sm:left-auto sm:right-6 sm:bottom-6 sm:w-96"
-          : "fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300",
+          ? "tournament-win-backdrop tournament-win-backdrop-nonblocking fixed inset-x-2 bottom-[calc(5.5rem+max(env(safe-area-inset-bottom,0px),var(--native-safe-area-inset-bottom,0px)))] z-[60] flex justify-center p-0 pointer-events-none sm:inset-x-auto sm:left-auto sm:right-6 sm:bottom-6 sm:w-96"
+          : "tournament-win-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300",
       ].join(" ")}>
         <div className={[
-          "relative w-full max-w-sm bg-card border-2 border-primary/30 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300",
+          "tournament-win-card relative w-full max-w-sm bg-card border-2 border-primary/30 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300",
           nonBlocking ? "pointer-events-auto max-h-[calc(100dvh-7rem)] overflow-y-auto" : "",
         ].join(" ")}>
 

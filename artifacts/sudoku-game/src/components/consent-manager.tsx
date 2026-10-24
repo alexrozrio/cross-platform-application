@@ -108,7 +108,7 @@ export function ConsentManager() {
         <section
           role="dialog"
           aria-labelledby="consent-title"
-          className="fixed inset-x-3 bottom-[calc(5.25rem+max(env(safe-area-inset-bottom,0px),var(--native-safe-area-inset-bottom,0px)))] z-[70] mx-auto max-w-2xl rounded-2xl border border-border bg-card p-4 shadow-2xl sm:inset-x-auto sm:bottom-4 sm:left-4 sm:right-auto"
+          className="safe-area-consent-banner fixed inset-x-3 bottom-[calc(5.25rem+max(env(safe-area-inset-bottom,0px),var(--native-safe-area-inset-bottom,0px)))] z-[70] mx-auto max-w-2xl rounded-2xl border border-border bg-card p-4 shadow-2xl sm:inset-x-auto sm:bottom-4 sm:left-4 sm:right-auto"
         >
           <div className="flex items-start gap-3">
             <div className="mt-0.5 rounded-full bg-primary/10 p-2 text-primary">
@@ -160,12 +160,12 @@ export function ConsentManager() {
       )}
 
       {showPreferences && (
-        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/45 p-3 sm:items-center">
+        <div className="safe-area-consent-backdrop fixed inset-0 z-[80] flex items-end justify-center bg-black/45 p-3 sm:items-center">
           <section
             role="dialog"
             aria-modal="true"
             aria-labelledby="privacy-settings-title"
-            className="w-full max-w-lg rounded-2xl border border-border bg-card p-5 shadow-2xl"
+            className="safe-area-consent-panel w-full max-w-lg rounded-2xl border border-border bg-card p-5 shadow-2xl"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
