@@ -3,6 +3,8 @@ package online.playbraingames.app;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Build;
+import android.webkit.CookieManager;
 import android.webkit.WebView;
 
 import androidx.activity.EdgeToEdge;
@@ -25,6 +27,15 @@ public class MainActivity extends BridgeActivity {
         super.onCreate(savedInstanceState);
 
         WebView webView = getBridge().getWebView();
+        // The API is hosted on a different origin from the native WebView.
+        // Android blocks third-party cookies by default, which prevents the
+        // persistent server session from surviving a native app restart.
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.setAcceptCookie(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            cookieManager.setAcceptThirdPartyCookies(webView, true);
+        }
+
         ViewCompat.setOnApplyWindowInsetsListener(webView, (view, windowInsets) -> {
             Insets safeInsets = windowInsets.getInsets(
                 WindowInsetsCompat.Type.systemBars()

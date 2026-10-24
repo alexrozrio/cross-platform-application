@@ -1313,6 +1313,27 @@
    header below the status bar and camera cutout in the installed Android app,
    without changing the mobile website or iOS app layout. */
 @media (max-width: 767px) {
+  .mobile-bottom-nav {
+    padding-bottom: calc(
+      0.75rem + max(
+        env(safe-area-inset-bottom, 0px),
+        var(--native-safe-area-inset-bottom, 0px)
+      )
+    );
+  }
+
+  /* Keep the app navigation controls above Android's gesture/3-button area,
+     even if the first WebView inset event reports zero on resume from OAuth. */
+  html.capacitor-android .mobile-bottom-nav {
+    padding-bottom: calc(
+      0.75rem + max(
+        24px,
+        env(safe-area-inset-bottom, 0px),
+        var(--native-safe-area-inset-bottom, 0px)
+      )
+    );
+  }
+
   html.capacitor-android .app-header-standard {
     padding-top: calc(
       12px + max(24px, env(safe-area-inset-top, 0px), var(--native-safe-area-inset-top, 0px))

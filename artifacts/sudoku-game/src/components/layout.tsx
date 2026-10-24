@@ -290,7 +290,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </footer>
 
-      <nav className="md:hidden border-t bg-card pt-2 px-2 flex items-center justify-around fixed bottom-0 left-0 right-0 z-50 isolate shadow-[0_-2px_8px_rgba(0,0,0,0.08)]" style={{ paddingBottom: "calc(0.75rem + max(env(safe-area-inset-bottom, 0px), var(--native-safe-area-inset-bottom, 0px)))" }}>
+      <nav className="mobile-bottom-nav md:hidden border-t bg-card pt-2 px-2 flex items-center justify-around fixed bottom-0 left-0 right-0 z-50 isolate shadow-[0_-2px_8px_rgba(0,0,0,0.08)]">
         {navItems.map((item) => (
           <Link
             key={item.href}
