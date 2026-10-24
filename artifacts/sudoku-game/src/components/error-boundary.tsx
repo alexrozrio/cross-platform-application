@@ -274,7 +274,7 @@ export class ErrorBoundary extends React.Component<
           <div className="space-y-1">
             <h2 className="text-lg font-bold">Choose a game to keep playing</h2>
             <p className="text-sm text-muted-foreground">
-              Sudoku and Memory Match can be played locally. Online profile and reward features may be unavailable.
+              Play Brain Games remains playable offline. Online profiles and rewards may be unavailable.
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">

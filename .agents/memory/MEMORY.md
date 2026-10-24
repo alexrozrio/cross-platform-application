@@ -18,3 +18,4 @@
 - [Avoid Replit-specific app dependencies](avoid-replit-app-dependencies.md) — keep the Sudoku app's runtime/build dependencies platform-neutral.
 - [Neon idle compute](neon-idle-compute.md) — keep expiration and badge maintenance request-driven so idle compute can suspend without changing the seven-day cutoff.
 - [Mobile SEO content](mobile-seo-content.md) — collapse supplementary long-form help on mobile without removing it from the page; preserve desktop and primary task content.
+- [Brand language](brand-language.md) — use “Play Brain Games” for general UI copy; keep game names where they clarify a game or support SEO.

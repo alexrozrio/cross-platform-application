@@ -864,7 +864,7 @@ export default function Profile() {
                     <FormItem className="rounded-lg border p-4 space-y-3">
                       <div>
                         <FormLabel className="text-base">Game Mode</FormLabel>
-                        <FormDescription>Controls which grid sizes appear in Sudoku and Memory Match.</FormDescription>
+                        <FormDescription>Controls which grid sizes are offered in Play Brain Games.</FormDescription>
                       </div>
                       <FormControl>
                         <ToggleGroup

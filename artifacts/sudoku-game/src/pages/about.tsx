@@ -52,7 +52,7 @@ export default function About() {
 
       <div className="space-y-4 text-sm text-muted-foreground leading-relaxed bg-card rounded-2xl border border-border px-5 py-4">
         <p>
-          Play Brain Games . Online brings together Sudoku and Memory Match — a general-audience, family-friendly place for timeless puzzles. It is designed for everyone from first-time solvers to seasoned experts, with optional child-friendly modes for younger family members. We believe a great puzzle game should be beautiful, fast, and endlessly replayable.
+          Play Brain Games . Online is a general-audience, family-friendly collection of timeless puzzles. It is designed for everyone from first-time solvers to seasoned experts, with optional child-friendly modes for younger family members. We believe a great puzzle game should be beautiful, fast, and endlessly replayable.
         </p>
         <p>
           In Sudoku, beyond the standard 9×9, we support child-friendly Baby and Mini grids as well as pro-level 16×16 boards that will challenge experienced players. You can play with numbers, letters, or swappable image themes — keeping every session feeling fresh.

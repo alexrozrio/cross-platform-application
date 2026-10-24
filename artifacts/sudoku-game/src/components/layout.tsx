@@ -90,7 +90,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, [profile?.theme]);
 
   const navItems = [
-    { href: "/", label: "Home", shortLabel: "Home", icon: Home, badge: 0, tooltip: "Play Sudoku & Memory Match — earn XP and climb the ranks",
+    { href: "/", label: "Home", shortLabel: "Home", icon: Home, badge: 0, tooltip: "Play Brain Games — earn XP and climb the ranks",
       iconCls: "text-sky-400", activeIconCls: "text-sky-600 dark:text-sky-400", activeBgCls: "bg-sky-100 dark:bg-sky-900/40" },
     { href: "/leaderboard", label: "Leaderboard", shortLabel: "Ranks", icon: Trophy, badge: 0, tooltip: "See the top players — complete games to rise up the rankings",
       iconCls: "text-amber-400", activeIconCls: "text-amber-600 dark:text-amber-400", activeBgCls: "bg-amber-100 dark:bg-amber-900/40" },

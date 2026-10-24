@@ -1045,7 +1045,7 @@ export default function Portal() {
 
       <MobileContentDisclosure
         id="portal-game-guidance"
-        title="More about Sudoku and Memory Match"
+        title="More about Play Brain Games"
         className="mt-4 rounded-2xl border border-border bg-card p-5 sm:p-6"
       >
       <section className="space-y-5 text-sm text-muted-foreground leading-relaxed">
