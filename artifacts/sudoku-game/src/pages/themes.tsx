@@ -249,7 +249,7 @@ export default function Themes() {
   return (
     <div className="max-w-2xl mx-auto w-full space-y-10 animate-in fade-in duration-500">
       <div className="bg-card rounded-2xl px-5 py-4 border border-border">
-        <h1 className="text-3xl font-serif font-bold tracking-tight">Sudoku &amp; Memory Match Themes</h1>
+        <h1 className="text-3xl font-serif font-bold tracking-tight">Play Brain Games Themes</h1>
         <p className="text-muted-foreground mt-1">
           Personalise the look, feel, and typography of the app. Locked items can be unlocked with gems.
         </p>
