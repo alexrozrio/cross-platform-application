@@ -1322,6 +1322,23 @@
     );
   }
 
+  .mobile-theme-overlay-content {
+    padding-bottom: calc(
+      2rem + max(
+        env(safe-area-inset-bottom, 0px),
+        var(--native-safe-area-inset-bottom, 0px)
+      )
+    );
+  }
+
+  .mobile-theme-overlay-header {
+    padding-top: max(
+      1rem,
+      env(safe-area-inset-top, 0px),
+      var(--native-safe-area-inset-top, 0px)
+    );
+  }
+
   /* Keep the app navigation controls above Android's gesture/3-button area,
      even if the first WebView inset event reports zero on resume from OAuth. */
   html.capacitor-android .mobile-bottom-nav {
@@ -1331,6 +1348,24 @@
         env(safe-area-inset-bottom, 0px),
         var(--native-safe-area-inset-bottom, 0px)
       )
+    );
+  }
+
+  html.capacitor-android .mobile-theme-overlay-content {
+    padding-bottom: calc(
+      2rem + max(
+        24px,
+        env(safe-area-inset-bottom, 0px),
+        var(--native-safe-area-inset-bottom, 0px)
+      )
+    );
+  }
+
+  html.capacitor-android .mobile-theme-overlay-header {
+    padding-top: max(
+      24px,
+      env(safe-area-inset-top, 0px),
+      var(--native-safe-area-inset-top, 0px)
     );
   }
 
