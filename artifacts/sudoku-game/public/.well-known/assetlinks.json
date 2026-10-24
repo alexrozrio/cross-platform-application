@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "online.playbraingames.app",
+      "sha256_cert_fingerprints": [
+        "5D:7F:01:21:DA:04:3B:08:B9:EA:6F:6F:12:4B:76:1F:CC:61:72:5B:EC:59:EE:8A:32:49:AA:A4:59:F3:85:ED"
+      ]
+    }
+  }
+]
