@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/use-auth';
 import { useImageTheme } from '@/hooks/use-image-theme';
 import { usePageMeta } from '@/components/page-meta';
+import { MobileContentDisclosure } from '@/components/mobile-content-disclosure';
 import { getTheme } from '@/lib/themes';
 import { useThemeImageSrc } from '@/components/theme-icons';
 import { customFetch, useGetProfile } from '@workspace/api-client-react';
@@ -915,7 +916,12 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
           </button>
         </div>
 
-        <section className="rounded-2xl border border-violet-400/25 bg-card p-5 sm:p-6 space-y-4">
+        <MobileContentDisclosure
+          id="memory-guidance"
+          title="More Memory Match guidance"
+          className="rounded-2xl border border-violet-400/25 bg-card p-5 sm:p-6"
+        >
+        <section className="space-y-4">
           <div>
             <h2 className="text-xl font-serif font-bold text-foreground">
               How to play and improve at Memory Match
@@ -970,6 +976,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
             Read the full Memory Match guide
           </Link>
         </section>
+        </MobileContentDisclosure>
 
         {/* Rules modal */}
         <Dialog open={infoModal === 'rules'} onOpenChange={o => !o && setInfoModal(null)}>

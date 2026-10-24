@@ -17,3 +17,4 @@
 - [Guest profile transfer](guest-profile-transfer.md) — restore cross-storage guest identities with an owner-verified, one-use code; never expose profile IDs as restore credentials.
 - [Avoid Replit-specific app dependencies](avoid-replit-app-dependencies.md) — keep the Sudoku app's runtime/build dependencies platform-neutral.
 - [Neon idle compute](neon-idle-compute.md) — keep expiration and badge maintenance request-driven so idle compute can suspend without changing the seven-day cutoff.
+- [Mobile SEO content](mobile-seo-content.md) — collapse supplementary long-form help on mobile without removing it from the page; preserve desktop and primary task content.

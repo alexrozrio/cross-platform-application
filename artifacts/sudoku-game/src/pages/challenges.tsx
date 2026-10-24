@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { showEventModal } from "@/hooks/use-event-modal";
 import { LevelBadge } from "@/components/level-badge";
 import { usePageMeta } from "@/components/page-meta";
+import { MobileContentDisclosure } from "@/components/mobile-content-disclosure";
 import { shareOrDownloadShareCard } from "@/lib/share-card";
 import { ShareCardPreview } from "@/components/share-card-preview";
 import { challengeInviteUrl } from "@/lib/app-links";
@@ -1841,9 +1842,14 @@ export default function Challenges() {
         </div>
       )}
 
+      <MobileContentDisclosure
+        id="challenge-guidance"
+        title="More about challenges"
+        className="rounded-2xl border border-border bg-card px-5 py-5"
+      >
       <section
         aria-labelledby="challenge-help-heading"
-        className="rounded-2xl border border-border bg-card px-5 py-5 text-sm leading-relaxed text-muted-foreground"
+        className="text-sm leading-relaxed text-muted-foreground"
       >
         <h2 id="challenge-help-heading" className="text-lg font-semibold text-foreground">
           How challenges work
@@ -1878,6 +1884,7 @@ export default function Challenges() {
           </div>
         </div>
       </section>
+      </MobileContentDisclosure>
 
       <NewChallengeDialog
         open={showNew}

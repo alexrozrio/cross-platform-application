@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useImageTheme } from "@/hooks/use-image-theme";
 import { usePageMeta } from "@/components/page-meta";
 import { ThemeIcon } from "@/components/theme-icons";
+import { MobileContentDisclosure } from "@/components/mobile-content-disclosure";
 import {
   Grid3x2 as Grid3X3,
   Loader as Loader2,
@@ -1042,8 +1043,12 @@ export default function Portal() {
 
       </div>
 
-      <br />
-      <section className="bg-card rounded-2xl border border-border p-5 sm:p-6 space-y-5 text-sm text-muted-foreground leading-relaxed">
+      <MobileContentDisclosure
+        id="portal-game-guidance"
+        title="More about Sudoku and Memory Match"
+        className="mt-4 rounded-2xl border border-border bg-card p-5 sm:p-6"
+      >
+      <section className="space-y-5 text-sm text-muted-foreground leading-relaxed">
         <div>
           <h2 className="text-xl font-serif font-bold text-foreground">
             Choose a puzzle, then adjust the challenge
@@ -1113,6 +1118,7 @@ export default function Portal() {
           </Link>
         </div>
       </section>
+      </MobileContentDisclosure>
     </div>
   );
 }

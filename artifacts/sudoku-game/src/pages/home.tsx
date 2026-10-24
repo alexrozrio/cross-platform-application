@@ -6,6 +6,7 @@ import { usePageMeta } from '@/components/page-meta';
 import { useCreateGame, useGetProfile, customFetch, generatePuzzle } from '@workspace/api-client-react';
 import { generateOfflinePuzzle } from '@/lib/sudoku-generator';
 import { ThemeIcon } from '@/components/theme-icons';
+import { MobileContentDisclosure } from '@/components/mobile-content-disclosure';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
@@ -756,7 +757,12 @@ export default function SudokuHome({
       </div>
 
       {!bookmarkedSize && (
-        <section className="rounded-2xl border border-primary/20 bg-card p-5 sm:p-6 space-y-4">
+        <MobileContentDisclosure
+          id="sudoku-guidance"
+          title="More Sudoku guidance"
+          className="rounded-2xl border border-primary/20 bg-card p-5 sm:p-6"
+        >
+        <section className="space-y-4">
           <div>
             <h2 className="text-xl font-serif font-bold text-foreground">
               A practical way to solve Sudoku
@@ -813,6 +819,7 @@ export default function SudokuHome({
             Read the worked Sudoku guide
           </Link>
         </section>
+        </MobileContentDisclosure>
       )}
 
       {/* Rules modal */}
