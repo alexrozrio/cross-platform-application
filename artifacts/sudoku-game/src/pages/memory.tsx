@@ -203,7 +203,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
   });
   const [, setLocation] = useLocation();
   const search = useSearch();
-  const { profileId, isReady } = useAuth();
+  const { profileId } = useAuth();
   const { themeId } = useImageTheme();
   const queryClient = useQueryClient();
 

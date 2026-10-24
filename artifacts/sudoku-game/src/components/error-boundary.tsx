@@ -1,7 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, RefreshCw, Home, Grid3X3, Brain } from "lucide-react";
-import MemoryMatchPage from "@/pages/memory";
+import { RefreshCw, Grid3X3, Brain } from "lucide-react";
 
 const OFFLINE_PUZZLE =
   "530070000" +
@@ -128,6 +127,114 @@ function OfflineSudokuFallback() {
   );
 }
 
+const MEMORY_SYMBOLS = ["🍀", "🍋", "⭐", "🎧", "🌙", "🐚", "🍓", "🎈"];
+
+function createOfflineMemoryDeck() {
+  const cards = MEMORY_SYMBOLS.flatMap((symbol, pair) => [
+    { symbol, pair },
+    { symbol, pair },
+  ]);
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  return cards;
+}
+
+function OfflineMemoryFallback() {
+  const [cards, setCards] = React.useState(createOfflineMemoryDeck);
+  const [revealed, setRevealed] = React.useState<number[]>([]);
+  const [matched, setMatched] = React.useState<number[]>([]);
+  const [locked, setLocked] = React.useState(false);
+  const timeoutRef = React.useRef<number | null>(null);
+
+  React.useEffect(
+    () => () => {
+      if (timeoutRef.current !== null) window.clearTimeout(timeoutRef.current);
+    },
+    [],
+  );
+
+  const startNewGame = () => {
+    if (timeoutRef.current !== null) window.clearTimeout(timeoutRef.current);
+    timeoutRef.current = null;
+    setCards(createOfflineMemoryDeck());
+    setRevealed([]);
+    setMatched([]);
+    setLocked(false);
+  };
+
+  const revealCard = (index: number) => {
+    if (locked || matched.includes(index) || revealed.includes(index)) return;
+    if (revealed.length === 0) {
+      setRevealed([index]);
+      return;
+    }
+
+    const firstIndex = revealed[0];
+    setRevealed([firstIndex, index]);
+    if (cards[firstIndex].pair === cards[index].pair) {
+      setMatched((current) => [...current, firstIndex, index]);
+      setRevealed([]);
+      return;
+    }
+
+    setLocked(true);
+    timeoutRef.current = window.setTimeout(() => {
+      setRevealed([]);
+      setLocked(false);
+      timeoutRef.current = null;
+    }, 700);
+  };
+
+  const isComplete = matched.length === cards.length;
+
+  return (
+    <div className="min-h-[70vh] w-full max-w-md mx-auto px-4 py-6 space-y-5">
+      <div className="rounded-xl border border-primary/20 bg-card px-4 py-3 text-center">
+        <p className="font-bold">Offline Memory Match</p>
+        <p className="text-sm text-muted-foreground">
+          Match all 8 pairs. This local game does not need an account or database.
+        </p>
+      </div>
+
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-medium">
+          {isComplete ? "All pairs matched!" : `${matched.length / 2} of 8 pairs`}
+        </p>
+        <Button variant="outline" size="sm" onClick={startNewGame}>
+          New game
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-4 gap-2 sm:gap-3">
+        {cards.map((card, index) => {
+          const isVisible = revealed.includes(index) || matched.includes(index);
+          return (
+            <button
+              key={`${card.pair}-${index}`}
+              type="button"
+              aria-label={isVisible ? `Card ${index + 1}: ${card.symbol}` : `Card ${index + 1}, hidden`}
+              aria-pressed={isVisible}
+              onClick={() => revealCard(index)}
+              disabled={locked || matched.includes(index)}
+              className={[
+                "aspect-square rounded-xl border-2 text-3xl sm:text-4xl transition-colors",
+                isVisible
+                  ? "border-primary bg-primary/10"
+                  : "border-border bg-card hover:border-primary/50",
+                matched.includes(index) ? "opacity-70" : "",
+              ].join(" ")}
+            >
+              {isVisible ? card.symbol : "?"}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
   State
@@ -138,7 +245,7 @@ export class ErrorBoundary extends React.Component<
   }
 
   static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+    return { hasError: true, error, recoveryGame: null };
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
@@ -149,7 +256,7 @@ export class ErrorBoundary extends React.Component<
     if (!this.state.hasError) return this.props.children;
 
     if (this.state.recoveryGame === "sudoku") return <OfflineSudokuFallback />;
-    if (this.state.recoveryGame === "memory") return <MemoryMatchPage />;
+    if (this.state.recoveryGame === "memory") return <OfflineMemoryFallback />;
 
     // A grid click should never strand a player on the generic error page.
     // Keep the fallback deliberately independent from Game so it can render
@@ -192,7 +299,6 @@ export class ErrorBoundary extends React.Component<
             onClick={() => window.location.reload()}
           >
             <RefreshCw className="w-4 h-4" /> Reload app
-            <Home className="w-4 h-4" />
           </Button>
         </div>
       </div>

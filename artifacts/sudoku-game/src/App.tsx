@@ -167,43 +167,43 @@ function Router() {
           />
         )}
         <Layout>
-        <Suspense fallback={<PageLoader />}>
-          <Switch>
-            <Route path="/" component={Portal} />
-            <Route path="/guides" component={Guides} />
-            <Route path="/sudoku/:grid/:difficulty" component={SudokuBookmarkRoute} />
-            <Route path="/sudoku">
-              {() => <SudokuHome />}
-            </Route>
-            <Route path="/themes" component={Themes} />
-            <Route path="/profile" component={Profile} />
-            <Route path="/game/:id" component={SudokuGameRoute} />
-            <Route path="/daily-challenge" component={DailyChallenge} />
-            <Route path="/leaderboard" component={Leaderboard} />
-            <Route path="/stats" component={StatsRedirect} />
-            <Route path="/challenges" component={Challenges} />
-            <Route path="/badges/:token" component={BadgeSharePage} />
-            <Route path="/memory/:difficulty" component={MemoryBookmarkRoute} />
-            <Route path="/memory">
-              {() => <MemoryMatch />}
-            </Route>
-            <Route path="/memory-challenge" component={MemoryChallengePage} />
-            <Route path="/player/:profileId">
-              {(params) => <PublicProfilePage profileId={params.profileId} />}
-            </Route>
-            <Route path="/players/:profileId">
-              {(params) => <PublicProfilePage profileId={params.profileId} />}
-            </Route>
-            <Route path="/invite/:token">
-              {(params) => <ChallengeInvitePage token={params.token} />}
-            </Route>
-            <Route path="/about" component={About} />
-            <Route path="/privacy" component={PrivacyPolicy} />
-            <Route path="/account-deletion" component={AccountDeletion} />
-            <Route path="/terms" component={TermsOfService} />
-            <Route component={NotFound} />
-          </Switch>
-        </Suspense>
+          <Suspense fallback={<PageLoader />}>
+            <Switch>
+              <Route path="/" component={Portal} />
+              <Route path="/guides" component={Guides} />
+              <Route path="/sudoku/:grid/:difficulty" component={SudokuBookmarkRoute} />
+              <Route path="/sudoku">
+                {() => <SudokuHome />}
+              </Route>
+              <Route path="/themes" component={Themes} />
+              <Route path="/profile" component={Profile} />
+              <Route path="/game/:id" component={SudokuGameRoute} />
+              <Route path="/daily-challenge" component={DailyChallenge} />
+              <Route path="/leaderboard" component={Leaderboard} />
+              <Route path="/stats" component={StatsRedirect} />
+              <Route path="/challenges" component={Challenges} />
+              <Route path="/badges/:token" component={BadgeSharePage} />
+              <Route path="/memory/:difficulty" component={MemoryBookmarkRoute} />
+              <Route path="/memory">
+                {() => <MemoryMatch />}
+              </Route>
+              <Route path="/memory-challenge" component={MemoryChallengePage} />
+              <Route path="/player/:profileId">
+                {(params) => <PublicProfilePage profileId={params.profileId} />}
+              </Route>
+              <Route path="/players/:profileId">
+                {(params) => <PublicProfilePage profileId={params.profileId} />}
+              </Route>
+              <Route path="/invite/:token">
+                {(params) => <ChallengeInvitePage token={params.token} />}
+              </Route>
+              <Route path="/about" component={About} />
+              <Route path="/privacy" component={PrivacyPolicy} />
+              <Route path="/account-deletion" component={AccountDeletion} />
+              <Route path="/terms" component={TermsOfService} />
+              <Route component={NotFound} />
+            </Switch>
+          </Suspense>
         </Layout>
       </ErrorBoundary>
     </AuthProvider>
