@@ -5,6 +5,7 @@
 - [Prod Render/local DB drift](prod-render-db-drift.md) — frontend defaults to external Render API with its own DB; local schema pushes don't reach it, so verify "is it live" against prod directly.
 - [Offline game object stability](offline-game-object-stability.md) — keep fallbacks stable and Sudoku/Memory gameplay local-first when the API or database is unavailable.
 - [Sudoku bookmark URLs](sudoku-bookmark-urls.md) — setup URLs are safe to bookmark; game URLs add gameId and preserve mode/offline state.
+- [App-link testing](app-link-testing.md) — use the Android debug certificate for testing, then replace it with the Play signing certificate before release.
 - [Memory direct-start routes](memory-direct-start.md) — use `start=1` when canonicalizing a level link that must open directly into a game.
 - [Workspace dependency sync](api-workspace-dependency-sync.md) — when declared package imports are missing, install the target workspace and its dependency closure before changing code.
 - [Offline completion sync](offline-completion-sync.md) — reconnect scoring must be bounded and completion endpoints must atomically guard active games before awarding rewards.

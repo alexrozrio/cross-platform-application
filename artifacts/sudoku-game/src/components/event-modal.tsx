@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { shareOrDownloadShareCard } from "@/lib/share-card";
+import { appShareUrlForPath } from "@/lib/app-links";
 import {
   subscribeEventModal, dismissEventModal,
   type EventModalPayload,
@@ -202,7 +203,7 @@ export function EventModal({ nonBlocking = false }: { nonBlocking?: boolean }) {
   const shareRank = async () => {
     if (payload.type !== "rank_up") return;
 
-    const shareUrl = `${window.location.origin}/profile`;
+    const shareUrl = appShareUrlForPath("/profile");
     const shareText = `I just reached the ${payload.newRank} rank on Play Brain Games . Online! 🎉`;
     try {
       const result = await shareOrDownloadShareCard({

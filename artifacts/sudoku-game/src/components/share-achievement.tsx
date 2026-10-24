@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Share2, Check, Copy, X } from "lucide-react";
 import { type AchievementMeta } from "@/lib/achievement-utils";
 import { shareOrDownloadShareCard } from "@/lib/share-card";
+import { appShareUrlForPath } from "@/lib/app-links";
 import { toast } from "sonner";
 
 // ─── Social platform definitions ──────────────────────────────────────────────
@@ -94,9 +95,10 @@ export function ShareAchievementButton({
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
   // Deep-link to the sharer's public profile when profileId is available
-  const siteUrl = profileId ? `${origin}/players/${profileId}` : origin;
+  const siteUrl = appShareUrlForPath(
+    profileId ? `/players/${encodeURIComponent(String(profileId))}` : "/",
+  );
 
   // Build the share text — multi takes priority
   const shareText = achievements && achievements.length > 1

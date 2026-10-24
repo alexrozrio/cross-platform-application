@@ -39,6 +39,7 @@ import gameFeatures from "@/config/game-features.json";
 import { sudokuGamePath, sudokuSetupPath } from "@/lib/sudoku-routes";
 import { rememberSudokuDifficulty } from "@/lib/sudoku-preferences";
 import { shareOrDownloadShareCard } from "@/lib/share-card";
+import { appShareUrlForPath } from "@/lib/app-links";
 import { useGameResultVisibility } from "@/components/game-result-visibility-context";
 import { ACHIEVEMENT_COMPLETION_EVENT } from "@/lib/achievement-events";
 
@@ -1272,7 +1273,7 @@ export default function Game({ id }: { id: string }) {
     const sizeLabel = `${size}×${size}`;
     const xpGain = ({ easy: 1, medium: 2, hard: 3, expert: 5 } as Record<string, number>)[diff] ?? 1;
     const rank = profile ? getLevelFromXp(profile.xp ?? 0).name : null;
-    const appUrl = `${window.location.origin}${sudokuSetupPath(size, diff, mode)}`;
+    const appUrl = appShareUrlForPath(sudokuSetupPath(size, diff, mode));
     const lines = [
       `${completionMessage.emoji} Solved a ${sizeLabel} ${diffLabel} Sudoku in ${formattedTime}!`,
       `❌ ${mistakes} mistake${mistakes !== 1 ? "s" : ""} · 💡 ${hints} hint${hints !== 1 ? "s" : ""}`,

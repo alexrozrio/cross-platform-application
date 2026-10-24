@@ -31,6 +31,7 @@ import { getLevelFromXp } from "@/lib/levels";
 import { shareOrDownloadShareCard } from "@/lib/share-card";
 import { ShareCardPreview } from "@/components/share-card-preview";
 import { sudokuSetupPath } from "@/lib/sudoku-routes";
+import { appShareUrlForPath } from "@/lib/app-links";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -368,7 +369,7 @@ export default function ChallengeInvitePage({ token }: { token: string }) {
     (!isTargeted || isMyChallenge);
   const isReChallenging =
     reChallengeSudokuMutation.isPending || reChallengeMemoryMutation.isPending;
-  const shareUrl = `${window.location.origin}/invite/${token}`;
+  const shareUrl = appShareUrlForPath(`/invite/${encodeURIComponent(token)}`);
 
   const shareText = invite
     ? invite.type === "sudoku"

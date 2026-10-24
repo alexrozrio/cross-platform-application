@@ -8,6 +8,7 @@ import { useLocation } from 'wouter';
 import { BADGE_META, formatPeriodLabel } from '@/lib/badge-utils';
 import { BadgeShareSheet } from '@/components/badge-share-sheet';
 import { usePageMeta } from '@/components/page-meta';
+import { appShareUrlForPath } from '@/lib/app-links';
 
 export default function BadgeSharePage() {
   const params = useParams<{ token: string }>();
@@ -25,7 +26,9 @@ export default function BadgeSharePage() {
 
   const [shareOpen, setShareOpen] = React.useState(false);
 
-  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const shareUrl = typeof window !== 'undefined'
+    ? appShareUrlForPath(`${window.location.pathname}${window.location.search}${window.location.hash}`)
+    : '';
 
   if (isLoading) return <div className="p-12 text-center text-muted-foreground">Loading badge…</div>;
   if (isError || !badge) return (

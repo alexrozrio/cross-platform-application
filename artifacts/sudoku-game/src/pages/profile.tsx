@@ -3,6 +3,7 @@ import { useLocation, useSearch, Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { usePageMeta } from "@/components/page-meta";
 import { signOut, startGoogleSignIn } from "@/lib/native-auth";
+import { appShareUrlForPath } from "@/lib/app-links";
 import {
   useGetProfile,
   useUpdateProfile,
@@ -717,7 +718,7 @@ export default function Profile() {
   const shareSheetBadge = badges?.find((b) => b.shareToken === shareSheetToken);
   const shareSheetMeta = shareSheetBadge ? (BADGE_META[shareSheetBadge.badgeType] ?? BADGE_META["weekly_1st"]) : null;
   const shareSheetUrl = shareSheetToken
-    ? `${window.location.origin}${import.meta.env.BASE_URL.replace(/\/$/, "")}/badges/${shareSheetToken}`
+    ? appShareUrlForPath(`${import.meta.env.BASE_URL.replace(/\/$/, "")}/badges/${encodeURIComponent(shareSheetToken)}`)
     : "";
 
   const formatTime = (seconds: number | null | undefined) => {

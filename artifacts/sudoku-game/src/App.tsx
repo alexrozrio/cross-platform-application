@@ -14,8 +14,7 @@ import { PageLoader } from "@/components/page-loader";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ConsentManager } from "@/components/consent-manager";
 import { modeFromQuery } from "@/lib/sudoku-routes";
-import { invitePathFromAppUrl } from "@/lib/app-links";
-import { nativeAuthCallbackFromAppUrl } from "@/lib/app-links";
+import { appPathFromAppUrl, nativeAuthCallbackFromAppUrl } from "@/lib/app-links";
 import {
   cancelNativeGoogleSignIn,
   completeNativeGoogleSignIn,
@@ -124,7 +123,7 @@ function Router() {
         return;
       }
 
-      const path = invitePathFromAppUrl(url);
+      const path = appPathFromAppUrl(url);
       if (path) setLocation(path);
     };
 

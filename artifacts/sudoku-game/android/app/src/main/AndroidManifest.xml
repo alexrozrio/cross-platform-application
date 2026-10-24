@@ -29,7 +29,51 @@
                 <data
                     android:scheme="https"
                     android:host="playbraingames.online"
+                    android:path="/" />
+                <data
+                    android:scheme="https"
+                    android:host="playbraingames.online"
                     android:pathPrefix="/invite/" />
+                <data
+                    android:scheme="https"
+                    android:host="playbraingames.online"
+                    android:pathPrefix="/sudoku" />
+                <data
+                    android:scheme="https"
+                    android:host="playbraingames.online"
+                    android:pathPrefix="/memory" />
+                <data
+                    android:scheme="https"
+                    android:host="playbraingames.online"
+                    android:pathPrefix="/game/" />
+                <data
+                    android:scheme="https"
+                    android:host="playbraingames.online"
+                    android:pathPrefix="/profile" />
+                <data
+                    android:scheme="https"
+                    android:host="playbraingames.online"
+                    android:pathPrefix="/player/" />
+                <data
+                    android:scheme="https"
+                    android:host="playbraingames.online"
+                    android:pathPrefix="/players/" />
+                <data
+                    android:scheme="https"
+                    android:host="playbraingames.online"
+                    android:pathPrefix="/badges/" />
+                <data
+                    android:scheme="https"
+                    android:host="playbraingames.online"
+                    android:pathPrefix="/daily-challenge" />
+                <data
+                    android:scheme="https"
+                    android:host="playbraingames.online"
+                    android:pathPrefix="/leaderboard" />
+                <data
+                    android:scheme="https"
+                    android:host="playbraingames.online"
+                    android:pathPrefix="/challenges" />
             </intent-filter>
 
             <intent-filter>
