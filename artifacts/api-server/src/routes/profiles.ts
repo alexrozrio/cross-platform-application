@@ -165,8 +165,15 @@ router.get("/profiles/search", async (req, res): Promise<void> => {
     .from(profilesTable)
     .where(
       excludeId
-        ? and(ilike(profilesTable.username, `%${q}%`), ne(profilesTable.id, excludeId))
-        : ilike(profilesTable.username, `%${q}%`),
+        ? and(
+            ilike(profilesTable.username, `%${q}%`),
+            gt(profilesTable.xp, 0),
+            ne(profilesTable.id, excludeId),
+          )
+        : and(
+            ilike(profilesTable.username, `%${q}%`),
+            gt(profilesTable.xp, 0),
+          ),
     )
     .$dynamic();
 
