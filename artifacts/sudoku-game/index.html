@@ -1,8 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <script>
+      if (window.location.hostname === "localhost" && !window.location.port) {
+        document.documentElement.classList.add("capacitor-native-startup");
+      }
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+    <style>
+      html.capacitor-native-startup #root {
+        visibility: hidden;
+      }
+    </style>
     <title>Play Brain Games . Online</title>
     <meta name="description" content="Play Brain Games . Online offers free Sudoku and Memory Match games with multiple grid sizes, difficulty levels, daily challenges, themes, and optional progress tracking." />
     <meta name="robots" content="index, follow" />

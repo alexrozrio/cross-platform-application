@@ -210,6 +210,10 @@ function Router() {
 }
 
 export default function App() {
+  React.useLayoutEffect(() => {
+    document.documentElement.classList.remove("capacitor-native-startup");
+  }, []);
+
   return (
     <WouterRouter base={basePath}>
       <QueryClientProvider client={queryClient}>
