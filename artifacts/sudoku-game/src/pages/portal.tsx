@@ -968,7 +968,7 @@ export default function Portal() {
         <Collapsible
           open={aboutGamesOpen}
           onOpenChange={setAboutGamesOpen}
-          className="rounded-2xl border border-border bg-card p-4"
+          className="rounded-2xl border border-border bg-card p-3"
         >
           <CollapsibleTrigger asChild>
             <button
@@ -977,10 +977,10 @@ export default function Portal() {
               className="w-full flex items-center justify-between gap-3 text-left group"
             >
               <span>
-                <span className="block text-lg font-serif font-bold tracking-tight">
+                <span className="block text-base font-serif font-bold tracking-tight leading-tight">
                   Play Brain Games . Online
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-[11px] leading-tight text-muted-foreground">
                   Two classic brain games, endlessly replayable
                 </span>
               </span>
@@ -1046,7 +1046,7 @@ export default function Portal() {
       <MobileContentDisclosure
         id="portal-game-guidance"
         title="More about Play Brain Games"
-        className="mt-4 rounded-2xl border border-border bg-card p-5 sm:p-6"
+        className="mt-3 rounded-2xl border border-border bg-card p-3 md:p-5"
       >
       <section className="space-y-5 text-sm text-muted-foreground leading-relaxed">
         <div>
