@@ -1845,7 +1845,7 @@ export default function Challenges() {
       <MobileContentDisclosure
         id="challenge-guidance"
         title="More about challenges"
-        className="rounded-2xl border border-border bg-card px-5 py-5"
+        className="rounded-2xl border border-border bg-card p-3 md:px-5 md:py-5"
       >
       <section
         aria-labelledby="challenge-help-heading"
