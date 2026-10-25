@@ -19,6 +19,7 @@ import { GameResultVisibilityContext } from "@/components/game-result-visibility
 import { useThemeBg } from "@/hooks/use-theme-bg";
 import { CONSENT_OPEN_EVENT } from "@/lib/consent";
 import { buildLegalHref } from "@/lib/legal-navigation";
+import { CachedAvatar } from "@/components/cached-avatar";
 import { toast } from "sonner";
 
 export function applyAppTheme(theme: string) {
@@ -190,7 +191,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       >
                         <span className="relative inline-flex">
                           {isSignedIn && item.href === "/profile" && replitUser?.profileImageUrl ? (
-                            <img src={replitUser.profileImageUrl} alt="" className="h-4 w-4 rounded-full object-cover" />
+                            <CachedAvatar src={replitUser.profileImageUrl} className="h-4 w-4 rounded-full object-cover" />
                           ) : (
                             <item.icon className={`h-4 w-4 ${isActive(item.href) ? item.activeIconCls : item.iconCls}`} />
                           )}
@@ -300,7 +301,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           >
             <div className={`relative p-1.5 rounded-xl transition-colors ${isActive(item.href) ? `${item.activeBgCls} ${item.activeIconCls}` : item.iconCls}`}>
               {isSignedIn && item.href === "/profile" && replitUser?.profileImageUrl ? (
-                <img src={replitUser.profileImageUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
+                <CachedAvatar src={replitUser.profileImageUrl} className="h-5 w-5 rounded-full object-cover" />
               ) : (
                 <item.icon className="h-5 w-5" />
               )}

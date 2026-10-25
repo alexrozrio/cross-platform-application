@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useSearch, Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { usePageMeta } from "@/components/page-meta";
+import { CachedAvatar } from "@/components/cached-avatar";
 import { signOut, startGoogleSignIn } from "@/lib/native-auth";
 import { appShareUrlForPath } from "@/lib/app-links";
 import {
@@ -919,9 +920,10 @@ export default function Profile() {
         <CardContent className="space-y-4">
           {isSignedIn && replitUser ? (
             <div className="flex items-center gap-4">
-              {replitUser.profileImageUrl && (
-                <img src={replitUser.profileImageUrl} alt="" className="w-14 h-14 rounded-full object-cover border-2 border-border" />
-              )}
+              <CachedAvatar
+                src={replitUser.profileImageUrl}
+                className="w-14 h-14 rounded-full object-cover border-2 border-border"
+              />
               <div className="min-w-0">
                 <p className="font-semibold truncate">
                   {profile?.username ?? (
