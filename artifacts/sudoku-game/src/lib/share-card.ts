@@ -1,3 +1,7 @@
+import { Capacitor } from "@capacitor/core";
+import { Directory, Filesystem } from "@capacitor/filesystem";
+import { Share } from "@capacitor/share";
+
 export interface ShareCardData {
   title: string;
   lines: string[];
@@ -110,6 +114,49 @@ function renderShareCard(data: ShareCardData): Promise<Blob> {
   });
 }
 
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result !== "string") {
+        reject(new Error("Could not read the generated share image"));
+        return;
+      }
+      const commaIndex = reader.result.indexOf(",");
+      if (commaIndex === -1) {
+        reject(new Error("Generated share image has an invalid data URL"));
+        return;
+      }
+      resolve(reader.result.slice(commaIndex + 1));
+    };
+    reader.onerror = () => reject(reader.error ?? new Error("Could not read the generated share image"));
+    reader.readAsDataURL(blob);
+  });
+}
+
+function getNativeShareText(data: ShareCardData): string {
+  if (!data.shareUrl || data.shareText.includes(data.shareUrl)) return data.shareText;
+  return `${data.shareText}\n${data.shareUrl}`;
+}
+
+async function shareNativeImage(data: ShareCardData, blob: Blob): Promise<void> {
+  const safeFilename = (data.filename ?? "play-brain-games-share.png")
+    .replace(/[^a-zA-Z0-9._-]/g, "-");
+  const path = `brain-games-share-${Date.now()}-${safeFilename}`;
+  const file = await Filesystem.writeFile({
+    path,
+    directory: Directory.Cache,
+    data: await blobToBase64(blob),
+  });
+
+  await Share.share({
+    files: [file.uri],
+    title: data.title,
+    text: getNativeShareText(data),
+    dialogTitle: "Share image",
+  });
+}
+
 export async function downloadShareCard(data: ShareCardData): Promise<void> {
   const blob = await renderShareCard(data);
   const url = URL.createObjectURL(blob);
@@ -122,6 +169,14 @@ export async function downloadShareCard(data: ShareCardData): Promise<void> {
 
 export async function shareOrDownloadShareCard(data: ShareCardData): Promise<"shared" | "downloaded"> {
   const blob = await renderShareCard(data);
+
+  // Android WebView may expose navigator.share without supporting file
+  // attachments. Use Capacitor's native Share sheet with a cache file URI.
+  if (Capacitor.isNativePlatform()) {
+    await shareNativeImage(data, blob);
+    return "shared";
+  }
+
   const file = new File([blob], data.filename ?? "play-brain-games-share.png", { type: "image/png" });
   const canShareFile =
     typeof navigator !== "undefined" &&
@@ -134,16 +189,10 @@ export async function shareOrDownloadShareCard(data: ShareCardData): Promise<"sh
     // the separate `url` field is more reliable for WhatsApp and other share
     // targets that can drop file attachments when a URL field is also present.
     // It also guarantees the link appears exactly once.
-    const nativeShareText = data.shareUrl
-      ? data.shareText.includes(data.shareUrl)
-        ? data.shareText
-        : `${data.shareText}\n${data.shareUrl}`
-      : data.shareText;
-
     await navigator.share({
       files: [file],
       title: data.title,
-      text: nativeShareText,
+      text: getNativeShareText(data),
     });
     return "shared";
   }
