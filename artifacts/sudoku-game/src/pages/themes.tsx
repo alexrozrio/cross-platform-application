@@ -1,32 +1,58 @@
-import React from 'react';
-import { useImageTheme } from '@/hooks/use-image-theme';
-import { ThemeIcon, useThemeImageSrc } from '@/components/theme-icons';
-import { IMAGE_THEMES, getTheme, getSymbol } from '@/lib/themes';
-import { Check, Lock, Gem, LayoutGrid, Eye, ChevronLeft, ChevronRight, ArrowLeft, X, ImageIcon, EyeOff } from 'lucide-react';
-import { type ThemeId } from '@/lib/themes';
-import { useAuth } from '@/hooks/use-auth';
-import { useGetProfile, useUpdateProfile } from '@workspace/api-client-react';
-import { applyAppTheme } from '@/components/layout';
-import { useFontTheme, FONT_THEMES, type FontThemeId } from '@/hooks/use-font-theme';
-import { useFontSize, FONT_SIZE_OPTIONS, type FontSizeId } from '@/hooks/use-font-size';
-import { useUnlockedItems, useUnlockItem } from '@/hooks/use-unlocked-items';
-import { getItemCost, isFreeItem, type ItemType } from '@/lib/item-catalog';
-import { useThemeBg, THEME_BG_DEFAULTS } from '@/hooks/use-theme-bg';
-import { toast } from 'sonner';
+import React from "react";
+import { useImageTheme } from "@/hooks/use-image-theme";
+import { ThemeIcon, useThemeImageSrc } from "@/components/theme-icons";
+import { IMAGE_THEMES, getTheme, getSymbol } from "@/lib/themes";
+import {
+  Check,
+  Lock,
+  Gem,
+  LayoutGrid,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+  ArrowLeft,
+  X,
+  ImageIcon,
+  EyeOff,
+} from "lucide-react";
+import { type ThemeId } from "@/lib/themes";
+import { useAuth } from "@/hooks/use-auth";
+import { useGetProfile, useUpdateProfile } from "@workspace/api-client-react";
+import { applyAppTheme } from "@/components/layout";
+import {
+  useFontTheme,
+  FONT_THEMES,
+  type FontThemeId,
+} from "@/hooks/use-font-theme";
+import {
+  useFontSize,
+  FONT_SIZE_OPTIONS,
+  type FontSizeId,
+} from "@/hooks/use-font-size";
+import { useUnlockedItems, useUnlockItem } from "@/hooks/use-unlocked-items";
+import { getItemCost, isFreeItem, type ItemType } from "@/lib/item-catalog";
+import { useThemeBg, THEME_BG_DEFAULTS } from "@/hooks/use-theme-bg";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { usePageMeta } from '@/components/page-meta';
-import colourThemesConfig from '@/config/colour-themes.json';
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { usePageMeta } from "@/components/page-meta";
+import colourThemesConfig from "@/config/colour-themes.json";
 
 const APP_THEMES = colourThemesConfig
-  .filter(t => t.visible)
-  .map(t => ({ id: t.id, label: t.name, bg: t.bg, primary: t.primary, accent: t.accent }));
+  .filter((t) => t.visible)
+  .map((t) => ({
+    id: t.id,
+    label: t.name,
+    bg: t.bg,
+    primary: t.primary,
+    accent: t.accent,
+  }));
 
 interface PendingUnlock {
   type: ItemType;
@@ -42,19 +68,21 @@ function MobileCarousel({
   renderItem,
   cols = perPage,
   pageKey,
-}: {
-  items: React.ReactNode[];
-  perPage: number;
-  renderItem?: never;
-  cols?: number;
-  pageKey?: string;
-} | {
-  items: unknown[];
-  perPage: number;
-  renderItem: (item: unknown, idx: number) => React.ReactNode;
-  cols?: number;
-  pageKey?: string;
-}) {
+}:
+  | {
+      items: React.ReactNode[];
+      perPage: number;
+      renderItem?: never;
+      cols?: number;
+      pageKey?: string;
+    }
+  | {
+      items: unknown[];
+      perPage: number;
+      renderItem: (item: unknown, idx: number) => React.ReactNode;
+      cols?: number;
+      pageKey?: string;
+    }) {
   const [page, setPage] = React.useState(0);
   const pageCount = Math.ceil(items.length / perPage);
   const start = page * perPage;
@@ -62,7 +90,9 @@ function MobileCarousel({
   const useDots = pageCount <= 8;
 
   // Reset to page 0 when pageKey changes (e.g. section re-renders)
-  React.useEffect(() => { setPage(0); }, [pageKey]);
+  React.useEffect(() => {
+    setPage(0);
+  }, [pageKey]);
 
   const nodes = renderItem
     ? (visible as unknown[]).map((item, i) => renderItem(item, start + i))
@@ -79,7 +109,7 @@ function MobileCarousel({
       {pageCount > 1 && (
         <div className="flex items-center justify-between mt-3 px-1">
           <button
-            onClick={() => setPage(p => Math.max(0, p - 1))}
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={page === 0}
             className="flex items-center justify-center w-8 h-8 rounded-full border border-border bg-background disabled:opacity-30 hover:bg-muted transition-colors"
           >
@@ -93,11 +123,11 @@ function MobileCarousel({
                   key={i}
                   onClick={() => setPage(i)}
                   className={[
-                    'rounded-full transition-all',
+                    "rounded-full transition-all",
                     i === page
-                      ? 'w-4 h-2 bg-primary'
-                      : 'w-2 h-2 bg-muted-foreground/30 hover:bg-muted-foreground/50',
-                  ].join(' ')}
+                      ? "w-4 h-2 bg-primary"
+                      : "w-2 h-2 bg-muted-foreground/30 hover:bg-muted-foreground/50",
+                  ].join(" ")}
                 />
               ))}
             </div>
@@ -108,7 +138,7 @@ function MobileCarousel({
           )}
 
           <button
-            onClick={() => setPage(p => Math.min(pageCount - 1, p + 1))}
+            onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
             disabled={page === pageCount - 1}
             className="flex items-center justify-center w-8 h-8 rounded-full border border-border bg-background disabled:opacity-30 hover:bg-muted transition-colors"
           >
@@ -138,36 +168,65 @@ export default function Themes() {
   const { isUnlocked } = useUnlockedItems(profileId);
   const unlockMutation = useUnlockItem(profileId);
 
-  const [activeAppTheme, setActiveAppTheme] = React.useState<string>(profile?.theme ?? 'light');
-  const [pendingUnlock, setPendingUnlock] = React.useState<PendingUnlock | null>(null);
-  const [overviewThemeId, setOverviewThemeId] = React.useState<ThemeId | null>(null);
+  const [activeAppTheme, setActiveAppTheme] = React.useState<string>(
+    profile?.theme ?? "light",
+  );
+  const [pendingUnlock, setPendingUnlock] =
+    React.useState<PendingUnlock | null>(null);
+  const [overviewThemeId, setOverviewThemeId] = React.useState<ThemeId | null>(
+    null,
+  );
   const overviewTheme = overviewThemeId ? getTheme(overviewThemeId) : null;
-  const [previewColourId, setPreviewColourId] = React.useState<string | null>(null);
-  const previewColour = previewColourId ? APP_THEMES.find(t => t.id === previewColourId) ?? null : null;
+  const [previewColourId, setPreviewColourId] = React.useState<string | null>(
+    null,
+  );
+  const previewColour = previewColourId
+    ? (APP_THEMES.find((t) => t.id === previewColourId) ?? null)
+    : null;
   const [previewFontId, setPreviewFontId] = React.useState<string | null>(null);
-  const previewFont = previewFontId ? FONT_THEMES.find(f => f.id === previewFontId) ?? null : null;
-  const [showAll, setShowAll] = React.useState<'colors' | 'fonts' | 'icons' | null>(null);
+  const previewFont = previewFontId
+    ? (FONT_THEMES.find((f) => f.id === previewFontId) ?? null)
+    : null;
+  const [showAll, setShowAll] = React.useState<
+    "colors" | "fonts" | "icons" | null
+  >(null);
 
   // Background image
-  const bgThemeId = activeAppTheme || 'light';
-  const { effectiveBg, bgSource, enabled: bgEnabled, setEnabled: setBgEnabled, hasCustom, localBgUrl, defaultUrl: bgDefaultUrl, setCustomImage, resetCustomImage } = useThemeBg(bgThemeId);
+  const bgThemeId = activeAppTheme || "light";
+  const {
+    effectiveBg,
+    bgSource,
+    enabled: bgEnabled,
+    setEnabled: setBgEnabled,
+    hasCustom,
+    localBgUrl,
+    defaultUrl: bgDefaultUrl,
+    setCustomImage,
+    resetCustomImage,
+  } = useThemeBg(bgThemeId);
   const bgFileRef = React.useRef<HTMLInputElement>(null);
 
   const handleBgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) { toast.error('Please select an image file'); return; }
-    if (file.size > 10 * 1024 * 1024) { toast.error('Image must be under 10 MB'); return; }
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image must be under 10 MB");
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (ev) => {
       const dataUrl = ev.target?.result as string;
       if (dataUrl) {
         setCustomImage(bgThemeId, dataUrl);
-        toast.success('Background image updated!');
+        toast.success("Background image updated!");
       }
     };
     reader.readAsDataURL(file);
-    e.target.value = '';
+    e.target.value = "";
   };
 
   React.useEffect(() => {
@@ -177,42 +236,59 @@ export default function Themes() {
   const gems = profile?.gems ?? 0;
 
   const handleAppTheme = (id: string) => {
-    const type: ItemType = 'color_theme';
+    const type: ItemType = "color_theme";
     if (!isUnlocked(type, id)) {
       if (!profileId) {
-        toast.error('Sign in to unlock themes');
+        toast.error("Sign in to unlock themes");
         return;
       }
-      setPendingUnlock({ type, id, label: APP_THEMES.find(t => t.id === id)?.label ?? id, cost: getItemCost(type, id) });
+      setPendingUnlock({
+        type,
+        id,
+        label: APP_THEMES.find((t) => t.id === id)?.label ?? id,
+        cost: getItemCost(type, id),
+      });
       return;
     }
     setActiveAppTheme(id);
     applyAppTheme(id);
-    window.dispatchEvent(new CustomEvent('brain-games-theme-selected', { detail: id }));
+    window.dispatchEvent(
+      new CustomEvent("brain-games-theme-selected", { detail: id }),
+    );
     if (profileId) updateProfile.mutate({ id: profileId, data: { theme: id } });
   };
 
   const handleFont = (id: string) => {
-    const type: ItemType = 'font';
+    const type: ItemType = "font";
     if (!isUnlocked(type, id)) {
       if (!profileId) {
-        toast.error('Sign in to unlock fonts');
+        toast.error("Sign in to unlock fonts");
         return;
       }
-      setPendingUnlock({ type, id, label: FONT_THEMES.find(f => f.id === id)?.label ?? id, cost: getItemCost(type, id) });
+      setPendingUnlock({
+        type,
+        id,
+        label: FONT_THEMES.find((f) => f.id === id)?.label ?? id,
+        cost: getItemCost(type, id),
+      });
       return;
     }
     setFontId(id as FontThemeId);
   };
 
   const handleIconSet = (id: string) => {
-    const type: ItemType = 'icon_set';
+    const type: ItemType = "icon_set";
     if (!isUnlocked(type, id)) {
       if (!profileId) {
-        toast.error('Sign in to unlock icon sets');
+        toast.error("Sign in to unlock icon sets");
         return;
       }
-      setPendingUnlock({ type, id, label: IMAGE_THEMES.find(t => t.id === id)?.name ?? id, cost: getItemCost(type, id) });
+      setPendingUnlock({
+        type,
+        id,
+        label: IMAGE_THEMES.find((t) => t.id === id)?.name ?? id,
+        cost: getItemCost(type, id),
+      });
       return;
     }
     setThemeId(id as ThemeId);
@@ -226,20 +302,30 @@ export default function Themes() {
       {
         onSuccess: () => {
           toast.success(`${itemToUnlock.label} unlocked!`);
-          if (itemToUnlock.type === 'color_theme') {
+          if (itemToUnlock.type === "color_theme") {
             setActiveAppTheme(itemToUnlock.id);
             applyAppTheme(itemToUnlock.id);
-            if (profileId) updateProfile.mutate({ id: profileId, data: { theme: itemToUnlock.id } });
-          } else if (itemToUnlock.type === 'font') {
+            if (profileId)
+              updateProfile.mutate({
+                id: profileId,
+                data: { theme: itemToUnlock.id },
+              });
+          } else if (itemToUnlock.type === "font") {
             setFontId(itemToUnlock.id as FontThemeId);
-          } else if (itemToUnlock.type === 'icon_set') {
+          } else if (itemToUnlock.type === "icon_set") {
             setThemeId(itemToUnlock.id as ThemeId);
           }
           setPendingUnlock(null);
         },
         onError: (err) => {
-          const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? err.message;
-          toast.error(msg === 'Not enough gems' ? "Not enough gems to unlock this!" : `Failed to unlock: ${msg}`);
+          const msg =
+            (err as { response?: { data?: { error?: string } } })?.response
+              ?.data?.error ?? err.message;
+          toast.error(
+            msg === "Not enough gems"
+              ? "Not enough gems to unlock this!"
+              : `Failed to unlock: ${msg}`,
+          );
           setPendingUnlock(null);
         },
       },
@@ -249,9 +335,12 @@ export default function Themes() {
   return (
     <div className="max-w-2xl mx-auto w-full space-y-10 animate-in fade-in duration-500">
       <div className="bg-card rounded-2xl px-5 py-4 border border-border">
-        <h1 className="text-3xl font-serif font-bold tracking-tight">Play Brain Games Themes</h1>
+        <h1 className="text-3xl font-serif font-bold tracking-tight">
+          Play Brain Games Themes
+        </h1>
         <p className="text-muted-foreground mt-1">
-          Personalise the look, feel, and typography of the app. Locked items can be unlocked with gems.
+          Personalise the look, feel, and typography of the app. Locked items
+          can be unlocked with gems.
         </p>
         {profileId && (
           <div className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 px-3 py-1.5 rounded-full border border-cyan-200 dark:border-cyan-800">
@@ -266,7 +355,8 @@ export default function Themes() {
         <div>
           <h2 className="text-xl font-serif font-semibold">Colour Theme</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Changes the background and colour palette of the entire app. Saved to your user profile and applied only to your account.
+            Changes the background and colour palette of the entire app. Saved
+            to your user profile and applied only to your account.
           </p>
         </div>
 
@@ -276,43 +366,72 @@ export default function Themes() {
           perPage={6}
           cols={3}
           renderItem={(item) => {
-            const t = item as typeof APP_THEMES[0];
+            const t = item as (typeof APP_THEMES)[0];
             const selected = activeAppTheme === t.id;
-            const unlocked = isUnlocked('color_theme', t.id);
-            const free = isFreeItem('color_theme', t.id);
-            const cost = getItemCost('color_theme', t.id);
+            const unlocked = isUnlocked("color_theme", t.id);
+            const free = isFreeItem("color_theme", t.id);
+            const cost = getItemCost("color_theme", t.id);
             return (
               <div
                 key={t.id}
                 role="button"
                 tabIndex={0}
                 onClick={() => handleAppTheme(t.id)}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleAppTheme(t.id); }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") handleAppTheme(t.id);
+                }}
                 className={[
-                  'relative rounded-xl border-2 p-2 flex flex-col items-center gap-1.5 transition-all duration-150 cursor-pointer',
-                  selected ? 'border-primary ring-2 ring-primary/30 shadow-sm'
-                    : unlocked ? 'border-border hover:border-primary/40'
-                    : 'border-border hover:border-amber-400/60',
-                ].join(' ')}
+                  "relative rounded-xl border-2 p-2 flex flex-col items-center gap-1.5 transition-all duration-150 cursor-pointer",
+                  selected
+                    ? "border-primary ring-2 ring-primary/30 shadow-sm"
+                    : unlocked
+                      ? "border-border hover:border-primary/40"
+                      : "border-border hover:border-amber-400/60",
+                ].join(" ")}
               >
-                <div className="w-full h-9 rounded-lg flex items-center justify-center gap-1" style={{ background: t.bg }}>
-                  <div className="w-3 h-3 rounded-full shadow-sm" style={{ background: t.primary }} />
-                  <div className="w-3 h-3 rounded-full shadow-sm" style={{ background: t.accent }} />
+                <div
+                  className="w-full h-9 rounded-lg flex items-center justify-center gap-1"
+                  style={{ background: t.bg }}
+                >
+                  <div
+                    className="w-3 h-3 rounded-full shadow-sm"
+                    style={{ background: t.primary }}
+                  />
+                  <div
+                    className="w-3 h-3 rounded-full shadow-sm"
+                    style={{ background: t.accent }}
+                  />
                 </div>
-                <span className="text-[10px] font-medium leading-none text-center">{t.label}</span>
+                <span className="text-[10px] font-medium leading-none text-center">
+                  {t.label}
+                </span>
                 {selected ? (
                   <span className="w-3.5 h-3.5 rounded-full bg-primary flex items-center justify-center">
                     <Check className="w-2 h-2 text-primary-foreground" />
                   </span>
                 ) : !unlocked ? (
                   <span className="flex items-center gap-0.5 text-[9px] font-semibold text-amber-600 dark:text-amber-400">
-                    <Gem className="w-2.5 h-2.5" />{cost}
+                    <Gem className="w-2.5 h-2.5" />
+                    {cost}
                   </span>
                 ) : null}
-                {!unlocked && <Lock className="absolute top-1.5 right-1.5 w-2.5 h-2.5 text-amber-500/80" />}
-                {free && !unlocked && <span className="absolute top-1 left-1 bg-emerald-500 text-white text-[7px] font-bold px-0.5 rounded">FREE</span>}
-                <button type="button" onClick={(e) => { e.stopPropagation(); setPreviewColourId(t.id); }}
-                  className="absolute bottom-1 right-1 p-0.5 rounded text-muted-foreground/60 hover:text-foreground hover:bg-black/10" title="Preview">
+                {!unlocked && (
+                  <Lock className="absolute top-1.5 right-1.5 w-2.5 h-2.5 text-amber-500/80" />
+                )}
+                {free && !unlocked && (
+                  <span className="absolute top-1 left-1 bg-emerald-500 text-white text-[7px] font-bold px-0.5 rounded">
+                    FREE
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPreviewColourId(t.id);
+                  }}
+                  className="absolute bottom-1 right-1 p-0.5 rounded text-muted-foreground/60 hover:text-foreground hover:bg-black/10"
+                  title="Preview"
+                >
                   <Eye className="w-2.5 h-2.5" />
                 </button>
               </div>
@@ -323,7 +442,7 @@ export default function Themes() {
         {/* Show all — mobile only */}
         <div className="sm:hidden flex justify-end">
           <button
-            onClick={() => setShowAll('colors')}
+            onClick={() => setShowAll("colors")}
             className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
           >
             Show all themes <ChevronRight className="w-3.5 h-3.5" />
@@ -332,50 +451,81 @@ export default function Themes() {
 
         {/* Desktop grid */}
         <div className="hidden sm:grid grid-cols-6 gap-2">
-          {APP_THEMES.map(t => {
+          {APP_THEMES.map((t) => {
             const selected = activeAppTheme === t.id;
-            const unlocked = isUnlocked('color_theme', t.id);
-            const free = isFreeItem('color_theme', t.id);
-            const cost = getItemCost('color_theme', t.id);
+            const unlocked = isUnlocked("color_theme", t.id);
+            const free = isFreeItem("color_theme", t.id);
+            const cost = getItemCost("color_theme", t.id);
             return (
               <div
                 key={t.id}
                 role="button"
                 tabIndex={0}
                 onClick={() => handleAppTheme(t.id)}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleAppTheme(t.id); }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") handleAppTheme(t.id);
+                }}
                 className={[
-                  'relative rounded-xl border-2 p-2 flex flex-col items-center gap-1.5 transition-all duration-150 cursor-pointer',
-                  selected ? 'border-primary ring-2 ring-primary/30 shadow-sm'
-                    : unlocked ? 'border-border hover:border-primary/40 hover:shadow-sm'
-                    : 'border-border hover:border-amber-400/60 hover:shadow-sm',
-                ].join(' ')}
+                  "relative rounded-xl border-2 p-2 flex flex-col items-center gap-1.5 transition-all duration-150 cursor-pointer",
+                  selected
+                    ? "border-primary ring-2 ring-primary/30 shadow-sm"
+                    : unlocked
+                      ? "border-border hover:border-primary/40 hover:shadow-sm"
+                      : "border-border hover:border-amber-400/60 hover:shadow-sm",
+                ].join(" ")}
               >
-                <div className="w-full h-10 rounded-lg flex items-center justify-center gap-1" style={{ background: t.bg }}>
-                  <div className="w-3.5 h-3.5 rounded-full shadow-sm" style={{ background: t.primary }} />
-                  <div className="w-3.5 h-3.5 rounded-full shadow-sm" style={{ background: t.accent }} />
+                <div
+                  className="w-full h-10 rounded-lg flex items-center justify-center gap-1"
+                  style={{ background: t.bg }}
+                >
+                  <div
+                    className="w-3.5 h-3.5 rounded-full shadow-sm"
+                    style={{ background: t.primary }}
+                  />
+                  <div
+                    className="w-3.5 h-3.5 rounded-full shadow-sm"
+                    style={{ background: t.accent }}
+                  />
                 </div>
-                <span className="text-[10px] font-medium leading-none">{t.label}</span>
+                <span className="text-[10px] font-medium leading-none">
+                  {t.label}
+                </span>
                 {selected ? (
                   <span className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
                     <Check className="w-2.5 h-2.5 text-primary-foreground" />
                   </span>
                 ) : !unlocked ? (
                   <span className="flex items-center gap-0.5 text-[9px] font-semibold text-amber-600 dark:text-amber-400">
-                    <Gem className="w-2.5 h-2.5" />{cost}
+                    <Gem className="w-2.5 h-2.5" />
+                    {cost}
                   </span>
                 ) : null}
-                {!unlocked && <Lock className="absolute top-1.5 right-1.5 w-3 h-3 text-amber-500/80" />}
-                {free && !unlocked && <span className="absolute top-1 left-1 bg-emerald-500 text-white text-[8px] font-bold px-1 rounded">FREE</span>}
-                <button type="button" onClick={(e) => { e.stopPropagation(); setPreviewColourId(t.id); }}
-                  className="absolute bottom-1 right-1 p-0.5 rounded text-muted-foreground/60 hover:text-foreground hover:bg-black/10 transition-colors" title="Preview">
+                {!unlocked && (
+                  <Lock className="absolute top-1.5 right-1.5 w-3 h-3 text-amber-500/80" />
+                )}
+                {free && !unlocked && (
+                  <span className="absolute top-1 left-1 bg-emerald-500 text-white text-[8px] font-bold px-1 rounded">
+                    FREE
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPreviewColourId(t.id);
+                  }}
+                  className="absolute bottom-1 right-1 p-0.5 rounded text-muted-foreground/60 hover:text-foreground hover:bg-black/10 transition-colors"
+                  title="Preview"
+                >
                   <Eye className="w-2.5 h-2.5" />
                 </button>
               </div>
             );
           })}
         </div>
-         <p className="text-xs text-muted-foreground">Classic, Dark, and Forest are free. Other colour themes cost gems.</p>
+        <p className="text-xs text-muted-foreground">
+          Classic, Dark, and Forest are free. Other colour themes cost gems.
+        </p>
       </section>
 
       {/* ── Background Image ─────────────────────────────────────────── */}
@@ -383,33 +533,43 @@ export default function Themes() {
         <div>
           <h2 className="text-xl font-serif font-semibold">Background Image</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Use the system-provided background image for your selected theme.<br />
-            The selected background appears throughout the app behind every game. Your on/off choice is saved to your profile.
+            Use the system-provided background image for your selected theme.
+            <br />
+            The selected background appears throughout the app behind every
+            game. Your on/off choice is saved to your profile.
           </p>
         </div>
 
         {/* Enable / disable toggle */}
         <div className="flex items-center justify-between rounded-xl border border-border bg-muted px-4 py-3">
           <div className="flex items-center gap-2.5">
-            {bgEnabled ? <ImageIcon className="w-4 h-4 text-primary shrink-0" /> : <EyeOff className="w-4 h-4 text-muted-foreground shrink-0" />}
+            {bgEnabled ? (
+              <ImageIcon className="w-4 h-4 text-primary shrink-0" />
+            ) : (
+              <EyeOff className="w-4 h-4 text-muted-foreground shrink-0" />
+            )}
             <p className="text-sm font-medium leading-none">Background image</p>
           </div>
           <button
             type="button"
             role="switch"
             aria-checked={bgEnabled}
-            aria-label={bgEnabled ? 'Turn background image off' : 'Turn background image on'}
+            aria-label={
+              bgEnabled
+                ? "Turn background image off"
+                : "Turn background image on"
+            }
             onClick={() => setBgEnabled(!bgEnabled)}
             className={[
-              'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              bgEnabled ? 'bg-primary' : 'bg-muted-foreground/30',
-            ].join(' ')}
+              "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              bgEnabled ? "bg-primary" : "bg-muted-foreground/30",
+            ].join(" ")}
           >
             <span
               className={[
-                'inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform',
-                bgEnabled ? 'translate-x-6' : 'translate-x-1',
-              ].join(' ')}
+                "inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform",
+                bgEnabled ? "translate-x-6" : "translate-x-1",
+              ].join(" ")}
             />
           </button>
         </div>
@@ -419,7 +579,10 @@ export default function Themes() {
           {/* Preview strip */}
           <div
             className="relative w-full h-36 bg-muted/50 bg-cover bg-center"
-            style={{ backgroundImage: bgEnabled && effectiveBg ? `url(${effectiveBg})` : 'none' }}
+            style={{
+              backgroundImage:
+                bgEnabled && effectiveBg ? `url(${effectiveBg})` : "none",
+            }}
           >
             {(!bgEnabled || !effectiveBg) && (
               <div className="absolute inset-0 flex items-center justify-center">
@@ -427,9 +590,300 @@ export default function Themes() {
               </div>
             )}
             {bgEnabled && effectiveBg && (
-              <div className="absolute inset-0" style={{ background: 'var(--background)', opacity: 0.5 }} />
+              <div
+                className="absolute inset-0"
+                style={{ background: "var(--background)", opacity: 0.5 }}
+              />
             )}
           </div>
+        </div>
+      </section>
+
+      {/* ── Game Icon Set ────────────────────────────────────────────── */}
+      <section className="space-y-3 bg-card rounded-2xl border border-border p-5">
+        <div>
+          <h2 className="text-xl font-serif font-semibold">Game Icon Set</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Choose the characters used when playing in image mode. Your
+            selection is saved to your user profile. Shapes, Ocean, Jungle,
+            Princess, and Vehicles are free; other icon sets cost gems.
+          </p>
+        </div>
+
+        {/* Mobile carousel — 1 per page */}
+        <MobileCarousel
+          items={IMAGE_THEMES}
+          perPage={1}
+          cols={1}
+          renderItem={(item) => {
+            const theme = item as (typeof IMAGE_THEMES)[0];
+            const isSelected = themeId === theme.id;
+            const unlocked = isUnlocked("icon_set", theme.id);
+            const cost = getItemCost("icon_set", theme.id);
+            const names = getCharacterNames(theme.id);
+            return (
+              <div
+                key={theme.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => handleIconSet(theme.id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ")
+                    handleIconSet(theme.id);
+                }}
+                className={[
+                  "relative text-left rounded-2xl border-2 p-5 transition-all duration-200 cursor-pointer",
+                  isSelected
+                    ? "border-primary bg-primary/6 shadow-md ring-1 ring-primary/20"
+                    : unlocked
+                      ? "border-border hover:border-primary/40 hover:bg-muted/50 hover:shadow-sm"
+                      : "border-border hover:border-amber-400/60 hover:bg-amber-50/40 dark:hover:bg-amber-950/20 hover:shadow-sm",
+                ].join(" ")}
+              >
+                {isSelected && (
+                  <span className="absolute top-3 right-3 bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center shadow">
+                    <Check className="w-3.5 h-3.5" />
+                  </span>
+                )}
+                {!unlocked && !isSelected && (
+                  <span className="absolute top-3 right-3 flex items-center gap-1 bg-amber-100 dark:bg-amber-900/50 border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 rounded-full px-2 py-0.5 text-[11px] font-semibold">
+                    <Gem className="w-3 h-3" />
+                    {cost}
+                  </span>
+                )}
+
+                <div
+                  className={["space-y-3", !unlocked ? "opacity-60" : ""].join(
+                    " ",
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <h3
+                      className={[
+                        "text-lg font-bold",
+                        isSelected ? "text-primary" : "",
+                      ].join(" ")}
+                    >
+                      {theme.name}
+                    </h3>
+                    {!unlocked && <Lock className="w-4 h-4 text-amber-500" />}
+                  </div>
+
+                  <div>
+                    <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">
+                      9×9
+                    </p>
+                    <div className="grid grid-cols-9 gap-0.5">
+                      {Array.from({ length: 9 }, (_, i) => i + 1).map((n) => (
+                        <ThemeIconWithEmojiFallback
+                          key={n}
+                          themeId={theme.id}
+                          value={n}
+                          sym={getSymbol(theme, n)}
+                          size={28}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">
+                      16×16 extras
+                    </p>
+                    <div className="grid grid-cols-7 gap-0.5">
+                      {Array.from({ length: 7 }, (_, i) => i + 10).map((n) => (
+                        <ThemeIconWithEmojiFallback
+                          key={n}
+                          themeId={theme.id}
+                          value={n}
+                          sym={getSymbol(theme, n)}
+                          size={28}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                    {names.map((name, i) => (
+                      <div key={i} className="flex items-center gap-1.5">
+                        <ThemeIconWithEmojiFallback
+                          themeId={theme.id}
+                          value={i + 1}
+                          sym={getSymbol(theme, i + 1)}
+                          size={14}
+                        />
+                        <span className="text-[10px] text-muted-foreground truncate">
+                          {name}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between">
+                  {!unlocked ? (
+                    <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                      Tap to unlock for {cost} gems
+                    </span>
+                  ) : (
+                    <span />
+                  )}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOverviewThemeId(theme.id);
+                    }}
+                    className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground border border-border rounded-lg px-2.5 py-1 hover:bg-muted/50 transition-colors"
+                  >
+                    <LayoutGrid className="w-3 h-3" />
+                    All symbols
+                  </button>
+                </div>
+              </div>
+            );
+          }}
+        />
+
+        {/* Show all — mobile only */}
+        <div className="sm:hidden flex justify-end">
+          <button
+            onClick={() => setShowAll("icons")}
+            className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+          >
+            Show all icon sets <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Desktop grid */}
+        <div className="hidden sm:grid grid-cols-2 gap-4">
+          {IMAGE_THEMES.map((theme) => {
+            const isSelected = themeId === theme.id;
+            const unlocked = isUnlocked("icon_set", theme.id);
+            const cost = getItemCost("icon_set", theme.id);
+            const names = getCharacterNames(theme.id);
+            return (
+              <div
+                key={theme.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => handleIconSet(theme.id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ")
+                    handleIconSet(theme.id);
+                }}
+                className={[
+                  "relative text-left rounded-2xl border-2 p-5 transition-all duration-200 cursor-pointer",
+                  isSelected
+                    ? "border-primary bg-primary/6 shadow-md ring-1 ring-primary/20"
+                    : unlocked
+                      ? "border-border hover:border-primary/40 hover:bg-muted/50 hover:shadow-sm"
+                      : "border-border hover:border-amber-400/60 hover:bg-amber-50/40 dark:hover:bg-amber-950/20 hover:shadow-sm",
+                ].join(" ")}
+              >
+                {isSelected && (
+                  <span className="absolute top-3 right-3 bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center shadow">
+                    <Check className="w-3.5 h-3.5" />
+                  </span>
+                )}
+                {!unlocked && !isSelected && (
+                  <span className="absolute top-3 right-3 flex items-center gap-1 bg-amber-100 dark:bg-amber-900/50 border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 rounded-full px-2 py-0.5 text-[11px] font-semibold">
+                    <Gem className="w-3 h-3" />
+                    {cost}
+                  </span>
+                )}
+
+                <div
+                  className={["space-y-3", !unlocked ? "opacity-60" : ""].join(
+                    " ",
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <h3
+                      className={[
+                        "text-lg font-bold",
+                        isSelected ? "text-primary" : "",
+                      ].join(" ")}
+                    >
+                      {theme.name}
+                    </h3>
+                    {!unlocked && <Lock className="w-4 h-4 text-amber-500" />}
+                  </div>
+
+                  <div>
+                    <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">
+                      9×9
+                    </p>
+                    <div className="grid grid-cols-9 gap-0.5">
+                      {Array.from({ length: 9 }, (_, i) => i + 1).map((n) => (
+                        <ThemeIconWithEmojiFallback
+                          key={n}
+                          themeId={theme.id}
+                          value={n}
+                          sym={getSymbol(theme, n)}
+                          size={28}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">
+                      16×16 extras
+                    </p>
+                    <div className="grid grid-cols-7 gap-0.5">
+                      {Array.from({ length: 7 }, (_, i) => i + 10).map((n) => (
+                        <ThemeIconWithEmojiFallback
+                          key={n}
+                          themeId={theme.id}
+                          value={n}
+                          sym={getSymbol(theme, n)}
+                          size={28}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                    {names.map((name, i) => (
+                      <div key={i} className="flex items-center gap-1.5">
+                        <ThemeIconWithEmojiFallback
+                          themeId={theme.id}
+                          value={i + 1}
+                          sym={getSymbol(theme, i + 1)}
+                          size={14}
+                        />
+                        <span className="text-[10px] text-muted-foreground truncate">
+                          {name}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between">
+                  {!unlocked ? (
+                    <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                      Tap to unlock for {cost} gems
+                    </span>
+                  ) : (
+                    <span />
+                  )}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOverviewThemeId(theme.id);
+                    }}
+                    className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground border border-border rounded-lg px-2.5 py-1 hover:bg-muted/50 transition-colors"
+                  >
+                    <LayoutGrid className="w-3 h-3" />
+                    All symbols
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -438,7 +892,9 @@ export default function Themes() {
         <div>
           <h2 className="text-xl font-serif font-semibold">Font Style</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-             Changes the typeface used throughout the app and is saved to your user profile. Friendly and Modern are free. Other fonts cost 50 or 75 gems.
+            Changes the typeface used throughout the app and is saved to your
+            user profile. Friendly and Modern are free. Other fonts cost 50 or
+            75 gems.
           </p>
         </div>
 
@@ -448,26 +904,40 @@ export default function Themes() {
           perPage={2}
           cols={2}
           renderItem={(item) => {
-            const f = item as typeof FONT_THEMES[0];
+            const f = item as (typeof FONT_THEMES)[0];
             const selected = fontId === f.id;
-            const unlocked = isUnlocked('font', f.id);
-            const cost = getItemCost('font', f.id);
+            const unlocked = isUnlocked("font", f.id);
+            const cost = getItemCost("font", f.id);
             return (
               <div
                 key={f.id}
                 role="button"
                 tabIndex={0}
                 onClick={() => handleFont(f.id)}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleFont(f.id); }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") handleFont(f.id);
+                }}
                 className={[
-                  'relative rounded-xl border-2 p-3 flex flex-col items-center gap-2 transition-all duration-150 cursor-pointer',
-                  selected ? 'border-primary ring-2 ring-primary/30 shadow-sm bg-primary/5'
-                    : unlocked ? 'border-border hover:border-primary/40 hover:shadow-sm'
-                    : 'border-border hover:border-amber-400/60 hover:shadow-sm',
-                ].join(' ')}
+                  "relative rounded-xl border-2 p-3 flex flex-col items-center gap-2 transition-all duration-150 cursor-pointer",
+                  selected
+                    ? "border-primary ring-2 ring-primary/30 shadow-sm bg-primary/5"
+                    : unlocked
+                      ? "border-border hover:border-primary/40 hover:shadow-sm"
+                      : "border-border hover:border-amber-400/60 hover:shadow-sm",
+                ].join(" ")}
               >
-                {!unlocked && <Lock className="absolute top-2 right-2 w-3 h-3 text-amber-500/80" />}
-                <span className={['text-3xl font-bold leading-none', !unlocked ? 'opacity-50' : ''].join(' ')} style={f.style}>Aa</span>
+                {!unlocked && (
+                  <Lock className="absolute top-2 right-2 w-3 h-3 text-amber-500/80" />
+                )}
+                <span
+                  className={[
+                    "text-3xl font-bold leading-none",
+                    !unlocked ? "opacity-50" : "",
+                  ].join(" ")}
+                  style={f.style}
+                >
+                  Aa
+                </span>
                 <span className="text-[11px] font-medium">{f.label}</span>
                 {selected ? (
                   <span className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
@@ -475,11 +945,18 @@ export default function Themes() {
                   </span>
                 ) : !unlocked ? (
                   <span className="flex items-center gap-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
-                    <Gem className="w-2.5 h-2.5" />{cost} gems
+                    <Gem className="w-2.5 h-2.5" />
+                    {cost} gems
                   </span>
                 ) : null}
-                <button type="button" onClick={(e) => { e.stopPropagation(); setPreviewFontId(f.id); }}
-                  className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-foreground border border-border rounded-md px-2 py-0.5 hover:bg-muted/50 transition-colors mt-0.5">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPreviewFontId(f.id);
+                  }}
+                  className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-foreground border border-border rounded-md px-2 py-0.5 hover:bg-muted/50 transition-colors mt-0.5"
+                >
                   <Eye className="w-2.5 h-2.5" /> Preview
                 </button>
               </div>
@@ -490,7 +967,7 @@ export default function Themes() {
         {/* Show all — mobile only */}
         <div className="sm:hidden flex justify-end">
           <button
-            onClick={() => setShowAll('fonts')}
+            onClick={() => setShowAll("fonts")}
             className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
           >
             Show all fonts <ChevronRight className="w-3.5 h-3.5" />
@@ -499,26 +976,40 @@ export default function Themes() {
 
         {/* Desktop grid */}
         <div className="hidden sm:grid grid-cols-4 gap-3">
-          {FONT_THEMES.map(f => {
+          {FONT_THEMES.map((f) => {
             const selected = fontId === f.id;
-            const unlocked = isUnlocked('font', f.id);
-            const cost = getItemCost('font', f.id);
+            const unlocked = isUnlocked("font", f.id);
+            const cost = getItemCost("font", f.id);
             return (
               <div
                 key={f.id}
                 role="button"
                 tabIndex={0}
                 onClick={() => handleFont(f.id)}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleFont(f.id); }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") handleFont(f.id);
+                }}
                 className={[
-                  'relative rounded-xl border-2 p-3 flex flex-col items-center gap-2 transition-all duration-150 cursor-pointer',
-                  selected ? 'border-primary ring-2 ring-primary/30 shadow-sm bg-primary/5'
-                    : unlocked ? 'border-border hover:border-primary/40 hover:shadow-sm'
-                    : 'border-border hover:border-amber-400/60 hover:shadow-sm',
-                ].join(' ')}
+                  "relative rounded-xl border-2 p-3 flex flex-col items-center gap-2 transition-all duration-150 cursor-pointer",
+                  selected
+                    ? "border-primary ring-2 ring-primary/30 shadow-sm bg-primary/5"
+                    : unlocked
+                      ? "border-border hover:border-primary/40 hover:shadow-sm"
+                      : "border-border hover:border-amber-400/60 hover:shadow-sm",
+                ].join(" ")}
               >
-                {!unlocked && <Lock className="absolute top-2 right-2 w-3 h-3 text-amber-500/80" />}
-                <span className={['text-3xl font-bold leading-none', !unlocked ? 'opacity-50' : ''].join(' ')} style={f.style}>Aa</span>
+                {!unlocked && (
+                  <Lock className="absolute top-2 right-2 w-3 h-3 text-amber-500/80" />
+                )}
+                <span
+                  className={[
+                    "text-3xl font-bold leading-none",
+                    !unlocked ? "opacity-50" : "",
+                  ].join(" ")}
+                  style={f.style}
+                >
+                  Aa
+                </span>
                 <span className="text-[11px] font-medium">{f.label}</span>
                 {selected ? (
                   <span className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
@@ -526,11 +1017,18 @@ export default function Themes() {
                   </span>
                 ) : !unlocked ? (
                   <span className="flex items-center gap-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
-                    <Gem className="w-2.5 h-2.5" />{cost} gems
+                    <Gem className="w-2.5 h-2.5" />
+                    {cost} gems
                   </span>
                 ) : null}
-                <button type="button" onClick={(e) => { e.stopPropagation(); setPreviewFontId(f.id); }}
-                  className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-foreground border border-border rounded-md px-2 py-0.5 hover:bg-muted/50 transition-colors mt-0.5">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPreviewFontId(f.id);
+                  }}
+                  className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-foreground border border-border rounded-md px-2 py-0.5 hover:bg-muted/50 transition-colors mt-0.5"
+                >
                   <Eye className="w-2.5 h-2.5" /> Preview
                 </button>
               </div>
@@ -544,12 +1042,14 @@ export default function Themes() {
         <div>
           <h2 className="text-xl font-serif font-semibold">Font Size</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Adjusts text and interface sizing throughout the entire application. Your choice is saved to your user profile and follows you when you sign in on another device.
+            Adjusts text and interface sizing throughout the entire application.
+            Your choice is saved to your user profile and follows you when you
+            sign in on another device.
           </p>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {FONT_SIZE_OPTIONS.map(option => {
+          {FONT_SIZE_OPTIONS.map((option) => {
             const selected = fontSizeId === option.id;
             return (
               <button
@@ -558,23 +1058,29 @@ export default function Themes() {
                 aria-pressed={selected}
                 onClick={() => setFontSize(option.id as FontSizeId)}
                 className={[
-                  'rounded-xl border-2 p-3 text-left transition-all duration-150',
+                  "rounded-xl border-2 p-3 text-left transition-all duration-150",
                   selected
-                    ? 'border-primary bg-primary/5 ring-2 ring-primary/20 shadow-sm'
-                    : 'border-border hover:border-primary/40 hover:bg-muted/50',
-                ].join(' ')}
+                    ? "border-primary bg-primary/5 ring-2 ring-primary/20 shadow-sm"
+                    : "border-border hover:border-primary/40 hover:bg-muted/50",
+                ].join(" ")}
               >
                 <span
                   className={[
-                    'block font-bold leading-tight',
-                    option.id === 'small' ? 'text-sm' :
-                    option.id === 'large' ? 'text-lg' :
-                    option.id === 'extra-large' ? 'text-xl' : 'text-base',
-                  ].join(' ')}
+                    "block font-bold leading-tight",
+                    option.id === "small"
+                      ? "text-sm"
+                      : option.id === "large"
+                        ? "text-lg"
+                        : option.id === "extra-large"
+                          ? "text-xl"
+                          : "text-base",
+                  ].join(" ")}
                 >
                   Aa
                 </span>
-                <span className="mt-1 block text-sm font-semibold">{option.label}</span>
+                <span className="mt-1 block text-sm font-semibold">
+                  {option.label}
+                </span>
                 <span className="mt-0.5 block text-[10px] leading-tight text-muted-foreground">
                   {option.description}
                 </span>
@@ -589,212 +1095,9 @@ export default function Themes() {
         </div>
       </section>
 
-      {/* ── Game Icon Set ────────────────────────────────────────────── */}
-      <section className="space-y-3 bg-card rounded-2xl border border-border p-5">
-        <div>
-          <h2 className="text-xl font-serif font-semibold">Game Icon Set</h2>
-          <p className="text-sm text-muted-foreground mt-0.5">
-             Choose the characters used when playing in image mode. Your selection is saved to your user profile. Shapes, Ocean, Jungle, Princess, and Vehicles are free; other icon sets cost gems.
-          </p>
-        </div>
-
-        {/* Mobile carousel — 1 per page */}
-        <MobileCarousel
-          items={IMAGE_THEMES}
-          perPage={1}
-          cols={1}
-          renderItem={(item) => {
-            const theme = item as typeof IMAGE_THEMES[0];
-            const isSelected = themeId === theme.id;
-            const unlocked = isUnlocked('icon_set', theme.id);
-            const cost = getItemCost('icon_set', theme.id);
-            const names = getCharacterNames(theme.id);
-            return (
-              <div
-                key={theme.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => handleIconSet(theme.id)}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleIconSet(theme.id); }}
-                className={[
-                  'relative text-left rounded-2xl border-2 p-5 transition-all duration-200 cursor-pointer',
-                  isSelected
-                    ? 'border-primary bg-primary/6 shadow-md ring-1 ring-primary/20'
-                    : unlocked
-                      ? 'border-border hover:border-primary/40 hover:bg-muted/50 hover:shadow-sm'
-                      : 'border-border hover:border-amber-400/60 hover:bg-amber-50/40 dark:hover:bg-amber-950/20 hover:shadow-sm',
-                ].join(' ')}
-              >
-                {isSelected && (
-                  <span className="absolute top-3 right-3 bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center shadow">
-                    <Check className="w-3.5 h-3.5" />
-                  </span>
-                )}
-                {!unlocked && !isSelected && (
-                  <span className="absolute top-3 right-3 flex items-center gap-1 bg-amber-100 dark:bg-amber-900/50 border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 rounded-full px-2 py-0.5 text-[11px] font-semibold">
-                    <Gem className="w-3 h-3" />{cost}
-                  </span>
-                )}
-
-                <div className={['space-y-3', !unlocked ? 'opacity-60' : ''].join(' ')}>
-                  <div className="flex items-center gap-2">
-                    <h3 className={['text-lg font-bold', isSelected ? 'text-primary' : ''].join(' ')}>
-                      {theme.name}
-                    </h3>
-                    {!unlocked && <Lock className="w-4 h-4 text-amber-500" />}
-                  </div>
-
-                  <div>
-                    <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">9×9</p>
-                    <div className="grid grid-cols-9 gap-0.5">
-                      {Array.from({ length: 9 }, (_, i) => i + 1).map(n => (
-                        <ThemeIconWithEmojiFallback key={n} themeId={theme.id} value={n} sym={getSymbol(theme, n)} size={28} />
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">16×16 extras</p>
-                    <div className="grid grid-cols-7 gap-0.5">
-                      {Array.from({ length: 7 }, (_, i) => i + 10).map(n => (
-                        <ThemeIconWithEmojiFallback key={n} themeId={theme.id} value={n} sym={getSymbol(theme, n)} size={28} />
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-                    {names.map((name, i) => (
-                      <div key={i} className="flex items-center gap-1.5">
-                        <ThemeIconWithEmojiFallback themeId={theme.id} value={i + 1} sym={getSymbol(theme, i + 1)} size={14} />
-                        <span className="text-[10px] text-muted-foreground truncate">{name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-3 flex items-center justify-between">
-                  {!unlocked ? (
-                    <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-                      Tap to unlock for {cost} gems
-                    </span>
-                  ) : <span />}
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); setOverviewThemeId(theme.id); }}
-                    className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground border border-border rounded-lg px-2.5 py-1 hover:bg-muted/50 transition-colors"
-                  >
-                    <LayoutGrid className="w-3 h-3" />
-                    All symbols
-                  </button>
-                </div>
-              </div>
-            );
-          }}
-        />
-
-        {/* Show all — mobile only */}
-        <div className="sm:hidden flex justify-end">
-          <button
-            onClick={() => setShowAll('icons')}
-            className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
-          >
-            Show all icon sets <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        {/* Desktop grid */}
-        <div className="hidden sm:grid grid-cols-2 gap-4">
-          {IMAGE_THEMES.map(theme => {
-            const isSelected = themeId === theme.id;
-            const unlocked = isUnlocked('icon_set', theme.id);
-            const cost = getItemCost('icon_set', theme.id);
-            const names = getCharacterNames(theme.id);
-            return (
-              <div
-                key={theme.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => handleIconSet(theme.id)}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleIconSet(theme.id); }}
-                className={[
-                  'relative text-left rounded-2xl border-2 p-5 transition-all duration-200 cursor-pointer',
-                  isSelected
-                    ? 'border-primary bg-primary/6 shadow-md ring-1 ring-primary/20'
-                    : unlocked
-                      ? 'border-border hover:border-primary/40 hover:bg-muted/50 hover:shadow-sm'
-                      : 'border-border hover:border-amber-400/60 hover:bg-amber-50/40 dark:hover:bg-amber-950/20 hover:shadow-sm',
-                ].join(' ')}
-              >
-                {isSelected && (
-                  <span className="absolute top-3 right-3 bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center shadow">
-                    <Check className="w-3.5 h-3.5" />
-                  </span>
-                )}
-                {!unlocked && !isSelected && (
-                  <span className="absolute top-3 right-3 flex items-center gap-1 bg-amber-100 dark:bg-amber-900/50 border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 rounded-full px-2 py-0.5 text-[11px] font-semibold">
-                    <Gem className="w-3 h-3" />{cost}
-                  </span>
-                )}
-
-                <div className={['space-y-3', !unlocked ? 'opacity-60' : ''].join(' ')}>
-                  <div className="flex items-center gap-2">
-                    <h3 className={['text-lg font-bold', isSelected ? 'text-primary' : ''].join(' ')}>
-                      {theme.name}
-                    </h3>
-                    {!unlocked && <Lock className="w-4 h-4 text-amber-500" />}
-                  </div>
-
-                  <div>
-                    <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">9×9</p>
-                    <div className="grid grid-cols-9 gap-0.5">
-                      {Array.from({ length: 9 }, (_, i) => i + 1).map(n => (
-                        <ThemeIconWithEmojiFallback key={n} themeId={theme.id} value={n} sym={getSymbol(theme, n)} size={28} />
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">16×16 extras</p>
-                    <div className="grid grid-cols-7 gap-0.5">
-                      {Array.from({ length: 7 }, (_, i) => i + 10).map(n => (
-                        <ThemeIconWithEmojiFallback key={n} themeId={theme.id} value={n} sym={getSymbol(theme, n)} size={28} />
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-                    {names.map((name, i) => (
-                      <div key={i} className="flex items-center gap-1.5">
-                        <ThemeIconWithEmojiFallback themeId={theme.id} value={i + 1} sym={getSymbol(theme, i + 1)} size={14} />
-                        <span className="text-[10px] text-muted-foreground truncate">{name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-3 flex items-center justify-between">
-                  {!unlocked ? (
-                    <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-                      Tap to unlock for {cost} gems
-                    </span>
-                  ) : <span />}
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); setOverviewThemeId(theme.id); }}
-                    className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground border border-border rounded-lg px-2.5 py-1 hover:bg-muted/50 transition-colors"
-                  >
-                    <LayoutGrid className="w-3 h-3" />
-                    All symbols
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
       <p className="text-xs text-center text-muted-foreground bg-card border border-border rounded-lg px-4 py-2.5">
-        Your selections save automatically to your profile. Unlocks are permanent.
+        Your selections save automatically to your profile. Unlocks are
+        permanent.
       </p>
 
       {/* ── Show All Sub-pages (mobile overlay) ──────────────────────── */}
@@ -817,10 +1120,18 @@ export default function Themes() {
                 </button>
                 <div className="min-w-0">
                   <h2 className="text-lg font-serif font-semibold">
-                    {showAll === 'colors' ? 'All Colour Themes' : showAll === 'fonts' ? 'All Font Styles' : 'All Icon Sets'}
+                    {showAll === "colors"
+                      ? "All Colour Themes"
+                      : showAll === "fonts"
+                        ? "All Font Styles"
+                        : "All Icon Sets"}
                   </h2>
                   <p className="text-xs text-muted-foreground">
-                    {showAll === 'colors' ? `${APP_THEMES.length} themes` : showAll === 'fonts' ? `${FONT_THEMES.length} fonts` : `${IMAGE_THEMES.length} icon sets`}
+                    {showAll === "colors"
+                      ? `${APP_THEMES.length} themes`
+                      : showAll === "fonts"
+                        ? `${FONT_THEMES.length} fonts`
+                        : `${IMAGE_THEMES.length} icon sets`}
                   </p>
                 </div>
               </div>
@@ -837,13 +1148,13 @@ export default function Themes() {
             </div>
 
             {/* All Colour Themes */}
-            {showAll === 'colors' && (
+            {showAll === "colors" && (
               <div className="grid grid-cols-2 gap-3 pt-1">
-                {APP_THEMES.map(t => {
+                {APP_THEMES.map((t) => {
                   const selected = activeAppTheme === t.id;
-                  const unlocked = isUnlocked('color_theme', t.id);
-                  const free = isFreeItem('color_theme', t.id);
-                  const cost = getItemCost('color_theme', t.id);
+                  const unlocked = isUnlocked("color_theme", t.id);
+                  const free = isFreeItem("color_theme", t.id);
+                  const cost = getItemCost("color_theme", t.id);
                   return (
                     <button
                       type="button"
@@ -851,28 +1162,48 @@ export default function Themes() {
                       aria-pressed={selected}
                       onClick={() => handleAppTheme(t.id)}
                       className={[
-                        'relative min-h-[132px] w-full touch-manipulation rounded-xl border-2 p-3 pb-4 flex flex-col items-center justify-center gap-2 text-foreground text-center transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                        selected ? 'border-primary ring-2 ring-primary/30 shadow-sm'
-                          : unlocked ? 'border-border hover:border-primary/40'
-                          : 'border-border hover:border-amber-400/60',
-                      ].join(' ')}
+                        "relative min-h-[132px] w-full touch-manipulation rounded-xl border-2 p-3 pb-4 flex flex-col items-center justify-center gap-2 text-foreground text-center transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                        selected
+                          ? "border-primary ring-2 ring-primary/30 shadow-sm"
+                          : unlocked
+                            ? "border-border hover:border-primary/40"
+                            : "border-border hover:border-amber-400/60",
+                      ].join(" ")}
                     >
-                      <div className="w-full h-10 rounded-lg flex items-center justify-center gap-1.5" style={{ background: t.bg }}>
-                        <div className="w-3.5 h-3.5 rounded-full shadow-sm" style={{ background: t.primary }} />
-                        <div className="w-3.5 h-3.5 rounded-full shadow-sm" style={{ background: t.accent }} />
+                      <div
+                        className="w-full h-10 rounded-lg flex items-center justify-center gap-1.5"
+                        style={{ background: t.bg }}
+                      >
+                        <div
+                          className="w-3.5 h-3.5 rounded-full shadow-sm"
+                          style={{ background: t.primary }}
+                        />
+                        <div
+                          className="w-3.5 h-3.5 rounded-full shadow-sm"
+                          style={{ background: t.accent }}
+                        />
                       </div>
-                      <span className="text-xs font-semibold leading-tight text-center">{t.label}</span>
+                      <span className="text-xs font-semibold leading-tight text-center">
+                        {t.label}
+                      </span>
                       {selected ? (
                         <span className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                           <Check className="w-3 h-3 text-primary-foreground" />
                         </span>
                       ) : !unlocked ? (
                         <span className="flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
-                          <Gem className="w-3 h-3" />{cost} gems
+                          <Gem className="w-3 h-3" />
+                          {cost} gems
                         </span>
                       ) : null}
-                      {!unlocked && <Lock className="absolute top-2 right-2 w-3.5 h-3.5 text-amber-500/80" />}
-                      {free && !unlocked && <span className="absolute top-2 left-2 bg-emerald-500 text-white text-[9px] font-bold px-1 rounded">FREE</span>}
+                      {!unlocked && (
+                        <Lock className="absolute top-2 right-2 w-3.5 h-3.5 text-amber-500/80" />
+                      )}
+                      {free && !unlocked && (
+                        <span className="absolute top-2 left-2 bg-emerald-500 text-white text-[9px] font-bold px-1 rounded">
+                          FREE
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -880,40 +1211,64 @@ export default function Themes() {
             )}
 
             {/* All Font Styles */}
-            {showAll === 'fonts' && (
+            {showAll === "fonts" && (
               <div className="grid grid-cols-2 gap-3 pt-1">
-                {FONT_THEMES.map(f => {
+                {FONT_THEMES.map((f) => {
                   const selected = fontId === f.id;
-                  const unlocked = isUnlocked('font', f.id);
-                  const cost = getItemCost('font', f.id);
+                  const unlocked = isUnlocked("font", f.id);
+                  const cost = getItemCost("font", f.id);
                   return (
                     <div
                       key={f.id}
                       role="button"
                       tabIndex={0}
                       onClick={() => handleFont(f.id)}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleFont(f.id); }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ")
+                          handleFont(f.id);
+                      }}
                       className={[
-                        'relative min-h-[156px] rounded-xl border-2 p-3 flex flex-col items-center justify-center gap-2 transition-all duration-150 cursor-pointer',
-                        selected ? 'border-primary ring-2 ring-primary/30 shadow-sm bg-primary/5'
-                          : unlocked ? 'border-border hover:border-primary/40 hover:shadow-sm'
-                          : 'border-border hover:border-amber-400/60 hover:shadow-sm',
-                      ].join(' ')}
+                        "relative min-h-[156px] rounded-xl border-2 p-3 flex flex-col items-center justify-center gap-2 transition-all duration-150 cursor-pointer",
+                        selected
+                          ? "border-primary ring-2 ring-primary/30 shadow-sm bg-primary/5"
+                          : unlocked
+                            ? "border-border hover:border-primary/40 hover:shadow-sm"
+                            : "border-border hover:border-amber-400/60 hover:shadow-sm",
+                      ].join(" ")}
                     >
-                      {!unlocked && <Lock className="absolute top-2 right-2 w-4 h-4 text-amber-500/80" />}
-                      <span className={['text-3xl font-bold leading-none', !unlocked ? 'opacity-50' : ''].join(' ')} style={f.style}>Aa</span>
-                      <span className="text-xs font-semibold text-center leading-tight">{f.label}</span>
+                      {!unlocked && (
+                        <Lock className="absolute top-2 right-2 w-4 h-4 text-amber-500/80" />
+                      )}
+                      <span
+                        className={[
+                          "text-3xl font-bold leading-none",
+                          !unlocked ? "opacity-50" : "",
+                        ].join(" ")}
+                        style={f.style}
+                      >
+                        Aa
+                      </span>
+                      <span className="text-xs font-semibold text-center leading-tight">
+                        {f.label}
+                      </span>
                       {selected ? (
                         <span className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                           <Check className="w-3 h-3 text-primary-foreground" />
                         </span>
                       ) : !unlocked ? (
                         <span className="flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
-                          <Gem className="w-3 h-3" />{cost} gems
+                          <Gem className="w-3 h-3" />
+                          {cost} gems
                         </span>
                       ) : null}
-                      <button type="button" onClick={(e) => { e.stopPropagation(); setPreviewFontId(f.id); }}
-                        className="inline-flex min-h-9 items-center justify-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 hover:bg-muted/50 transition-colors mt-0.5">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewFontId(f.id);
+                        }}
+                        className="inline-flex min-h-9 items-center justify-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 hover:bg-muted/50 transition-colors mt-0.5"
+                      >
                         <Eye className="w-3.5 h-3.5" /> Preview
                       </button>
                     </div>
@@ -923,12 +1278,12 @@ export default function Themes() {
             )}
 
             {/* All Icon Sets */}
-            {showAll === 'icons' && (
+            {showAll === "icons" && (
               <div className="grid grid-cols-1 gap-4 pt-1">
-                {IMAGE_THEMES.map(theme => {
+                {IMAGE_THEMES.map((theme) => {
                   const isSelected = themeId === theme.id;
-                  const unlocked = isUnlocked('icon_set', theme.id);
-                  const cost = getItemCost('icon_set', theme.id);
+                  const unlocked = isUnlocked("icon_set", theme.id);
+                  const cost = getItemCost("icon_set", theme.id);
                   const names = getCharacterNames(theme.id);
                   return (
                     <div
@@ -936,15 +1291,18 @@ export default function Themes() {
                       role="button"
                       tabIndex={0}
                       onClick={() => handleIconSet(theme.id)}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleIconSet(theme.id); }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ")
+                          handleIconSet(theme.id);
+                      }}
                       className={[
-                        'relative text-left rounded-2xl border-2 p-5 transition-all duration-200 cursor-pointer',
+                        "relative text-left rounded-2xl border-2 p-5 transition-all duration-200 cursor-pointer",
                         isSelected
-                          ? 'border-primary bg-primary/6 shadow-md ring-1 ring-primary/20'
+                          ? "border-primary bg-primary/6 shadow-md ring-1 ring-primary/20"
                           : unlocked
-                            ? 'border-border hover:border-primary/40 hover:bg-muted/50 hover:shadow-sm'
-                            : 'border-border hover:border-amber-400/60 hover:bg-amber-50/40 dark:hover:bg-amber-950/20 hover:shadow-sm',
-                      ].join(' ')}
+                            ? "border-border hover:border-primary/40 hover:bg-muted/50 hover:shadow-sm"
+                            : "border-border hover:border-amber-400/60 hover:bg-amber-50/40 dark:hover:bg-amber-950/20 hover:shadow-sm",
+                      ].join(" ")}
                     >
                       {isSelected && (
                         <span className="absolute top-3 right-3 bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center shadow">
@@ -953,46 +1311,95 @@ export default function Themes() {
                       )}
                       {!unlocked && !isSelected && (
                         <span className="absolute top-3 right-3 flex items-center gap-1 bg-amber-100 dark:bg-amber-900/50 border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 rounded-full px-2 py-0.5 text-[11px] font-semibold">
-                          <Gem className="w-3 h-3" />{cost}
+                          <Gem className="w-3 h-3" />
+                          {cost}
                         </span>
                       )}
-                      <div className={['space-y-3', !unlocked ? 'opacity-60' : ''].join(' ')}>
+                      <div
+                        className={[
+                          "space-y-3",
+                          !unlocked ? "opacity-60" : "",
+                        ].join(" ")}
+                      >
                         <div className="flex items-center gap-2">
-                          <h3 className={['text-lg font-bold', isSelected ? 'text-primary' : ''].join(' ')}>{theme.name}</h3>
-                          {!unlocked && <Lock className="w-4 h-4 text-amber-500" />}
+                          <h3
+                            className={[
+                              "text-lg font-bold",
+                              isSelected ? "text-primary" : "",
+                            ].join(" ")}
+                          >
+                            {theme.name}
+                          </h3>
+                          {!unlocked && (
+                            <Lock className="w-4 h-4 text-amber-500" />
+                          )}
                         </div>
                         <div>
-                          <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">9×9</p>
+                          <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">
+                            9×9
+                          </p>
                           <div className="grid grid-cols-9 gap-0.5">
-                            {Array.from({ length: 9 }, (_, i) => i + 1).map(n => (
-                              <ThemeIconWithEmojiFallback key={n} themeId={theme.id} value={n} sym={getSymbol(theme, n)} size={28} />
-                            ))}
+                            {Array.from({ length: 9 }, (_, i) => i + 1).map(
+                              (n) => (
+                                <ThemeIconWithEmojiFallback
+                                  key={n}
+                                  themeId={theme.id}
+                                  value={n}
+                                  sym={getSymbol(theme, n)}
+                                  size={28}
+                                />
+                              ),
+                            )}
                           </div>
                         </div>
                         <div>
-                          <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">16×16 extras</p>
+                          <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">
+                            16×16 extras
+                          </p>
                           <div className="grid grid-cols-7 gap-0.5">
-                            {Array.from({ length: 7 }, (_, i) => i + 10).map(n => (
-                              <ThemeIconWithEmojiFallback key={n} themeId={theme.id} value={n} sym={getSymbol(theme, n)} size={28} />
-                            ))}
+                            {Array.from({ length: 7 }, (_, i) => i + 10).map(
+                              (n) => (
+                                <ThemeIconWithEmojiFallback
+                                  key={n}
+                                  themeId={theme.id}
+                                  value={n}
+                                  sym={getSymbol(theme, n)}
+                                  size={28}
+                                />
+                              ),
+                            )}
                           </div>
                         </div>
                         <div className="grid grid-cols-2 gap-x-3 gap-y-1">
                           {names.map((name, i) => (
                             <div key={i} className="flex items-center gap-1.5">
-                              <ThemeIconWithEmojiFallback themeId={theme.id} value={i + 1} sym={getSymbol(theme, i + 1)} size={14} />
-                              <span className="text-[10px] text-muted-foreground truncate">{name}</span>
+                              <ThemeIconWithEmojiFallback
+                                themeId={theme.id}
+                                value={i + 1}
+                                sym={getSymbol(theme, i + 1)}
+                                size={14}
+                              />
+                              <span className="text-[10px] text-muted-foreground truncate">
+                                {name}
+                              </span>
                             </div>
                           ))}
                         </div>
                       </div>
                       <div className="mt-3 flex items-center justify-between">
                         {!unlocked ? (
-                          <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">Tap to unlock for {cost} gems</span>
-                        ) : <span />}
+                          <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                            Tap to unlock for {cost} gems
+                          </span>
+                        ) : (
+                          <span />
+                        )}
                         <button
                           type="button"
-                          onClick={(e) => { e.stopPropagation(); setOverviewThemeId(theme.id); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOverviewThemeId(theme.id);
+                          }}
                           className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground border border-border rounded-lg px-2.5 py-1 hover:bg-muted/50 transition-colors"
                         >
                           <LayoutGrid className="w-3 h-3" />
@@ -1012,53 +1419,142 @@ export default function Themes() {
       {(() => {
         const ct = previewColour;
         if (!ct) return null;
-        const ctUnlocked = isUnlocked('color_theme', ct.id);
+        const ctUnlocked = isUnlocked("color_theme", ct.id);
         const ctSelected = activeAppTheme === ct.id;
-        const ctCost = getItemCost('color_theme', ct.id);
+        const ctCost = getItemCost("color_theme", ct.id);
         const ctCanAfford = gems >= ctCost;
         return (
-          <Dialog open={!!previewColourId} onOpenChange={(open) => { if (!open) setPreviewColourId(null); }}>
-            <DialogContent className={`max-w-sm max-h-[calc(100dvh-2rem)] p-0 overflow-y-auto overscroll-contain ${showAll ? 'z-[70]' : ''}`} overlayClassName={showAll ? 'z-[70]' : undefined}>
+          <Dialog
+            open={!!previewColourId}
+            onOpenChange={(open) => {
+              if (!open) setPreviewColourId(null);
+            }}
+          >
+            <DialogContent
+              className={`max-w-sm max-h-[calc(100dvh-2rem)] p-0 overflow-y-auto overscroll-contain ${showAll ? "z-[70]" : ""}`}
+              overlayClassName={showAll ? "z-[70]" : undefined}
+            >
               <DialogHeader className="px-5 pt-5 pb-0">
                 <DialogTitle>{ct.label} Theme</DialogTitle>
                 <DialogDescription>Colour palette preview</DialogDescription>
               </DialogHeader>
 
               {/* Mini app mockup */}
-              <div className="mx-5 mt-3 rounded-xl overflow-hidden border border-border shadow-md text-[11px]" style={{ background: ct.bg, color: ct.primary }}>
+              <div
+                className="mx-5 mt-3 rounded-xl overflow-hidden border border-border shadow-md text-[11px]"
+                style={{ background: ct.bg, color: ct.primary }}
+              >
                 {/* Header bar */}
-                <div className="flex items-center justify-between px-3 py-2" style={{ background: ct.primary }}>
-                  <span className="font-bold text-white text-xs">Play Brain Games . Online</span>
+                <div
+                  className="flex items-center justify-between px-3 py-2"
+                  style={{ background: ct.primary }}
+                >
+                  <span className="font-bold text-white text-xs">
+                    Play Brain Games . Online
+                  </span>
                   <div className="flex gap-1.5">
-                    {['Home', 'Leaderboard', 'Themes'].map(l => (
-                      <span key={l} className="text-white/70 text-[9px]">{l}</span>
+                    {["Home", "Leaderboard", "Themes"].map((l) => (
+                      <span key={l} className="text-white/70 text-[9px]">
+                        {l}
+                      </span>
                     ))}
                   </div>
                 </div>
                 {/* Body */}
                 <div className="p-3 space-y-2">
-                  <div className="rounded-lg p-2.5 border" style={{ background: ct.accent, borderColor: ct.primary + '33' }}>
-                    <p className="font-semibold text-xs mb-1.5" style={{ color: ct.primary }}>Daily Sudoku</p>
-                    <div className="grid grid-cols-9 gap-px" style={{ background: ct.primary + '40' }}>
-                      {[5,3,'',null,7,'',null,null,'', 6,'',null,1,9,5,null,null,'', null,9,8,null,null,'',null,6,''].map((n, i) => (
-                        <div key={i} className="flex items-center justify-center text-[9px] font-bold" style={{ background: ct.bg, height: 14, color: n ? ct.primary : 'transparent' }}>
-                          {n || '·'}
+                  <div
+                    className="rounded-lg p-2.5 border"
+                    style={{
+                      background: ct.accent,
+                      borderColor: ct.primary + "33",
+                    }}
+                  >
+                    <p
+                      className="font-semibold text-xs mb-1.5"
+                      style={{ color: ct.primary }}
+                    >
+                      Daily Sudoku
+                    </p>
+                    <div
+                      className="grid grid-cols-9 gap-px"
+                      style={{ background: ct.primary + "40" }}
+                    >
+                      {[
+                        5,
+                        3,
+                        "",
+                        null,
+                        7,
+                        "",
+                        null,
+                        null,
+                        "",
+                        6,
+                        "",
+                        null,
+                        1,
+                        9,
+                        5,
+                        null,
+                        null,
+                        "",
+                        null,
+                        9,
+                        8,
+                        null,
+                        null,
+                        "",
+                        null,
+                        6,
+                        "",
+                      ].map((n, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center justify-center text-[9px] font-bold"
+                          style={{
+                            background: ct.bg,
+                            height: 14,
+                            color: n ? ct.primary : "transparent",
+                          }}
+                        >
+                          {n || "·"}
                         </div>
                       ))}
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <div className="flex-1 rounded-lg p-2 text-center text-white text-[9px] font-semibold" style={{ background: ct.primary }}>
+                    <div
+                      className="flex-1 rounded-lg p-2 text-center text-white text-[9px] font-semibold"
+                      style={{ background: ct.primary }}
+                    >
                       Play Now
                     </div>
-                    <div className="flex-1 rounded-lg p-2 text-center text-[9px] font-medium border" style={{ borderColor: ct.primary + '50', color: ct.primary }}>
+                    <div
+                      className="flex-1 rounded-lg p-2 text-center text-[9px] font-medium border"
+                      style={{
+                        borderColor: ct.primary + "50",
+                        color: ct.primary,
+                      }}
+                    >
                       Stats
                     </div>
                   </div>
                   <div className="flex gap-1.5">
-                    {['bg', 'primary', 'accent'].map((role, i) => (
-                      <div key={role} className="flex-1 rounded-md p-1.5 text-center" style={{ background: [ct.bg, ct.primary, ct.accent][i], border: '1px solid ' + ct.primary + '30' }}>
-                        <p className="text-[7px]" style={{ color: i === 1 ? 'white' : ct.primary }}>{role}</p>
+                    {["bg", "primary", "accent"].map((role, i) => (
+                      <div
+                        key={role}
+                        className="flex-1 rounded-md p-1.5 text-center"
+                        style={{
+                          background: [ct.bg, ct.primary, ct.accent][i],
+                          border: "1px solid " + ct.primary + "30",
+                        }}
+                      >
+                        <p
+                          className="text-[7px]"
+                          style={{ color: i === 1 ? "white" : ct.primary }}
+                        >
+                          {role}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -1068,22 +1564,52 @@ export default function Themes() {
               <div className="px-5 pb-5 pt-3 border-t border-border mt-3">
                 {ctSelected ? (
                   <div className="flex items-center justify-center gap-2 py-2 text-sm font-semibold text-primary">
-                    <Check className="w-4 h-4" />Currently selected
+                    <Check className="w-4 h-4" />
+                    Currently selected
                   </div>
                 ) : ctUnlocked ? (
-                  <Button className="w-full" onClick={() => { handleAppTheme(ct.id); setPreviewColourId(null); }}>
-                    <Check className="w-4 h-4 mr-1.5" />Select {ct.label}
+                  <Button
+                    className="w-full"
+                    onClick={() => {
+                      handleAppTheme(ct.id);
+                      setPreviewColourId(null);
+                    }}
+                  >
+                    <Check className="w-4 h-4 mr-1.5" />
+                    Select {ct.label}
                   </Button>
                 ) : (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1"><Gem className="w-3.5 h-3.5 text-cyan-500" />Balance: <strong className="text-foreground">{gems}</strong></span>
-                      <span>Cost: <strong className={ctCanAfford ? 'text-foreground' : 'text-destructive'}>{ctCost} gems</strong></span>
+                      <span className="flex items-center gap-1">
+                        <Gem className="w-3.5 h-3.5 text-cyan-500" />
+                        Balance:{" "}
+                        <strong className="text-foreground">{gems}</strong>
+                      </span>
+                      <span>
+                        Cost:{" "}
+                        <strong
+                          className={
+                            ctCanAfford ? "text-foreground" : "text-destructive"
+                          }
+                        >
+                          {ctCost} gems
+                        </strong>
+                      </span>
                     </div>
-                    <Button className="w-full" variant={ctCanAfford ? 'default' : 'secondary'} disabled={!ctCanAfford}
-                      onClick={() => { setPreviewColourId(null); handleAppTheme(ct.id); }}>
+                    <Button
+                      className="w-full"
+                      variant={ctCanAfford ? "default" : "secondary"}
+                      disabled={!ctCanAfford}
+                      onClick={() => {
+                        setPreviewColourId(null);
+                        handleAppTheme(ct.id);
+                      }}
+                    >
                       <Gem className="w-4 h-4 mr-1.5" />
-                      {ctCanAfford ? `Unlock for ${ctCost} gems` : `Need ${ctCost - gems} more gems`}
+                      {ctCanAfford
+                        ? `Unlock for ${ctCost} gems`
+                        : `Need ${ctCost - gems} more gems`}
                     </Button>
                   </div>
                 )}
@@ -1097,39 +1623,66 @@ export default function Themes() {
       {(() => {
         const ft = previewFont;
         if (!ft) return null;
-        const ftUnlocked = isUnlocked('font', ft.id);
+        const ftUnlocked = isUnlocked("font", ft.id);
         const ftSelected = fontId === ft.id;
-        const ftCost = getItemCost('font', ft.id);
+        const ftCost = getItemCost("font", ft.id);
         const ftCanAfford = gems >= ftCost;
         return (
-          <Dialog open={!!previewFontId} onOpenChange={(open) => { if (!open) setPreviewFontId(null); }}>
-            <DialogContent className={`max-w-sm max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain ${showAll ? 'z-[70]' : ''}`} overlayClassName={showAll ? 'z-[70]' : undefined}>
+          <Dialog
+            open={!!previewFontId}
+            onOpenChange={(open) => {
+              if (!open) setPreviewFontId(null);
+            }}
+          >
+            <DialogContent
+              className={`max-w-sm max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain ${showAll ? "z-[70]" : ""}`}
+              overlayClassName={showAll ? "z-[70]" : undefined}
+            >
               <DialogHeader>
                 <DialogTitle>{ft.label} Font</DialogTitle>
-                <DialogDescription>How text looks throughout the app</DialogDescription>
+                <DialogDescription>
+                  How text looks throughout the app
+                </DialogDescription>
               </DialogHeader>
 
               <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-4">
                 {/* Heading specimen */}
                 <div>
-                  <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Heading</p>
-                  <p className="text-2xl font-bold leading-tight" style={{ fontFamily: ft.serif }}>
+                  <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">
+                    Heading
+                  </p>
+                  <p
+                    className="text-2xl font-bold leading-tight"
+                    style={{ fontFamily: ft.serif }}
+                  >
                     Daily Sudoku
                   </p>
                 </div>
                 {/* Body specimen */}
                 <div>
-                  <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">Body</p>
-                  <p className="text-sm leading-relaxed text-muted-foreground" style={{ fontFamily: ft.sans }}>
-                    Complete the grid so every row, column, and box contains the digits 1 through 9.
+                  <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">
+                    Body
+                  </p>
+                  <p
+                    className="text-sm leading-relaxed text-muted-foreground"
+                    style={{ fontFamily: ft.sans }}
+                  >
+                    Complete the grid so every row, column, and box contains the
+                    digits 1 through 9.
                   </p>
                 </div>
                 {/* Digits specimen */}
                 <div>
-                  <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5">Sudoku digits</p>
+                  <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5">
+                    Sudoku digits
+                  </p>
                   <div className="flex gap-1.5">
-                    {[1,2,3,4,5,6,7,8,9].map(n => (
-                      <div key={n} className="flex-1 aspect-square flex items-center justify-center rounded-md bg-background border border-border text-sm font-bold" style={{ fontFamily: ft.sans }}>
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
+                      <div
+                        key={n}
+                        className="flex-1 aspect-square flex items-center justify-center rounded-md bg-background border border-border text-sm font-bold"
+                        style={{ fontFamily: ft.sans }}
+                      >
                         {n}
                       </div>
                     ))}
@@ -1137,10 +1690,25 @@ export default function Themes() {
                 </div>
                 {/* UI labels */}
                 <div>
-                  <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">UI labels</p>
-                  <div className="flex flex-wrap gap-2 text-xs" style={{ fontFamily: ft.sans }}>
-                    {['Leaderboard', 'My Stats', 'Streak: 7 days', '⭐ 1,240 XP'].map(l => (
-                      <span key={l} className="px-2 py-0.5 rounded-full bg-muted border border-border">{l}</span>
+                  <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1">
+                    UI labels
+                  </p>
+                  <div
+                    className="flex flex-wrap gap-2 text-xs"
+                    style={{ fontFamily: ft.sans }}
+                  >
+                    {[
+                      "Leaderboard",
+                      "My Stats",
+                      "Streak: 7 days",
+                      "⭐ 1,240 XP",
+                    ].map((l) => (
+                      <span
+                        key={l}
+                        className="px-2 py-0.5 rounded-full bg-muted border border-border"
+                      >
+                        {l}
+                      </span>
                     ))}
                   </div>
                 </div>
@@ -1149,22 +1717,52 @@ export default function Themes() {
               <div className="pt-1 border-t border-border">
                 {ftSelected ? (
                   <div className="flex items-center justify-center gap-2 py-2 text-sm font-semibold text-primary">
-                    <Check className="w-4 h-4" />Currently selected
+                    <Check className="w-4 h-4" />
+                    Currently selected
                   </div>
                 ) : ftUnlocked ? (
-                  <Button className="w-full" onClick={() => { handleFont(ft.id); setPreviewFontId(null); }}>
-                    <Check className="w-4 h-4 mr-1.5" />Select {ft.label}
+                  <Button
+                    className="w-full"
+                    onClick={() => {
+                      handleFont(ft.id);
+                      setPreviewFontId(null);
+                    }}
+                  >
+                    <Check className="w-4 h-4 mr-1.5" />
+                    Select {ft.label}
                   </Button>
                 ) : (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1"><Gem className="w-3.5 h-3.5 text-cyan-500" />Balance: <strong className="text-foreground">{gems}</strong></span>
-                      <span>Cost: <strong className={ftCanAfford ? 'text-foreground' : 'text-destructive'}>{ftCost} gems</strong></span>
+                      <span className="flex items-center gap-1">
+                        <Gem className="w-3.5 h-3.5 text-cyan-500" />
+                        Balance:{" "}
+                        <strong className="text-foreground">{gems}</strong>
+                      </span>
+                      <span>
+                        Cost:{" "}
+                        <strong
+                          className={
+                            ftCanAfford ? "text-foreground" : "text-destructive"
+                          }
+                        >
+                          {ftCost} gems
+                        </strong>
+                      </span>
                     </div>
-                    <Button className="w-full" variant={ftCanAfford ? 'default' : 'secondary'} disabled={!ftCanAfford}
-                      onClick={() => { setPreviewFontId(null); handleFont(ft.id); }}>
+                    <Button
+                      className="w-full"
+                      variant={ftCanAfford ? "default" : "secondary"}
+                      disabled={!ftCanAfford}
+                      onClick={() => {
+                        setPreviewFontId(null);
+                        handleFont(ft.id);
+                      }}
+                    >
                       <Gem className="w-4 h-4 mr-1.5" />
-                      {ftCanAfford ? `Unlock for ${ftCost} gems` : `Need ${ftCost - gems} more gems`}
+                      {ftCanAfford
+                        ? `Unlock for ${ftCost} gems`
+                        : `Need ${ftCost - gems} more gems`}
                     </Button>
                   </div>
                 )}
@@ -1179,13 +1777,21 @@ export default function Themes() {
         const ovId = overviewThemeId;
         const ovTheme = overviewTheme;
         if (!ovId || !ovTheme) return null;
-        const ovUnlocked = isUnlocked('icon_set', ovId);
+        const ovUnlocked = isUnlocked("icon_set", ovId);
         const ovSelected = themeId === ovId;
-        const ovCost = getItemCost('icon_set', ovId);
+        const ovCost = getItemCost("icon_set", ovId);
         const canAfford = gems >= ovCost;
         return (
-          <Dialog open={!!overviewThemeId} onOpenChange={(open) => { if (!open) setOverviewThemeId(null); }}>
-            <DialogContent className={`max-w-sm ${showAll ? 'z-[70]' : ''}`} overlayClassName={showAll ? 'z-[70]' : undefined}>
+          <Dialog
+            open={!!overviewThemeId}
+            onOpenChange={(open) => {
+              if (!open) setOverviewThemeId(null);
+            }}
+          >
+            <DialogContent
+              className={`max-w-sm ${showAll ? "z-[70]" : ""}`}
+              overlayClassName={showAll ? "z-[70]" : undefined}
+            >
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                   <span className="text-xl">{ovTheme.preview}</span>
@@ -1206,8 +1812,14 @@ export default function Themes() {
                     {/* Images take precedence over emoji — ThemeIcon probes for a real image
                         file first; if none exists it falls back to the SVG icon, and we
                         render the emoji symbol as a last resort. */}
-                    <ThemeIconWithEmojiFallback themeId={ovId} value={i + 1} sym={sym} />
-                    <span className="text-[8px] text-muted-foreground font-mono">{i + 1}</span>
+                    <ThemeIconWithEmojiFallback
+                      themeId={ovId}
+                      value={i + 1}
+                      sym={sym}
+                    />
+                    <span className="text-[8px] text-muted-foreground font-mono">
+                      {i + 1}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -1221,7 +1833,10 @@ export default function Themes() {
                 ) : ovUnlocked ? (
                   <Button
                     className="w-full"
-                    onClick={() => { handleIconSet(ovId); setOverviewThemeId(null); }}
+                    onClick={() => {
+                      handleIconSet(ovId);
+                      setOverviewThemeId(null);
+                    }}
                   >
                     <Check className="w-4 h-4 mr-1.5" />
                     Select this theme
@@ -1231,15 +1846,23 @@ export default function Themes() {
                     <div className="flex items-center justify-between text-xs text-muted-foreground px-0.5">
                       <span className="flex items-center gap-1">
                         <Gem className="w-3.5 h-3.5 text-cyan-500" />
-                        Your balance: <strong className="text-foreground">{gems} gems</strong>
+                        Your balance:{" "}
+                        <strong className="text-foreground">{gems} gems</strong>
                       </span>
                       <span className="flex items-center gap-1">
-                        Cost: <strong className={canAfford ? 'text-foreground' : 'text-destructive'}>{ovCost} gems</strong>
+                        Cost:{" "}
+                        <strong
+                          className={
+                            canAfford ? "text-foreground" : "text-destructive"
+                          }
+                        >
+                          {ovCost} gems
+                        </strong>
                       </span>
                     </div>
                     <Button
                       className="w-full"
-                      variant={canAfford ? 'default' : 'secondary'}
+                      variant={canAfford ? "default" : "secondary"}
                       disabled={!canAfford}
                       onClick={() => {
                         setOverviewThemeId(null);
@@ -1247,7 +1870,9 @@ export default function Themes() {
                       }}
                     >
                       <Gem className="w-4 h-4 mr-1.5" />
-                      {canAfford ? `Unlock for ${ovCost} gems` : `Need ${ovCost - gems} more gems`}
+                      {canAfford
+                        ? `Unlock for ${ovCost} gems`
+                        : `Need ${ovCost - gems} more gems`}
                     </Button>
                   </div>
                 )}
@@ -1258,12 +1883,21 @@ export default function Themes() {
       })()}
 
       {/* ── Unlock Confirmation Dialog ────────────────────────────────── */}
-      <Dialog open={!!pendingUnlock} onOpenChange={(open) => { if (!open) setPendingUnlock(null); }}>
-        <DialogContent className={showAll ? 'z-[70]' : undefined} overlayClassName={showAll ? 'z-[70]' : undefined}>
+      <Dialog
+        open={!!pendingUnlock}
+        onOpenChange={(open) => {
+          if (!open) setPendingUnlock(null);
+        }}
+      >
+        <DialogContent
+          className={showAll ? "z-[70]" : undefined}
+          overlayClassName={showAll ? "z-[70]" : undefined}
+        >
           <DialogHeader>
             <DialogTitle>Unlock {pendingUnlock?.label}?</DialogTitle>
             <DialogDescription>
-              This will deduct <strong>{pendingUnlock?.cost} gems</strong> from your balance. Unlocks are permanent.
+              This will deduct <strong>{pendingUnlock?.cost} gems</strong> from
+              your balance. Unlocks are permanent.
             </DialogDescription>
           </DialogHeader>
           <div className="flex items-center justify-between rounded-lg bg-muted/50 px-4 py-3 text-sm">
@@ -1284,11 +1918,16 @@ export default function Themes() {
             </Button>
             <Button
               onClick={confirmUnlock}
-              disabled={unlockMutation.isPending || (pendingUnlock ? gems < pendingUnlock.cost : false)}
+              disabled={
+                unlockMutation.isPending ||
+                (pendingUnlock ? gems < pendingUnlock.cost : false)
+              }
               className="gap-1.5"
             >
               <Gem className="w-3.5 h-3.5" />
-              {unlockMutation.isPending ? 'Unlocking…' : `Unlock for ${pendingUnlock?.cost} gems`}
+              {unlockMutation.isPending
+                ? "Unlocking…"
+                : `Unlock for ${pendingUnlock?.cost} gems`}
             </Button>
           </div>
         </DialogContent>
@@ -1300,7 +1939,17 @@ export default function Themes() {
 /** Shows a real image if one has been placed in /public/themes/<id>/<value>.<ext>,
  *  otherwise falls back to the emoji symbol from the config.
  *  Used in the "All symbols" dialog so images always take precedence over text. */
-function ThemeIconWithEmojiFallback({ themeId, value, sym, size = 28 }: { themeId: ThemeId; value: number; sym: string; size?: number }) {
+function ThemeIconWithEmojiFallback({
+  themeId,
+  value,
+  sym,
+  size = 28,
+}: {
+  themeId: ThemeId;
+  value: number;
+  sym: string;
+  size?: number;
+}) {
   const imageSrc = useThemeImageSrc(themeId, value);
 
   if (imageSrc) {
@@ -1309,7 +1958,13 @@ function ThemeIconWithEmojiFallback({ themeId, value, sym, size = 28 }: { themeI
         src={imageSrc}
         alt={sym}
         draggable={false}
-        style={{ width: size, height: size, objectFit: 'contain', display: 'block', userSelect: 'none' }}
+        style={{
+          width: size,
+          height: size,
+          objectFit: "contain",
+          display: "block",
+          userSelect: "none",
+        }}
       />
     );
   }
@@ -1320,23 +1975,312 @@ function ThemeIconWithEmojiFallback({ themeId, value, sym, size = 28 }: { themeI
 
 function getCharacterNames(themeId: ThemeId): string[] {
   const names: Record<string, string[]> = {
-    shapes:       ['Circle', 'Square', 'Triangle', 'Rectangle', 'Diamond', 'Star', 'Oval', 'Heart', 'Pentagon', 'Hexagon', 'Octagon', 'Cylinder', 'Cube', 'Cuboid', 'Triangle', 'Dome'],
-    adventure:    ['Dora', 'Monkey', 'Backpack', 'Map', 'Blue Cow', 'Squirrel', 'Fox', 'Diego', 'Dora & Baby Jaguar', "Dora's Boat", 'Star', 'Adventure House', 'Rain Boots', 'Acorns', 'Treasure Chest', 'Butterfly'],
-    superhero:    ['Superman', 'Spider-Man', 'Batman', 'Hulk', 'Captain America', 'Iron Man', 'Caped Superhero', 'Aquaman', 'Wonder Woman', 'Ice Superhero', 'Female Superhero', 'The Flash', 'Black Panther', 'Armored Hero', 'Green Hero', 'Black-Suited Hero'],
-    ocean:        ['Clownfish', 'Sea Turtle', 'Crab', 'Starfish', 'Pearl Shell', 'Conch Shell', 'Octopus', 'Blue Tang', 'Coral Reef', 'Shrimp', 'Seahorse', 'Sea Urchin', 'Pufferfish', 'Manta Ray', 'Tropical Fish', 'Lionfish'],
-    jungle:       ['Lion', 'Elephant', 'Monkey', 'Giraffe', 'Tiger', 'Zebra', 'Panda', 'Kangaroo', 'Rhinoceros', 'Bear', 'Hippopotamus', 'Leopard', 'Fox', 'Wolf', 'Deer', 'Camel'],
-    space:        ['Earth', 'Sun', 'Galaxy', 'Space Shuttle', 'Fiery Meteor', 'Space Station', 'UFO', 'Astronaut', 'Moon', 'Asteroids', 'Alien', 'Satellite', 'Mars', 'Saturn', 'Star', 'Space Rover'],
-    princess:     ['Blue-Gowned Princess', 'Lantern Princess', 'Snow White', 'Ice Princess', 'Mermaid', 'Island Princess', 'Gothic Princess', 'Forest Princess', 'Egyptian Princess', 'Adventurer Princess', 'Mermaid Princess', 'Tea Princess', 'Tribal Princess', 'Butterfly Fairy', 'Sun Princess', 'Archer Princess'],
-    vehicles:     ['Sports Car', 'School Bus', 'Ambulance', 'Fire Truck', 'Motorcycle', 'Bicycle', 'Toy Train', 'Airplane', 'Cruise Ship', 'Canoe', 'Road Roller', 'Horse Carriage', 'Bulldozer', 'Police Car', 'Dump Truck', 'Tractor'],
-    peppa_pig:    ['Peppa Pig', 'George Pig', 'Mummy Pig', 'Daddy Pig', 'Peppa in a Hat', 'Grandpa Pig', 'Suzy Sheep', 'Dinosaur', 'Pedro Pony', 'Zebra', 'Elephant', 'Giraffe', 'Mr Bull', 'Rabbit', 'Police Panda', 'Nurse Pig'],
-    paw_patrol:   ['Ryder', 'Chase', 'Marshall', 'Skye', 'Rubble', 'Rocky', 'Zuma', 'Everest', 'Tracker', 'Mayor Goodway', 'Robo Dog', 'Pup Pad', 'Chase Badge', 'Marshall Badge', 'Skye Badge', 'Rubble Badge'],
-    sheriff:      ['Labrador Officer', 'Black Dog Officer', 'Pink-Haired Officer', 'Paw Badge', 'Blue-Haired Officer', 'Gray Wolf Officer', 'Crocodile', 'Yellow Chick', 'Hippo Officer', 'Rabbit', 'Police Cap', 'Handcuffs', 'Bull Officer', 'Police Car', 'Police Motorcycle', 'Magnifying Glass'],
-    doraemon:     ['Doraemon', 'Nobita', 'Dorami', 'Shizuka', 'Gian', 'Suneo', 'Nobita & Doraemon', 'Explorer Girl', 'Doraemon Friends', 'White Dog', 'Nobita & Friends', 'Anywhere Door', 'Doraemon Pancakes', 'Dorami Robot', 'Bamboo Copter', 'Group of Friends'],
-    chotta_bheem: ['Bheem', 'Chutki', 'Baby', 'Jaggu Monkey', 'Kalia', 'Village Boy', 'Village Boy', 'Princess Indumati', 'Village Children', 'Bheem on Horseback', 'Laddoo', 'King', 'Mace', 'Dholakpur Sign', 'Dholakpur Palace', 'Horse'],
-    shinchan:     ['Shinchan', 'Himawari', 'Shiro', 'Hiroshi', 'Misae', 'Nene', 'Kazama', 'Masao', 'Pig Character', 'Man in Yellow Jacket', 'Woman in Pink', 'Girl in Pink', 'Boy in Blue Cap', 'Green Robot', 'Pink Monster', 'Action Kamen'],
-    bluey:        ['Bluey', 'Bingo', 'Bluey & Bingo', 'Bluey & Friends', 'Blue Paw Print', 'Orange Paw Print', 'Family Heart', 'Bulldog', 'Pink Poodle', 'Brown Dog', 'Orange Dog', 'Black-and-White Dog', 'Dalmatian', 'Bluey Star', 'Family Car', 'Bluey House'],
-    tom_jerry:    ['Tom', 'Jerry', 'Spike', 'Gray Mouse', 'Small Dog', 'White Cat', 'Black Cat', 'Housekeeper', 'Devil Tom', 'Devil Jerry', 'Angel Jerry', 'Sleeping Tom', 'Frozen Tom', 'Tweety', 'Tom in Tuxedo', 'Magician Jerry'],
-    mickey_mouse: ['Mickey Hat', 'Mickey', 'Star', 'Sparkle', 'Carousel', 'Ferris Wheel', 'Roller Coaster', 'Castle', 'Stage', 'Circus', 'Balloon', 'Rainbow', 'Magic', 'Confetti', 'Gift', 'Ribbon'],
+    shapes: [
+      "Circle",
+      "Square",
+      "Triangle",
+      "Rectangle",
+      "Diamond",
+      "Star",
+      "Oval",
+      "Heart",
+      "Pentagon",
+      "Hexagon",
+      "Octagon",
+      "Cylinder",
+      "Cube",
+      "Cuboid",
+      "Triangle",
+      "Dome",
+    ],
+    adventure: [
+      "Dora",
+      "Monkey",
+      "Backpack",
+      "Map",
+      "Blue Cow",
+      "Squirrel",
+      "Fox",
+      "Diego",
+      "Dora & Baby Jaguar",
+      "Dora's Boat",
+      "Star",
+      "Adventure House",
+      "Rain Boots",
+      "Acorns",
+      "Treasure Chest",
+      "Butterfly",
+    ],
+    superhero: [
+      "Superman",
+      "Spider-Man",
+      "Batman",
+      "Hulk",
+      "Captain America",
+      "Iron Man",
+      "Caped Superhero",
+      "Aquaman",
+      "Wonder Woman",
+      "Ice Superhero",
+      "Female Superhero",
+      "The Flash",
+      "Black Panther",
+      "Armored Hero",
+      "Green Hero",
+      "Black-Suited Hero",
+    ],
+    ocean: [
+      "Clownfish",
+      "Sea Turtle",
+      "Crab",
+      "Starfish",
+      "Pearl Shell",
+      "Conch Shell",
+      "Octopus",
+      "Blue Tang",
+      "Coral Reef",
+      "Shrimp",
+      "Seahorse",
+      "Sea Urchin",
+      "Pufferfish",
+      "Manta Ray",
+      "Tropical Fish",
+      "Lionfish",
+    ],
+    jungle: [
+      "Lion",
+      "Elephant",
+      "Monkey",
+      "Giraffe",
+      "Tiger",
+      "Zebra",
+      "Panda",
+      "Kangaroo",
+      "Rhinoceros",
+      "Bear",
+      "Hippopotamus",
+      "Leopard",
+      "Fox",
+      "Wolf",
+      "Deer",
+      "Camel",
+    ],
+    space: [
+      "Earth",
+      "Sun",
+      "Galaxy",
+      "Space Shuttle",
+      "Fiery Meteor",
+      "Space Station",
+      "UFO",
+      "Astronaut",
+      "Moon",
+      "Asteroids",
+      "Alien",
+      "Satellite",
+      "Mars",
+      "Saturn",
+      "Star",
+      "Space Rover",
+    ],
+    princess: [
+      "Blue-Gowned Princess",
+      "Lantern Princess",
+      "Snow White",
+      "Ice Princess",
+      "Mermaid",
+      "Island Princess",
+      "Gothic Princess",
+      "Forest Princess",
+      "Egyptian Princess",
+      "Adventurer Princess",
+      "Mermaid Princess",
+      "Tea Princess",
+      "Tribal Princess",
+      "Butterfly Fairy",
+      "Sun Princess",
+      "Archer Princess",
+    ],
+    vehicles: [
+      "Sports Car",
+      "School Bus",
+      "Ambulance",
+      "Fire Truck",
+      "Motorcycle",
+      "Bicycle",
+      "Toy Train",
+      "Airplane",
+      "Cruise Ship",
+      "Canoe",
+      "Road Roller",
+      "Horse Carriage",
+      "Bulldozer",
+      "Police Car",
+      "Dump Truck",
+      "Tractor",
+    ],
+    peppa_pig: [
+      "Peppa Pig",
+      "George Pig",
+      "Mummy Pig",
+      "Daddy Pig",
+      "Peppa in a Hat",
+      "Grandpa Pig",
+      "Suzy Sheep",
+      "Dinosaur",
+      "Pedro Pony",
+      "Zebra",
+      "Elephant",
+      "Giraffe",
+      "Mr Bull",
+      "Rabbit",
+      "Police Panda",
+      "Nurse Pig",
+    ],
+    paw_patrol: [
+      "Ryder",
+      "Chase",
+      "Marshall",
+      "Skye",
+      "Rubble",
+      "Rocky",
+      "Zuma",
+      "Everest",
+      "Tracker",
+      "Mayor Goodway",
+      "Robo Dog",
+      "Pup Pad",
+      "Chase Badge",
+      "Marshall Badge",
+      "Skye Badge",
+      "Rubble Badge",
+    ],
+    sheriff: [
+      "Labrador Officer",
+      "Black Dog Officer",
+      "Pink-Haired Officer",
+      "Paw Badge",
+      "Blue-Haired Officer",
+      "Gray Wolf Officer",
+      "Crocodile",
+      "Yellow Chick",
+      "Hippo Officer",
+      "Rabbit",
+      "Police Cap",
+      "Handcuffs",
+      "Bull Officer",
+      "Police Car",
+      "Police Motorcycle",
+      "Magnifying Glass",
+    ],
+    doraemon: [
+      "Doraemon",
+      "Nobita",
+      "Dorami",
+      "Shizuka",
+      "Gian",
+      "Suneo",
+      "Nobita & Doraemon",
+      "Explorer Girl",
+      "Doraemon Friends",
+      "White Dog",
+      "Nobita & Friends",
+      "Anywhere Door",
+      "Doraemon Pancakes",
+      "Dorami Robot",
+      "Bamboo Copter",
+      "Group of Friends",
+    ],
+    chotta_bheem: [
+      "Bheem",
+      "Chutki",
+      "Baby",
+      "Jaggu Monkey",
+      "Kalia",
+      "Village Boy",
+      "Village Boy",
+      "Princess Indumati",
+      "Village Children",
+      "Bheem on Horseback",
+      "Laddoo",
+      "King",
+      "Mace",
+      "Dholakpur Sign",
+      "Dholakpur Palace",
+      "Horse",
+    ],
+    shinchan: [
+      "Shinchan",
+      "Himawari",
+      "Shiro",
+      "Hiroshi",
+      "Misae",
+      "Nene",
+      "Kazama",
+      "Masao",
+      "Pig Character",
+      "Man in Yellow Jacket",
+      "Woman in Pink",
+      "Girl in Pink",
+      "Boy in Blue Cap",
+      "Green Robot",
+      "Pink Monster",
+      "Action Kamen",
+    ],
+    bluey: [
+      "Bluey",
+      "Bingo",
+      "Bluey & Bingo",
+      "Bluey & Friends",
+      "Blue Paw Print",
+      "Orange Paw Print",
+      "Family Heart",
+      "Bulldog",
+      "Pink Poodle",
+      "Brown Dog",
+      "Orange Dog",
+      "Black-and-White Dog",
+      "Dalmatian",
+      "Bluey Star",
+      "Family Car",
+      "Bluey House",
+    ],
+    tom_jerry: [
+      "Tom",
+      "Jerry",
+      "Spike",
+      "Gray Mouse",
+      "Small Dog",
+      "White Cat",
+      "Black Cat",
+      "Housekeeper",
+      "Devil Tom",
+      "Devil Jerry",
+      "Angel Jerry",
+      "Sleeping Tom",
+      "Frozen Tom",
+      "Tweety",
+      "Tom in Tuxedo",
+      "Magician Jerry",
+    ],
+    mickey_mouse: [
+      "Mickey Hat",
+      "Mickey",
+      "Star",
+      "Sparkle",
+      "Carousel",
+      "Ferris Wheel",
+      "Roller Coaster",
+      "Castle",
+      "Stage",
+      "Circus",
+      "Balloon",
+      "Rainbow",
+      "Magic",
+      "Confetti",
+      "Gift",
+      "Ribbon",
+    ],
   };
   return names[themeId] ?? [];
 }
