@@ -439,7 +439,7 @@ function AlltimeBoard({ myProfileId }: { myProfileId?: number }) {
   const { data, isLoading } = useGetLeaderboard({ limit: 50 } as any);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3 sm:space-y-5">
       <Card className="shadow-md border-primary/10">
         <CardHeader className="bg-card pb-4 border-b">
           <CardTitle className="text-lg flex items-center gap-2">
@@ -760,11 +760,13 @@ function TournamentBoard({
     <div className="space-y-5">
       {/* Period info + countdown */}
       {data && (
-        <div className="leaderboard-period-info flex items-center justify-between gap-2 bg-card rounded-2xl border border-border px-4 py-3">
+        <div className="leaderboard-period-info flex flex-wrap items-center justify-between gap-2 bg-card rounded-xl sm:rounded-2xl border border-border px-3 py-2 sm:px-4 sm:py-3">
           <div className="leaderboard-period-label flex items-center gap-2 text-sm text-muted-foreground min-w-0">
             <Icon className="w-4 h-4 shrink-0" />
             <span className="min-w-0 break-words leading-snug">
-              {type === "alltime" ? "Ranking period: " : "Current period: "}
+              <span className="hidden sm:inline">
+                {type === "alltime" ? "Ranking period: " : "Current period: "}
+              </span>
               <span className="font-semibold text-foreground">
                 {data.periodLabel}
               </span>
@@ -773,7 +775,10 @@ function TournamentBoard({
           {countdown && (
             <div className="leaderboard-period-countdown flex items-center gap-1.5 text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 shrink-0">
               <Timer className="w-3 h-3" />
-              {countdown}
+              <span className="leaderboard-countdown-full">{countdown}</span>
+              <span className="leaderboard-countdown-compact">
+                {countdown.replace(/\s+remaining$/, "")}
+              </span>
             </div>
           )}
         </div>
@@ -1214,13 +1219,13 @@ function LeaderboardScopeLinks({
   ] as const;
 
   return (
-    <nav aria-label="Leaderboard category" className="grid grid-cols-3 gap-2">
+    <nav aria-label="Leaderboard category" className="grid grid-cols-3 gap-1 sm:gap-2">
       {links.map(({ id, href, label, icon: Icon }) => (
         <Link
           key={id}
           href={href}
           aria-current={active === id ? "page" : undefined}
-          className={`flex min-w-0 items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-center text-xs font-semibold transition-colors sm:text-sm ${
+          className={`flex min-w-0 items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-center text-xs font-semibold transition-colors sm:gap-1.5 sm:rounded-xl sm:px-2 sm:py-2.5 sm:text-sm ${
             active === id
               ? "border-primary/30 bg-primary/8 text-primary"
               : "border-border bg-card text-muted-foreground hover:bg-muted/50 hover:text-foreground"
@@ -1280,31 +1285,35 @@ export default function Leaderboard({
         : "Weekly, monthly, and all-time rankings across both games.";
 
   return (
-    <div className="max-w-2xl mx-auto w-full space-y-8 animate-in fade-in duration-500">
+    <div className="max-w-2xl mx-auto w-full space-y-3 sm:space-y-8 animate-in fade-in duration-500">
       <div className="space-y-2">
-        <div className="font-size-mobile-safe flex items-start justify-between gap-3 bg-card rounded-2xl px-5 py-4 border border-border">
+        <div className="flex items-center justify-between gap-2 bg-card rounded-xl sm:rounded-2xl px-3 py-2.5 sm:px-5 sm:py-4 border border-border">
           <div className="space-y-0.5 min-w-0 flex-1">
-            <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight leading-tight">
+            <h1 className="text-xl sm:text-3xl font-serif font-bold tracking-tight leading-tight">
               {title}
             </h1>
             <p className="text-sm text-muted-foreground hidden sm:block">
               {subtitle}
             </p>
           </div>
-          <div className="font-size-mobile-actions flex gap-1.5 shrink-0">
+          <div className="flex gap-1 shrink-0 sm:gap-1.5">
             <Link
               href="/sudoku"
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-card text-xs sm:text-sm font-medium text-foreground hover:bg-muted transition-colors"
+              aria-label="Play Sudoku"
+              title="Play Sudoku"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card p-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors sm:px-2.5 sm:py-1.5 sm:text-sm"
             >
               <Zap className="w-3.5 h-3.5 text-primary" />
-              <span className="hidden sm:inline">Play </span>Sudoku
+              <span className="hidden sm:inline">Play Sudoku</span>
             </Link>
             <Link
               href="/memory"
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-card text-xs sm:text-sm font-medium text-foreground hover:bg-muted transition-colors"
+              aria-label="Play Memory Match"
+              title="Play Memory Match"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card p-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors sm:px-2.5 sm:py-1.5 sm:text-sm"
             >
               <Brain className="w-3.5 h-3.5 text-primary" />
-              <span className="hidden sm:inline">Play </span>Memory
+              <span className="hidden sm:inline">Play Memory</span>
             </Link>
           </div>
         </div>
@@ -1323,27 +1332,27 @@ export default function Leaderboard({
             onValueChange={(v) => setTab(v as MainTab)}
             className="w-full"
           >
-            <TabsList className="leaderboard-tabs grid w-full grid-cols-3 gap-1 h-auto p-1">
-              <TabsTrigger value="weekly" className="leaderboard-tab-trigger flex-col gap-0 leading-tight py-1.5">
+            <TabsList className="leaderboard-tabs grid w-full grid-cols-3 gap-1 h-auto p-0.5 sm:p-1">
+              <TabsTrigger value="weekly" className="leaderboard-tab-trigger flex flex-row items-center gap-1.5 leading-tight py-2 sm:flex-col sm:gap-0 sm:py-1.5">
                 <span className="leaderboard-tab-main flex items-center justify-center gap-1">
                   <CalendarDays className="leaderboard-tab-icon w-3.5 h-3.5 shrink-0" />
                   <span>Weekly</span>
                 </span>
-                <span className="text-[9px] font-normal opacity-60">tournament</span>
+                <span className="hidden text-[9px] font-normal opacity-60 sm:block">tournament</span>
               </TabsTrigger>
-              <TabsTrigger value="monthly" className="leaderboard-tab-trigger flex-col gap-0 leading-tight py-1.5">
+              <TabsTrigger value="monthly" className="leaderboard-tab-trigger flex flex-row items-center gap-1.5 leading-tight py-2 sm:flex-col sm:gap-0 sm:py-1.5">
                 <span className="leaderboard-tab-main flex items-center justify-center gap-1">
                   <Calendar className="leaderboard-tab-icon w-3.5 h-3.5 shrink-0" />
                   <span>Monthly</span>
                 </span>
-                <span className="text-[9px] font-normal opacity-60">tournament</span>
+                <span className="hidden text-[9px] font-normal opacity-60 sm:block">tournament</span>
               </TabsTrigger>
-              <TabsTrigger value="alltime" className="leaderboard-tab-trigger flex-col gap-0 leading-tight py-1.5">
+              <TabsTrigger value="alltime" className="leaderboard-tab-trigger flex flex-row items-center gap-1.5 leading-tight py-2 sm:flex-col sm:gap-0 sm:py-1.5">
                 <span className="leaderboard-tab-main flex items-center justify-center gap-1">
                   <Zap className="leaderboard-tab-icon w-3.5 h-3.5 shrink-0" />
                   <span>All Time</span>
                 </span>
-                <span className="text-[9px] font-normal opacity-60">all games</span>
+                <span className="hidden text-[9px] font-normal opacity-60 sm:block">all games</span>
               </TabsTrigger>
             </TabsList>
           </Tabs>

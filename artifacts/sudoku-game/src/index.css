@@ -1111,6 +1111,20 @@
 
 /* ─── Mobile / browser compatibility ──────────────────────────────────────── */
 
+.leaderboard-countdown-compact {
+  display: none;
+}
+
+@media (max-width: 359px) {
+  .leaderboard-countdown-full {
+    display: none;
+  }
+
+  .leaderboard-countdown-compact {
+    display: inline;
+  }
+}
+
 /* Give the compact mobile chrome enough room for the page title and actions. */
 @media (max-width: 639px) {
   /* Keep the title and gem balance visible on narrow phone headers. */
@@ -1225,9 +1239,10 @@
 
   [data-font-size="large"] .leaderboard-tabs .leaderboard-tab-main,
   [data-font-size="extra-large"] .leaderboard-tabs .leaderboard-tab-main {
-    flex-direction: column;
-    gap: 0.1rem;
-    line-height: 1;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.35rem;
+    line-height: 1.15;
   }
 
   [data-font-size="large"] .leaderboard-tabs .leaderboard-tab-icon,
@@ -1245,20 +1260,20 @@
 
   [data-font-size="large"] .leaderboard-period-info,
   [data-font-size="extra-large"] .leaderboard-period-info {
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: center;
+    flex-direction: row;
   }
 
   [data-font-size="large"] .leaderboard-period-label,
   [data-font-size="extra-large"] .leaderboard-period-label {
-    align-items: flex-start;
-    width: 100%;
+    align-items: center;
+    width: auto;
   }
 
   [data-font-size="large"] .leaderboard-period-countdown,
   [data-font-size="extra-large"] .leaderboard-period-countdown {
-    align-self: flex-start;
-    margin-top: 0.15rem;
+    align-self: center;
+    margin-top: 0;
   }
 
   [data-font-size="large"] .memory-display-options,
