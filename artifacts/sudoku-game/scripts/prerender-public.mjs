@@ -143,7 +143,7 @@ const publicPages = [
       ["/guides", "Learn Sudoku strategies"],
       ["/themes", "Explore Sudoku themes"],
       ["/daily-challenge", "Solve today's Sudoku challenge"],
-      ["/leaderboard", "View the Sudoku leaderboard"],
+      ["/leaderboard/sudoku/", "View the Sudoku leaderboard"],
     ],
     schemaType: "WebApplication",
   },
@@ -166,7 +166,7 @@ const publicPages = [
       ["/guides", "Read the Memory Match guide"],
       ["/themes", "Browse card themes"],
       ["/memory-challenge", "Try a memory challenge"],
-      ["/leaderboard", "View the Memory leaderboard"],
+      ["/leaderboard/memory/", "View the Memory Match leaderboard"],
       ["/about", "Learn about both games"],
     ],
     schemaType: "WebApplication",
@@ -193,21 +193,61 @@ const publicPages = [
   },
   {
     route: "/leaderboard",
-    title: "Sudoku & Memory Match Leaderboards | Play Brain Games . Online",
+    title: "All Games Leaderboard | Play Brain Games . Online",
     description:
       "Compare Sudoku and Memory Match scores across weekly, monthly, and all-time leaderboards.",
-    heading: "Sudoku & Memory Match Leaderboards",
+    heading: "All Games Leaderboard",
     intro:
-      "Compare puzzle scores across weekly tournaments, monthly tournaments, and all-time boards. See how players perform across Sudoku grids and Memory Match levels.",
+      "Compare combined Sudoku and Memory Match points across weekly tournaments, monthly tournaments, and all-time rankings.",
     sections: [
       ["Weekly and monthly tournaments", "Follow changing tournament standings and compete for a place near the top."],
-      ["All-time Sudoku scores", "Compare points earned across 3×3, 4×4, 6×6, 9×9, and 16×16 Sudoku boards."],
-      ["Memory Match rankings", "See how fast and accurately players complete different Memory Match board sizes."],
+      ["All-time combined scores", "Completed Sudoku and Memory Match games both contribute points to the all-games ranking."],
+      ["Game-specific leaderboards", "Open separate all-time boards to compare Sudoku grid scores or Memory Match level scores."],
     ],
     links: [
-      ["/sudoku", "Play Sudoku for leaderboard points"],
-      ["/memory", "Play Memory Match for leaderboard points"],
+      ["/leaderboard/sudoku/", "View all-time Sudoku scores"],
+      ["/leaderboard/memory/", "View all-time Memory Match scores"],
+      ["/sudoku/", "Play Sudoku for leaderboard points"],
+      ["/memory/", "Play Memory Match for leaderboard points"],
       ["/challenges", "Challenge another player"],
+    ],
+    schemaType: "CollectionPage",
+  },
+  {
+    route: "/leaderboard/sudoku",
+    title: "Sudoku Leaderboard | Play Brain Games . Online",
+    description:
+      "Compare all-time Sudoku points across 3×3, 4×4, 6×6, 9×9, and 16×16 grids.",
+    heading: "Sudoku Leaderboard",
+    intro:
+      "See the players with the highest combined points across completed Sudoku games of every grid size.",
+    sections: [
+      ["Scores across every grid", "Points from completed 3×3, 4×4, 6×6, 9×9, and 16×16 Sudoku games count toward this all-time board."],
+      ["Compare all games", "The all-games leaderboard also includes Memory Match scores from weekly, monthly, and all-time results."],
+    ],
+    links: [
+      ["/leaderboard/", "View the all-games leaderboard"],
+      ["/leaderboard/memory/", "View the Memory Match leaderboard"],
+      ["/sudoku/", "Play Sudoku"],
+    ],
+    schemaType: "CollectionPage",
+  },
+  {
+    route: "/leaderboard/memory",
+    title: "Memory Match Leaderboard | Play Brain Games . Online",
+    description:
+      "Compare all-time Memory Match scores across Beginner, Easy, Medium, and Hard levels.",
+    heading: "Memory Match Leaderboard",
+    intro:
+      "See the players with the highest combined points across completed Memory Match games of every level.",
+    sections: [
+      ["Scores across every level", "Points from completed Beginner, Easy, Medium, and Hard games count toward this all-time board."],
+      ["Compare all games", "The all-games leaderboard also includes Sudoku scores from weekly, monthly, and all-time results."],
+    ],
+    links: [
+      ["/leaderboard/", "View the all-games leaderboard"],
+      ["/leaderboard/sudoku/", "View the Sudoku leaderboard"],
+      ["/memory/", "Play Memory Match"],
     ],
     schemaType: "CollectionPage",
   },

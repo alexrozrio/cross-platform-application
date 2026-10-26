@@ -730,13 +730,13 @@ export default function SudokuHome({
           </div>
         </button>
         <button
-          onClick={() => setLocation('/leaderboard')}
+          onClick={() => setLocation('/leaderboard/sudoku/')}
           className="flex items-center gap-3 rounded-xl border bg-card p-3 sm:p-4 hover:bg-muted/50 hover:border-primary/30 transition-all text-left"
         >
           <Trophy className="w-5 h-5 text-primary shrink-0" />
           <div>
-            <p className="font-semibold text-sm">Leaderboard</p>
-            <p className="text-xs text-muted-foreground hidden sm:block">Top players</p>
+            <p className="font-semibold text-sm">Sudoku Leaderboard</p>
+            <p className="text-xs text-muted-foreground hidden sm:block">All-time Sudoku scores</p>
           </div>
         </button>
       </div>

@@ -395,20 +395,20 @@ export const GetPlayerStatsResponse = zod.object({
 
 
 /**
- * @summary Get weekly or monthly tournament leaderboard
+ * @summary Get weekly, monthly, or all-time combined leaderboard
  */
 export const getTournamentLeaderboardQueryTypeDefault = `weekly`;
 
 export const GetTournamentLeaderboardQueryParams = zod.object({
-  "type": zod.enum(['weekly', 'monthly']).default(getTournamentLeaderboardQueryTypeDefault),
+  "type": zod.enum(['weekly', 'monthly', 'alltime']).default(getTournamentLeaderboardQueryTypeDefault),
   "gridSize": zod.union([zod.literal(3),zod.literal(4),zod.literal(6),zod.literal(9),zod.literal(16)]).optional(),
-  "period": zod.coerce.string().optional()
+  "period": zod.coerce.string().optional().describe('Period string e.g. 2026-W23 or 2026-06 (defaults to current; ignored for all-time)')
 })
 
 export const GetTournamentLeaderboardResponse = zod.object({
   "period": zod.string(),
   "periodLabel": zod.string(),
-  "type": zod.enum(['weekly', 'monthly']),
+  "type": zod.enum(['weekly', 'monthly', 'alltime']),
   "entries": zod.array(zod.object({
   "rank": zod.int(),
   "profileId": zod.int(),

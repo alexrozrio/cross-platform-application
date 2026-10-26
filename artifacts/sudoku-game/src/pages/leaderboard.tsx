@@ -31,7 +31,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
 import { showEventModal } from "@/hooks/use-event-modal";
 
-type MainTab = "alltime" | "weekly" | "monthly" | "memory";
+type MainTab = "alltime" | "weekly" | "monthly";
 
 function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60);
@@ -444,7 +444,7 @@ function AlltimeBoard({ myProfileId }: { myProfileId?: number }) {
         <CardHeader className="bg-card pb-4 border-b">
           <CardTitle className="text-lg flex items-center gap-2">
             <Zap className="w-5 h-5 text-primary" />
-            Top Scores — All Grids Combined
+            Sudoku — All Grids Combined
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -544,7 +544,7 @@ function BreakdownPanel({
   onlyGame,
 }: {
   profileId: number;
-  type: "weekly" | "monthly";
+  type: "weekly" | "monthly" | "alltime";
   period: string;
   defaultGame?: "sudoku" | "memory";
   onlyGame?: "sudoku" | "memory";
@@ -655,21 +655,11 @@ function PlayerDetailsPanel({
   game: "sudoku" | "memory";
   myProfileId?: number;
 }) {
-  const { data: weeklyLb } = useGetTournamentLeaderboard({ type: "weekly" } as any, { query: { staleTime: 60_000 } });
-  const { data: monthlyLb } = useGetTournamentLeaderboard({ type: "monthly" } as any, { query: { staleTime: 60_000 } });
-
-  const weeklyEntry = (weeklyLb as any)?.entries?.find((e: any) => e.profileId === profileId);
-  const monthlyEntry = (monthlyLb as any)?.entries?.find((e: any) => e.profileId === profileId);
-  const weeklyPeriod = (weeklyLb as any)?.period as string | undefined;
-  const monthlyPeriod = (monthlyLb as any)?.period as string | undefined;
   const isMe = myProfileId === profileId;
 
   return (
     <div className="border-t bg-muted/10">
-      {/* Grid / level breakdown for the current week — locked to this board's game */}
-      {weeklyPeriod && (
-        <BreakdownPanel profileId={profileId} type="weekly" period={weeklyPeriod} onlyGame={game} />
-      )}
+      <BreakdownPanel profileId={profileId} type="alltime" period="all-time" onlyGame={game} />
 
       {isMe && (
         <div className="px-5 pb-3">
@@ -689,7 +679,7 @@ function TournamentBoard({
   type,
   myProfileId,
 }: {
-  type: "weekly" | "monthly";
+  type: "weekly" | "monthly" | "alltime";
   myProfileId?: number;
 }) {
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -698,8 +688,11 @@ function TournamentBoard({
   const prevRankRef = useRef<number | null>(null);
   const isFirstFetchRef = useRef(true);
 
-  const { data, isLoading } = useGetTournamentLeaderboard({ type } as any, {
-    query: { refetchInterval: 30_000 },
+  const { data, isLoading } = useGetTournamentLeaderboard({ type }, {
+    query: {
+      queryKey: ["/api/tournaments/leaderboard", { type }],
+      refetchInterval: type === "alltime" ? 60_000 : 30_000,
+    },
   });
 
   // Detect rank changes across refetches and show toast + delta badge
@@ -712,6 +705,11 @@ function TournamentBoard({
       // First load — just record, no notification
       prevRankRef.current = newRank;
       isFirstFetchRef.current = false;
+      return;
+    }
+
+    if (type === "alltime") {
+      prevRankRef.current = newRank;
       return;
     }
 
@@ -746,9 +744,13 @@ function TournamentBoard({
     prevRankRef.current = newRank;
   }, [data, myProfileId, type]);
 
-  const Icon = type === "weekly" ? CalendarDays : Calendar;
-  const label = type === "weekly" ? "Weekly Tournament" : "Monthly Tournament";
-  const countdown = usePeriodCountdown(data?.period);
+  const Icon = type === "weekly" ? CalendarDays : type === "monthly" ? Calendar : Zap;
+  const label = type === "weekly"
+    ? "Weekly Tournament"
+    : type === "monthly"
+      ? "Monthly Tournament"
+      : "All-Time Leaderboard";
+  const countdown = usePeriodCountdown(type === "alltime" ? undefined : data?.period);
 
   const toggleRow = (profileId: number) => {
     setExpandedId((prev) => (prev === profileId ? null : profileId));
@@ -762,7 +764,7 @@ function TournamentBoard({
           <div className="leaderboard-period-label flex items-center gap-2 text-sm text-muted-foreground min-w-0">
             <Icon className="w-4 h-4 shrink-0" />
             <span className="min-w-0 break-words leading-snug">
-              Current period:{" "}
+              {type === "alltime" ? "Ranking period: " : "Current period: "}
               <span className="font-semibold text-foreground">
                 {data.periodLabel}
               </span>
@@ -795,10 +797,12 @@ function TournamentBoard({
             <div className="p-12 text-center text-muted-foreground">
               <Star className="w-10 h-10 mx-auto mb-3 opacity-20" />
               <p className="font-medium">
-                No games yet this {type === "weekly" ? "week" : "month"}.
+                {type === "alltime"
+                  ? "No completed games yet."
+                  : `No games yet this ${type === "weekly" ? "week" : "month"}.`}
               </p>
               <p className="text-sm mt-1">
-                Complete puzzles to earn points and climb the rankings!
+                Complete Sudoku or Memory Match games to earn points and climb the rankings!
               </p>
             </div>
           ) : (
@@ -1198,21 +1202,82 @@ function MemoryBoard({ myProfileId }: { myProfileId?: number }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function Leaderboard() {
+function LeaderboardScopeLinks({
+  active,
+}: {
+  active: "all" | "sudoku" | "memory";
+}) {
+  const links = [
+    { id: "all", href: "/leaderboard/", label: "All Games", icon: Trophy },
+    { id: "sudoku", href: "/leaderboard/sudoku/", label: "Sudoku", icon: Zap },
+    { id: "memory", href: "/leaderboard/memory/", label: "Memory Match", icon: Brain },
+  ] as const;
+
+  return (
+    <nav aria-label="Leaderboard category" className="grid grid-cols-3 gap-2">
+      {links.map(({ id, href, label, icon: Icon }) => (
+        <Link
+          key={id}
+          href={href}
+          aria-current={active === id ? "page" : undefined}
+          className={`flex min-w-0 items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-center text-xs font-semibold transition-colors sm:text-sm ${
+            active === id
+              ? "border-primary/30 bg-primary/8 text-primary"
+              : "border-border bg-card text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+          }`}
+        >
+          <Icon className="h-4 w-4 shrink-0" />
+          <span className="min-w-0 break-words leading-tight">{label}</span>
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+export default function Leaderboard({
+  gamePage: routeGamePage,
+}: {
+  gamePage?: "sudoku" | "memory";
+} = {}) {
   const search = useSearch();
+  const requestedTab = new URLSearchParams(search).get("tab");
+  const gamePage =
+    routeGamePage ??
+    (requestedTab === "sudoku" || requestedTab === "memory" ? requestedTab : null);
+  const initialTab: MainTab =
+    requestedTab === "monthly" || requestedTab === "alltime"
+      ? requestedTab
+      : "weekly";
   usePageMeta({
-    title: "Sudoku & Memory Match Leaderboards | Play Brain Games . Online",
+    title:
+      gamePage === "sudoku"
+        ? "Sudoku Leaderboard | Play Brain Games . Online"
+        : gamePage === "memory"
+          ? "Memory Match Leaderboard | Play Brain Games . Online"
+          : "All Games Leaderboard | Play Brain Games . Online",
     description:
-      "Compare Sudoku and Memory Match scores across weekly, monthly, and all-time leaderboards on Play Brain Games . Online.",
-    path: "/leaderboard",
+      gamePage === "sudoku"
+        ? "Compare all-time Sudoku points across every grid size on Play Brain Games . Online."
+        : gamePage === "memory"
+          ? "Compare all-time Memory Match scores across every level on Play Brain Games . Online."
+          : "Compare weekly, monthly, and all-time Sudoku and Memory Match scores on Play Brain Games . Online.",
+    path: gamePage ? `/leaderboard/${gamePage}/` : "/leaderboard/",
   });
-  const initialTab = (() => {
-    const p = new URLSearchParams(search).get("tab") as MainTab | null;
-    return (p && ["weekly", "monthly", "alltime", "memory"].includes(p)) ? p : "weekly";
-  })();
   const [tab, setTab] = useState<MainTab>(initialTab);
   const { profileId } = useAuth();
   const myProfileId = profileId ?? undefined;
+  const title =
+    gamePage === "sudoku"
+      ? "Sudoku Leaderboard"
+      : gamePage === "memory"
+        ? "Memory Match Leaderboard"
+        : "Leaderboard";
+  const subtitle =
+    gamePage === "sudoku"
+      ? "All-time points across every Sudoku grid size."
+      : gamePage === "memory"
+        ? "All-time scores across every Memory Match level."
+        : "Weekly, monthly, and all-time rankings across both games.";
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-8 animate-in fade-in duration-500">
@@ -1220,10 +1285,10 @@ export default function Leaderboard() {
         <div className="font-size-mobile-safe flex items-start justify-between gap-3 bg-card rounded-2xl px-5 py-4 border border-border">
           <div className="space-y-0.5 min-w-0 flex-1">
             <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight leading-tight">
-              Leaderboard
+              {title}
             </h1>
             <p className="text-sm text-muted-foreground hidden sm:block">
-              Compete in weekly and monthly tournaments.
+              {subtitle}
             </p>
           </div>
           <div className="font-size-mobile-actions flex gap-1.5 shrink-0">
@@ -1245,51 +1310,47 @@ export default function Leaderboard() {
         </div>
       </div>
 
-      <Tabs
-        value={tab}
-        onValueChange={(v) => setTab(v as MainTab)}
-        className="w-full"
-      >
-        <TabsList className="leaderboard-tabs grid w-full grid-cols-4 gap-1 h-auto p-1">
-          <TabsTrigger value="weekly" className="leaderboard-tab-trigger flex-col gap-0 leading-tight py-1.5">
-            <span className="leaderboard-tab-main flex items-center justify-center gap-1">
-              <CalendarDays className="leaderboard-tab-icon w-3.5 h-3.5 shrink-0" />
-              <span>Weekly</span>
-            </span>
-            <span className="text-[9px] font-normal opacity-60">tournament</span>
-          </TabsTrigger>
-          <TabsTrigger value="monthly" className="leaderboard-tab-trigger flex-col gap-0 leading-tight py-1.5">
-            <span className="leaderboard-tab-main flex items-center justify-center gap-1">
-              <Calendar className="leaderboard-tab-icon w-3.5 h-3.5 shrink-0" />
-              <span>Monthly</span>
-            </span>
-            <span className="text-[9px] font-normal opacity-60">tournament</span>
-          </TabsTrigger>
-          <TabsTrigger value="alltime" className="leaderboard-tab-trigger flex-col gap-0 leading-tight py-1.5">
-            <span className="leaderboard-tab-main flex items-center justify-center gap-1">
-              <Zap className="leaderboard-tab-icon w-3.5 h-3.5 shrink-0" />
-              <span>Sudoku</span>
-            </span>
-            <span className="text-[9px] font-normal opacity-60">all-time</span>
-          </TabsTrigger>
-          <TabsTrigger value="memory" className="leaderboard-tab-trigger flex-col gap-0 leading-tight py-1.5">
-            <span className="leaderboard-tab-main flex items-center justify-center gap-1">
-              <Brain className="leaderboard-tab-icon w-3.5 h-3.5 shrink-0" />
-              <span>Memory</span>
-            </span>
-            <span className="text-[9px] font-normal opacity-60">all-time</span>
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <LeaderboardScopeLinks active={gamePage ?? "all"} />
 
-      {tab === "alltime" && <AlltimeBoard myProfileId={myProfileId} />}
-      {tab === "weekly" && (
-        <TournamentBoard type="weekly" myProfileId={myProfileId} />
+      {gamePage === "sudoku" ? (
+        <AlltimeBoard myProfileId={myProfileId} />
+      ) : gamePage === "memory" ? (
+        <MemoryBoard myProfileId={myProfileId} />
+      ) : (
+        <>
+          <Tabs
+            value={tab}
+            onValueChange={(v) => setTab(v as MainTab)}
+            className="w-full"
+          >
+            <TabsList className="leaderboard-tabs grid w-full grid-cols-3 gap-1 h-auto p-1">
+              <TabsTrigger value="weekly" className="leaderboard-tab-trigger flex-col gap-0 leading-tight py-1.5">
+                <span className="leaderboard-tab-main flex items-center justify-center gap-1">
+                  <CalendarDays className="leaderboard-tab-icon w-3.5 h-3.5 shrink-0" />
+                  <span>Weekly</span>
+                </span>
+                <span className="text-[9px] font-normal opacity-60">tournament</span>
+              </TabsTrigger>
+              <TabsTrigger value="monthly" className="leaderboard-tab-trigger flex-col gap-0 leading-tight py-1.5">
+                <span className="leaderboard-tab-main flex items-center justify-center gap-1">
+                  <Calendar className="leaderboard-tab-icon w-3.5 h-3.5 shrink-0" />
+                  <span>Monthly</span>
+                </span>
+                <span className="text-[9px] font-normal opacity-60">tournament</span>
+              </TabsTrigger>
+              <TabsTrigger value="alltime" className="leaderboard-tab-trigger flex-col gap-0 leading-tight py-1.5">
+                <span className="leaderboard-tab-main flex items-center justify-center gap-1">
+                  <Zap className="leaderboard-tab-icon w-3.5 h-3.5 shrink-0" />
+                  <span>All Time</span>
+                </span>
+                <span className="text-[9px] font-normal opacity-60">all games</span>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          <TournamentBoard type={tab} myProfileId={myProfileId} />
+        </>
       )}
-      {tab === "monthly" && (
-        <TournamentBoard type="monthly" myProfileId={myProfileId} />
-      )}
-      {tab === "memory" && <MemoryBoard myProfileId={myProfileId} />}
     </div>
   );
 }

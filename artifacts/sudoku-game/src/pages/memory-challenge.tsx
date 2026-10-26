@@ -375,7 +375,7 @@ export default function MemoryChallengePage() {
 
       <div className="bg-card border border-border rounded-xl px-4 py-3 text-center">
         <button
-          onClick={() => setLocation('/leaderboard')}
+          onClick={() => setLocation('/leaderboard/memory/')}
           className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
         >
           View all-time leaderboard →

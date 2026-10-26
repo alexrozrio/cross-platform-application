@@ -1247,7 +1247,7 @@ export const getGetTournamentLeaderboardUrl = (params?: GetTournamentLeaderboard
 }
 
 /**
- * @summary Get weekly or monthly tournament leaderboard
+ * @summary Get weekly, monthly, or all-time combined leaderboard
  */
 export const getTournamentLeaderboard = async (params?: GetTournamentLeaderboardParams, options?: Parameters<typeof customFetch>[1]): Promise<TournamentLeaderboard> => {
 
@@ -1294,7 +1294,7 @@ export type GetTournamentLeaderboardQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Get weekly or monthly tournament leaderboard
+ * @summary Get weekly, monthly, or all-time combined leaderboard
  */
 
 export function useGetTournamentLeaderboard<TData = Awaited<ReturnType<typeof getTournamentLeaderboard>>, TError = ErrorType<unknown>>(

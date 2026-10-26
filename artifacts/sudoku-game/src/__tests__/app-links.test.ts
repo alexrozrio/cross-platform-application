@@ -14,6 +14,12 @@ describe("native app links", () => {
       appPathFromAppUrl(`${PUBLIC_SITE_ORIGIN}/sudoku/9/expert?mode=alpha#board`),
     ).toBe("/sudoku/9/expert?mode=alpha#board");
     expect(
+      appPathFromAppUrl(`${PUBLIC_SITE_ORIGIN}/leaderboard/sudoku/`),
+    ).toBe("/leaderboard/sudoku");
+    expect(
+      appPathFromAppUrl(`${PUBLIC_SITE_ORIGIN}/leaderboard/memory/?tab=alltime`),
+    ).toBe("/leaderboard/memory?tab=alltime");
+    expect(
       appPathFromAppUrl(`${PUBLIC_SITE_ORIGIN}/memory/hard/?start=1`),
     ).toBe("/memory/hard?start=1");
     expect(appPathFromAppUrl(`${PUBLIC_SITE_ORIGIN}/`)).toBe("/");

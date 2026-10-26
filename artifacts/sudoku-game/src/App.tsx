@@ -178,7 +178,15 @@ function Router() {
               <Route path="/profile" component={Profile} />
               <Route path="/game/:id" component={SudokuGameRoute} />
               <Route path="/daily-challenge" component={DailyChallenge} />
-              <Route path="/leaderboard" component={Leaderboard} />
+              <Route path="/leaderboard/sudoku">
+                {() => <Leaderboard gamePage="sudoku" />}
+              </Route>
+              <Route path="/leaderboard/memory">
+                {() => <Leaderboard gamePage="memory" />}
+              </Route>
+              <Route path="/leaderboard">
+                {() => <Leaderboard />}
+              </Route>
               <Route path="/stats" component={StatsRedirect} />
               <Route path="/challenges" component={Challenges} />
               <Route path="/badges/:token" component={BadgeSharePage} />

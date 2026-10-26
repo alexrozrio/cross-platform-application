@@ -14,13 +14,12 @@ import { ensureTournamentAwards } from "../utils/awards";
 const router: IRouter = Router();
 
 const VALID_GRID_SIZES = new Set([3, 4, 6, 9, 16]);
-const VALID_TYPES = new Set(["weekly", "monthly"]);
+const VALID_TYPES = new Set(["weekly", "monthly", "alltime"]);
 
 router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
-  await ensureTournamentAwards();
-
   const rawType = String(req.query.type ?? "weekly");
-  const type = VALID_TYPES.has(rawType) ? (rawType as "weekly" | "monthly") : "weekly";
+  const type = VALID_TYPES.has(rawType) ? (rawType as "weekly" | "monthly" | "alltime") : "weekly";
+  if (type !== "alltime") await ensureTournamentAwards();
   const rawGridSize = req.query.gridSize !== undefined ? Number(req.query.gridSize) : undefined;
   const gridSize = rawGridSize !== undefined && VALID_GRID_SIZES.has(rawGridSize)
     ? (rawGridSize as 3 | 4 | 6 | 9 | 16)
@@ -28,8 +27,14 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
   const rawPeriod = req.query.period ? String(req.query.period) : undefined;
 
   const now = new Date();
-  const period = rawPeriod ?? (type === "weekly" ? getWeekPeriod(now) : getMonthPeriod(now));
-  const range = type === "weekly" ? getWeekRange(period) : getMonthRange(period);
+  const period = type === "alltime"
+    ? "all-time"
+    : rawPeriod ?? (type === "weekly" ? getWeekPeriod(now) : getMonthPeriod(now));
+  const range = type === "weekly"
+    ? getWeekRange(period)
+    : type === "monthly"
+      ? getMonthRange(period)
+      : undefined;
 
   // ── Sudoku games ──────────────────────────────────────────────────────────
   const sudokuRows = await db
@@ -45,11 +50,13 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
     .innerJoin(puzzlesTable, eq(gamesTable.puzzleId, puzzlesTable.id))
     .innerJoin(profilesTable, eq(gamesTable.profileId, profilesTable.id))
     .where(
-      and(
-        eq(gamesTable.status, "completed"),
-        gte(gamesTable.completedAt, range.start),
-        lt(gamesTable.completedAt, range.end),
-      ),
+      range
+        ? and(
+            eq(gamesTable.status, "completed"),
+            gte(gamesTable.completedAt, range.start),
+            lt(gamesTable.completedAt, range.end),
+          )
+        : eq(gamesTable.status, "completed"),
     );
 
   // ── Memory Match games (only included in "All" view, i.e. no gridSize filter) ──
@@ -65,11 +72,13 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
         .from(memoryGamesTable)
         .innerJoin(profilesTable, eq(memoryGamesTable.profileId, profilesTable.id))
         .where(
-          and(
-            eq(memoryGamesTable.status, "completed"),
-            gte(memoryGamesTable.completedAt, range.start),
-            lt(memoryGamesTable.completedAt, range.end),
-          ),
+          range
+            ? and(
+                eq(memoryGamesTable.status, "completed"),
+                gte(memoryGamesTable.completedAt, range.start),
+                lt(memoryGamesTable.completedAt, range.end),
+              )
+            : eq(memoryGamesTable.status, "completed"),
         )
     : [];
 
@@ -163,7 +172,12 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
     streak: streakMap.get(profileId) ?? 0,
   }));
 
-  res.json({ period, periodLabel: formatPeriodLabel(period), type, entries });
+  res.json({
+    period,
+    periodLabel: type === "alltime" ? "All time" : formatPeriodLabel(period),
+    type,
+    entries,
+  });
 });
 
 // ─── GET /tournaments/breakdown ──────────────────────────────────────────────
@@ -174,12 +188,21 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
   if (isNaN(profileId)) { res.status(400).json({ error: "Invalid profileId" }); return; }
 
   const rawType = String(req.query.type ?? "weekly");
-  const type = VALID_TYPES.has(rawType) ? (rawType as "weekly" | "monthly") : "weekly";
+  const type = VALID_TYPES.has(rawType) ? (rawType as "weekly" | "monthly" | "alltime") : "weekly";
 
   const now = new Date();
-  const period = req.query.period ? String(req.query.period)
-    : (type === "weekly" ? getWeekPeriod(now) : getMonthPeriod(now));
-  const range = type === "weekly" ? getWeekRange(period) : getMonthRange(period);
+  const period = type === "alltime"
+    ? "all-time"
+    : req.query.period
+      ? String(req.query.period)
+      : type === "weekly"
+        ? getWeekPeriod(now)
+        : getMonthPeriod(now);
+  const range = type === "weekly"
+    ? getWeekRange(period)
+    : type === "monthly"
+      ? getMonthRange(period)
+      : undefined;
 
   // Sudoku breakdown by grid size
   const sudokuRows = await db
@@ -190,12 +213,17 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
     .from(gamesTable)
     .innerJoin(puzzlesTable, eq(gamesTable.puzzleId, puzzlesTable.id))
     .where(
-      and(
-        eq(gamesTable.status, "completed"),
-        eq(gamesTable.profileId, profileId),
-        gte(gamesTable.completedAt, range.start),
-        lt(gamesTable.completedAt, range.end),
-      ),
+      range
+        ? and(
+            eq(gamesTable.status, "completed"),
+            eq(gamesTable.profileId, profileId),
+            gte(gamesTable.completedAt, range.start),
+            lt(gamesTable.completedAt, range.end),
+          )
+        : and(
+            eq(gamesTable.status, "completed"),
+            eq(gamesTable.profileId, profileId),
+          ),
     );
 
   // Memory breakdown by grid size
@@ -206,12 +234,17 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
     })
     .from(memoryGamesTable)
     .where(
-      and(
-        eq(memoryGamesTable.status, "completed"),
-        eq(memoryGamesTable.profileId, profileId),
-        gte(memoryGamesTable.completedAt, range.start),
-        lt(memoryGamesTable.completedAt, range.end),
-      ),
+      range
+        ? and(
+            eq(memoryGamesTable.status, "completed"),
+            eq(memoryGamesTable.profileId, profileId),
+            gte(memoryGamesTable.completedAt, range.start),
+            lt(memoryGamesTable.completedAt, range.end),
+          )
+        : and(
+            eq(memoryGamesTable.status, "completed"),
+            eq(memoryGamesTable.profileId, profileId),
+          ),
     );
 
   // Aggregate sudoku by grid size

@@ -12,4 +12,5 @@ export type TournamentLeaderboardType = typeof TournamentLeaderboardType[keyof t
 export const TournamentLeaderboardType = {
   weekly: 'weekly',
   monthly: 'monthly',
+  alltime: 'alltime',
 } as const;

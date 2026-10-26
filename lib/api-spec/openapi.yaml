@@ -20,7 +20,7 @@ tags:
   - name: stats
     description: Player statistics
   - name: tournaments
-    description: Weekly and monthly tournaments
+    description: Weekly, monthly, and all-time leaderboards
   - name: badges
     description: Achievement badges
   - name: challenges
@@ -324,14 +324,14 @@ paths:
     get:
       operationId: getTournamentLeaderboard
       tags: [tournaments]
-      summary: Get weekly or monthly tournament leaderboard
+      summary: Get weekly, monthly, or all-time combined leaderboard
       parameters:
         - name: type
           in: query
           required: false
           schema:
             type: string
-            enum: [weekly, monthly]
+            enum: [weekly, monthly, alltime]
             default: weekly
         - name: gridSize
           in: query
@@ -344,7 +344,7 @@ paths:
           required: false
           schema:
             type: string
-            description: "Period string e.g. 2026-W23 or 2026-06 (defaults to current)"
+          description: "Period string e.g. 2026-W23 or 2026-06 (defaults to current; ignored for all-time)"
       responses:
         "200":
           description: Tournament leaderboard
@@ -829,7 +829,7 @@ components:
           type: string
         type:
           type: string
-          enum: [weekly, monthly]
+          enum: [weekly, monthly, alltime]
         entries:
           type: array
           items:

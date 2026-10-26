@@ -445,7 +445,7 @@ function BestTimesSudoku({
         </span>
         <div className="flex items-center gap-2">
           <Link
-            href="/leaderboard?tab=alltime"
+            href="/leaderboard/sudoku/"
             onClick={(e) => e.stopPropagation()}
             className="text-[11px] text-primary flex items-center gap-0.5 hover:underline"
           >
@@ -525,7 +525,7 @@ function BestTimesMemory({
         </span>
         <div className="flex items-center gap-2">
           <Link
-            href="/leaderboard?tab=memory"
+            href="/leaderboard/memory/"
             onClick={(e) => e.stopPropagation()}
             className="text-[11px] text-purple-600 flex items-center gap-0.5 hover:underline"
           >

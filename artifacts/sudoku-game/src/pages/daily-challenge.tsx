@@ -260,7 +260,7 @@ export default function DailyChallenge() {
 
       <div className="bg-card border border-border rounded-xl px-4 py-3 text-center">
         <button
-          onClick={() => setLocation('/leaderboard')}
+          onClick={() => setLocation('/leaderboard/sudoku/')}
           className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
         >
           View all-time leaderboard →

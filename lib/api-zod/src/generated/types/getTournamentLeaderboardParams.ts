@@ -12,7 +12,7 @@ export type GetTournamentLeaderboardParams = {
 type?: GetTournamentLeaderboardType;
 gridSize?: GetTournamentLeaderboardGridSize;
 /**
- * Period string e.g. 2026-W23 or 2026-06 (defaults to current)
+ * Period string e.g. 2026-W23 or 2026-06 (defaults to current; ignored for all-time)
  */
 period?: string;
 };

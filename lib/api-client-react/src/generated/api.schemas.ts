@@ -309,6 +309,7 @@ export type TournamentLeaderboardType = typeof TournamentLeaderboardType[keyof t
 export const TournamentLeaderboardType = {
   weekly: 'weekly',
   monthly: 'monthly',
+  alltime: 'alltime',
 } as const;
 
 export interface TournamentLeaderboard {
@@ -493,7 +494,7 @@ export type GetTournamentLeaderboardParams = {
 type?: GetTournamentLeaderboardType;
 gridSize?: GetTournamentLeaderboardGridSize;
 /**
- * Period string e.g. 2026-W23 or 2026-06 (defaults to current)
+ * Period string e.g. 2026-W23 or 2026-06 (defaults to current; ignored for all-time)
  */
 period?: string;
 };
@@ -504,6 +505,7 @@ export type GetTournamentLeaderboardType = typeof GetTournamentLeaderboardType[k
 export const GetTournamentLeaderboardType = {
   weekly: 'weekly',
   monthly: 'monthly',
+  alltime: 'alltime',
 } as const;
 
 export type GetTournamentLeaderboardGridSize = typeof GetTournamentLeaderboardGridSize[keyof typeof GetTournamentLeaderboardGridSize];
