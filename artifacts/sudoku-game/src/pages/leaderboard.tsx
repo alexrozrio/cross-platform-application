@@ -1227,7 +1227,7 @@ function LeaderboardScopeLinks({
           aria-current={active === id ? "page" : undefined}
           className={`flex min-w-0 items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-center text-xs font-semibold transition-colors sm:gap-1.5 sm:rounded-xl sm:px-2 sm:py-2.5 sm:text-sm ${
             active === id
-              ? "border-primary/30 bg-primary/8 text-primary"
+              ? "border-primary bg-primary text-primary-foreground shadow-sm"
               : "border-border bg-card text-muted-foreground hover:bg-muted/50 hover:text-foreground"
           }`}
         >
