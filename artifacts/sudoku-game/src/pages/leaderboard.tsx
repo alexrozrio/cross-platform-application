@@ -556,7 +556,9 @@ function BreakdownPanel({
       customFetch<BreakdownData>(
         `/api/tournaments/breakdown?profileId=${profileId}&type=${type}&period=${encodeURIComponent(period)}`,
       ),
-    staleTime: 30_000,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchInterval: type === "alltime" ? 60_000 : 30_000,
   });
 
   if (isLoading) {

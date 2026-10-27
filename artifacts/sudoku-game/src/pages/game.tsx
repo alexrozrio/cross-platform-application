@@ -975,6 +975,8 @@ export default function Game({ id }: { id: string }) {
                 });
                 queryClient.invalidateQueries({ queryKey: [`/api/achievements/${profileId}`] });
                 queryClient.invalidateQueries({ queryKey: [`/api/stats/${profileId}`] });
+                queryClient.invalidateQueries({ queryKey: ["/api/tournaments/leaderboard"] });
+                queryClient.invalidateQueries({ queryKey: ["tournament-breakdown"] });
               }
 
               return true;
@@ -1011,6 +1013,8 @@ export default function Game({ id }: { id: string }) {
                 });
                 queryClient.invalidateQueries({ queryKey: [`/api/achievements/${profileId}`] });
                 queryClient.invalidateQueries({ queryKey: [`/api/stats/${profileId}`] });
+                queryClient.invalidateQueries({ queryKey: ["/api/tournaments/leaderboard"] });
+                queryClient.invalidateQueries({ queryKey: ["tournament-breakdown"] });
               }
 
               const pts = data.points ?? null;

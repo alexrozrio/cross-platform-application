@@ -664,6 +664,8 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
             queryKey: [`/api/profiles/${profileId}`],
             type: 'active',
           });
+          queryClient.invalidateQueries({ queryKey: ["/api/tournaments/leaderboard"] });
+          queryClient.invalidateQueries({ queryKey: ["tournament-breakdown"] });
         }
       } catch {
         setWinResult({ points: 0, xpEarned: 0, gemsEarned: 0 });
