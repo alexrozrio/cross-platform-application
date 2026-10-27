@@ -297,6 +297,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             key={item.href}
             href={item.href}
             title={item.tooltip}
+            onClick={() => window.requestAnimationFrame(() => window.scrollTo(0, 0))}
             className="flex flex-col items-center gap-0.5 text-xs min-w-[48px] py-1"
           >
             <div className={`relative p-1.5 rounded-xl transition-colors ${isActive(item.href) ? `${item.activeBgCls} ${item.activeIconCls}` : item.iconCls}`}>
