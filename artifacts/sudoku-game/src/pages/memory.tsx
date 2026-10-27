@@ -44,6 +44,12 @@ interface WinResult {
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const MAX_TIPS = 2;
+const MEMORY_COMPLETION_REWARDS: Record<GridSize, { xp: number; gems: number }> = {
+  2: { xp: 1, gems: 1 },
+  4: { xp: 1, gems: 2 },
+  6: { xp: 2, gems: 3 },
+  8: { xp: 3, gems: 3 },
+};
 
 const GRID_OPTIONS: { size: GridSize; label: string; pairs: number; desc: string }[] = [
   { size: 2, label: '2×4', pairs: 4,  desc: 'Beginner · 4 pairs' },
@@ -736,7 +742,6 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
   if (phase === 'setup') {
     const sizeEmoji: Record<number, string> = { 2: '🟢', 4: '🔵', 6: '🟠', 8: '🔴' };
     const sizeDiff: Record<number, string> = { 2: 'Beginner', 4: 'Easy', 6: 'Medium', 8: 'Hard' };
-    const sizeReward: Record<number, string> = { 2: '1 💎', 4: '1 💎', 6: '2 💎', 8: '3 💎' };
 
     return (
       <div className="max-w-lg mx-auto w-full animate-in fade-in duration-500 flex flex-col gap-4 sm:gap-6 pb-20 sm:pb-8">
@@ -819,7 +824,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
                 <span className="text-xl leading-none">{sizeEmoji[opt.size]}</span>
                 <span className="text-2xl font-black text-primary leading-none tabular-nums">{opt.label}</span>
                 <span className="text-xs font-semibold text-foreground/80">{sizeDiff[opt.size]}</span>
-                <span className="text-[10px] text-muted-foreground">{opt.pairs} pairs · {sizeReward[opt.size]}</span>
+                <span className="text-[10px] text-muted-foreground">{opt.pairs} pairs · {MEMORY_COMPLETION_REWARDS[opt.size].gems} 💎</span>
               </button>
             ))}
           </div>
@@ -842,7 +847,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
                   <div>
                     <p className="font-semibold">{opt.desc}</p>
                     <p className="text-xs text-muted-foreground">
-                      {opt.size === 2 || opt.size === 4 ? '+1 XP · 1 💎' : opt.size === 6 ? '+2 XP · 2 💎' : '+3 XP · 3 💎'}
+                      +{MEMORY_COMPLETION_REWARDS[opt.size].xp} XP · {MEMORY_COMPLETION_REWARDS[opt.size].gems} 💎
                     </p>
                   </div>
                 </div>

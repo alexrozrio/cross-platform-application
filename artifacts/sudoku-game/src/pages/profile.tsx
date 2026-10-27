@@ -774,7 +774,7 @@ export default function Profile() {
                       <ul className="space-y-2 text-muted-foreground">
                         <li className="flex items-start gap-2">
                           <span className="text-base leading-none mt-0.5">🧩</span>
-                          <span><span className="font-medium text-foreground">Complete a Sudoku</span> — earn gems based on difficulty. <span className="font-medium text-foreground">Complete Memory Match</span> — earn 1💎 per 5,000 points (at least 1💎 per game).</span>
+                          <span><span className="font-medium text-foreground">Complete a Sudoku</span> — earn gems based on difficulty. <span className="font-medium text-foreground">Complete Memory Match</span> — earn 1💎 for 2×4, 2💎 for 4×4, and 3💎 for 8×4 or 8×8.</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-base leading-none mt-0.5">🔥</span>
@@ -786,7 +786,7 @@ export default function Profile() {
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-base leading-none mt-0.5">📅</span>
-                          <span><span className="font-medium text-foreground">Daily Memory challenge</span> — 1💎 for completing it, 3💎 if you set a new record.</span>
+                          <span><span className="font-medium text-foreground">Memory challenges</span> — earn 1💎 for the daily challenge and 3💎 for the weekly challenge.</span>
                         </li>
                       </ul>
                     </PopoverContent>

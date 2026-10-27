@@ -3,6 +3,7 @@ import { eq, desc, and, gte, lt, asc } from "drizzle-orm";
 import { db, memoryGamesTable, memoryChallengeCompletionsTable, profilesTable } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { resolveDuelForMemoryGame } from "./memory-duels";
+import { calcMemoryGems } from "../utils/memory-gems";
 
 const router: IRouter = Router();
 
@@ -34,13 +35,6 @@ function calcMemoryPoints(gridSize: number, elapsedSeconds: number, flips: numbe
   const flipPenalty = Math.max(0.5, 1 - 0.02 * extraFlips);
   const tipPenalty = Math.max(0.6, 1 - 0.15 * tipsUsed);
   return Math.max(10, Math.round(base * (1 + timeBonus) * flipPenalty * tipPenalty));
-}
-
-/** Gems per memory game: 1 for beginner/easy (2×4, 4×4), 2 for medium (6×6), 3 for hard (8×8) */
-function calcMemoryGems(gridSize: number): number {
-  if (gridSize <= 4) return 1;
-  if (gridSize === 6) return 2;
-  return 3;
 }
 
 // ─── POST /memory-games  (create) ────────────────────────────────────────────
