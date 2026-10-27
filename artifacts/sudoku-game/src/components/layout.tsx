@@ -99,7 +99,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       iconCls: "text-rose-400", activeIconCls: "text-rose-600 dark:text-rose-400", activeBgCls: "bg-rose-100 dark:bg-rose-900/40" },
     { href: "/themes", label: "Themes", shortLabel: "Themes", icon: Palette, badge: 0, tooltip: "Unlock new board themes and fonts with your gems",
       iconCls: "text-violet-400", activeIconCls: "text-violet-600 dark:text-violet-400", activeBgCls: "bg-violet-100 dark:bg-violet-900/40" },
-    { href: "/profile", label: isSignedIn ? (replitUser?.firstName || "Account") : "Profile", shortLabel: isSignedIn ? "Account" : "Profile", icon: User, badge: 0, tooltip: "Your profile, XP rank, badges, and game settings",
+    { href: "/profile", label: isSignedIn ? (profile?.username || replitUser?.firstName || "Account") : "Profile", shortLabel: isSignedIn ? "Account" : "Profile", icon: User, badge: 0, tooltip: "Your profile, XP rank, badges, and game settings",
       iconCls: "text-emerald-400", activeIconCls: "text-emerald-600 dark:text-emerald-400", activeBgCls: "bg-emerald-100 dark:bg-emerald-900/40" },
   ];
 

@@ -12,6 +12,7 @@ import {
   UpdateProfileResponse,
 } from "@workspace/api-zod";
 import { generateGuestUsername } from "../utils/guest-username";
+import { buildExistingProfileSyncUpdates } from "../utils/profile-sync";
 
 const router: IRouter = Router();
 
@@ -40,11 +41,11 @@ router.post("/profiles/sync", async (req, res): Promise<void> => {
   }
 
   if (profile) {
-    // Update username/avatar if they changed
-    const updates: Record<string, unknown> = {};
-    if (replitUserId && profile.replitUserId !== replitUserId) updates.replitUserId = replitUserId;
-    if (username && profile.username !== username) updates.username = username;
-    if (avatar && profile.avatar !== avatar) updates.avatar = avatar;
+    const updates = buildExistingProfileSyncUpdates(profile, {
+      replitUserId,
+      username,
+      avatar,
+    });
 
     if (Object.keys(updates).length > 0) {
       [profile] = await db.update(profilesTable).set(updates).where(eq(profilesTable.id, profile.id)).returning();
