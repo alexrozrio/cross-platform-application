@@ -468,14 +468,15 @@ function AlltimeBoard({ myProfileId }: { myProfileId?: number }) {
                 return (
                   <div key={`${entry.profileId}-${entry.rank}`}>
                     <button
+                      data-testid={`leaderboard-sudoku-row-${entry.profileId}`}
                       onClick={() => setExpandedId((p) => p === entry.profileId ? null : entry.profileId)}
-                      className={`w-full flex items-center justify-between px-5 py-4 transition-colors text-left ${isMe ? "bg-primary/8 hover:bg-primary/12" : "hover:bg-muted/40"} ${isExpanded ? "bg-muted/30" : ""}`}
+                      className={`w-full flex items-center justify-between gap-2 px-3 sm:px-5 py-4 transition-colors text-left ${isMe ? "bg-primary/8 hover:bg-primary/12" : "hover:bg-muted/40"} ${isExpanded ? "bg-muted/30" : ""}`}
                     >
-                      <div className="flex items-center gap-4">
+                      <div className="min-w-0 flex-1 flex items-center gap-2 sm:gap-4">
                         <RankBadge rank={entry.rank} />
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <p className={`font-semibold truncate ${isMe ? "text-primary" : ""}`}>
+                        <div className="min-w-0 flex-1">
+                          <div className="min-w-0 flex items-center gap-2 flex-wrap">
+                            <p title={entry.username} className={`min-w-0 flex-1 font-semibold truncate ${isMe ? "text-primary" : ""}`}>
                               {entry.username}
                             </p>
                             {isMe && (
@@ -488,9 +489,9 @@ function AlltimeBoard({ myProfileId }: { myProfileId?: number }) {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 shrink-0 ml-4">
+                      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 ml-1 sm:ml-4">
                         <div className="text-right">
-                          <p className="font-black text-xl tabular-nums text-primary">
+                          <p data-testid={`leaderboard-sudoku-score-${entry.profileId}`} className="font-black text-lg sm:text-xl tabular-nums whitespace-nowrap text-primary">
                             {((entry as any).points as number ?? 0).toLocaleString()}
                           </p>
                           <p className="text-xs text-muted-foreground mt-0.5">pts</p>
@@ -821,15 +822,17 @@ function TournamentBoard({
                 return (
                   <div key={entry.profileId}>
                     <button
+                      data-testid={`leaderboard-tournament-row-${type}-${entry.profileId}`}
                       onClick={() => toggleRow(entry.profileId)}
-                      className={`w-full flex items-center justify-between px-5 py-4 transition-colors text-left ${isMe ? "bg-primary/8 hover:bg-primary/12" : "hover:bg-muted/40"} ${isExpanded ? "bg-muted/30" : ""}`}
+                      className={`w-full flex items-center justify-between gap-2 px-3 sm:px-5 py-4 transition-colors text-left ${isMe ? "bg-primary/8 hover:bg-primary/12" : "hover:bg-muted/40"} ${isExpanded ? "bg-muted/30" : ""}`}
                     >
-                      <div className="flex items-center gap-4">
+                      <div className="min-w-0 flex-1 flex items-center gap-2 sm:gap-4">
                         <RankBadge rank={entry.rank} />
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
+                        <div className="min-w-0 flex-1">
+                          <div className="min-w-0 flex items-center gap-2 flex-wrap">
                             <p
-                              className={`font-semibold truncate ${isMe ? "text-primary" : ""}`}
+                              title={entry.username}
+                              className={`min-w-0 flex-1 font-semibold truncate ${isMe ? "text-primary" : ""}`}
                             >
                               {entry.username}
                             </p>
@@ -901,9 +904,9 @@ function TournamentBoard({
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 shrink-0 ml-4">
+                      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 ml-1 sm:ml-4">
                         <div className="text-right">
-                          <p className="text-xl font-black text-primary tabular-nums">
+                          <p data-testid={`leaderboard-tournament-score-${type}-${entry.profileId}`} className="text-lg sm:text-xl font-black text-primary tabular-nums whitespace-nowrap">
                             {entry.totalPoints.toLocaleString()}
                           </p>
                           <p className="text-xs text-muted-foreground mt-0.5">
@@ -1161,14 +1164,15 @@ function MemoryBoard({ myProfileId }: { myProfileId?: number }) {
                 return (
                   <div key={`${entry.profileId}-${i}`}>
                     <button
+                      data-testid={`leaderboard-memory-row-${entry.profileId}`}
                       onClick={() => setExpandedId((p) => p === entry.profileId ? null : entry.profileId)}
-                      className={`w-full flex items-center justify-between px-5 py-4 transition-colors text-left ${isMe ? "bg-primary/8 hover:bg-primary/12" : "hover:bg-muted/40"} ${isExpanded ? "bg-muted/30" : ""}`}
+                      className={`w-full flex items-center justify-between gap-2 px-3 sm:px-5 py-4 transition-colors text-left ${isMe ? "bg-primary/8 hover:bg-primary/12" : "hover:bg-muted/40"} ${isExpanded ? "bg-muted/30" : ""}`}
                     >
-                      <div className="flex items-center gap-4">
+                      <div className="min-w-0 flex-1 flex items-center gap-2 sm:gap-4">
                         <RankBadge rank={rank} />
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <p className={`font-semibold truncate ${isMe ? "text-primary" : ""}`}>
+                        <div className="min-w-0 flex-1">
+                          <div className="min-w-0 flex items-center gap-2 flex-wrap">
+                            <p title={entry.username} className={`min-w-0 flex-1 font-semibold truncate ${isMe ? "text-primary" : ""}`}>
                               {entry.username}
                             </p>
                             {isMe && (
@@ -1181,9 +1185,9 @@ function MemoryBoard({ myProfileId }: { myProfileId?: number }) {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 shrink-0 ml-4">
+                      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 ml-1 sm:ml-4">
                         <div className="text-right">
-                          <p className="font-black text-xl tabular-nums text-violet-600">
+                          <p data-testid={`leaderboard-memory-score-${entry.profileId}`} className="font-black text-lg sm:text-xl tabular-nums whitespace-nowrap text-violet-600">
                             {entry.points.toLocaleString()}
                           </p>
                           <p className="text-xs text-muted-foreground mt-0.5">pts</p>
