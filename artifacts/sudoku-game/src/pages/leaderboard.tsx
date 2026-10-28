@@ -698,7 +698,7 @@ function TournamentBoard({
     },
   });
 
-  // Detect rank changes across refetches and show toast + delta badge
+  // Detect rank changes across refetches and show a persistent event + delta badge
   useEffect(() => {
     if (!data?.entries || !myProfileId) return;
     const myEntry = data.entries.find((e) => e.profileId === myProfileId);
@@ -740,8 +740,6 @@ function TournamentBoard({
         });
       }
 
-      // Clear the visual delta badge after 12 s
-      setTimeout(() => setRankDelta(null), 12000);
     }
 
     prevRankRef.current = newRank;

@@ -112,7 +112,6 @@ const CONFIGS: Record<EventModalPayload["type"], ModalConfig> = {
     primaryLabel: "View Leaderboard",
     primaryHref: () => "/leaderboard",
     secondaryLabel: "Dismiss",
-    autoDismiss: 7000,
   },
   tournament_rank_down: {
     icon: <TrendingDown className="w-10 h-10 text-white" />,
@@ -129,7 +128,6 @@ const CONFIGS: Record<EventModalPayload["type"], ModalConfig> = {
     primaryLabel: "View Leaderboard",
     primaryHref: () => "/leaderboard",
     secondaryLabel: "Dismiss",
-    autoDismiss: 6000,
   },
   memory_challenge_bonus: {
     icon: <Star className="w-10 h-10 text-white" />,
