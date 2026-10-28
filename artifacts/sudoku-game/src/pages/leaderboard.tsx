@@ -686,10 +686,19 @@ function TournamentBoard({
   myProfileId?: number;
 }) {
   const [expandedId, setExpandedId] = useState<number | null>(null);
-  const [rankDelta, setRankDelta] = useState<number | null>(null);
+  const [rankDeltas, setRankDeltas] = useState<Record<"weekly" | "monthly", number | null>>({
+    weekly: null,
+    monthly: null,
+  });
 
-  const prevRankRef = useRef<number | null>(null);
-  const isFirstFetchRef = useRef(true);
+  // Keep each tournament period's baseline separate. The board stays mounted
+  // while its type changes, so a single previous-rank ref compares weekly rank
+  // against monthly rank and falsely reports a change whenever tabs switch.
+  const prevRanksRef = useRef<Record<"weekly" | "monthly", number | null | undefined>>({
+    weekly: undefined,
+    monthly: undefined,
+  });
+  const trackedProfileIdRef = useRef(myProfileId);
 
   const { data, isLoading } = useGetTournamentLeaderboard({ type }, {
     query: {
@@ -700,29 +709,32 @@ function TournamentBoard({
 
   // Detect rank changes across refetches and show a persistent event + delta badge
   useEffect(() => {
+    if (trackedProfileIdRef.current !== myProfileId) {
+      trackedProfileIdRef.current = myProfileId;
+      prevRanksRef.current = { weekly: undefined, monthly: undefined };
+      setRankDeltas({ weekly: null, monthly: null });
+    }
+
     if (!data?.entries || !myProfileId) return;
     const myEntry = data.entries.find((e) => e.profileId === myProfileId);
     const newRank = myEntry?.rank ?? null;
 
-    if (isFirstFetchRef.current) {
-      // First load — just record, no notification
-      prevRankRef.current = newRank;
-      isFirstFetchRef.current = false;
-      return;
-    }
+    if (type === "alltime") return;
 
-    if (type === "alltime") {
-      prevRankRef.current = newRank;
+    const previousRank = prevRanksRef.current[type];
+    if (previousRank === undefined) {
+      // First load for this period — establish its own baseline without alerting.
+      prevRanksRef.current[type] = newRank;
       return;
     }
 
     if (
       newRank !== null &&
-      prevRankRef.current !== null &&
-      newRank !== prevRankRef.current
+      previousRank !== null &&
+      newRank !== previousRank
     ) {
-      const delta = prevRankRef.current - newRank; // positive = moved up
-      setRankDelta(delta);
+      const delta = previousRank - newRank; // positive = moved up
+      setRankDeltas((previous) => ({ ...previous, [type]: delta }));
 
       if (delta > 0) {
         showEventModal({
@@ -742,9 +754,10 @@ function TournamentBoard({
 
     }
 
-    prevRankRef.current = newRank;
+    prevRanksRef.current[type] = newRank;
   }, [data, myProfileId, type]);
 
+  const rankDelta = type === "alltime" ? null : rankDeltas[type];
   const Icon = type === "weekly" ? CalendarDays : type === "monthly" ? Calendar : Zap;
   const label = type === "weekly"
     ? "Weekly Tournament"
