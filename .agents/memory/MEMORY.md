@@ -18,6 +18,7 @@
 - [Completion sharing overlays](completion-sharing-overlays.md) — keep achievement unlocks modal; other celebrations stay non-blocking while the result is visible.
 - [Capacitor Node compatibility](capacitor-node-compatibility.md) — keep Capacitor packages on a major version supported by the workspace Node runtime.
 - [Google Play app updates](google-play-app-updates.md) — the update prompt must ship before it can notify users; verify future versions through a Play test track.
+- [Mobile client backward compatibility](mobile-client-backward-compatibility.md) — treat released phone builds as long-lived clients; preserve API and database contracts during rollouts.
 - [Guest profile transfer](guest-profile-transfer.md) — restore cross-storage guest identities with an owner-verified, one-use code; never expose profile IDs as restore credentials.
 - [Avoid Replit-specific app dependencies](avoid-replit-app-dependencies.md) — keep the Sudoku app's runtime/build dependencies platform-neutral.
 - [Neon idle compute](neon-idle-compute.md) — keep expiration and badge maintenance request-driven so idle compute can suspend without changing the seven-day cutoff.
