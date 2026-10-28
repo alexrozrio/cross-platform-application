@@ -10,3 +10,4 @@ export * from "./memory-games";
 export * from "./memory-challenge-completions";
 export * from "./memory-duels";
 export * from "./guest-profile-transfer-codes";
+export * from "./jigsaw";

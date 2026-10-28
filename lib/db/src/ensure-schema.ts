@@ -42,6 +42,47 @@ export async function ensureDatabaseSchema(): Promise<void> {
     )`,
     `CREATE INDEX IF NOT EXISTS guest_profile_transfer_codes_profile_id_idx
       ON guest_profile_transfer_codes(profile_id)`,
+    `CREATE TABLE IF NOT EXISTS jigsaw_games (
+      id serial PRIMARY KEY,
+      profile_id integer REFERENCES profiles(id),
+      grid_size integer NOT NULL,
+      level integer NOT NULL DEFAULT 1,
+      image_key integer NOT NULL DEFAULT 1,
+      elapsed_seconds integer NOT NULL DEFAULT 0,
+      moves integer NOT NULL DEFAULT 0,
+      daily_date text,
+      status text NOT NULL DEFAULT 'active',
+      points integer,
+      xp_earned integer,
+      gems_earned integer,
+      completed_at timestamptz,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )`,
+    `CREATE INDEX IF NOT EXISTS jigsaw_games_status_completed_at_idx
+      ON jigsaw_games(status, completed_at)`,
+    `CREATE INDEX IF NOT EXISTS jigsaw_games_profile_id_idx
+      ON jigsaw_games(profile_id)`,
+    `CREATE INDEX IF NOT EXISTS jigsaw_games_daily_date_idx
+      ON jigsaw_games(daily_date)`,
+    `CREATE TABLE IF NOT EXISTS jigsaw_challenges (
+      id serial PRIMARY KEY,
+      challenger_id integer NOT NULL REFERENCES profiles(id),
+      challenged_id integer REFERENCES profiles(id),
+      share_token text NOT NULL UNIQUE,
+      grid_size integer NOT NULL,
+      level integer NOT NULL DEFAULT 1,
+      image_key integer NOT NULL DEFAULT 1,
+      status text NOT NULL DEFAULT 'pending',
+      challenger_game_id integer REFERENCES jigsaw_games(id),
+      challenged_game_id integer REFERENCES jigsaw_games(id),
+      winner_id integer REFERENCES profiles(id),
+      created_at timestamptz NOT NULL DEFAULT now(),
+      expires_at timestamptz NOT NULL
+    )`,
+    `CREATE INDEX IF NOT EXISTS jigsaw_challenges_challenger_id_idx
+      ON jigsaw_challenges(challenger_id)`,
+    `CREATE INDEX IF NOT EXISTS jigsaw_challenges_challenged_id_idx
+      ON jigsaw_challenges(challenged_id)`,
   ];
 
   for (const statement of statements) {
