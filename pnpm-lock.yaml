@@ -439,6 +439,9 @@ importers:
       '@capacitor/share':
         specifier: ^7.0.4
         version: 7.0.4(@capacitor/core@7.6.9)
+      '@capawesome/capacitor-app-update':
+        specifier: ^7.2.0
+        version: 7.2.0(@capacitor/core@7.6.9)
     devDependencies:
       '@capacitor/cli':
         specifier: ^7.6.9
@@ -808,6 +811,11 @@ packages:
 
   '@capacitor/synapse@1.0.4':
     resolution: {integrity: sha512-/C1FUo8/OkKuAT4nCIu/34ny9siNHr9qtFezu4kxm6GY1wNFxrCFWjfYx5C1tUhVGz3fxBABegupkpjXvjCHrw==}
+
+  '@capawesome/capacitor-app-update@7.2.0':
+    resolution: {integrity: sha512-fwPxR9tV5qecn3FSgwS5wBwlHDV9JND5dnY1iqIYnqRG2s/Oq0h32u4hV6+/zpDARJFMZycb3pddEfwLwhglEg==}
+    peerDependencies:
+      '@capacitor/core': '>=7.0.0'
 
   '@commander-js/extra-typings@15.0.0':
     resolution: {integrity: sha512-yeJlba62xqmkgELUsn7356MEnzLLu/fw2x4lofFqGnXh6YysRdEs2BaLeLtg1+KU0AXvMeqQvTTp+3hBEBK+EA==}
@@ -4098,6 +4106,10 @@ snapshots:
       '@capacitor/core': 7.6.9
 
   '@capacitor/synapse@1.0.4': {}
+
+  '@capawesome/capacitor-app-update@7.2.0(@capacitor/core@7.6.9)':
+    dependencies:
+      '@capacitor/core': 7.6.9
 
   '@commander-js/extra-typings@15.0.0(commander@15.0.0)':
     dependencies:

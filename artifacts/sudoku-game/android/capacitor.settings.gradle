@@ -13,3 +13,6 @@ project(':capacitor-filesystem').projectDir = new File('../../../node_modules/.p
 
 include ':capacitor-share'
 project(':capacitor-share').projectDir = new File('../../../node_modules/.pnpm/@capacitor+share@7.0.4_@capacitor+core@7.6.9/node_modules/@capacitor/share/android')
+
+include ':capawesome-capacitor-app-update'
+project(':capawesome-capacitor-app-update').projectDir = new File('../../../node_modules/.pnpm/@capawesome+capacitor-app-update@7.2.0_@capacitor+core@7.6.9/node_modules/@capawesome/capacitor-app-update/android')

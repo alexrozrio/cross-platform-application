@@ -13,6 +13,7 @@ import { Layout } from "@/components/layout";
 import { PageLoader } from "@/components/page-loader";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ConsentManager } from "@/components/consent-manager";
+import { AndroidAppUpdatePrompt } from "@/components/android-app-update-prompt";
 import { modeFromQuery } from "@/lib/sudoku-routes";
 import { appPathFromAppUrl, nativeAuthCallbackFromAppUrl } from "@/lib/app-links";
 import {
@@ -227,6 +228,7 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <ConsentManager />
+          <AndroidAppUpdatePrompt />
           <Router />
           <Toaster />
           <SonnerToaster position="top-right" richColors closeButton />
