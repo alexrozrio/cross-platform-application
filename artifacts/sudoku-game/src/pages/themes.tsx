@@ -898,10 +898,10 @@ export default function Themes() {
           </p>
         </div>
 
-        {/* Mobile carousel — 2 per page */}
+        {/* Mobile carousel — 4 per page in a 2×2 grid */}
         <MobileCarousel
           items={FONT_THEMES}
-          perPage={2}
+          perPage={4}
           cols={2}
           renderItem={(item) => {
             const f = item as (typeof FONT_THEMES)[0];
