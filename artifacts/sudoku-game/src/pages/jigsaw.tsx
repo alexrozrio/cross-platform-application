@@ -5,11 +5,17 @@ import { ArrowLeft, Check, Eye, EyeOff, Grip, Image as ImageIcon, Move, RotateCc
 import { useAuth } from "@/hooks/use-auth";
 import { useImageTheme } from "@/hooks/use-image-theme";
 import { useThemeImageSrc } from "@/components/theme-icons";
+import { usePageMeta } from "@/components/page-meta";
 import { getTheme } from "@/lib/themes";
 import { useGetProfile, customFetch } from "@workspace/api-client-react";
 import { appShareUrlForPath } from "@/lib/app-links";
 import { shareOrDownloadShareCard } from "@/lib/share-card";
 import { ACHIEVEMENT_COMPLETION_EVENT } from "@/lib/achievement-events";
+import {
+  JIGSAW_SESSION_STORAGE_KEY,
+  parseSavedJigsawSession,
+  type SavedJigsawSession,
+} from "@/lib/jigsaw-session";
 import { toast } from "sonner";
 
 type GridSize = 2 | 3 | 4 | 5;
@@ -63,7 +69,7 @@ function PuzzlePiece({ themeId, imageKey, piece, gridSize, className = "" }: {
         backgroundImage: src ? `url("${src}")` : undefined,
         backgroundSize: `${gridSize * 100}% ${gridSize * 100}%`,
         backgroundPosition: `${(col / (gridSize - 1)) * 100}% ${(row / (gridSize - 1)) * 100}%`,
-        backgroundColor: "#d9e5df",
+         backgroundColor: "hsl(var(--muted))",
       }}
     />
   );
@@ -73,7 +79,7 @@ function ReferenceImage({ themeId, imageKey, className = "" }: { themeId: string
   const src = useThemeImageSrc(themeId, imageKey);
   return src
     ? <img src={src} alt="Puzzle reference" className={className} />
-    : <div aria-label="Puzzle artwork loading" className={`${className} bg-[linear-gradient(135deg,#d9e5df,#c2d7ce)]`} />;
+    : <div aria-label="Puzzle artwork loading" className={`${className} bg-muted`} />;
 }
 
 function Tile({ piece, index, gridSize, themeId, imageKey, selected, onClick, onDragStart, onDragEnd, label }: {
@@ -90,10 +96,10 @@ function Tile({ piece, index, gridSize, themeId, imageKey, selected, onClick, on
       aria-label={label}
       aria-pressed={selected}
       data-testid={`tile-piece-${piece}`}
-      className={`group relative aspect-square overflow-hidden rounded-lg border-2 bg-[#f7f5ed] shadow-sm transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#d88b52]/35 ${selected ? "border-[#c66c3b] ring-2 ring-[#c66c3b]/25" : "border-[#e0dfd3]"}`}
+      className={`group relative aspect-square overflow-hidden rounded-lg border-2 bg-background shadow-sm transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring ${selected ? "border-primary ring-2 ring-primary/25" : "border-border"}`}
     >
       <PuzzlePiece themeId={themeId} imageKey={imageKey} piece={piece} gridSize={gridSize} />
-      <span className="absolute bottom-1 right-1 grid h-5 w-5 place-items-center rounded-full bg-[#223d3a]/75 text-[10px] font-semibold text-white">{index + 1}</span>
+      <span className="absolute bottom-1 right-1 grid h-5 w-5 place-items-center rounded-full bg-foreground/75 text-[10px] font-semibold text-background">{index + 1}</span>
     </button>
   );
 }
@@ -102,6 +108,11 @@ export default function JigsawPage() {
   const [, setLocation] = useLocation();
   const search = useSearch();
   const params = useMemo(() => new URLSearchParams(search), [search]);
+  usePageMeta({
+    title: "Play Jigsaw Puzzle Online Free | Play Brain Games . Online",
+    description: "Rebuild picture puzzles, choose your board size, and play daily or friend challenges.",
+    path: "/jigsaw",
+  });
   const { profileId } = useAuth();
   const { themeId } = useImageTheme();
   const { data: profile } = useGetProfile(profileId as number);
@@ -136,10 +147,15 @@ export default function JigsawPage() {
   const [showReference, setShowReference] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [dragged, setDragged] = useState<{ piece: number; from: "tray" | "board"; slot?: number } | null>(null);
+  const [savedSession, setSavedSession] = useState<SavedJigsawSession | null>(null);
+  const [sessionThemeId, setSessionThemeId] = useState<string | null>(null);
   const startedAt = useRef<number | null>(null);
   const completedRef = useRef(false);
+  const restoreCheckedRef = useRef(false);
+  const autoStartedGameIdRef = useRef<number | null>(null);
   const gameIdRef = useRef<number | null>(null);
   const pendingCompletion = useRef<{ elapsedSeconds: number; moves: number } | null>(null);
+  const puzzleThemeId = sessionThemeId ?? themeId;
   const tileCount = config.gridSize * config.gridSize;
   const isSolved = board.length > 0 && board.every((piece, index) => piece === index);
 
@@ -184,7 +200,10 @@ export default function JigsawPage() {
     }).catch(() => undefined);
   }, [profileId, queryClient]);
 
-  const startGame = useCallback((linkedGameId?: number) => {
+  const startGame = useCallback((
+    linkedGameId?: number,
+    linkedChallenge?: { challengeId: number; shareToken: string },
+  ) => {
     const pieces = shuffledTiles(config.gridSize * config.gridSize);
     setBoard(Array(config.gridSize * config.gridSize).fill(null));
     setTray(pieces);
@@ -194,10 +213,29 @@ export default function JigsawPage() {
     setResult(null);
     gameIdRef.current = linkedGameId ?? (Number.isInteger(requestedGameId) && requestedGameId > 0 ? requestedGameId : null);
     pendingCompletion.current = null;
+    if (linkedChallenge) {
+      setChallengeId(linkedChallenge.challengeId);
+      setShareToken(linkedChallenge.shareToken);
+    }
     setShowReference(config.level === 1);
     completedRef.current = false;
     startedAt.current = Date.now();
+    setSessionThemeId(themeId);
     setPhase("playing");
+
+    const nextParams = new URLSearchParams({
+      gridSize: String(config.gridSize),
+      level: String(config.level),
+      imageKey: String(config.imageKey),
+      play: "1",
+    });
+    if (config.dailyDate) nextParams.set("dailyDate", config.dailyDate);
+    if (gameIdRef.current) nextParams.set("gameId", String(gameIdRef.current));
+    const nextChallengeId = linkedChallenge?.challengeId ?? challengeId;
+    const nextShareToken = linkedChallenge?.shareToken ?? shareToken;
+    if (nextChallengeId !== null) nextParams.set("challengeId", String(nextChallengeId));
+    if (nextShareToken) nextParams.set("shareToken", nextShareToken);
+    setLocation(`/jigsaw?${nextParams.toString()}`);
 
     if (gameIdRef.current) return;
     const body = {
@@ -213,7 +251,117 @@ export default function JigsawPage() {
         if (pendingCompletion.current) submitCompletion(session.id, pendingCompletion.current.elapsedSeconds, pendingCompletion.current.moves);
       })
       .catch(() => undefined);
-  }, [config, profileId, requestedGameId, submitCompletion]);
+  }, [challengeId, config, profileId, requestedGameId, setLocation, shareToken, submitCompletion, themeId]);
+
+  const restoreSession = useCallback((session: SavedJigsawSession) => {
+    setConfig({
+      gridSize: session.gridSize,
+      level: session.level,
+      imageKey: session.imageKey,
+      dailyDate: session.dailyDate,
+    });
+    setBoard(session.board);
+    setTray(session.tray);
+    setSelected(null);
+    setDragged(null);
+    setMoves(session.moves);
+    setElapsed(session.elapsed);
+    setShowReference(session.showReference);
+    setResult(null);
+    setChallengeId(session.challengeId);
+    setShareToken(session.shareToken);
+    setSessionThemeId(session.themeId);
+    setSavedSession(session);
+    gameIdRef.current = session.gameId;
+    pendingCompletion.current = null;
+    completedRef.current = false;
+    startedAt.current = Date.now() - session.elapsed * 1000;
+    const resumeParams = new URLSearchParams({
+      gridSize: String(session.gridSize),
+      level: String(session.level),
+      imageKey: String(session.imageKey),
+      play: "1",
+    });
+    if (session.dailyDate) resumeParams.set("dailyDate", session.dailyDate);
+    if (session.gameId) resumeParams.set("gameId", String(session.gameId));
+    if (session.challengeId !== null) resumeParams.set("challengeId", String(session.challengeId));
+    if (session.shareToken) resumeParams.set("shareToken", session.shareToken);
+    setLocation(`/jigsaw?${resumeParams.toString()}`);
+    setPhase("playing");
+    toast.info("Resuming your Jigsaw puzzle…", { duration: 2500 });
+  }, [setLocation]);
+
+  useEffect(() => {
+    if (restoreCheckedRef.current) return;
+    restoreCheckedRef.current = true;
+
+    let session: SavedJigsawSession | null = null;
+    try {
+      session = parseSavedJigsawSession(localStorage.getItem(JIGSAW_SESSION_STORAGE_KEY));
+      if (!session) localStorage.removeItem(JIGSAW_SESSION_STORAGE_KEY);
+    } catch {
+      session = null;
+    }
+    setSavedSession(session);
+
+    if (Number.isInteger(requestedGameId) && requestedGameId > 0) {
+      if (session?.gameId === requestedGameId) {
+        restoreSession(session);
+      } else {
+        autoStartedGameIdRef.current = requestedGameId;
+        startGame(requestedGameId);
+      }
+      return;
+    }
+
+    if (params.get("dailyDate")) return;
+
+    const requestedSize = Number(params.get("gridSize") ?? params.get("size"));
+    if (session && Number.isInteger(requestedSize) && requestedSize > 0 && requestedSize !== session.gridSize) {
+      try {
+        localStorage.removeItem(JIGSAW_SESSION_STORAGE_KEY);
+      } catch {}
+      setSavedSession(null);
+      return;
+    }
+
+    if (session) restoreSession(session);
+  }, [params, requestedGameId, restoreSession, startGame]);
+
+  useEffect(() => {
+    if (
+      !Number.isInteger(requestedGameId) ||
+      requestedGameId <= 0 ||
+      phase !== "setup" ||
+      autoStartedGameIdRef.current === requestedGameId
+    ) return;
+    autoStartedGameIdRef.current = requestedGameId;
+    startGame(requestedGameId);
+  }, [phase, requestedGameId, startGame]);
+
+  useEffect(() => {
+    if (phase !== "playing" || board.length !== tileCount) return;
+    const session: SavedJigsawSession = {
+      gridSize: config.gridSize,
+      level: config.level,
+      imageKey: config.imageKey,
+      themeId: puzzleThemeId,
+      board,
+      tray,
+      moves,
+      elapsed,
+      showReference,
+      gameId: gameIdRef.current,
+      challengeId,
+      shareToken,
+      dailyDate: config.dailyDate,
+      savedAt: Date.now(),
+    };
+    setSavedSession(session);
+    try {
+      localStorage.setItem(JIGSAW_SESSION_STORAGE_KEY, JSON.stringify(session));
+    } catch {}
+  }, [board, challengeId, config, elapsed, moves, phase, puzzleThemeId, shareToken, showReference, tileCount, tray]);
 
   const createChallengeAndPlay = async () => {
     if (!profileId) {
@@ -256,7 +404,7 @@ export default function JigsawPage() {
           toast.error("The challenge was created, but its link could not be shared.");
         }
       }
-      startGame(created.gameId);
+      startGame(created.gameId, { challengeId: created.challengeId, shareToken: created.shareToken });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not create a Jigsaw challenge.");
     } finally {
@@ -275,6 +423,10 @@ export default function JigsawPage() {
     };
     setResult(offline);
     setPhase("complete");
+    setSavedSession(null);
+    try {
+      localStorage.removeItem(JIGSAW_SESSION_STORAGE_KEY);
+    } catch {}
     if (profileId) {
       window.dispatchEvent(new CustomEvent(ACHIEVEMENT_COMPLETION_EVENT, { detail: { profileId } }));
     }
@@ -354,70 +506,82 @@ export default function JigsawPage() {
     }
   };
 
+  const exitToSetup = () => {
+    setPhase("setup");
+    setSelected(null);
+    setDragged(null);
+    setLocation("/jigsaw");
+  };
+
   if (phase === "setup") {
     return (
-      <main className="mx-auto min-h-[100dvh] max-w-6xl px-4 pb-14 pt-5 text-[#203b38] sm:px-8">
+      <main className="mx-auto min-h-0 w-full min-w-0 max-w-6xl px-3 pb-6 pt-3 text-foreground sm:px-5 sm:pt-5">
         <header className="mb-10 flex items-center justify-between">
-          <Link href="/" className="inline-flex items-center gap-2 rounded-full border border-[#d6ded1] bg-[#f7f5ed] px-4 py-2 text-sm font-semibold text-[#52645d] transition hover:border-[#b3c4b5]" data-testid="link-back-home"><ArrowLeft size={16} /> All games</Link>
-          <div className="text-right"><p className="text-[10px] font-bold uppercase tracking-[.22em] text-[#82918a]">Play Brain Games . Online</p><p className="font-mono text-xs text-[#65766f]">PICTURE STUDIO / 01</p></div>
+          <Link href="/" className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground transition hover:border-primary" data-testid="link-back-home"><ArrowLeft size={16} /> All games</Link>
+          <div className="text-right"><p className="text-[10px] font-bold uppercase tracking-[.22em] text-muted-foreground">Play Brain Games . Online</p><p className="font-mono text-xs text-muted-foreground">JIGSAW PUZZLE</p></div>
         </header>
-        <section className="grid gap-10 lg:grid-cols-[1fr_0.88fr] lg:items-center">
-          <div className="relative">
-            <div className="absolute -left-4 -top-8 h-24 w-24 rounded-full border border-[#d6a16f]/35" />
-            <p className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-[.2em] text-[#bc6d43]"><span className="h-px w-8 bg-[#bc6d43]" /> Jigsaw atelier</p>
-            <h1 className="max-w-xl font-serif text-5xl leading-[.98] tracking-[-.045em] sm:text-7xl">A picture, in<br /><em className="font-normal text-[#c8754b]">pieces.</em></h1>
-            <p className="mt-6 max-w-md text-base leading-7 text-[#62746d]">Choose a scene, set your challenge, then bring every little fragment home.</p>
-            <div className="mt-9 grid grid-cols-2 gap-3 sm:max-w-md">
+        <section className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.88fr)] lg:items-start lg:gap-6">
+          <div className="relative min-w-0 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6">
+            <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[.2em] text-primary"><span className="h-px w-8 bg-primary" /> Picture puzzle</p>
+            <h1 className="max-w-xl font-serif text-4xl font-bold leading-tight tracking-[-.035em] sm:text-5xl">Put the picture<br className="hidden sm:block" /> back together.</h1>
+            <p className="mt-3 max-w-md text-sm leading-6 text-muted-foreground">Choose a scene and board size, then place each piece in its home.</p>
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:max-w-md">
               {availableSizes.map((size) => (
                 <button key={size} type="button" onClick={() => setConfig((old) => ({ ...old, gridSize: size }))} data-testid={`select-grid-${size}`}
-                  className={`rounded-2xl border p-4 text-left transition ${config.gridSize === size ? "border-[#c8754b] bg-[#f4e5d7] shadow-[0_8px_24px_rgba(125,79,51,.08)]" : "border-[#d9dfd4] bg-[#f7f5ed] hover:border-[#b8c9bb]"}`}>
-                  <span className="block font-serif text-3xl">{size}×{size}</span>
-                  <span className="mt-1 block text-xs text-[#76857e]">{size * size} picture pieces</span>
+                  className={`rounded-xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${config.gridSize === size ? "border-primary bg-accent text-accent-foreground shadow-sm" : "border-border bg-background hover:border-primary"}`}>
+                  <span className="block text-2xl font-bold">{size}×{size}</span>
+                  <span className="mt-1 block text-xs text-muted-foreground">{size * size} pieces</span>
                 </button>
               ))}
             </div>
             <div className="mt-8">
-              <p className="mb-3 text-xs font-bold uppercase tracking-[.18em] text-[#82918a]">Choose your pace</p>
+              <p className="mb-3 text-xs font-bold uppercase tracking-[.18em] text-muted-foreground">Choose your pace</p>
               <div className="space-y-2">
                 {LEVELS.map((level) => (
                   <button key={level.value} type="button" onClick={() => setConfig((old) => ({ ...old, level: level.value }))} data-testid={`select-level-${level.value}`}
-                    className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition ${config.level === level.value ? "border-[#c8754b] bg-[#f4e5d7]" : "border-[#d9dfd4] bg-[#f7f5ed] hover:border-[#b8c9bb]"}`}>
-                    <span className={`grid h-7 w-7 place-items-center rounded-full text-xs font-bold ${config.level === level.value ? "bg-[#c8754b] text-white" : "bg-[#e9ece3] text-[#75857d]"}`}>{level.value}</span>
-                    <span className="flex-1"><span className="block text-sm font-semibold">{level.title}</span><span className="block text-xs text-[#7c8982]">{level.copy}</span></span>
-                    {config.level === level.value && <Check size={17} className="text-[#bd6d43]" />}
+                    className={`flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${config.level === level.value ? "border-primary bg-accent text-accent-foreground" : "border-border bg-background hover:border-primary"}`}>
+                    <span className={`grid h-7 w-7 place-items-center rounded-full text-xs font-bold ${config.level === level.value ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{level.value}</span>
+                    <span className="flex-1"><span className="block text-sm font-semibold">{level.title}</span><span className="block text-xs text-muted-foreground">{level.copy}</span></span>
+                    {config.level === level.value && <Check size={17} className="text-primary" />}
                   </button>
                 ))}
               </div>
             </div>
           </div>
-          <div className="rounded-[2rem] border border-[#d5ded2] bg-[#e9eee5] p-4 shadow-[0_24px_70px_rgba(41,68,60,.08)] sm:p-7">
+          <div className="min-w-0 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
             <div className="mb-4 flex items-center justify-between">
-              <div><p className="text-xs font-bold uppercase tracking-[.18em] text-[#82918a]">Your picture</p><p className="mt-1 font-serif text-2xl">{themeId} collection</p></div>
-              <ImageIcon className="text-[#bc754d]" size={21} />
+              <div><p className="text-xs font-bold uppercase tracking-[.18em] text-muted-foreground">Your picture</p><p className="mt-1 font-serif text-2xl">{themeId} collection</p></div>
+              <ImageIcon className="text-primary" size={21} />
             </div>
-            <div className="relative aspect-square overflow-hidden rounded-[1.4rem] border-[7px] border-[#f7f5ed] bg-[#d1dfd5] shadow-inner">
+            <div className="relative aspect-square overflow-hidden rounded-xl border-4 border-background bg-muted shadow-inner">
               <ReferenceImage themeId={themeId} imageKey={config.imageKey} className="h-full w-full object-cover" />
               <div className="pointer-events-none absolute inset-0 grid grid-cols-2 grid-rows-2 opacity-60">
                 {[0, 1, 2, 3].map((n) => <div key={n} className="border border-white/75" />)}
               </div>
-              <div className="absolute bottom-3 left-3 rounded-full bg-[#203b38]/85 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.16em] text-white">Artwork {config.imageKey}</div>
+              <div className="absolute bottom-3 left-3 rounded-full bg-foreground/85 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.16em] text-background">Picture {config.imageKey}</div>
             </div>
             <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1" aria-label="Choose image">
               {Array.from({ length: themeLength }, (_, index) => index + 1).map((key) => (
                 <button key={key} type="button" onClick={() => setConfig((old) => ({ ...old, imageKey: key }))} aria-label={`Choose picture ${key}`} aria-pressed={config.imageKey === key} data-testid={`select-image-${key}`}
-                  className={`h-12 w-12 shrink-0 overflow-hidden rounded-xl border-2 transition ${config.imageKey === key ? "border-[#c8754b] ring-2 ring-[#c8754b]/20" : "border-[#f7f5ed] opacity-75 hover:opacity-100"}`}>
+                  className={`h-12 w-12 shrink-0 overflow-hidden rounded-lg border-2 transition ${config.imageKey === key ? "border-primary ring-2 ring-primary/25" : "border-border opacity-75 hover:opacity-100"}`}>
                   <ReferenceImage themeId={themeId} imageKey={key} className="h-full w-full object-cover" />
                 </button>
               ))}
             </div>
-            <button type="button" onClick={() => startGame()} data-testid="button-start-jigsaw" className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#244844] px-5 py-4 text-sm font-bold text-[#f6f4e9] shadow-[0_9px_22px_rgba(36,72,68,.18)] transition hover:-translate-y-0.5 hover:bg-[#183b37] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#244844]/25">
+            {savedSession && !config.dailyDate && phase === "setup" && (
+              <button type="button" onClick={() => restoreSession(savedSession)} data-testid="button-resume-jigsaw" className="mt-4 flex w-full items-center justify-between gap-3 rounded-xl border border-primary/35 bg-accent px-4 py-3 text-left text-sm font-semibold text-accent-foreground transition hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <span><span className="block">Resume your puzzle</span><span className="mt-0.5 block text-xs font-normal text-muted-foreground">{savedSession.gridSize}×{savedSession.gridSize} · {savedSession.moves} moves · {formatTime(savedSession.elapsed)}</span></span>
+                <RotateCcw size={16} />
+              </button>
+            )}
+            <button type="button" onClick={() => startGame()} data-testid="button-start-jigsaw" className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3.5 text-sm font-bold text-primary-foreground shadow-sm transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
               <Sparkles size={17} /> Start building
             </button>
-            <button type="button" onClick={() => void createChallengeAndPlay()} disabled={isCreatingChallenge} className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-[#cbd6ca] bg-[#f7f5ed] px-5 py-3 text-sm font-semibold text-[#52645d] transition hover:border-[#c8754b] hover:text-[#b96942] disabled:opacity-60">
+            <button type="button" onClick={() => void createChallengeAndPlay()} disabled={isCreatingChallenge} className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-background px-5 py-3 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary disabled:opacity-60">
               <Share2 size={16} /> {isCreatingChallenge ? "Preparing challenge…" : "Challenge a friend"}
             </button>
-            <Link href="/jigsaw-challenges" className="mt-3 block text-center text-xs font-semibold text-[#8b9990] hover:text-[#bd6d43]">View your Jigsaw challenges</Link>
-            <p className="mt-3 text-center text-[11px] text-[#82918a]">Plays offline. Your score syncs when available.</p>
+            <Link href="/jigsaw-challenges" className="mt-3 block text-center text-xs font-semibold text-muted-foreground hover:text-primary">View your Jigsaw challenges</Link>
+            <p className="mt-3 text-center text-[11px] text-muted-foreground">Plays offline. Your score syncs when available.</p>
           </div>
         </section>
       </main>
@@ -426,29 +590,29 @@ export default function JigsawPage() {
 
   if (phase === "complete" && result) {
     return (
-      <main className="mx-auto min-h-[100dvh] max-w-5xl px-4 pb-14 pt-8 text-[#203b38] sm:px-8">
-        <div className="mx-auto max-w-2xl overflow-hidden rounded-[2rem] border border-[#d4ddd1] bg-[#f7f5ed] shadow-[0_25px_70px_rgba(36,67,60,.12)]">
-          <div className="relative bg-[#244844] px-6 py-10 text-center text-[#f6f4e9] sm:px-12">
+      <main className="mx-auto min-h-0 w-full max-w-5xl px-3 pb-6 pt-3 text-foreground sm:px-5 sm:pt-5">
+        <div className="mx-auto max-w-2xl overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          <div className="relative bg-primary px-6 py-8 text-center text-primary-foreground sm:px-12">
             <div className="absolute -right-10 -top-16 h-48 w-48 rounded-full border border-white/10" />
-            <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-[#d88b52] text-white"><Trophy size={25} /></div>
-            <p className="text-xs font-bold uppercase tracking-[.2em] text-[#d5c9a7]">Picture complete</p>
+            <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-background/20 text-primary-foreground"><Trophy size={25} /></div>
+            <p className="text-xs font-bold uppercase tracking-[.2em] text-primary-foreground/75">Picture complete</p>
             <h1 className="mt-2 font-serif text-4xl sm:text-5xl">Every piece, in place.</h1>
           </div>
-          <div className="grid gap-7 p-5 sm:grid-cols-[1fr_0.9fr] sm:p-9">
-            <div className="aspect-square overflow-hidden rounded-2xl border-[6px] border-[#e7e6d9] shadow-sm">
-              <ReferenceImage themeId={themeId} imageKey={result.imageKey} className="h-full w-full object-cover" />
+          <div className="grid gap-5 p-4 sm:grid-cols-[1fr_0.9fr] sm:p-6">
+            <div className="aspect-square overflow-hidden rounded-xl border-4 border-background shadow-sm">
+              <ReferenceImage themeId={puzzleThemeId} imageKey={result.imageKey} className="h-full w-full object-cover" />
             </div>
             <div className="flex flex-col justify-center">
-              <p className="text-xs font-bold uppercase tracking-[.18em] text-[#8b9990]">Your result</p>
-              <p className="mt-2 font-serif text-6xl text-[#c8754b]" data-testid="result-points">{result.points.toLocaleString()}<span className="ml-2 text-base font-sans font-semibold text-[#87958b]">pts</span></p>
+              <p className="text-xs font-bold uppercase tracking-[.18em] text-muted-foreground">Your result</p>
+              <p className="mt-2 font-serif text-6xl text-primary" data-testid="result-points">{result.points.toLocaleString()}<span className="ml-2 text-base font-sans font-semibold text-muted-foreground">pts</span></p>
               <div className="my-5 grid grid-cols-2 gap-2">
-                <div className="rounded-xl bg-[#edf0e7] p-3"><p className="text-[10px] uppercase tracking-[.14em] text-[#87958b]">Time</p><p className="mt-1 font-mono text-xl" data-testid="result-time">{formatTime(result.elapsedSeconds)}</p></div>
-                <div className="rounded-xl bg-[#edf0e7] p-3"><p className="text-[10px] uppercase tracking-[.14em] text-[#87958b]">Moves</p><p className="mt-1 font-mono text-xl" data-testid="result-moves">{result.moves}</p></div>
+                <div className="rounded-xl bg-muted p-3"><p className="text-[10px] uppercase tracking-[.14em] text-muted-foreground">Time</p><p className="mt-1 font-mono text-xl" data-testid="result-time">{formatTime(result.elapsedSeconds)}</p></div>
+                <div className="rounded-xl bg-muted p-3"><p className="text-[10px] uppercase tracking-[.14em] text-muted-foreground">Moves</p><p className="mt-1 font-mono text-xl" data-testid="result-moves">{result.moves}</p></div>
               </div>
-              <p className="mb-5 text-sm text-[#75857d]" data-testid="result-rewards">+{result.xpEarned} XP <span className="px-1 text-[#bec7bb]">/</span> +{result.gemsEarned} gems{result.isPersonalBest ? " / Personal best" : ""}</p>
-              <button type="button" onClick={() => void handleShare()} data-testid="button-share-result" className="mb-2 inline-flex items-center justify-center gap-2 rounded-xl border border-[#c7d4c8] px-4 py-3 text-sm font-semibold transition hover:bg-[#edf0e7]"><Share2 size={16} /> Share result</button>
-              {!hasLinkedChallenge && <button type="button" onClick={() => startGame()} data-testid="button-play-again" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#244844] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#183b37]"><RotateCcw size={16} /> Play again</button>}
-              <Link href="/jigsaw" className="mt-3 text-center text-xs font-semibold text-[#8b9990] hover:text-[#bd6d43]" data-testid="link-new-picture">Change picture or difficulty</Link>
+              <p className="mb-5 text-sm text-muted-foreground" data-testid="result-rewards">+{result.xpEarned} XP <span className="px-1 text-border">/</span> +{result.gemsEarned} gems{result.isPersonalBest ? " / Personal best" : ""}</p>
+              <button type="button" onClick={() => void handleShare()} data-testid="button-share-result" className="mb-2 inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-3 text-sm font-semibold transition hover:bg-muted"><Share2 size={16} /> Share result</button>
+              {!hasLinkedChallenge && <button type="button" onClick={() => startGame()} data-testid="button-play-again" className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground transition hover:opacity-90"><RotateCcw size={16} /> Play again</button>}
+              <Link href="/jigsaw" className="mt-3 text-center text-xs font-semibold text-muted-foreground hover:text-primary" data-testid="link-new-picture">Change picture or difficulty</Link>
             </div>
           </div>
         </div>
@@ -470,56 +634,56 @@ export default function JigsawPage() {
   };
 
   return (
-    <main className="mx-auto min-h-[100dvh] max-w-7xl px-3 pb-12 pt-4 text-[#203b38] sm:px-7">
+    <main className="mx-auto min-h-0 w-full max-w-7xl px-2 pb-4 pt-2 text-foreground sm:px-4 sm:pt-3">
       <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <Link href="/jigsaw" className="inline-flex items-center gap-2 rounded-full border border-[#d6ded1] bg-[#f7f5ed] px-4 py-2 text-sm font-semibold text-[#52645d] transition hover:border-[#b3c4b5]" data-testid="link-exit-jigsaw"><ArrowLeft size={16} /> Setup</Link>
-        <div className="flex items-center gap-2 rounded-full bg-[#e9eee5] px-4 py-2 text-xs font-bold uppercase tracking-[.14em] text-[#61746b]"><span>Level {config.level}</span><span className="text-[#c4a07c]">/</span><span>{tileCount} pieces</span></div>
+        <button type="button" onClick={exitToSetup} className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground transition hover:border-primary" data-testid="link-exit-jigsaw"><ArrowLeft size={16} /> Setup</button>
+        <div className="flex items-center gap-2 rounded-full bg-muted px-4 py-2 text-xs font-bold uppercase tracking-[.14em] text-muted-foreground"><span>Level {config.level}</span><span className="text-border">/</span><span>{tileCount} pieces</span></div>
       </header>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
-        <section className="rounded-[1.7rem] border border-[#d5ded2] bg-[#f7f5ed] p-3 shadow-[0_16px_45px_rgba(41,68,60,.07)] sm:p-5">
+        <section className="rounded-2xl border border-border bg-card p-2 shadow-sm sm:p-4">
           <div className="mb-4 flex items-center justify-between gap-3 px-1">
-            <div><p className="text-[10px] font-bold uppercase tracking-[.2em] text-[#8b9990]">The board</p><h1 className="font-serif text-2xl sm:text-3xl">Find the picture.</h1></div>
-            <div className="flex items-center gap-2 rounded-xl bg-[#edf0e7] px-3 py-2 font-mono text-sm" data-testid="status-timer"><Timer size={15} className="text-[#bc754d]" />{formatTime(elapsed)}</div>
+            <div><p className="text-[10px] font-bold uppercase tracking-[.2em] text-muted-foreground">The board</p><h1 className="font-serif text-2xl font-bold sm:text-3xl">Find the picture.</h1></div>
+            <div className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2 font-mono text-sm" data-testid="status-timer"><Timer size={15} className="text-primary" />{formatTime(elapsed)}</div>
           </div>
-          <div className="mx-auto grid aspect-square w-full max-w-[min(78vw,660px)] gap-1.5 rounded-2xl bg-[#cbd6ca] p-1.5 sm:gap-2 sm:p-2" style={{ gridTemplateColumns: `repeat(${config.gridSize}, minmax(0, 1fr))` }} role="grid" aria-label={`${config.gridSize} by ${config.gridSize} puzzle board`}>
+          <div className="mx-auto grid aspect-square w-full max-w-[min(90vw,660px)] gap-1 rounded-xl bg-muted p-1 sm:gap-2 sm:rounded-2xl sm:p-2" style={{ gridTemplateColumns: `repeat(${config.gridSize}, minmax(0, 1fr))` }} role="grid" aria-label={`${config.gridSize} by ${config.gridSize} puzzle board`}>
             {board.map((piece, slot) => (
               <button key={slot} type="button" role="gridcell" onClick={() => chooseSlot(slot)} onDragOver={(event) => event.preventDefault()} onDrop={dropOnSlot(slot)}
                 draggable={piece !== null} onDragStart={piece === null ? undefined : dragStart({ piece, from: "board", slot })} onDragEnd={() => setDragged(null)}
                 aria-label={`Puzzle position ${slot + 1}${piece !== null ? `, piece ${piece + 1}` : ", empty"}`} aria-pressed={selected?.from === "board" && selected.slot === slot}
                 data-testid={`board-slot-${slot}`}
-                className={`relative min-h-0 overflow-hidden rounded-md border-2 transition ${piece === null ? "border-dashed border-[#9ead9f] bg-[#e6e9df]" : "border-[#f7f5ed] shadow-sm"} ${selected?.from === "board" && selected.slot === slot ? "ring-4 ring-[#cf7749]/50" : ""} focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#d88b52]/45`}>
-                {piece !== null && <PuzzlePiece themeId={themeId} imageKey={config.imageKey} piece={piece} gridSize={config.gridSize} />}
-                {piece === null && <span className="absolute inset-0 grid place-items-center text-[10px] font-mono text-[#87958b]">{String(slot + 1).padStart(2, "0")}</span>}
+                className={`relative min-h-0 overflow-hidden rounded-md border-2 transition ${piece === null ? "border-dashed border-border bg-background" : "border-background shadow-sm"} ${selected?.from === "board" && selected.slot === slot ? "ring-4 ring-primary/40" : ""} focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring`}>
+                {piece !== null && <PuzzlePiece themeId={puzzleThemeId} imageKey={config.imageKey} piece={piece} gridSize={config.gridSize} />}
+                {piece === null && <span className="absolute inset-0 grid place-items-center text-[10px] font-mono text-muted-foreground">{String(slot + 1).padStart(2, "0")}</span>}
               </button>
             ))}
           </div>
-          <p className="mt-3 flex items-center justify-center gap-2 text-center text-xs text-[#89968e]"><Move size={14} /> Select a piece, then its home. You can also drag it into place.</p>
+          <p className="mt-3 flex items-center justify-center gap-2 text-center text-xs text-muted-foreground"><Move size={14} /> Select a piece, then its home. You can also drag it into place.</p>
         </section>
         <aside className="flex flex-col gap-4">
-          <section className="rounded-[1.6rem] border border-[#d5ded2] bg-[#e9eee5] p-4 sm:p-5">
+          <section className="rounded-2xl border border-border bg-card p-4">
             <div className="mb-3 flex items-center justify-between">
-              <div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#8b9990]">Reference</p><p className="font-serif text-xl">{config.level === 3 ? "Picture memory" : "Keep it in view"}</p></div>
-              {config.level === 2 && <button type="button" onClick={() => setShowReference((value) => !value)} aria-label={showReference ? "Hide reference picture" : "Show reference picture"} data-testid="button-toggle-reference" className="grid h-10 w-10 place-items-center rounded-xl bg-[#f7f5ed] text-[#47615a] hover:text-[#bd6d43]">{showReference ? <EyeOff size={18} /> : <Eye size={18} />}</button>}
+              <div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-muted-foreground">Reference</p><p className="font-serif text-xl font-semibold">{config.level === 3 ? "Picture memory" : "Keep it in view"}</p></div>
+              {config.level === 2 && <button type="button" onClick={() => setShowReference((value) => !value)} aria-label={showReference ? "Hide reference picture" : "Show reference picture"} data-testid="button-toggle-reference" className="grid h-10 w-10 place-items-center rounded-xl bg-muted text-foreground hover:text-primary">{showReference ? <EyeOff size={18} /> : <Eye size={18} />}</button>}
             </div>
-            {canSeeReference ? <div className="aspect-square overflow-hidden rounded-xl border-4 border-[#f7f5ed]"><ReferenceImage themeId={themeId} imageKey={config.imageKey} className="h-full w-full object-cover" /></div> : <div className="grid aspect-square place-items-center rounded-xl border border-dashed border-[#b5c6b8] bg-[#dce5db] p-6 text-center"><div><EyeOff size={23} className="mx-auto mb-2 text-[#75877d]" /><p className="font-serif text-xl">Build it from memory</p><p className="mt-1 text-xs text-[#7c8982]">This level keeps the picture hidden.</p></div></div>}
-            <p className="mt-3 text-xs leading-5 text-[#75857d]">{LEVELS[config.level - 1].copy}</p>
+            {canSeeReference ? <div className="aspect-square overflow-hidden rounded-xl border-4 border-background"><ReferenceImage themeId={puzzleThemeId} imageKey={config.imageKey} className="h-full w-full object-cover" /></div> : <div className="grid aspect-square place-items-center rounded-xl border border-dashed border-border bg-muted p-6 text-center"><div><EyeOff size={23} className="mx-auto mb-2 text-muted-foreground" /><p className="font-serif text-xl">Build it from memory</p><p className="mt-1 text-xs text-muted-foreground">This level keeps the picture hidden.</p></div></div>}
+            <p className="mt-3 text-xs leading-5 text-muted-foreground">{LEVELS[config.level - 1].copy}</p>
           </section>
-          <section className="rounded-[1.6rem] border border-[#d5ded2] bg-[#f7f5ed] p-4 sm:p-5">
-            <div className="mb-3 flex items-end justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#8b9990]">Loose pieces</p><p className="font-serif text-xl">On the table</p></div><span className="font-mono text-sm text-[#bd6d43]" data-testid="status-pieces-left">{tray.length} left</span></div>
+          <section className="rounded-2xl border border-border bg-card p-4">
+            <div className="mb-3 flex items-end justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-muted-foreground">Loose pieces</p><p className="font-serif text-xl font-semibold">On the table</p></div><span className="font-mono text-sm text-primary" data-testid="status-pieces-left">{tray.length} left</span></div>
             <div className="grid max-h-[40vh] grid-cols-4 gap-2 overflow-y-auto pr-1 sm:grid-cols-5 lg:grid-cols-4">
               {tray.map((piece) => (
-                <Tile key={piece} piece={piece} index={piece} gridSize={config.gridSize} themeId={themeId} imageKey={config.imageKey} selected={selected?.from === "tray" && selected.piece === piece}
+                <Tile key={piece} piece={piece} index={piece} gridSize={config.gridSize} themeId={puzzleThemeId} imageKey={config.imageKey} selected={selected?.from === "tray" && selected.piece === piece}
                   onClick={() => setSelected((current) => current?.from === "tray" && current.piece === piece ? null : { piece, from: "tray" })}
                   onDragStart={dragStart({ piece, from: "tray" })} onDragEnd={() => setDragged(null)} label={`Piece ${piece + 1}, select to place`} />
               ))}
-              {tray.length === 0 && <div className="col-span-full rounded-lg bg-[#edf0e7] px-3 py-5 text-center text-xs text-[#7d8a82]">All pieces are on the board. Adjust any that need a new home.</div>}
+              {tray.length === 0 && <div className="col-span-full rounded-lg bg-muted px-3 py-5 text-center text-xs text-muted-foreground">All pieces are on the board. Adjust any that need a new home.</div>}
             </div>
           </section>
-          <section className="flex items-center justify-between rounded-2xl border border-[#d5ded2] bg-[#e9eee5] px-4 py-3">
-            <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#8b9990]">Moves</p><p className="font-mono text-2xl" data-testid="status-moves">{moves}</p></div>
-            {!hasLinkedChallenge && <button type="button" onClick={() => startGame()} data-testid="button-restart-jigsaw" className="inline-flex items-center gap-2 rounded-lg border border-[#cbd6ca] bg-[#f7f5ed] px-3 py-2 text-xs font-semibold text-[#52645d] transition hover:border-[#c8754b] hover:text-[#b96942]"><RotateCcw size={14} /> Restart</button>}
+          <section className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
+            <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-muted-foreground">Moves</p><p className="font-mono text-2xl" data-testid="status-moves">{moves}</p></div>
+            {!hasLinkedChallenge && <button type="button" onClick={() => startGame()} data-testid="button-restart-jigsaw" className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground transition hover:border-primary hover:text-primary"><RotateCcw size={14} /> Restart</button>}
           </section>
-          <p className="flex items-center gap-2 px-1 text-[11px] text-[#8b9990]"><Grip size={14} /> Tip: keyboard users can tab to each piece and press Enter to select.</p>
+          <p className="flex items-center gap-2 px-1 text-[11px] text-muted-foreground"><Grip size={14} /> Select a piece, then select its home. Drag and drop also works on desktop.</p>
         </aside>
       </div>
     </main>

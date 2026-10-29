@@ -52,7 +52,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
     ? new URLSearchParams(location.split("?")[1]).get("gameId")
     : null;
   const isCanonicalSudokuGame = location.startsWith("/sudoku/") && canonicalGameQuery !== null;
-  const isGamePage = isGameRoute || isCanonicalSudokuGame;
+  const isJigsawPage = location === "/jigsaw" || location.startsWith("/jigsaw?");
+  const jigsawParams = isJigsawPage && location.includes("?")
+    ? new URLSearchParams(location.split("?")[1])
+    : new URLSearchParams();
+  const isJigsawGamePage = isJigsawPage && (jigsawParams.has("play") || jigsawParams.has("gameId"));
+  const isGamePage = isGameRoute || isCanonicalSudokuGame || isJigsawGamePage;
   const isPublicPlayerPage =
     location.startsWith("/player/") || location.startsWith("/players/");
   const isOfflineGame =
@@ -239,7 +244,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       <main
         className={[
-          "flex-1 w-full max-w-4xl mx-auto flex flex-col",
+          "flex-1 w-full mx-auto flex flex-col",
+          isJigsawGamePage ? "max-w-7xl" : isJigsawPage ? "max-w-6xl" : "max-w-4xl",
           isGamePage
             ? "px-2 py-2 sm:px-4 md:px-8 md:py-8 md:pb-8"
             : "px-2 py-4 sm:px-4 md:px-8 md:py-8 md:pb-8",

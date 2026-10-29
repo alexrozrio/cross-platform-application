@@ -1,0 +1,37 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap");
+
+:root {
+  --background: 40 33% 96%;
+  --foreground: 220 20% 20%;
+  --border: 40 20% 85%;
+  --card: 40 33% 94%;
+  --card-foreground: 220 20% 20%;
+  --primary: 215 30% 45%;
+  --primary-foreground: 40 33% 96%;
+  --secondary: 40 20% 90%;
+  --secondary-foreground: 220 20% 20%;
+  --muted: 40 20% 90%;
+  --muted-foreground: 220 15% 45%;
+  --accent: 215 20% 90%;
+  --accent-foreground: 215 30% 45%;
+  --app-font-sans: "Outfit", sans-serif;
+  --app-font-serif: "Playfair Display", serif;
+  --app-font-mono: Menlo, monospace;
+  --radius: 0.25rem;
+}
+
+.dark {
+  --background: 220 20% 12%;
+  --foreground: 40 30% 90%;
+  --border: 220 15% 25%;
+  --card: 220 20% 15%;
+  --card-foreground: 40 30% 90%;
+  --primary: 215 40% 60%;
+  --primary-foreground: 220 20% 12%;
+  --secondary: 220 15% 25%;
+  --secondary-foreground: 40 30% 90%;
+  --muted: 220 15% 20%;
+  --muted-foreground: 220 15% 65%;
+  --accent: 215 30% 25%;
+  --accent-foreground: 215 40% 60%;
+}

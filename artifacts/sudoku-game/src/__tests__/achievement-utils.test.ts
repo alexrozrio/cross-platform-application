@@ -7,10 +7,11 @@ describe('ACHIEVEMENT_META', () => {
     expect(ACHIEVEMENT_META.length).toBeGreaterThan(0);
   });
 
-  it('contains achievements for both sudoku and memory games', () => {
+  it('contains achievements for every supported game', () => {
     const games = new Set(ACHIEVEMENT_META.map(a => a.game));
     expect(games).toContain('sudoku');
     expect(games).toContain('memory');
+    expect(games).toContain('jigsaw');
   });
 
   it('all achievements have required string fields', () => {
@@ -33,9 +34,9 @@ describe('ACHIEVEMENT_META', () => {
     }
   });
 
-  it('all game values are exactly "sudoku" or "memory"', () => {
+  it('all game values are supported game types', () => {
     for (const a of ACHIEVEMENT_META) {
-      expect(['sudoku', 'memory']).toContain(a.game);
+      expect(['sudoku', 'memory', 'jigsaw']).toContain(a.game);
     }
   });
 
