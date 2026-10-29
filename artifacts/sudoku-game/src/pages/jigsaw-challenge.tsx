@@ -62,7 +62,7 @@ export default function JigsawDailyChallengePage() {
 
   const config = configQuery.data;
   const startHref = config
-    ? `/jigsaw?gridSize=${config.gridSize}&level=${config.level}&imageKey=${config.imageKey}&dailyDate=${config.date}`
+    ? `/jigsaw?gridSize=${config.gridSize}&level=${config.level}&imageKey=${config.imageKey}&dailyDate=${config.date}&start=1`
     : "/jigsaw";
 
   return (

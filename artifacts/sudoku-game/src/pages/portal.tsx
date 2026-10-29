@@ -505,7 +505,10 @@ export default function Portal() {
               </button>
             ))}
           </div>
-          <Link href="/jigsaw-challenges" className="relative z-10 inline-block text-[10px] font-semibold text-primary underline underline-offset-2">Jigsaw friend challenges →</Link>
+          <div className="relative z-10 flex flex-wrap gap-x-4 gap-y-1">
+            <Link href="/jigsaw-challenge" className="inline-block text-[10px] font-semibold text-primary underline underline-offset-2">Daily Jigsaw challenge →</Link>
+            <Link href="/jigsaw-challenges" className="inline-block text-[10px] font-semibold text-primary underline underline-offset-2">Jigsaw friend challenges →</Link>
+          </div>
         </div>
 
         {/* Daily Challenges */}
@@ -1011,7 +1014,10 @@ export default function Portal() {
               {visibleJigsawSizes.map((size) => <span key={size} className="rounded-lg border border-border bg-muted py-2 text-center text-xs font-bold text-primary">{size}×{size}</span>)}
             </div>
           </button>
-          <div className="px-6 pb-5"><Link href="/jigsaw-challenges" className="text-[10px] font-semibold text-primary underline underline-offset-2">Challenge a friend →</Link></div>
+          <div className="flex flex-wrap gap-x-4 gap-y-1 px-6 pb-5">
+            <Link href="/jigsaw-challenge" className="text-[10px] font-semibold text-primary underline underline-offset-2">Daily Jigsaw challenge →</Link>
+            <Link href="/jigsaw-challenges" className="text-[10px] font-semibold text-primary underline underline-offset-2">Challenge a friend →</Link>
+          </div>
           <div className="absolute right-3 top-3 h-2 w-2 rounded-full bg-green-400" title="Available" />
         </div>
 

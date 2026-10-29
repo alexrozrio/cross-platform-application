@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 import { Link, useLocation, useSearch } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, Eye, EyeOff, Grip, Image as ImageIcon, Move, RotateCcw, Share2, Sparkles, Timer, Trophy } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarDays, Check, Eye, EyeOff, Grip, Image as ImageIcon, Move, RotateCcw, Share2, Sparkles, Timer, Trophy } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useImageTheme } from "@/hooks/use-image-theme";
 import { useThemeImageSrc } from "@/components/theme-icons";
@@ -123,11 +123,13 @@ export default function JigsawPage() {
   const requestedSize = Number(params.get("gridSize") ?? params.get("size"));
   const requestedLevel = Number(params.get("level"));
   const requestedImage = Number(params.get("imageKey"));
+  const requestedDailyDate = params.get("dailyDate");
+  const shouldStartDailyChallenge = params.get("start") === "1" && Boolean(requestedDailyDate);
   const [config, setConfig] = useState<Config>({
     gridSize: SIZES.includes(requestedSize as GridSize) ? requestedSize as GridSize : availableSizes[0] ?? 2,
     level: LEVELS.some((level) => level.value === requestedLevel) ? requestedLevel as 1 | 2 | 3 : 1,
     imageKey: Number.isInteger(requestedImage) && requestedImage > 0 ? requestedImage : 1,
-    dailyDate: params.get("dailyDate") ?? undefined,
+    dailyDate: requestedDailyDate ?? undefined,
   });
   const requestedGameId = Number(params.get("gameId"));
   const [challengeId, setChallengeId] = useState<number | null>(
@@ -153,6 +155,7 @@ export default function JigsawPage() {
   const completedRef = useRef(false);
   const restoreCheckedRef = useRef(false);
   const autoStartedGameIdRef = useRef<number | null>(null);
+  const autoStartedDailyDateRef = useRef<string | null>(null);
   const gameIdRef = useRef<number | null>(null);
   const pendingCompletion = useRef<{ elapsedSeconds: number; moves: number } | null>(null);
   const puzzleThemeId = sessionThemeId ?? themeId;
@@ -340,6 +343,18 @@ export default function JigsawPage() {
   }, [phase, requestedGameId, startGame]);
 
   useEffect(() => {
+    if (
+      !shouldStartDailyChallenge ||
+      !requestedDailyDate ||
+      (Number.isInteger(requestedGameId) && requestedGameId > 0) ||
+      phase !== "setup" ||
+      autoStartedDailyDateRef.current === requestedDailyDate
+    ) return;
+    autoStartedDailyDateRef.current = requestedDailyDate;
+    startGame();
+  }, [phase, requestedDailyDate, requestedGameId, shouldStartDailyChallenge, startGame]);
+
+  useEffect(() => {
     if (phase !== "playing" || board.length !== tileCount) return;
     const session: SavedJigsawSession = {
       gridSize: config.gridSize,
@@ -510,6 +525,7 @@ export default function JigsawPage() {
     setPhase("setup");
     setSelected(null);
     setDragged(null);
+    setConfig((current) => ({ ...current, dailyDate: undefined }));
     setLocation("/jigsaw");
   };
 
@@ -580,6 +596,9 @@ export default function JigsawPage() {
             <button type="button" onClick={() => void createChallengeAndPlay()} disabled={isCreatingChallenge} className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-background px-5 py-3 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary disabled:opacity-60">
               <Share2 size={16} /> {isCreatingChallenge ? "Preparing challenge…" : "Challenge a friend"}
             </button>
+            <Link href="/jigsaw-challenge" data-testid="link-daily-jigsaw" className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground transition hover:border-primary">
+              <CalendarDays size={16} /> Play today&apos;s daily challenge <ArrowRight size={15} />
+            </Link>
             <Link href="/jigsaw-challenges" className="mt-3 block text-center text-xs font-semibold text-muted-foreground hover:text-primary">View your Jigsaw challenges</Link>
             <p className="mt-3 text-center text-[11px] text-muted-foreground">Plays offline. Your score syncs when available.</p>
           </div>
@@ -612,7 +631,8 @@ export default function JigsawPage() {
               <p className="mb-5 text-sm text-muted-foreground" data-testid="result-rewards">+{result.xpEarned} XP <span className="px-1 text-border">/</span> +{result.gemsEarned} gems{result.isPersonalBest ? " / Personal best" : ""}</p>
               <button type="button" onClick={() => void handleShare()} data-testid="button-share-result" className="mb-2 inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-3 text-sm font-semibold transition hover:bg-muted"><Share2 size={16} /> Share result</button>
               {!hasLinkedChallenge && <button type="button" onClick={() => startGame()} data-testid="button-play-again" className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground transition hover:opacity-90"><RotateCcw size={16} /> Play again</button>}
-              <Link href="/jigsaw" className="mt-3 text-center text-xs font-semibold text-muted-foreground hover:text-primary" data-testid="link-new-picture">Change picture or difficulty</Link>
+              {!config.dailyDate && <Link href="/jigsaw-challenge" className="mt-2 inline-flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground transition hover:border-primary"><CalendarDays size={16} /> Try today&apos;s daily challenge</Link>}
+              <button type="button" onClick={exitToSetup} className="mt-3 text-center text-xs font-semibold text-muted-foreground hover:text-primary" data-testid="link-new-picture">Change picture or difficulty</button>
             </div>
           </div>
         </div>
