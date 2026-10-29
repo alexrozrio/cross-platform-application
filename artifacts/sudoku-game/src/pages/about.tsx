@@ -21,14 +21,14 @@ const MEMORY_FEATURES = [
 const SHARED_FEATURES = [
   { icon: Trophy, label: "Leaderboards & badges", desc: "Weekly and monthly tournaments, all-time scores, and shareable winner badges." },
   { icon: BarChart2, label: "Personal stats", desc: "Track your win rate, average time, and progress across difficulties." },
-  { icon: Gem, label: "Gem rewards", desc: "Earn 1–3 💎 per puzzle based on difficulty, plus daily login bonuses." },
+  { icon: Gem, label: "Gem rewards", desc: "Earn in-game rewards from puzzle completions, plus daily login bonuses." },
 ];
 
 export default function About() {
   usePageMeta({
-      title: "About Play Brain Games . Online | Sudoku & Memory Match",
+      title: "About Play Brain Games . Online | Sudoku, Memory & Jigsaw",
     description:
-        "Learn how Play Brain Games combines practical Sudoku and Memory Match sessions, daily challenges, guest play, optional synced progress, and player support.",
+        "Learn how Play Brain Games combines Sudoku, Memory Match, and Jigsaw puzzles with daily challenges, guest play, synced progress, and player support.",
     path: "/about",
   });
   const [, setLocation] = useLocation();
@@ -46,19 +46,22 @@ export default function About() {
       <div className="bg-card rounded-2xl px-5 py-4 border border-border">
         <h1 className="text-3xl font-serif font-bold tracking-tight">About</h1>
         <p className="text-muted-foreground mt-1">
-          Two classic brain games, reimagined for everyone.
+          Three classic brain games, reimagined for everyone.
         </p>
       </div>
 
       <div className="space-y-4 text-sm text-muted-foreground leading-relaxed bg-card rounded-2xl border border-border px-5 py-4">
         <p>
-          Play Brain Games . Online is a general-audience, family-friendly collection of timeless puzzles. It is designed for everyone from first-time solvers to seasoned experts, with optional child-friendly modes for younger family members. We believe a great puzzle game should be beautiful, fast, and endlessly replayable.
+          Play Brain Games . Online is a general-audience, family-friendly collection of Sudoku, Memory Match, and Jigsaw puzzles. It is designed for everyone from first-time solvers to seasoned experts, with optional child-friendly modes for younger family members. We believe a great puzzle game should be beautiful, fast, and endlessly replayable.
         </p>
         <p>
           In Sudoku, beyond the standard 9×9, we support child-friendly Baby and Mini grids as well as pro-level 16×16 boards that will challenge experienced players. You can play with numbers, letters, or swappable image themes — keeping every session feeling fresh.
         </p>
         <p>
           In Memory Match, flip cards to find matching pairs across grids from a quick 2×4 warm-up to a demanding 8×8 marathon — with the same number, letter, and image themes carried over from Sudoku.
+        </p>
+        <p>
+          In Jigsaw, rebuild themed pictures on boards from 2×2 to 5×5. Choose a level, race the clock for a time bonus, or invite a friend to solve the same picture.
         </p>
       </div>
 
@@ -105,7 +108,7 @@ export default function About() {
       </div>
 
       <div className="space-y-3 bg-card rounded-2xl border border-border px-5 py-4">
-        <h2 className="text-base font-semibold text-foreground">Across both games</h2>
+        <h2 className="text-base font-semibold text-foreground">Across all games</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {SHARED_FEATURES.map(({ icon: Icon, label, desc }) => (
             <Card key={label} className="border-border/60">

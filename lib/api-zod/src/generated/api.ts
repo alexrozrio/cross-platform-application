@@ -390,6 +390,16 @@ export const GetPlayerStatsResponse = zod.object({
   "currentStreak": zod.int().optional(),
   "longestStreak": zod.int().optional(),
   "winStreak": zod.int().nullish()
+}).optional(),
+  "jigsaw": zod.object({
+  "totalGames": zod.int().optional(),
+  "totalWins": zod.int().optional(),
+  "winRate": zod.number().optional(),
+  "bestTimes": zod.record(zod.string(), zod.int().nullable()).optional(),
+  "averageTime": zod.int().nullish(),
+  "totalPoints": zod.int().optional(),
+  "dailyChallengesCompleted": zod.int().optional(),
+  "winStreak": zod.int().optional()
 }).optional()
 })
 

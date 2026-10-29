@@ -4,7 +4,7 @@ export interface AchievementMeta {
   title: string;
   description: string;
   group: string;
-  game: 'sudoku' | 'memory';
+  game: 'sudoku' | 'memory' | 'jigsaw';
 }
 
 export const ACHIEVEMENT_META: AchievementMeta[] = [
@@ -82,6 +82,15 @@ export const ACHIEVEMENT_META: AchievementMeta[] = [
   { id: 'memory_streak_3',        game: 'memory', emoji: '🔥', title: 'Memory Habit',       description: 'Reach a 3-day Memory Match streak',                   group: 'Memory Daily'      },
   { id: 'memory_streak_7',        game: 'memory', emoji: '💥', title: 'Memory Streak',      description: 'Reach a 7-day Memory Match streak',                   group: 'Memory Daily'      },
   { id: 'memory_streak_30',       game: 'memory', emoji: '👑', title: 'Memory Devotee',     description: 'Reach a 30-day Memory Match streak',                  group: 'Memory Daily'      },
+
+  // ── Jigsaw Puzzle ──────────────────────────────────────────────────────────
+  { id: 'jigsaw_first_win',       game: 'jigsaw', emoji: '🧩', title: 'Piece by Piece',   description: 'Complete your first Jigsaw puzzle',                     group: 'Jigsaw Milestones' },
+  { id: 'jigsaw_dedicated',       game: 'jigsaw', emoji: '🗺️', title: 'Picture Builder', description: 'Complete 10 Jigsaw puzzles',                            group: 'Jigsaw Milestones' },
+  { id: 'jigsaw_all_sizes',       game: 'jigsaw', emoji: '📐', title: 'Shape Explorer',  description: 'Complete all four Jigsaw board sizes',                  group: 'Jigsaw Skill' },
+  { id: 'jigsaw_speedster',       game: 'jigsaw', emoji: '⚡', title: 'Quick Assembly',  description: 'Finish a 2×2 Jigsaw in 30 seconds or less',             group: 'Jigsaw Skill' },
+  { id: 'jigsaw_master',          game: 'jigsaw', emoji: '🏆', title: 'Puzzle Master',   description: 'Complete a level 3 puzzle on the 5×5 board',            group: 'Jigsaw Skill' },
+  { id: 'jigsaw_from_memory',     game: 'jigsaw', emoji: '🧠', title: 'Picture Recall',  description: 'Complete a Jigsaw without the reference picture',       group: 'Jigsaw Skill' },
+  { id: 'jigsaw_daily_7',         game: 'jigsaw', emoji: '📅', title: 'Daily Assembler', description: 'Complete 7 Jigsaw daily challenges',                     group: 'Jigsaw Daily' },
 ];
 
 export interface AchievementStatus {

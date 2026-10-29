@@ -71,6 +71,7 @@ import {
   ChevronUp,
   Brain,
   Layers,
+  Puzzle,
   BarChart2,
   ExternalLink,
   Info,
@@ -325,7 +326,7 @@ function MemoryStreakCalendar({ profileId }: { profileId: number }) {
 
 // ─── Achievements Card ────────────────────────────────────────────────────────
 
-function AchievementsCard({ profileId, game }: { profileId: number; game: "sudoku" | "memory" }) {
+function AchievementsCard({ profileId, game }: { profileId: number; game: "sudoku" | "memory" | "jigsaw" }) {
   const { data } = useQuery({
     queryKey: [`/api/achievements/${profileId}`],
     queryFn: () => customFetch<AchievementsData>(`/api/achievements/${profileId}`),
@@ -333,6 +334,7 @@ function AchievementsCard({ profileId, game }: { profileId: number; game: "sudok
   });
 
   const isMemory = game === "memory";
+  const isJigsaw = game === "jigsaw";
   const gameMeta = ACHIEVEMENT_META.filter((a) => a.game === game);
   const gameGroups = Array.from(
     gameMeta.reduce((acc, a) => { acc.add(a.group); return acc; }, new Set<string>()),
@@ -342,12 +344,12 @@ function AchievementsCard({ profileId, game }: { profileId: number; game: "sudok
   return (
     <Card
       id={`profile-achievements-${game}`}
-      className={`scroll-mt-20 shadow-sm ${isMemory ? "border-purple-200/60 dark:border-purple-800/40" : "border-primary/10"}`}
+      className={`scroll-mt-20 shadow-sm ${isMemory ? "border-purple-200/60 dark:border-purple-800/40" : isJigsaw ? "border-amber-200/70 dark:border-amber-800/40" : "border-primary/10"}`}
     >
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Trophy className={`w-4 h-4 ${isMemory ? "text-purple-500" : "text-yellow-500"}`} />
+            <Trophy className={`w-4 h-4 ${isMemory ? "text-purple-500" : isJigsaw ? "text-amber-600" : "text-yellow-500"}`} />
             Achievements
           </CardTitle>
           <span className="text-sm text-muted-foreground font-semibold">
@@ -360,7 +362,7 @@ function AchievementsCard({ profileId, game }: { profileId: number; game: "sudok
           const items = gameMeta.filter((a) => a.group === group);
           return (
             <div key={group}>
-              <p className={`text-xs font-bold uppercase tracking-widest mb-3 ${isMemory ? "text-purple-500" : "text-muted-foreground"}`}>
+              <p className={`text-xs font-bold uppercase tracking-widest mb-3 ${isMemory ? "text-purple-500" : isJigsaw ? "text-amber-700 dark:text-amber-300" : "text-muted-foreground"}`}>
                 {group}
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -379,6 +381,8 @@ function AchievementsCard({ profileId, game }: { profileId: number; game: "sudok
                         unlocked
                           ? isMemory
                             ? "bg-purple-50 dark:bg-purple-950/20 border-purple-200/60 shadow-sm"
+                          : isJigsaw
+                            ? "bg-amber-50 dark:bg-amber-950/20 border-amber-200/60 shadow-sm"
                             : "bg-primary/5 border-primary/20 shadow-sm"
                           : "bg-muted/30 border-transparent opacity-50",
                       ].join(" ")}
@@ -395,7 +399,7 @@ function AchievementsCard({ profileId, game }: { profileId: number; game: "sudok
                         <div className="mt-1">
                           <div className="h-1 rounded-full bg-muted overflow-hidden">
                             <div
-                              className={`h-full rounded-full transition-all ${isMemory ? "bg-purple-400/60" : "bg-primary/50"}`}
+                              className={`h-full rounded-full transition-all ${isMemory ? "bg-purple-400/60" : isJigsaw ? "bg-amber-500/60" : "bg-primary/50"}`}
                               style={{ width: `${Math.round((progress / total) * 100)}%` }}
                             />
                           </div>
@@ -574,7 +578,7 @@ interface TournamentStreakData {
   totalTop3Finishes: number;
 }
 
-type GameTab = "sudoku" | "memory";
+type GameTab = "sudoku" | "memory" | "jigsaw";
 
 const profileSchema = z.object({
   username: z.string().min(2, "At least 2 characters").max(30),
@@ -585,6 +589,62 @@ const profileSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
+function BestTimesJigsaw({
+  stats,
+  formatTime,
+}: {
+  stats: {
+    bestTimes?: Record<string, number | null>;
+    averageTime?: number | null;
+    totalWins?: number;
+    totalGames?: number;
+    totalPoints?: number;
+  };
+  formatTime: (s: number | null | undefined) => string;
+}) {
+  const [open, setOpen] = useState(false);
+  const sizes = [2, 3, 4, 5];
+  const levels = [1, 2, 3];
+  const activeSizes = sizes.filter((size) =>
+    levels.some((level) => stats.bestTimes?.[`${size}-${level}`] != null),
+  );
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-amber-200/70 shadow-sm dark:border-amber-800/40">
+      <button onClick={() => setOpen((value) => !value)} className="flex w-full items-center justify-between bg-card px-4 py-3.5 text-left transition-colors hover:bg-muted/40">
+        <span className="flex items-center gap-2 text-sm font-semibold"><Clock className="h-4 w-4 text-amber-600" /> Best times by board size and level</span>
+        {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+      </button>
+      {open && (
+        <div className="space-y-4 border-t bg-muted/10 px-4 py-4">
+          {activeSizes.length === 0 ? (
+            <div className="rounded-xl border border-border bg-card px-4 py-5 text-center">
+              <p className="text-sm font-semibold text-foreground">No completed games yet</p>
+              <p className="mt-1 text-xs text-muted-foreground">Complete a Jigsaw puzzle to see your best times here.</p>
+            </div>
+          ) : activeSizes.map((size) => (
+            <section key={size} className="space-y-2">
+              <p className="inline-flex rounded-md border border-amber-200 bg-card px-2.5 py-1 text-xs font-bold uppercase tracking-widest text-foreground shadow-sm">{size}×{size} board</p>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                {levels.map((level) => (
+                  <div key={level} className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2">
+                    <span className="text-xs font-medium text-muted-foreground">Level {level}</span>
+                    <span className="font-mono text-sm font-bold text-amber-700 dark:text-amber-300">{formatTime(stats.bestTimes?.[`${size}-${level}`])}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-lg border bg-card p-3"><p className="text-xs text-muted-foreground">Average time</p><p className="mt-1 font-mono text-lg font-bold">{stats.averageTime == null ? "—" : formatTime(stats.averageTime)}</p></div>
+            <div className="rounded-lg border bg-card p-3"><p className="text-xs text-muted-foreground">Jigsaw points</p><p className="mt-1 text-lg font-bold">{(stats.totalPoints ?? 0).toLocaleString()}</p></div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Profile Page ────────────────────────────────────────────────────────
 
 export default function Profile() {
@@ -592,7 +652,7 @@ export default function Profile() {
   usePageMeta({
     title: "Your Puzzle Profile & Stats | Play Brain Games . Online",
     description:
-      "Review your Sudoku and Memory Match progress, personal bests, achievements, and game preferences.",
+      "Review your Sudoku, Memory Match, and Jigsaw progress, personal bests, achievements, and game preferences.",
     path: "/profile",
   });
   const search = useSearch();
@@ -607,7 +667,9 @@ export default function Profile() {
   const updateProfile = useUpdateProfile();
 
   // Stats tab
-  const [gameTab, setGameTab] = useState<GameTab>(tabParam === "memory" ? "memory" : "sudoku");
+  const [gameTab, setGameTab] = useState<GameTab>(
+    tabParam === "memory" || tabParam === "jigsaw" ? tabParam : "sudoku",
+  );
   const [transferCode, setTransferCode] = useState("");
   const [restoreCode, setRestoreCode] = useState("");
   const [isGeneratingTransferCode, setIsGeneratingTransferCode] = useState(false);
@@ -615,6 +677,7 @@ export default function Profile() {
   const [restoreConfirmationOpen, setRestoreConfirmationOpen] = useState(false);
   useEffect(() => {
     if (tabParam === "memory") setGameTab("memory");
+    else if (tabParam === "jigsaw") setGameTab("jigsaw");
     else if (tabParam === "sudoku") setGameTab("sudoku");
   }, [tabParam]);
 
@@ -624,7 +687,7 @@ export default function Profile() {
 
   const statsSectionRef = React.useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (!isLoading && !statsLoading && (tabParam === "sudoku" || tabParam === "memory")) {
+    if (!isLoading && !statsLoading && (tabParam === "sudoku" || tabParam === "memory" || tabParam === "jigsaw")) {
       const frame = window.requestAnimationFrame(() => {
         const target = sectionParam === "achievements"
           ? document.getElementById(`profile-achievements-${tabParam}`)
@@ -734,6 +797,7 @@ export default function Profile() {
   }
 
   const mem = stats?.memory;
+  const jigsawStats = stats?.jigsaw;
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-8">
@@ -774,7 +838,7 @@ export default function Profile() {
                       <ul className="space-y-2 text-muted-foreground">
                         <li className="flex items-start gap-2">
                           <span className="text-base leading-none mt-0.5">🧩</span>
-                          <span><span className="font-medium text-foreground">Complete a Sudoku</span> — earn gems based on difficulty. <span className="font-medium text-foreground">Complete Memory Match</span> — earn 1💎 for 2×4, 2💎 for 4×4, and 3💎 for 8×4 or 8×8.</span>
+                          <span><span className="font-medium text-foreground">Complete a Sudoku</span> — earn gems based on difficulty. <span className="font-medium text-foreground">Complete Memory Match</span> — earn gems based on board size. <span className="font-medium text-foreground">Complete a Jigsaw</span> — earn points, XP, and gems based on board size, level, and time.</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-base leading-none mt-0.5">🔥</span>
@@ -1154,6 +1218,17 @@ export default function Profile() {
             >
               <Brain className="w-4 h-4" /> Memory Match
             </button>
+            <button
+              onClick={() => setGameTab("jigsaw")}
+              className={[
+                "flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all",
+                gameTab === "jigsaw"
+                  ? "bg-white dark:bg-card shadow text-amber-700 dark:text-amber-300 border border-amber-200/60"
+                  : "text-muted-foreground hover:text-foreground",
+              ].join(" ")}
+            >
+              <Puzzle className="w-4 h-4" /> Jigsaw
+            </button>
           </div>
 
           {statsLoading && (
@@ -1259,6 +1334,54 @@ export default function Profile() {
               )}
 
               <AchievementsCard profileId={profileId} game="memory" />
+            </div>
+          )}
+
+          {/* ── Jigsaw tab ───────────────────────────────────── */}
+          {!statsLoading && gameTab === "jigsaw" && (
+            <div className="space-y-4 animate-in fade-in duration-300">
+              {jigsawStats ? (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Card className="border-amber-200/60 bg-card shadow-sm dark:border-amber-900/40">
+                      <CardContent className="flex flex-col items-center gap-2 p-5 text-center">
+                        <div className="rounded-full bg-amber-100 p-3 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"><Puzzle className="h-5 w-5" /></div>
+                        <p className="text-xs text-muted-foreground">Completed Games</p>
+                        <p className="text-2xl font-bold">{jigsawStats.totalGames ?? 0}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border-amber-200/60 bg-card shadow-sm dark:border-amber-900/40">
+                      <CardContent className="flex flex-col items-center gap-2 p-5 text-center">
+                        <div className="rounded-full bg-green-100 p-3 text-green-700"><Target className="h-5 w-5" /></div>
+                        <p className="text-xs text-muted-foreground">Win Rate</p>
+                        <p className="text-2xl font-bold">{Math.round(((jigsawStats.winRate ?? 0) * 100))}%</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border-amber-200/60 bg-card shadow-sm dark:border-amber-900/40">
+                      <CardContent className="flex flex-col items-center gap-2 p-5 text-center">
+                        <div className="rounded-full bg-orange-100 p-3 text-orange-700"><Trophy className="h-5 w-5" /></div>
+                        <p className="text-xs text-muted-foreground">Total Wins</p>
+                        <p className="text-2xl font-bold">{jigsawStats.totalWins ?? 0}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border-amber-200/60 bg-card shadow-sm dark:border-amber-900/40">
+                      <CardContent className="flex flex-col items-center gap-2 p-5 text-center">
+                        <div className="rounded-full bg-blue-100 p-3 text-blue-700"><TrendingUp className="h-5 w-5" /></div>
+                        <p className="text-xs text-muted-foreground">Jigsaw Points</p>
+                        <p className="text-2xl font-bold">{(jigsawStats.totalPoints ?? 0).toLocaleString()}</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <BestTimesJigsaw stats={jigsawStats} formatTime={formatTime} />
+                  <AchievementsCard profileId={profileId} game="jigsaw" />
+                </>
+              ) : (
+                <>
+                  <p className="rounded-xl border bg-card p-5 text-center text-sm text-muted-foreground">No completed games yet. Play a Jigsaw puzzle to start tracking your statistics.</p>
+                  <BestTimesJigsaw stats={{}} formatTime={formatTime} />
+                  <AchievementsCard profileId={profileId} game="jigsaw" />
+                </>
+              )}
             </div>
           )}
         </div>

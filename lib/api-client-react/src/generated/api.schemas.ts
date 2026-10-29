@@ -278,6 +278,20 @@ export type PlayerStatsMemory = {
   winStreak?: number | null;
 };
 
+export type PlayerStatsJigsawBestTimes = {[key: string]: number | null};
+
+export type PlayerStatsJigsaw = {
+  totalGames?: number;
+  totalWins?: number;
+  winRate?: number;
+  bestTimes?: PlayerStatsJigsawBestTimes;
+  /** @nullable */
+  averageTime?: number | null;
+  totalPoints?: number;
+  dailyChallengesCompleted?: number;
+  winStreak?: number;
+};
+
 export interface PlayerStats {
   profileId: number;
   totalGames: number;
@@ -289,6 +303,7 @@ export interface PlayerStats {
   totalMistakes?: number;
   currentStreak?: number;
   memory?: PlayerStatsMemory;
+  jigsaw?: PlayerStatsJigsaw;
 }
 
 export interface TournamentEntry {

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from "react";
-import { Link, useSearch } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Check, Eye, EyeOff, Grip, Image as ImageIcon, Move, RotateCcw, Share2, Sparkles, Timer, Trophy } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -99,6 +99,7 @@ function Tile({ piece, index, gridSize, themeId, imageKey, selected, onClick, on
 }
 
 export default function JigsawPage() {
+  const [, setLocation] = useLocation();
   const search = useSearch();
   const params = useMemo(() => new URLSearchParams(search), [search]);
   const { profileId } = useAuth();
@@ -108,7 +109,24 @@ export default function JigsawPage() {
   const gameMode = profile?.gameMode ?? "4all";
   const availableSizes = SIZES.filter((size) => gameMode === "children" ? size <= 3 : gameMode === "adult" ? size >= 4 : true);
   const themeLength = getTheme(themeId as never).symbols.length;
-  const [config, setConfig] = useState<Config>({ gridSize: availableSizes[0] ?? 2, level: 1, imageKey: 1, dailyDate: params.get("dailyDate") ?? undefined });
+  const requestedSize = Number(params.get("gridSize") ?? params.get("size"));
+  const requestedLevel = Number(params.get("level"));
+  const requestedImage = Number(params.get("imageKey"));
+  const [config, setConfig] = useState<Config>({
+    gridSize: SIZES.includes(requestedSize as GridSize) ? requestedSize as GridSize : availableSizes[0] ?? 2,
+    level: LEVELS.some((level) => level.value === requestedLevel) ? requestedLevel as 1 | 2 | 3 : 1,
+    imageKey: Number.isInteger(requestedImage) && requestedImage > 0 ? requestedImage : 1,
+    dailyDate: params.get("dailyDate") ?? undefined,
+  });
+  const requestedGameId = Number(params.get("gameId"));
+  const [challengeId, setChallengeId] = useState<number | null>(
+    Number.isInteger(Number(params.get("challengeId"))) && Number(params.get("challengeId")) > 0
+      ? Number(params.get("challengeId"))
+      : null,
+  );
+  const [shareToken, setShareToken] = useState<string | null>(params.get("shareToken"));
+  const [isCreatingChallenge, setIsCreatingChallenge] = useState(false);
+  const hasLinkedChallenge = challengeId !== null;
   const [phase, setPhase] = useState<Phase>("setup");
   const [board, setBoard] = useState<(number | null)[]>([]);
   const [tray, setTray] = useState<number[]>([]);
@@ -126,8 +144,9 @@ export default function JigsawPage() {
   const isSolved = board.length > 0 && board.every((piece, index) => piece === index);
 
   useEffect(() => {
+    if (config.dailyDate || (Number.isInteger(requestedGameId) && requestedGameId > 0)) return;
     if (!availableSizes.includes(config.gridSize)) setConfig((current) => ({ ...current, gridSize: availableSizes[0] ?? 2 }));
-  }, [gameMode]);
+  }, [gameMode, config.dailyDate, config.gridSize, requestedGameId, availableSizes]);
 
   useEffect(() => {
     if (phase !== "playing") return;
@@ -137,7 +156,35 @@ export default function JigsawPage() {
     return () => window.clearInterval(timer);
   }, [phase]);
 
-  const startGame = useCallback(() => {
+  const pointsFor = useCallback((seconds: number) => {
+    const basePoints: Record<GridSize, number> = { 2: 250, 3: 500, 4: 900, 5: 1400 };
+    const parSeconds: Record<GridSize, number> = { 2: 45, 3: 90, 4: 150, 5: 240 };
+    const levelMultiplier = 1 + (config.level - 1) * 0.5;
+    const adjustedPar = parSeconds[config.gridSize] * (1 + (config.level - 1) * 0.35);
+    const speedBonus = Math.round(Math.max(0, adjustedPar - seconds) * 2 * config.level);
+    return Math.max(10, Math.round(basePoints[config.gridSize] * levelMultiplier + speedBonus));
+  }, [config.gridSize, config.level]);
+
+  const submitCompletion = useCallback((id: number, elapsedSeconds: number, moveCount: number) => {
+    void customFetch<{ id: number; points: number; xpEarned: number; gemsEarned: number; isPersonalBest?: boolean; completedAt: string }>(
+      `/api/jigsaw-games/${id}/complete`,
+      { method: "POST", body: JSON.stringify({ elapsedSeconds, moves: moveCount }) },
+    ).then((server) => {
+      setResult((current) => current ? { ...current, ...server } : current);
+      if (profileId) {
+        queryClient.invalidateQueries({ queryKey: [`/api/profiles/${profileId}`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/stats/${profileId}`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/achievements/${profileId}`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/jigsaw-daily-challenge/status/${profileId}`] });
+      }
+      queryClient.invalidateQueries({ queryKey: ["/api/tournaments/leaderboard"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/jigsaw-games/leaderboard"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/jigsaw-daily-challenge/leaderboard"] });
+      pendingCompletion.current = null;
+    }).catch(() => undefined);
+  }, [profileId, queryClient]);
+
+  const startGame = useCallback((linkedGameId?: number) => {
     const pieces = shuffledTiles(config.gridSize * config.gridSize);
     setBoard(Array(config.gridSize * config.gridSize).fill(null));
     setTray(pieces);
@@ -145,12 +192,14 @@ export default function JigsawPage() {
     setMoves(0);
     setElapsed(0);
     setResult(null);
-    gameIdRef.current = null;
+    gameIdRef.current = linkedGameId ?? (Number.isInteger(requestedGameId) && requestedGameId > 0 ? requestedGameId : null);
     pendingCompletion.current = null;
     setShowReference(config.level === 1);
     completedRef.current = false;
     startedAt.current = Date.now();
     setPhase("playing");
+
+    if (gameIdRef.current) return;
     const body = {
       ...(profileId ? { profileId } : {}),
       gridSize: config.gridSize,
@@ -164,35 +213,62 @@ export default function JigsawPage() {
         if (pendingCompletion.current) submitCompletion(session.id, pendingCompletion.current.elapsedSeconds, pendingCompletion.current.moves);
       })
       .catch(() => undefined);
-  }, [config, profileId, submitCompletion]);
+  }, [config, profileId, requestedGameId, submitCompletion]);
 
-  const pointsFor = useCallback((seconds: number, moveCount: number) => {
-    const base = config.gridSize * config.gridSize * 18 * config.level;
-    const timeBonus = Math.max(0, 180 - seconds) * (config.level + config.gridSize / 2);
-    const movePenalty = Math.max(0, moveCount - config.gridSize * config.gridSize) * 3;
-    return Math.max(10, Math.round(base + timeBonus - movePenalty));
-  }, [config.gridSize, config.level]);
-
-  const submitCompletion = useCallback((id: number, elapsedSeconds: number, moveCount: number) => {
-    void customFetch<{ id: number; points: number; xpEarned: number; gemsEarned: number; isPersonalBest?: boolean; completedAt: string }>(
-      `/api/jigsaw-games/${id}/complete`,
-      { method: "POST", body: JSON.stringify({ elapsedSeconds, moves: moveCount }) },
-    ).then((server) => {
-      setResult((current) => current ? { ...current, ...server } : current);
-      if (profileId) {
-        queryClient.invalidateQueries({ queryKey: [`/api/profiles/${profileId}`] });
-        queryClient.invalidateQueries({ queryKey: [`/api/stats/${profileId}`] });
-        queryClient.invalidateQueries({ queryKey: [`/api/achievements/${profileId}`] });
+  const createChallengeAndPlay = async () => {
+    if (!profileId) {
+      toast.error("A player profile is needed to create a friend challenge.");
+      return;
+    }
+    setIsCreatingChallenge(true);
+    try {
+      const created = await customFetch<{ challengeId: number; gameId: number; shareToken: string }>(
+        "/api/jigsaw-challenges",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            challengerId: profileId,
+            gridSize: config.gridSize,
+            level: config.level,
+            imageKey: config.imageKey,
+          }),
+        },
+      );
+      setChallengeId(created.challengeId);
+      setShareToken(created.shareToken);
+      const inviteUrl = appShareUrlForPath(`/jigsaw-invite/${created.shareToken}`);
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: "Jigsaw friend challenge",
+            text: `I challenge you to a ${config.gridSize}×${config.gridSize} Jigsaw puzzle.`,
+            url: inviteUrl,
+          });
+        } else {
+          await navigator.clipboard.writeText(inviteUrl);
+          toast.success("Challenge link copied.");
+        }
+      } catch {
+        try {
+          await navigator.clipboard.writeText(inviteUrl);
+          toast.success("Challenge link copied.");
+        } catch {
+          toast.error("The challenge was created, but its link could not be shared.");
+        }
       }
-      queryClient.invalidateQueries({ queryKey: ["/api/tournaments/leaderboard"] });
-    }).catch(() => undefined);
-  }, [profileId, queryClient]);
+      startGame(created.gameId);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not create a Jigsaw challenge.");
+    } finally {
+      setIsCreatingChallenge(false);
+    }
+  };
 
   const finishGame = useCallback((finalElapsed: number, finalMoves: number) => {
     if (completedRef.current) return;
     completedRef.current = true;
     const offline: Result = {
-      points: pointsFor(finalElapsed, finalMoves),
+      points: pointsFor(finalElapsed),
       xpEarned: Math.max(1, Math.round(config.gridSize * config.level / 2)),
       gemsEarned: config.gridSize >= 4 ? 2 : 1,
       elapsedSeconds: finalElapsed, moves: finalMoves, gridSize: config.gridSize, level: config.level, imageKey: config.imageKey,
@@ -249,7 +325,8 @@ export default function JigsawPage() {
 
   const handleShare = async () => {
     if (!result) return;
-    const url = appShareUrlForPath("/jigsaw");
+    const inviteToken = shareToken;
+    const url = appShareUrlForPath(inviteToken ? `/jigsaw-invite/${inviteToken}` : "/jigsaw");
     const lines = [
       `Finished a ${result.gridSize} × ${result.gridSize} picture puzzle on level ${result.level}.`,
       `${result.moves} moves · ${formatTime(result.elapsedSeconds)}`,
@@ -333,9 +410,13 @@ export default function JigsawPage() {
                 </button>
               ))}
             </div>
-            <button type="button" onClick={startGame} data-testid="button-start-jigsaw" className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#244844] px-5 py-4 text-sm font-bold text-[#f6f4e9] shadow-[0_9px_22px_rgba(36,72,68,.18)] transition hover:-translate-y-0.5 hover:bg-[#183b37] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#244844]/25">
+            <button type="button" onClick={() => startGame()} data-testid="button-start-jigsaw" className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#244844] px-5 py-4 text-sm font-bold text-[#f6f4e9] shadow-[0_9px_22px_rgba(36,72,68,.18)] transition hover:-translate-y-0.5 hover:bg-[#183b37] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#244844]/25">
               <Sparkles size={17} /> Start building
             </button>
+            <button type="button" onClick={() => void createChallengeAndPlay()} disabled={isCreatingChallenge} className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-[#cbd6ca] bg-[#f7f5ed] px-5 py-3 text-sm font-semibold text-[#52645d] transition hover:border-[#c8754b] hover:text-[#b96942] disabled:opacity-60">
+              <Share2 size={16} /> {isCreatingChallenge ? "Preparing challenge…" : "Challenge a friend"}
+            </button>
+            <Link href="/jigsaw-challenges" className="mt-3 block text-center text-xs font-semibold text-[#8b9990] hover:text-[#bd6d43]">View your Jigsaw challenges</Link>
             <p className="mt-3 text-center text-[11px] text-[#82918a]">Plays offline. Your score syncs when available.</p>
           </div>
         </section>
@@ -366,7 +447,7 @@ export default function JigsawPage() {
               </div>
               <p className="mb-5 text-sm text-[#75857d]" data-testid="result-rewards">+{result.xpEarned} XP <span className="px-1 text-[#bec7bb]">/</span> +{result.gemsEarned} gems{result.isPersonalBest ? " / Personal best" : ""}</p>
               <button type="button" onClick={() => void handleShare()} data-testid="button-share-result" className="mb-2 inline-flex items-center justify-center gap-2 rounded-xl border border-[#c7d4c8] px-4 py-3 text-sm font-semibold transition hover:bg-[#edf0e7]"><Share2 size={16} /> Share result</button>
-              <button type="button" onClick={startGame} data-testid="button-play-again" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#244844] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#183b37]"><RotateCcw size={16} /> Play again</button>
+              {!hasLinkedChallenge && <button type="button" onClick={() => startGame()} data-testid="button-play-again" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#244844] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#183b37]"><RotateCcw size={16} /> Play again</button>}
               <Link href="/jigsaw" className="mt-3 text-center text-xs font-semibold text-[#8b9990] hover:text-[#bd6d43]" data-testid="link-new-picture">Change picture or difficulty</Link>
             </div>
           </div>
@@ -436,7 +517,7 @@ export default function JigsawPage() {
           </section>
           <section className="flex items-center justify-between rounded-2xl border border-[#d5ded2] bg-[#e9eee5] px-4 py-3">
             <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#8b9990]">Moves</p><p className="font-mono text-2xl" data-testid="status-moves">{moves}</p></div>
-            <button type="button" onClick={startGame} data-testid="button-restart-jigsaw" className="inline-flex items-center gap-2 rounded-lg border border-[#cbd6ca] bg-[#f7f5ed] px-3 py-2 text-xs font-semibold text-[#52645d] transition hover:border-[#c8754b] hover:text-[#b96942]"><RotateCcw size={14} /> Restart</button>
+            {!hasLinkedChallenge && <button type="button" onClick={() => startGame()} data-testid="button-restart-jigsaw" className="inline-flex items-center gap-2 rounded-lg border border-[#cbd6ca] bg-[#f7f5ed] px-3 py-2 text-xs font-semibold text-[#52645d] transition hover:border-[#c8754b] hover:text-[#b96942]"><RotateCcw size={14} /> Restart</button>}
           </section>
           <p className="flex items-center gap-2 px-1 text-[11px] text-[#8b9990]"><Grip size={14} /> Tip: keyboard users can tab to each piece and press Enter to select.</p>
         </aside>

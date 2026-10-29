@@ -14,6 +14,8 @@ import achievementsRouter from "./achievements";
 import memoryGamesRouter from "./memory-games";
 import memoryChallengesRouter from "./memory-challenges";
 import memoryDuelsRouter from "./memory-duels";
+import jigsawGamesRouter from "./jigsaw-games";
+import jigsawChallengesRouter from "./jigsaw-challenges";
 
 const router: IRouter = Router();
 
@@ -32,5 +34,7 @@ router.use(achievementsRouter);
 router.use(memoryGamesRouter);
 router.use(memoryChallengesRouter);
 router.use(memoryDuelsRouter);
+router.use(jigsawGamesRouter);
+router.use(jigsawChallengesRouter);
 
 export default router;

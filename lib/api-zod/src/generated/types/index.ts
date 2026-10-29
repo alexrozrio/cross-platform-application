@@ -37,6 +37,8 @@ export * from './leaderboardEntryDifficulty';
 export * from './leaderboardEntryGridSize';
 export * from './playerStats';
 export * from './playerStatsBestTimes';
+export * from './playerStatsJigsaw';
+export * from './playerStatsJigsawBestTimes';
 export * from './playerStatsMemory';
 export * from './playerStatsMemoryBestTimes';
 export * from './profile';

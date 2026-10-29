@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and, gte, lt, inArray } from "drizzle-orm";
-import { db, gamesTable, puzzlesTable, profilesTable, memoryGamesTable, badgesTable } from "@workspace/db";
+import { db, gamesTable, puzzlesTable, profilesTable, memoryGamesTable, jigsawGamesTable, badgesTable } from "@workspace/db";
 import {
   getWeekPeriod,
   getMonthPeriod,
@@ -82,6 +82,28 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
         )
     : [];
 
+  const jigsawRows = gridSize === undefined
+    ? await db
+        .select({
+          profileId: jigsawGamesTable.profileId,
+          username: profilesTable.username,
+          avatar: profilesTable.avatar,
+          xp: profilesTable.xp,
+          points: jigsawGamesTable.points,
+        })
+        .from(jigsawGamesTable)
+        .innerJoin(profilesTable, eq(jigsawGamesTable.profileId, profilesTable.id))
+        .where(
+          range
+            ? and(
+                eq(jigsawGamesTable.status, "completed"),
+                gte(jigsawGamesTable.completedAt, range.start),
+                lt(jigsawGamesTable.completedAt, range.end),
+              )
+            : eq(jigsawGamesTable.status, "completed"),
+        )
+    : [];
+
   // ── Filter Sudoku by gridSize if requested ────────────────────────────────
   const filteredSudoku = gridSize !== undefined
     ? sudokuRows.filter((r) => r.gridSizeVal === gridSize)
@@ -98,12 +120,13 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
       gamesPlayed: number;
       sudokuGamesPlayed: number;
       memoryGamesPlayed: number;
+      jigsawGamesPlayed: number;
     }
   >();
 
   const ensureEntry = (profileId: number, username: string, avatar: string | null, xp: number) => {
     if (!grouped.has(profileId)) {
-      grouped.set(profileId, { username, avatar, xp, totalPoints: 0, gamesPlayed: 0, sudokuGamesPlayed: 0, memoryGamesPlayed: 0 });
+      grouped.set(profileId, { username, avatar, xp, totalPoints: 0, gamesPlayed: 0, sudokuGamesPlayed: 0, memoryGamesPlayed: 0, jigsawGamesPlayed: 0 });
     }
     return grouped.get(profileId)!;
   };
@@ -122,6 +145,14 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
     entry.totalPoints += row.points ?? 0;
     entry.gamesPlayed += 1;
     entry.memoryGamesPlayed += 1;
+  }
+
+  for (const row of jigsawRows) {
+    if (!row.profileId) continue;
+    const entry = ensureEntry(row.profileId, row.username, row.avatar ?? null, row.xp ?? 0);
+    entry.totalPoints += row.points ?? 0;
+    entry.gamesPlayed += 1;
+    entry.jigsawGamesPlayed += 1;
   }
 
   const sorted = Array.from(grouped.entries())
@@ -169,6 +200,7 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
     gamesPlayed: data.gamesPlayed,
     sudokuGamesPlayed: data.sudokuGamesPlayed,
     memoryGamesPlayed: data.memoryGamesPlayed,
+    jigsawGamesPlayed: data.jigsawGamesPlayed,
     streak: streakMap.get(profileId) ?? 0,
   }));
 
@@ -247,6 +279,26 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
           ),
     );
 
+  const jigsawRows = await db
+    .select({
+      gridSize: jigsawGamesTable.gridSize,
+      points: jigsawGamesTable.points,
+    })
+    .from(jigsawGamesTable)
+    .where(
+      range
+        ? and(
+            eq(jigsawGamesTable.status, "completed"),
+            eq(jigsawGamesTable.profileId, profileId),
+            gte(jigsawGamesTable.completedAt, range.start),
+            lt(jigsawGamesTable.completedAt, range.end),
+          )
+        : and(
+            eq(jigsawGamesTable.status, "completed"),
+            eq(jigsawGamesTable.profileId, profileId),
+          ),
+    );
+
   // Aggregate sudoku by grid size
   const sudokuByGrid = new Map<number, { points: number; games: number }>();
   for (const row of sudokuRows) {
@@ -267,6 +319,15 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
     memoryByGrid.set(gs, cur);
   }
 
+  const jigsawByGrid = new Map<number, { points: number; games: number }>();
+  for (const row of jigsawRows) {
+    const gs = row.gridSize;
+    const cur = jigsawByGrid.get(gs) ?? { points: 0, games: 0 };
+    cur.points += row.points ?? 0;
+    cur.games += 1;
+    jigsawByGrid.set(gs, cur);
+  }
+
   res.json({
     profileId,
     period,
@@ -279,6 +340,11 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
       gridSize: gs,
       points: memoryByGrid.get(gs)?.points ?? 0,
       games: memoryByGrid.get(gs)?.games ?? 0,
+    })),
+    jigsaw: [2, 3, 4, 5].map(gs => ({
+      gridSize: gs,
+      points: jigsawByGrid.get(gs)?.points ?? 0,
+      games: jigsawByGrid.get(gs)?.games ?? 0,
     })),
   });
 });

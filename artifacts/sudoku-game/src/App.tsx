@@ -80,6 +80,13 @@ function MemoryBookmarkRoute({ params }: { params: { difficulty: string } }) {
   return <MemoryMatch difficultySlug={params.difficulty} />;
 }
 const MemoryChallengePage = lazy(() => import("@/pages/memory-challenge"));
+const JigsawPage = lazy(() => import("@/pages/jigsaw"));
+const JigsawDailyChallengePage = lazy(() => import("@/pages/jigsaw-challenge"));
+const JigsawChallengesPage = lazy(() => import("@/pages/jigsaw-challenges"));
+const JigsawInvitePage = lazy(() => import("@/pages/jigsaw-invite"));
+function JigsawInviteRoute({ params }: { params: { token: string } }) {
+  return <JigsawInvitePage token={params.token} />;
+}
 const PublicProfilePage = lazy(() => import("@/pages/public-profile"));
 const ChallengeInvitePage = lazy(() => import("@/pages/challenge-invite"));
 const NotFound = lazy(() => import("@/pages/not-found"));
@@ -185,6 +192,9 @@ function Router() {
               <Route path="/leaderboard/memory">
                 {() => <Leaderboard gamePage="memory" />}
               </Route>
+              <Route path="/leaderboard/jigsaw">
+                {() => <Leaderboard gamePage="jigsaw" />}
+              </Route>
               <Route path="/leaderboard">
                 {() => <Leaderboard />}
               </Route>
@@ -196,6 +206,10 @@ function Router() {
                 {() => <MemoryMatch />}
               </Route>
               <Route path="/memory-challenge" component={MemoryChallengePage} />
+              <Route path="/jigsaw" component={JigsawPage} />
+              <Route path="/jigsaw-challenge" component={JigsawDailyChallengePage} />
+              <Route path="/jigsaw-challenges" component={JigsawChallengesPage} />
+              <Route path="/jigsaw-invite/:token" component={JigsawInviteRoute} />
               <Route path="/player/:profileId">
                 {(params) => <PublicProfilePage profileId={params.profileId} />}
               </Route>

@@ -19,6 +19,7 @@ import {
   ChevronDown,
   ChevronUp,
   Brain,
+  Puzzle,
   Timer,
   Repeat2,
   TrendingUp,
@@ -521,6 +522,7 @@ function AlltimeBoard({ myProfileId }: { myProfileId?: number }) {
 interface BreakdownData {
   sudoku: { gridSize: number; points: number; games: number }[];
   memory: { gridSize: number; points: number; games: number }[];
+  jigsaw: { gridSize: number; points: number; games: number }[];
 }
 
 const SUDOKU_GRID_NAMES: Record<number, string> = {
@@ -536,6 +538,12 @@ const MEMORY_LEVEL_NAMES: Record<number, string> = {
   6: "Medium",
   8: "Hard",
 };
+const JIGSAW_GRID_NAMES: Record<number, string> = {
+  2: "2×2 Baby",
+  3: "3×3 Child",
+  4: "4×4 Adult",
+  5: "5×5 Adult",
+};
 
 function BreakdownPanel({
   profileId,
@@ -547,10 +555,10 @@ function BreakdownPanel({
   profileId: number;
   type: "weekly" | "monthly" | "alltime";
   period: string;
-  defaultGame?: "sudoku" | "memory";
-  onlyGame?: "sudoku" | "memory";
+  defaultGame?: "sudoku" | "memory" | "jigsaw";
+  onlyGame?: "sudoku" | "memory" | "jigsaw";
 }) {
-  const [bdTab, setBdTab] = useState<"sudoku" | "memory">(onlyGame ?? defaultGame ?? "sudoku");
+  const [bdTab, setBdTab] = useState<"sudoku" | "memory" | "jigsaw">(onlyGame ?? defaultGame ?? "sudoku");
   const { data, isLoading } = useQuery<BreakdownData>({
     queryKey: ["tournament-breakdown", profileId, type, period],
     queryFn: () =>
@@ -587,6 +595,12 @@ function BreakdownPanel({
             className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${bdTab === "memory" ? "bg-violet-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}
           >
             🃏 Memory
+          </button>
+          <button
+            onClick={() => setBdTab("jigsaw")}
+            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${bdTab === "jigsaw" ? "bg-amber-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+          >
+            🧩 Jigsaw
           </button>
         </div>
       )}
@@ -643,11 +657,22 @@ function BreakdownPanel({
           ))}
         </div>
       )}
+      {bdTab === "jigsaw" && (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {(data?.jigsaw ?? [2, 3, 4, 5].map((gridSize) => ({ gridSize, points: 0, games: 0 }))).map((item) => (
+            <div key={item.gridSize} className={`rounded-xl border p-2.5 text-center transition-colors ${item.games > 0 ? "border-amber-300 bg-background" : "border-border bg-muted/30 opacity-50"}`}>
+              <p className="text-xs font-bold text-foreground">{JIGSAW_GRID_NAMES[item.gridSize]}</p>
+              <p className="mt-0.5 text-lg font-black leading-tight tabular-nums text-amber-700 dark:text-amber-300">{item.points > 0 ? item.points.toLocaleString() : "—"}</p>
+              <p className="mt-0.5 text-[10px] text-muted-foreground">{item.games > 0 ? `${item.games} game${item.games !== 1 ? "s" : ""}` : "no games"}</p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-// ─── Per-player details panel (used in Sudoku & Memory all-time boards) ──────
+// ─── Per-player details panel (used in all-time game boards) ────────────────
 
 function PlayerDetailsPanel({
   profileId,
@@ -655,7 +680,7 @@ function PlayerDetailsPanel({
   myProfileId,
 }: {
   profileId: number;
-  game: "sudoku" | "memory";
+  game: "sudoku" | "memory" | "jigsaw";
   myProfileId?: number;
 }) {
   const isMe = myProfileId === profileId;
@@ -821,7 +846,7 @@ function TournamentBoard({
                   : `No games yet this ${type === "weekly" ? "week" : "month"}.`}
               </p>
               <p className="text-sm mt-1">
-                Complete Sudoku or Memory Match games to earn points and climb the rankings!
+                Complete Sudoku, Memory Match, or Jigsaw games to earn points and climb the rankings!
               </p>
             </div>
           ) : (
@@ -905,8 +930,14 @@ function TournamentBoard({
                                 🃏 {(entry as any).memoryGamesPlayed} memory
                               </span>
                             )}
+                            {(entry as any).jigsawGamesPlayed > 0 && (
+                              <span>
+                                🧩 {(entry as any).jigsawGamesPlayed} jigsaw
+                              </span>
+                            )}
                             {(entry as any).sudokuGamesPlayed === 0 &&
-                              (entry as any).memoryGamesPlayed === 0 && (
+                              (entry as any).memoryGamesPlayed === 0 &&
+                              (entry as any).jigsawGamesPlayed === 0 && (
                                 <span>
                                   {entry.gamesPlayed} game
                                   {entry.gamesPlayed !== 1 ? "s" : ""}
@@ -1222,21 +1253,128 @@ function MemoryBoard({ myProfileId }: { myProfileId?: number }) {
   );
 }
 
+type JigsawLeaderboardEntry = {
+  rank: number;
+  profileId: number;
+  username: string;
+  avatar: string | null;
+  totalPoints: number;
+  gamesPlayed: number;
+  bestTime: number;
+  sizes: Record<number, { points: number; games: number }>;
+};
+
+function JigsawScoringGuide() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="overflow-hidden rounded-2xl border border-amber-200/70 dark:border-amber-900/50">
+      <button onClick={() => setOpen((value) => !value)} className="flex w-full items-center justify-between bg-card px-5 py-4 text-left transition-colors hover:bg-muted/40">
+        <div>
+          <p className="text-sm font-semibold">How Jigsaw points are calculated</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Board size, level, and completion time all count.</p>
+        </div>
+        {open ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
+      </button>
+      {open && (
+        <div className="space-y-3 border-t bg-muted/20 px-5 py-4 text-sm">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[{ size: 2, base: 250, par: 45 }, { size: 3, base: 500, par: 90 }, { size: 4, base: 900, par: 150 }, { size: 5, base: 1400, par: 240 }].map((item) => (
+              <div key={item.size} className="rounded-xl border bg-card p-3">
+                <p className="font-bold">{item.size}×{item.size} board</p>
+                <p className="mt-1 text-xs text-muted-foreground">Base {item.base.toLocaleString()} pts</p>
+                <p className="text-xs text-muted-foreground">Par {formatTime(item.par)}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs leading-relaxed text-muted-foreground">Levels multiply base points by 1×, 1.5×, or 2×. Finishing faster than the size's par time adds a time bonus; every extra second beyond par earns no speed bonus.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function JigsawBoard({ myProfileId }: { myProfileId?: number }) {
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["/api/jigsaw-games/leaderboard", "all"],
+    queryFn: () => customFetch<{ gridSize: number | "all"; entries: JigsawLeaderboardEntry[] }>("/api/jigsaw-games/leaderboard?gridSize=all"),
+    refetchInterval: 60_000,
+  });
+
+  return (
+    <div className="space-y-5">
+      <Card className="border-amber-200/70 shadow-md dark:border-amber-900/50">
+        <CardHeader className="border-b bg-card pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Puzzle className="h-5 w-5 text-amber-600" /> Jigsaw — All Board Sizes
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {isLoading ? (
+            <div className="space-y-4 p-6">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
+          ) : isError ? (
+            <div className="p-10 text-center text-sm text-muted-foreground">Jigsaw leaderboard could not be loaded. Please try again.</div>
+          ) : !data?.entries.length ? (
+            <div className="p-12 text-center text-muted-foreground">
+              <Puzzle className="mx-auto mb-3 h-10 w-10 opacity-20" />
+              <p className="font-medium">No completed Jigsaw games yet.</p>
+              <p className="mt-1 text-sm">Complete a picture puzzle to claim the top spot.</p>
+            </div>
+          ) : (
+            <div className="divide-y">
+              {data.entries.map((entry) => {
+                const isMe = myProfileId !== undefined && entry.profileId === myProfileId;
+                const isExpanded = expandedId === entry.profileId;
+                return (
+                  <div key={entry.profileId}>
+                    <button onClick={() => setExpandedId((current) => current === entry.profileId ? null : entry.profileId)} className={`flex w-full items-center justify-between gap-2 px-3 py-4 text-left transition-colors sm:px-5 ${isMe ? "bg-amber-50/70 hover:bg-amber-50 dark:bg-amber-950/20" : "hover:bg-muted/40"} ${isExpanded ? "bg-muted/30" : ""}`}>
+                      <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
+                        <RankBadge rank={entry.rank} />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex min-w-0 flex-wrap items-center gap-2">
+                            <p title={entry.username} className={`min-w-0 flex-1 truncate font-semibold ${isMe ? "text-amber-800 dark:text-amber-300" : ""}`}>{entry.username}</p>
+                            {isMe && <span className="rounded-full bg-amber-600 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">You</span>}
+                          </div>
+                          <p className="mt-0.5 text-xs text-muted-foreground">{entry.gamesPlayed} game{entry.gamesPlayed !== 1 ? "s" : ""} · best time {formatTime(entry.bestTime)}</p>
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <div className="text-right">
+                          <p className="whitespace-nowrap text-lg font-black tabular-nums text-amber-700 dark:text-amber-300 sm:text-xl">{entry.totalPoints.toLocaleString()}</p>
+                          <p className="mt-0.5 text-xs text-muted-foreground">pts</p>
+                        </div>
+                        {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                      </div>
+                    </button>
+                    {isExpanded && <PlayerDetailsPanel profileId={entry.profileId} game="jigsaw" myProfileId={myProfileId} />}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      <JigsawScoringGuide />
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 function LeaderboardScopeLinks({
   active,
 }: {
-  active: "all" | "sudoku" | "memory";
+  active: "all" | "sudoku" | "memory" | "jigsaw";
 }) {
   const links = [
     { id: "all", href: "/leaderboard/", label: "All Games", icon: Trophy },
     { id: "sudoku", href: "/leaderboard/sudoku/", label: "Sudoku", icon: Zap },
     { id: "memory", href: "/leaderboard/memory/", label: "Memory Match", icon: Brain },
+    { id: "jigsaw", href: "/leaderboard/jigsaw/", label: "Jigsaw", icon: Puzzle },
   ] as const;
 
   return (
-    <nav aria-label="Leaderboard category" className="grid grid-cols-3 gap-1 sm:gap-2">
+    <nav aria-label="Leaderboard category" className="grid grid-cols-2 gap-1 sm:grid-cols-4 sm:gap-2">
       {links.map(({ id, href, label, icon: Icon }) => (
         <Link
           key={id}
@@ -1259,13 +1397,13 @@ function LeaderboardScopeLinks({
 export default function Leaderboard({
   gamePage: routeGamePage,
 }: {
-  gamePage?: "sudoku" | "memory";
+  gamePage?: "sudoku" | "memory" | "jigsaw";
 } = {}) {
   const search = useSearch();
   const requestedTab = new URLSearchParams(search).get("tab");
   const gamePage =
     routeGamePage ??
-    (requestedTab === "sudoku" || requestedTab === "memory" ? requestedTab : null);
+    (requestedTab === "sudoku" || requestedTab === "memory" || requestedTab === "jigsaw" ? requestedTab : null);
   const initialTab: MainTab =
     requestedTab === "monthly" || requestedTab === "alltime"
       ? requestedTab
@@ -1276,13 +1414,17 @@ export default function Leaderboard({
         ? "Sudoku Leaderboard | Play Brain Games . Online"
         : gamePage === "memory"
           ? "Memory Match Leaderboard | Play Brain Games . Online"
+          : gamePage === "jigsaw"
+            ? "Jigsaw Leaderboard | Play Brain Games . Online"
           : "All Games Leaderboard | Play Brain Games . Online",
     description:
       gamePage === "sudoku"
         ? "Compare all-time Sudoku points across every grid size on Play Brain Games . Online."
         : gamePage === "memory"
           ? "Compare all-time Memory Match scores across every level on Play Brain Games . Online."
-          : "Compare weekly, monthly, and all-time Sudoku and Memory Match scores on Play Brain Games . Online.",
+          : gamePage === "jigsaw"
+            ? "Compare Jigsaw puzzle points across all board sizes on Play Brain Games . Online."
+            : "Compare weekly, monthly, and all-time Sudoku, Memory Match, and Jigsaw scores on Play Brain Games . Online.",
     path: gamePage ? `/leaderboard/${gamePage}/` : "/leaderboard/",
   });
   const [tab, setTab] = useState<MainTab>(initialTab);
@@ -1293,13 +1435,17 @@ export default function Leaderboard({
       ? "Sudoku Leaderboard"
       : gamePage === "memory"
         ? "Memory Match Leaderboard"
+        : gamePage === "jigsaw"
+          ? "Jigsaw Leaderboard"
         : "Leaderboard";
   const subtitle =
     gamePage === "sudoku"
       ? "All-time points across every Sudoku grid size."
       : gamePage === "memory"
         ? "All-time scores across every Memory Match level."
-        : "Weekly, monthly, and all-time rankings across both games.";
+        : gamePage === "jigsaw"
+          ? "All-time points across every Jigsaw board size."
+          : "Weekly, monthly, and all-time rankings across all three games.";
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-3 sm:space-y-8 animate-in fade-in duration-500">
@@ -1332,6 +1478,15 @@ export default function Leaderboard({
               <Brain className="w-3.5 h-3.5 text-primary" />
               <span className="hidden sm:inline">Play Memory</span>
             </Link>
+            <Link
+              href="/jigsaw"
+              aria-label="Play Jigsaw"
+              title="Play Jigsaw"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card p-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted sm:px-2.5 sm:py-1.5 sm:text-sm"
+            >
+              <Puzzle className="h-3.5 w-3.5 text-amber-600" />
+              <span className="hidden sm:inline">Play Jigsaw</span>
+            </Link>
           </div>
         </div>
       </div>
@@ -1342,6 +1497,8 @@ export default function Leaderboard({
         <AlltimeBoard myProfileId={myProfileId} />
       ) : gamePage === "memory" ? (
         <MemoryBoard myProfileId={myProfileId} />
+      ) : gamePage === "jigsaw" ? (
+        <JigsawBoard myProfileId={myProfileId} />
       ) : (
         <>
           <Tabs

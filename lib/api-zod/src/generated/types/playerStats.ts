@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { PlayerStatsBestTimes } from './playerStatsBestTimes';
+import type { PlayerStatsJigsaw } from './playerStatsJigsaw';
 import type { PlayerStatsMemory } from './playerStatsMemory';
 
 export interface PlayerStats {
@@ -19,4 +20,5 @@ export interface PlayerStats {
   totalMistakes?: number;
   currentStreak?: number;
   memory?: PlayerStatsMemory;
+  jigsaw?: PlayerStatsJigsaw;
 }

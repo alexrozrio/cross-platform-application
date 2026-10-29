@@ -32,7 +32,7 @@ export default function TermsOfService() {
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">1. Acceptance</h2>
           <p>
-            By accessing or using Play Brain Games . Online, including the Sudoku and Memory Match games ("Service"), you agree to be bound by these Terms. If you do not agree, please stop using the Service immediately.
+            By accessing or using Play Brain Games . Online, including the Sudoku, Memory Match, and Jigsaw games ("Service"), you agree to be bound by these Terms. If you do not agree, please stop using the Service immediately.
           </p>
         </section>
 

@@ -13,24 +13,28 @@ const openGraphImage = `${siteUrl}/opengraph.jpg`;
 const publicPages = [
   {
     route: "/",
-    title: "Free Sudoku & Memory Match Games Online | Play Brain Games . Online",
+    title: "Free Sudoku, Memory Match & Jigsaw Games Online | Play Brain Games . Online",
     description:
-      "Play browser-based Sudoku and Memory Match with practical solving and recall routines, flexible board sizes, guest play, and optional synced progress.",
-    heading: "Free Sudoku & Memory Match Games Online",
+      "Play browser-based Sudoku, Memory Match, and Jigsaw with flexible boards, daily challenges, guest play, and optional synced progress.",
+    heading: "Free Sudoku, Memory Match & Jigsaw Games Online",
     intro:
-      "Choose Sudoku when you want to reason through rows, columns, and boxes, or Memory Match when you want to remember card positions. Both games can be started as a guest, with board choices for short sessions and larger challenges.",
+      "Choose Sudoku for logic, Memory Match for recall, or Jigsaw to rebuild a picture. All three games can be started as a guest, with board choices for short sessions and larger challenges.",
     sections: [
       ["Choose a Sudoku grid you can reason through", "Baby 3×3, Mini 4×4, and Dual 6×6 boards keep the symbol set compact. Classic 9×9 is the familiar standard, while Pro 16×16 is a longer challenge. Easy, medium, hard, and expert settings change puzzle difficulty independently of board size."],
       ["Use constraints instead of guessing", "A legal placement must fit the row, column, and marked box. Start with a group that has few empty cells, list its missing symbols, and check which candidates remain in each cell. When more than one candidate fits, use notes and revisit the cell after a nearby placement."],
       ["Build a location map in Memory Match", "Turn over two cards at a time. If they match, they stay visible; if not, remember both positions before they turn face-down again. Scanning in a consistent order helps you connect a symbol to a location when you see it later."],
       ["Choose a Memory Match board", "The 2×4 Beginner board has 4 pairs, 4×4 Easy has 8, 8×4 Medium has 16, and 8×8 Hard has 32. A small board is useful for learning the routine; larger boards ask you to remember more locations. Completion time and flips contribute to the result."],
-      ["Change the display without changing the rules", "Sudoku and Memory Match can use numbers, letters, or curated image symbols where those modes are available. Themes change the appearance of the board, while the same puzzle and matching rules still apply."],
+      ["Build a picture in Jigsaw", "Choose a 2×2 or 3×3 board for a smaller puzzle, or a 4×4 or 5×5 board for a larger challenge. Swap or drag pieces into place. Higher levels and larger boards earn more base points, while a fast finish adds a time bonus."],
+      ["Change the display without changing the rules", "Sudoku and Memory Match can use numbers, letters, or curated image symbols where those modes are available. Jigsaw uses themed pictures. Themes change the appearance of the board, while each game's rules stay the same."],
       ["Play as a guest or keep progress in a profile", "You can start a game without an account. Optional Google sign-in connects game statistics, achievements, and streaks to a profile so progress can sync across devices."],
-      ["Use daily challenges for a shared benchmark", "The daily Sudoku challenge gives players the same 9×9 medium puzzle for that date. Memory Match also has daily and weekly challenges. Leaderboards compare recorded results for people who choose to take part."],
+      ["Use daily challenges for a shared benchmark", "The daily Sudoku challenge gives players the same 9×9 medium puzzle for that date. Memory Match has daily and weekly challenges, and Jigsaw gives everyone the same picture puzzle each day."],
     ],
     links: [
       ["/sudoku", "Play Sudoku online"],
       ["/memory", "Play Memory Match online"],
+      ["/jigsaw", "Play Jigsaw online"],
+      ["/jigsaw-challenge", "Try today's Jigsaw puzzle"],
+      ["/leaderboard/jigsaw/", "View the Jigsaw leaderboard"],
       ["/themes", "Browse game themes"],
       ["/guides", "Read the puzzle guides"],
       ["/about", "Learn how the games work"],
@@ -38,13 +42,52 @@ const publicPages = [
     schemaType: "WebApplication",
   },
   {
-    route: "/themes",
-    title: "Sudoku & Memory Match Themes | Play Brain Games . Online",
+    route: "/jigsaw",
+    title: "Jigsaw Picture Puzzles Online | Play Brain Games . Online",
     description:
-      "Personalise Sudoku and Memory Match with curated colour palettes, fonts, image icon sets and system backgrounds. Preview styles and unlock selected themes with gems.",
-    heading: "Sudoku & Memory Match Themes",
+      "Rebuild themed pictures on 2×2, 3×3, 4×4, and 5×5 Jigsaw boards. Choose a level, earn time-based points, and challenge friends.",
+    heading: "Jigsaw Picture Puzzles Online",
     intro:
-      "Choose a curated colour palette, switch on a system-provided background, and explore font and image-symbol options across Sudoku and Memory Match. Preview styles before applying them; some themes can be unlocked with gems.",
+      "Choose a picture, set the board size and level, then place each piece. Complete today's shared puzzle or invite a friend to solve the same image.",
+    sections: [
+      ["Choose a board for your experience", "2×2 and 3×3 boards offer smaller puzzles. 4×4 and 5×5 boards add more pieces and earn higher base points. The 4 All game mode includes all four sizes."],
+      ["Earn points from size, level, and time", "Larger boards and harder levels raise the base score. Finish faster than the target time to earn an additional speed bonus."],
+      ["Play together or on your own", "Try the daily Jigsaw challenge to share the same board with everyone, or create a friend challenge and compare results after both players finish."],
+    ],
+    links: [
+      ["/jigsaw-challenge", "Play today's Jigsaw challenge"],
+      ["/jigsaw-challenges", "Open your Jigsaw challenges"],
+      ["/leaderboard/jigsaw/", "View all-time Jigsaw scores"],
+      ["/guides", "Read the puzzle guides"],
+    ],
+    schemaType: "Game",
+  },
+  {
+    route: "/jigsaw-challenge",
+    title: "Daily Jigsaw Puzzle Challenge | Play Brain Games . Online",
+    description:
+      "Play today's shared Jigsaw picture puzzle, earn points for size, level, and time, and compare your result on the daily leaderboard.",
+    heading: "Daily Jigsaw Puzzle Challenge",
+    intro:
+      "Everyone gets the same picture puzzle today. Complete it to post a score, then compare your time and points with other players.",
+    sections: [
+      ["One shared board each day", "The daily challenge uses the same board size, level, and picture for every player on that date."],
+      ["Score by size, level, and time", "Larger boards and higher levels earn more points. Finishing faster than the target time adds a speed bonus."],
+    ],
+    links: [
+      ["/jigsaw", "Choose another Jigsaw puzzle"],
+      ["/leaderboard/jigsaw/", "View all-time Jigsaw scores"],
+    ],
+    schemaType: "WebPage",
+  },
+  {
+    route: "/themes",
+    title: "Sudoku, Memory Match & Jigsaw Themes | Play Brain Games . Online",
+    description:
+      "Personalise Sudoku and Memory Match, and use themed image sets for Jigsaw picture puzzles. Preview styles and unlock selected themes with gems.",
+    heading: "Sudoku, Memory Match & Jigsaw Themes",
+    intro:
+      "Choose a curated colour palette, switch on a system-provided background, and explore font and image-symbol options. Jigsaw uses themed images for its picture puzzles.",
     sections: [
       [
         "Curated colour palettes",
@@ -56,7 +99,7 @@ const publicPages = [
       ],
       [
         "Fonts and image-symbol sets",
-        "Adjust text styles and browse themed image icons used in Sudoku and Memory Match. Preview available choices before selecting one.",
+        "Adjust text styles and browse themed image icons used in Sudoku and Memory Match, plus themed pictures for Jigsaw. Preview available choices before selecting one.",
       ],
       [
         "Unlockable options",
@@ -66,6 +109,7 @@ const publicPages = [
     links: [
       ["/sudoku", "Play Sudoku with a new theme"],
       ["/memory", "Use themes in Memory Match"],
+      ["/jigsaw", "Use pictures in Jigsaw"],
       ["/guides", "Read the puzzle guides"],
     ],
     schemaType: "CollectionPage",

@@ -35,7 +35,7 @@ export default function PrivacyPolicy() {
             When you play as a guest we assign your device a random identifier, which is stored in that browser or app's local storage. You can transfer a guest profile between devices using a short-lived, one-use code. When you sign in with Google we receive your name, profile photo, and email address from your Google account and store them to personalise your experience.
           </p>
           <p>
-            We also store game-related data you create across both Sudoku and Memory Match: puzzle and game attempts, completion times, scores, settings, and earned badges.
+            We also store game-related data you create across Sudoku, Memory Match, and Jigsaw: puzzle and game attempts, completion times, scores, settings, and earned badges.
           </p>
           <p>
             If you allow analytics in the privacy choices dialog, we use Google Analytics 4 to understand how visitors use the Service, such as which pages are visited and how the Service performs. The analytics tag loads only after you opt in. It may use cookies or similar identifiers and process usage, browser/device information, and general location inferred from network information. We do not send a Google Analytics user ID.
@@ -46,7 +46,7 @@ export default function PrivacyPolicy() {
           <h2 className="text-base font-semibold text-foreground">2. How We Use Your Information</h2>
           <ul className="list-disc list-inside space-y-1">
             <li>To identify you across sessions and devices.</li>
-            <li>To display your stats, rank, and leaderboard position for Sudoku and Memory Match.</li>
+            <li>To display your stats, rank, and leaderboard position for Sudoku, Memory Match, and Jigsaw.</li>
             <li>To show your username, avatar, and badges on public profiles and leaderboards.</li>
             <li>To send login-streak and reward notifications within the app.</li>
             <li>To improve game balance, understand Service usage, and fix bugs.</li>
@@ -104,7 +104,7 @@ export default function PrivacyPolicy() {
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">6. Data Retention</h2>
           <p>
-            Your profile and game history — including both Sudoku and Memory Match activity — are retained while your account is active. You can permanently delete your account and associated server data from the app's Account page or through our{" "}
+            Your profile and game history — including Sudoku, Memory Match, and Jigsaw activity — are retained while your account is active. You can permanently delete your account and associated server data from the app's Account page or through our{" "}
             <a className="text-foreground font-medium underline underline-offset-2" href="/account-deletion">account deletion page</a>.
             The deletion flow also clears local app data on the device used to submit the request. Local copies on other devices must be cleared on those devices. If you cannot sign in, contact us using Section 10.
           </p>

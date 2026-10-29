@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and, desc } from "drizzle-orm";
-import { db, gamesTable, puzzlesTable, memoryGamesTable, profilesTable } from "@workspace/db";
+import { db, gamesTable, puzzlesTable, memoryGamesTable, jigsawGamesTable, profilesTable } from "@workspace/db";
 import { GetPlayerStatsParams, GetPlayerStatsResponse } from "@workspace/api-zod";
 
 const router: IRouter = Router();
@@ -93,6 +93,36 @@ router.get("/stats/:profileId", async (req, res): Promise<void> => {
   const memoryCurrentStreak = profile?.memoryStreak ?? 0;
   const memoryLongestStreak = profile?.longestMemoryStreak ?? 0;
 
+  // ── Jigsaw stats ──────────────────────────────────────────────────────────
+  const allJigsawGames = await db
+    .select({
+      status: jigsawGamesTable.status,
+      gridSize: jigsawGamesTable.gridSize,
+      level: jigsawGamesTable.level,
+      elapsedSeconds: jigsawGamesTable.elapsedSeconds,
+      points: jigsawGamesTable.points,
+      dailyDate: jigsawGamesTable.dailyDate,
+    })
+    .from(jigsawGamesTable)
+    .where(eq(jigsawGamesTable.profileId, profileId))
+    .orderBy(desc(jigsawGamesTable.createdAt));
+  const jigsawWins = allJigsawGames.filter((game) => game.status === "completed");
+  const jigsawBestTimes: Record<string, number | null> = {};
+  for (const size of [2, 3, 4, 5]) {
+    for (const level of [1, 2, 3]) {
+      const matching = jigsawWins.filter((game) => game.gridSize === size && game.level === level);
+      jigsawBestTimes[`${size}-${level}`] = matching.length > 0
+        ? Math.min(...matching.map((game) => game.elapsedSeconds))
+        : null;
+    }
+  }
+  const jigsawDailyDates = new Set(jigsawWins.flatMap((game) => game.dailyDate ? [game.dailyDate] : []));
+  let jigsawWinStreak = 0;
+  for (const game of allJigsawGames) {
+    if (game.status === "completed") jigsawWinStreak++;
+    else break;
+  }
+
   const stats = {
     profileId,
     totalGames,
@@ -112,6 +142,18 @@ router.get("/stats/:profileId", async (req, res): Promise<void> => {
       currentStreak: memoryCurrentStreak,
       longestStreak: memoryLongestStreak,
       winStreak: memoryWinStreak,
+    },
+    jigsaw: {
+      totalGames: allJigsawGames.length,
+      totalWins: jigsawWins.length,
+      winRate: allJigsawGames.length > 0 ? jigsawWins.length / allJigsawGames.length : 0,
+      bestTimes: jigsawBestTimes,
+      averageTime: jigsawWins.length > 0
+        ? Math.round(jigsawWins.reduce((sum, game) => sum + game.elapsedSeconds, 0) / jigsawWins.length)
+        : null,
+      totalPoints: jigsawWins.reduce((sum, game) => sum + (game.points ?? 0), 0),
+      dailyChallengesCompleted: jigsawDailyDates.size,
+      winStreak: jigsawWinStreak,
     },
   };
 

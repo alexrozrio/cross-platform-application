@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Swords, Trophy, Clock, Search, Gem, CircleCheck as CheckCircle2, Circle as XCircle, Loader as Loader2, ChevronRight, Crown, Minus, Brain, Grid2x2, Zap, RotateCcw, Share2, Copy, Check, ExternalLink, Link as LinkIcon } from "lucide-react";
+import { Swords, Trophy, Clock, Search, Gem, CircleCheck as CheckCircle2, Circle as XCircle, Loader as Loader2, ChevronRight, Crown, Minus, Brain, Grid2x2, Puzzle, Zap, RotateCcw, Share2, Copy, Check, ExternalLink, Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 import { showEventModal } from "@/hooks/use-event-modal";
 import { LevelBadge } from "@/components/level-badge";
@@ -1269,7 +1269,7 @@ export default function Challenges() {
   usePageMeta({
     title: "Puzzle Challenges & Duels | Play Brain Games . Online",
     description:
-      "Create and join Sudoku and Memory Match challenges, compare scores, and compete with friends on Play Brain Games . Online.",
+      "Create and join Sudoku, Memory Match, and Jigsaw challenges, compare scores, and compete with friends on Play Brain Games . Online.",
     path: "/challenges",
   });
   const queryClient = useQueryClient();
@@ -1596,6 +1596,19 @@ export default function Challenges() {
         </div>
       </div>
 
+      <section className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200/70 bg-gradient-to-r from-amber-50 to-emerald-50 px-4 py-3 dark:border-amber-900/50 dark:from-amber-950/25 dark:to-emerald-950/20">
+        <div className="flex items-start gap-3">
+          <Puzzle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700 dark:text-amber-300" />
+          <div>
+            <p className="text-sm font-semibold">Jigsaw friend challenges</p>
+            <p className="text-xs text-muted-foreground">Invite a friend to solve the same picture puzzle.</p>
+          </div>
+        </div>
+        <Button size="sm" variant="outline" asChild className="border-amber-300 bg-white/70 dark:bg-background/50">
+          <Link href="/jigsaw-challenges">Open Jigsaw challenges</Link>
+        </Button>
+      </section>
+
       {/* Game type tabs */}
       <div className="flex gap-2 p-1 bg-muted/50 rounded-xl border">
         <button
@@ -1856,7 +1869,7 @@ export default function Challenges() {
         </h2>
         <p className="mt-2">
           No account is needed to start a challenge. Choose the Challenge button,
-          select Sudoku or Memory Match, and create a game for a friend.
+          select Sudoku or Memory Match here, or use Jigsaw challenges to invite a friend to solve the same picture.
         </p>
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           <div>

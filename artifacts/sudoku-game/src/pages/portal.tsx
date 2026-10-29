@@ -11,6 +11,7 @@ import {
   RotateCcw,
   Flame,
   ChevronDown,
+  Puzzle,
 } from "lucide-react";
 import { customFetch, useGetProfile } from "@workspace/api-client-react";
 import { generateOfflinePuzzle } from "@/lib/sudoku-generator";
@@ -59,13 +60,13 @@ export default function Portal() {
     applicationCategory: "GameApplication",
     operatingSystem: "Web",
     description:
-      "Play browser-based Sudoku and Memory Match with practical solving and recall guides, flexible board sizes, guest play, and optional synced progress.",
+      "Play Sudoku, Memory Match, and Jigsaw puzzles with flexible board sizes, daily challenges, guest play, and optional synced progress.",
     url: new URL("/", window.location.origin).toString(),
   };
   usePageMeta({
-    title: "Free Sudoku & Memory Match Games Online",
+    title: "Free Sudoku, Memory Match & Jigsaw Games Online",
     description:
-      "Play free browser-based Sudoku and Memory Match. Choose a board, learn practical solving and recall routines, and play as a guest or sync progress.",
+      "Play free browser-based Sudoku, Memory Match, and Jigsaw puzzles. Choose a board, join daily challenges, and play as a guest or sync progress.",
     path: "/",
     structuredData: landingPageSchema,
   });
@@ -100,6 +101,9 @@ export default function Portal() {
       : gameMode === "adult"
         ? [6, 8].includes(opt.size)
         : true,
+  );
+  const visibleJigsawSizes = ([2, 3, 4, 5] as const).filter((size) =>
+    gameMode === "children" ? size <= 3 : gameMode === "adult" ? size >= 4 : true,
   );
 
   const [activeGame, setActiveGame] = useState<ActiveGame | null>(null);
@@ -215,6 +219,7 @@ export default function Portal() {
       : visibleMemoryOptions.length === 3
         ? "grid-cols-3"
         : "grid-cols-4";
+  const jigsawGridCols = visibleJigsawSizes.length <= 2 ? "grid-cols-2" : "grid-cols-4";
 
   return (
     <div className="animate-in fade-in duration-500 pb-8">
@@ -436,6 +441,28 @@ export default function Portal() {
             );
           })()}
 
+        {/* Jigsaw Puzzle quick launch */}
+        <div className="relative isolate overflow-hidden rounded-2xl border-2 border-amber-400/60 bg-gradient-to-br from-amber-50 via-orange-50 to-emerald-50 p-4 space-y-3 shadow-xl shadow-amber-500/15 ring-1 ring-inset ring-white/70 dark:from-amber-950/55 dark:via-orange-950/50 dark:to-emerald-950/50 dark:ring-white/10">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400 via-orange-500 to-emerald-500" />
+          <div className="relative z-10 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-md"><Puzzle className="h-5 w-5" /></div>
+              <div><span className="block text-xl font-black leading-tight text-slate-900 dark:text-white">Jigsaw Puzzle</span><span className="mt-1 inline-flex rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-700 shadow-sm dark:bg-slate-950/30 dark:text-amber-300">Picture puzzle</span></div>
+            </div>
+            <button onClick={() => setLocation("/jigsaw")} className="rounded-full bg-amber-600 px-3 py-1.5 text-[11px] font-bold text-white shadow-sm transition-colors hover:bg-amber-700">All options</button>
+          </div>
+          <p className="relative z-10 text-[11px] font-medium leading-tight text-foreground/80">Rebuild a picture, one piece at a time.</p>
+          <div className={`relative z-10 grid gap-1.5 ${jigsawGridCols}`}>
+            {visibleJigsawSizes.map((size) => (
+              <button key={size} onClick={() => setLocation(`/jigsaw?size=${size}`)} className="flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-amber-500/25 bg-white/75 px-2 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-500/55 dark:bg-slate-950/35">
+                <span className="font-black text-base leading-none text-amber-700 dark:text-amber-300">{size}×{size}</span>
+                <span className="mt-1 text-xs leading-none text-muted-foreground">{size * size} pieces</span>
+              </button>
+            ))}
+          </div>
+          <Link href="/jigsaw-challenges" className="relative z-10 inline-block text-[10px] font-semibold text-amber-800 underline underline-offset-2 dark:text-amber-300">Jigsaw friend challenges →</Link>
+        </div>
+
         {/* Daily Challenges */}
         <Collapsible
           open={dailyChallengesOpen}
@@ -488,6 +515,17 @@ export default function Portal() {
                 <p className="text-xs text-muted-foreground">
                   Daily + weekly challenge
                 </p>
+              </div>
+              <span className="shrink-0 text-sm text-orange-400">→</span>
+            </button>
+            <button
+              onClick={() => setLocation("/jigsaw-challenge")}
+              className="flex w-full items-center gap-3 rounded-xl border border-orange-200 bg-white/60 px-3 py-2.5 text-left transition-all hover:bg-white/90 dark:bg-orange-950/30 dark:hover:bg-orange-950/50"
+            >
+              <Puzzle className="h-5 w-5 shrink-0 text-amber-600" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold">Jigsaw Puzzle</p>
+                <p className="text-xs text-muted-foreground">Daily picture challenge</p>
               </div>
               <span className="shrink-0 text-sm text-orange-400">→</span>
             </button>
@@ -897,6 +935,23 @@ export default function Portal() {
           </div>
         </div>
 
+        {/* Jigsaw Puzzle Card */}
+        <div className="group relative isolate overflow-hidden rounded-2xl border-2 border-amber-400/60 bg-gradient-to-br from-amber-50 via-orange-50 to-emerald-50 shadow-xl shadow-amber-500/15 ring-1 ring-inset ring-white/70 dark:from-amber-950/55 dark:via-orange-950/50 dark:to-emerald-950/50 dark:ring-white/10">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400 via-orange-500 to-emerald-500" />
+          <button onClick={() => setLocation("/jigsaw")} className="relative z-10 w-full space-y-4 p-6 text-left transition-all duration-200 hover:bg-white/20 dark:hover:bg-slate-950/20">
+            <div className="flex items-center gap-3">
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-amber-500/10 text-amber-700 ring-1 ring-amber-400/20 dark:text-amber-300"><Puzzle className="h-8 w-8" /></div>
+              <div><h2 className="font-serif text-xl font-bold">Jigsaw Puzzle</h2><p className="text-xs text-muted-foreground">Picture puzzle</p></div>
+            </div>
+            <p className="text-sm leading-relaxed text-muted-foreground">Choose a picture and board size, then assemble the pieces at your own pace.</p>
+            <div className="grid grid-cols-4 gap-1.5">
+              {visibleJigsawSizes.map((size) => <span key={size} className="rounded-lg border border-amber-400/25 bg-amber-500/5 py-2 text-center text-xs font-bold text-amber-700 dark:text-amber-300">{size}×{size}</span>)}
+            </div>
+          </button>
+          <div className="px-6 pb-5"><Link href="/jigsaw-challenges" className="text-[10px] font-semibold text-amber-800 underline underline-offset-2 dark:text-amber-300">Challenge a friend →</Link></div>
+          <div className="absolute right-3 top-3 h-2 w-2 rounded-full bg-green-400" title="Available" />
+        </div>
+
         {/* Daily Challenges (desktop) */}
         <Collapsible
           open={dailyChallengesOpen}
@@ -926,7 +981,7 @@ export default function Portal() {
             </button>
           </CollapsibleTrigger>
           <CollapsibleContent className="pt-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
               <button
                 onClick={() => setLocation("/daily-challenge")}
                 className="flex items-center gap-3 rounded-xl border border-orange-200 bg-white/60 px-4 py-3 text-left transition-all hover:bg-white/90 dark:bg-orange-950/30 dark:hover:bg-orange-950/50"
@@ -950,6 +1005,17 @@ export default function Portal() {
                   <p className="text-xs text-muted-foreground">
                     Daily + weekly challenge
                   </p>
+                </div>
+                <span className="shrink-0 text-orange-400">→</span>
+              </button>
+              <button
+                onClick={() => setLocation("/jigsaw-challenge")}
+                className="flex items-center gap-3 rounded-xl border border-orange-200 bg-white/60 px-4 py-3 text-left transition-all hover:bg-white/90 dark:bg-orange-950/30 dark:hover:bg-orange-950/50"
+              >
+                <Puzzle className="h-6 w-6 shrink-0 text-amber-600" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold">Jigsaw Puzzle</p>
+                  <p className="text-xs text-muted-foreground">Daily picture challenge</p>
                 </div>
                 <span className="shrink-0 text-orange-400">→</span>
               </button>
@@ -1054,11 +1120,12 @@ export default function Portal() {
             Choose a puzzle, then adjust the challenge
           </h2>
           <p className="mt-2">
-            Play Brain Games . Online brings together two games that reward
+            Play Brain Games . Online brings together three games that reward
             different kinds of attention. Sudoku asks you to compare rows,
             columns, and boxes before placing a symbol. Memory Match asks you to
-            remember where cards appeared. Both can be started in a browser
-            without creating an account.
+            remember where cards appeared. Jigsaw asks you to rebuild a picture
+            piece by piece. All three can be started in a browser without
+            creating an account.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">

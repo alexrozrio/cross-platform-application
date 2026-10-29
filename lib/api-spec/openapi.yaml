@@ -798,6 +798,27 @@ components:
               type: integer
             winStreak:
               type: ["integer", "null"]
+        jigsaw:
+          type: object
+          properties:
+            totalGames:
+              type: integer
+            totalWins:
+              type: integer
+            winRate:
+              type: number
+            bestTimes:
+              type: object
+              additionalProperties:
+                type: ["integer", "null"]
+            averageTime:
+              type: ["integer", "null"]
+            totalPoints:
+              type: integer
+            dailyChallengesCompleted:
+              type: integer
+            winStreak:
+              type: integer
 
     TournamentEntry:
       type: object
