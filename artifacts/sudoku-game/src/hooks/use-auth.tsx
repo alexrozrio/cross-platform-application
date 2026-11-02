@@ -105,6 +105,7 @@ export function AuthProvider({
         return res.json() as Promise<ReplitUser>;
       })
       .then((user) => {
+        if (user) localStorage.setItem("sudoku-has-signed-in", "true");
         setReplitUser(user);
         setIsLoaded(true);
       })
