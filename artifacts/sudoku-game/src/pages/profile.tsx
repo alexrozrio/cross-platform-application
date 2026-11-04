@@ -85,6 +85,7 @@ import { BadgeShareSheet } from "@/components/badge-share-sheet";
 import { LevelCard, RankGuide } from "@/components/level-badge";
 import { ShareAchievementButton } from "@/components/share-achievement";
 import { ACHIEVEMENT_META, type AchievementsData } from "@/lib/achievement-utils";
+import { MergeGuestProgress } from "@/components/merge-guest-progress";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -1111,6 +1112,9 @@ export default function Profile() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* ── Merge Guest Progress (shown only for signed-in users with guest data) ── */}
+      {isSignedIn && <MergeGuestProgress />}
 
       {/* ── Statistics ───────────────────────────────────────────────────── */}
       {profileId && (
