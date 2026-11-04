@@ -487,28 +487,36 @@ export default function Portal() {
         )}
 
         {/* Jigsaw Puzzle quick launch */}
-        <div className="relative isolate overflow-hidden rounded-2xl border-2 border-border bg-card p-4 space-y-3 shadow-md">
-          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-primary/60 to-accent" />
+        <div className="relative isolate overflow-hidden rounded-2xl border-2 border-amber-300/60 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 p-4 space-y-3 shadow-xl shadow-amber-500/15 ring-1 ring-inset ring-white/70 dark:from-amber-950/70 dark:via-orange-950/65 dark:to-yellow-950/70 dark:ring-white/10">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-400" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -left-8 h-28 w-28 rounded-full bg-amber-300/35 blur-2xl dark:bg-amber-400/15" />
+          {/* Puzzle piece backdrop */}
+          <div aria-hidden="true" className="pointer-events-none absolute -right-4 -top-4 h-24 w-24 rotate-12 rounded-xl border-2 border-amber-400/30 bg-amber-200/40 opacity-60 shadow-sm dark:bg-amber-400/10">
+            <div className="flex h-full items-center justify-center text-4xl opacity-30">🧩</div>
+          </div>
           <div className="relative z-10 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm"><Puzzle className="h-5 w-5" /></div>
-              <div><span className="block text-xl font-bold leading-tight text-foreground">Jigsaw Puzzle</span><span className="mt-1 inline-flex rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Picture puzzle</span></div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-600 text-white shadow-md"><Puzzle className="h-5 w-5" /></div>
+              <div><span className="block text-xl font-bold leading-tight text-foreground">Jigsaw Puzzle</span><span className="mt-1 inline-flex rounded-full bg-white/65 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-700 shadow-sm dark:bg-slate-950/30 dark:text-amber-300">Picture puzzle</span></div>
             </div>
-            <button onClick={() => setLocation("/jigsaw")} className="rounded-lg bg-primary px-3 py-1.5 text-[11px] font-bold text-primary-foreground shadow-sm transition-opacity hover:opacity-90">All options</button>
+            <button onClick={() => setLocation("/jigsaw")} className="rounded-full bg-amber-600 px-3 py-1.5 text-[11px] font-bold text-white shadow-sm transition-colors hover:bg-amber-700">All options</button>
           </div>
           <p className="relative z-10 text-[11px] font-medium leading-tight text-foreground/80">Rebuild a picture, one piece at a time.</p>
           <div className={`relative z-10 grid gap-1.5 ${jigsawGridCols}`}>
             {visibleJigsawSizes.map((size) => (
-              <button key={size} onClick={() => setLocation(`/jigsaw?size=${size}`)} className="flex min-h-[58px] flex-col items-center justify-center rounded-xl border border-border bg-background px-2 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary">
-                <span className="font-bold text-base leading-none text-primary">{size}×{size}</span>
+              <button key={size} onClick={() => setLocation(`/jigsaw?gridSize=${size}&level=1&imageKey=1&play=1`)} className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-amber-400/35 bg-white/75 px-2 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55">
+                <span className="font-bold text-base leading-none text-amber-700">{size}×{size}</span>
                 <span className="mt-1 text-xs leading-none text-muted-foreground">{size * size} pieces</span>
               </button>
             ))}
           </div>
-          <div className="relative z-10 flex flex-wrap gap-x-4 gap-y-1">
-            <Link href="/jigsaw-challenge" className="inline-block text-[10px] font-semibold text-primary underline underline-offset-2">Daily Jigsaw challenge →</Link>
-            <Link href="/jigsaw-challenges" className="inline-block text-[10px] font-semibold text-primary underline underline-offset-2">Jigsaw friend challenges →</Link>
-          </div>
+          <button
+            onClick={() => setLocation("/jigsaw-challenge")}
+            className="relative z-10 flex items-center justify-center gap-2 rounded-xl border-2 border-orange-300/50 bg-white/75 px-3 py-2.5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-orange-400/70 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"
+          >
+            <Flame className="h-4 w-4 shrink-0 text-orange-500" />
+            <span className="text-xs font-semibold text-orange-600">Daily Challenge</span>
+          </button>
         </div>
 
         {/* Daily Challenges */}

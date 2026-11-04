@@ -2,6 +2,13 @@ import { Resend } from "resend";
 import { db, users, profilesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 
+export const DEFAULT_RESEND_FROM =
+  "Play Brain Games . Online <admin@playbraingames.online>";
+
+export function getResendFromAddress(): string {
+  return process.env.RESEND_FROM_EMAIL ?? DEFAULT_RESEND_FROM;
+}
+
 let resend: Resend | null = null;
 
 function getResend(): Resend | null {
@@ -60,7 +67,9 @@ export async function sendChallengeNotification({
     console.log("[email] no recipient email found — skipping");
     return;
   }
-  console.log(`[email] sending to ${recipient.email}`);
+
+  const fromAddress = getResendFromAddress();
+  console.log(`[email] sending to ${recipient.email} from ${fromAddress}`);
 
   const frontendUrl =
     process.env.FRONTEND_URL ??
@@ -71,10 +80,6 @@ export async function sendChallengeNotification({
   const gridLabel: Record<number, string> = { 3: "3×3 Baby", 4: "4×4 Mini", 9: "9×9 Classic", 16: "16×16 Pro" };
   const diffLabel = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
   const sizeLabel = gridLabel[gridSize] ?? `${gridSize}×${gridSize}`;
-
-  // Resend requires a verified sender domain. RESEND_FROM_EMAIL defaults to
-  // the Resend sandbox address which works without domain verification.
-  const fromAddress = process.env.RESEND_FROM_EMAIL ?? "Play Brain Games . Online <onboarding@resend.dev>";
 
   try {
     const { data, error } = await client.emails.send({
@@ -148,6 +153,15 @@ export async function sendChallengeNotification({
 
     if (error) {
       console.error("[email] ❌ Resend API error:", error);
+      const message = typeof error.message === "string" ? error.message : "";
+      if (
+        message.includes("You can only send testing emails to your own email address") ||
+        message.includes("verify a domain")
+      ) {
+        console.error(
+          `[email] Resend rejected the recipient. From address is "${fromAddress}". If this still uses onboarding@resend.dev, set RESEND_FROM_EMAIL to "Play Brain Games . Online <admin@playbraingames.online>" and confirm playbraingames.online is verified in Resend.`,
+        );
+      }
     } else {
       console.log(`[email] ✅ sent successfully — id: ${data?.id}`);
     }

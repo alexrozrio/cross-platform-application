@@ -51,3 +51,4 @@ Thumbs.db
 # Local dev scripts (contain credentials)
 dev.bat
 .env
+artifacts/sudoku-game/android/.idea/

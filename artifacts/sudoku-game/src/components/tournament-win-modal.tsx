@@ -23,7 +23,7 @@ const PLACE_CONFIG: Record<string, { emoji: string; label: string; color: string
 
 const GEM_REWARDS: Record<string, number> = {
   weekly_1st: 20, weekly_2nd: 10, weekly_3rd: 5,
-  monthly_1st: 50, monthly_2nd: 30, monthly_3rd: 15,
+  monthly_1st: 25, monthly_2nd: 15, monthly_3rd: 10,
 };
 
 function formatPeriod(period: string): string {

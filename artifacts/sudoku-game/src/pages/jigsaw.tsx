@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 import { Link, useLocation, useSearch } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ArrowRight, CalendarDays, Check, Eye, EyeOff, Grip, Image as ImageIcon, Move, RotateCcw, Share2, Sparkles, Timer, Trophy } from "lucide-react";
+import { ArrowLeft, ArrowRight, BarChart2, BookOpen, CalendarDays, Check, Eye, EyeOff, Flame, Grip, Hash, Image as ImageIcon, Keyboard, Move, RotateCcw, Scroll, Share2, Sparkles, Timer, Trophy } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useImageTheme } from "@/hooks/use-image-theme";
 import { useThemeImageSrc } from "@/components/theme-icons";
@@ -36,9 +36,9 @@ type Config = { gridSize: GridSize; level: 1 | 2 | 3; imageKey: number; dailyDat
 
 const SIZES: GridSize[] = [2, 3, 4, 5];
 const LEVELS: { value: 1 | 2 | 3; title: string; copy: string }[] = [
-  { value: 1, title: "Guided", copy: "Reference stays beside your puzzle" },
-  { value: 2, title: "Recall", copy: "Peek at the picture whenever you need" },
-  { value: 3, title: "From memory", copy: "No reference image during play" },
+  { value: 1, title: "Easy", copy: "Reference stays beside your puzzle" },
+  { value: 2, title: "Medium", copy: "Peek at the picture whenever you need" },
+  { value: 3, title: "Hard", copy: "No reference image during play" },
 ];
 
 function formatTime(seconds: number) {
@@ -531,78 +531,260 @@ export default function JigsawPage() {
 
   if (phase === "setup") {
     return (
-      <main className="mx-auto min-h-0 w-full min-w-0 max-w-6xl px-3 pb-6 pt-3 text-foreground sm:px-5 sm:pt-5">
-        <header className="mb-10 flex items-center justify-between">
-          <Link href="/" className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground transition hover:border-primary" data-testid="link-back-home"><ArrowLeft size={16} /> All games</Link>
-          <div className="text-right"><p className="text-[10px] font-bold uppercase tracking-[.22em] text-muted-foreground">Play Brain Games . Online</p><p className="font-mono text-xs text-muted-foreground">JIGSAW PUZZLE</p></div>
-        </header>
-        <section className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.88fr)] lg:items-start lg:gap-6">
-          <div className="relative min-w-0 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6">
-            <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[.2em] text-primary"><span className="h-px w-8 bg-primary" /> Picture puzzle</p>
-            <h1 className="max-w-xl font-serif text-4xl font-bold leading-tight tracking-[-.035em] sm:text-5xl">Put the picture<br className="hidden sm:block" /> back together.</h1>
-            <p className="mt-3 max-w-md text-sm leading-6 text-muted-foreground">Choose a scene and board size, then place each piece in its home.</p>
-            <div className="mt-6 grid grid-cols-2 gap-3 sm:max-w-md">
+      <main className="mx-auto min-h-0 w-full min-w-0 max-w-lg px-3 pb-6 pt-3 text-foreground sm:px-5 sm:pt-5">
+        {/* Top bar */}
+        <div className="relative isolate overflow-hidden flex items-center justify-between gap-3 rounded-2xl border-2 border-amber-200/80 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 px-4 py-3 shadow-lg shadow-amber-500/10 dark:border-amber-800/60 dark:from-amber-950/60 dark:via-card dark:to-yellow-950/60">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full bg-amber-300/25 blur-2xl dark:bg-amber-400/15" />
+          <button
+            onClick={() => setLocation("/")}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
+          >
+            <ArrowLeft className="w-4 h-4" /> Home
+          </button>
+          <div className="text-right">
+            <h1 className="text-xl sm:text-3xl font-serif font-bold tracking-tight leading-tight">Jigsaw Puzzle</h1>
+            {profile && (
+              <p className="text-xs text-muted-foreground hidden sm:block">Welcome back, {profile.username}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Resume session */}
+        {savedSession && !config.dailyDate && (
+          <button
+            type="button"
+            onClick={() => restoreSession(savedSession)}
+            data-testid="button-resume-jigsaw"
+            className="w-full flex items-center gap-3 rounded-xl border-2 border-amber-300/60 bg-card px-4 py-2.5 text-left hover:bg-muted transition-all"
+          >
+            <RotateCcw className="w-4 h-4 text-amber-600 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <span className="text-sm font-semibold text-amber-700 dark:text-amber-400">
+                Resume Jigsaw
+              </span>
+              <span className="text-xs text-muted-foreground ml-2">
+                {savedSession.gridSize}×{savedSession.gridSize} · {savedSession.moves} moves · {formatTime(savedSession.elapsed)}
+              </span>
+            </div>
+            <span className="text-amber-500 text-sm shrink-0">→</span>
+          </button>
+        )}
+
+        {/* Mobile quick launch */}
+        <div className="relative isolate overflow-hidden sm:hidden rounded-2xl border-2 border-amber-200/80 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 p-4 space-y-3 shadow-xl shadow-amber-500/10 dark:border-amber-800/50 dark:from-amber-950/70 dark:via-orange-950/65 dark:to-yellow-950/70">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-400" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -left-8 h-28 w-28 rounded-full bg-amber-300/35 blur-2xl dark:bg-amber-400/15" />
+          <div className="relative z-10">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Board Size</p>
+            <div className={`grid gap-1.5 ${availableSizes.length <= 2 ? "grid-cols-2" : "grid-cols-4"}`}>
               {availableSizes.map((size) => (
-                <button key={size} type="button" onClick={() => setConfig((old) => ({ ...old, gridSize: size }))} data-testid={`select-grid-${size}`}
-                  className={`rounded-xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${config.gridSize === size ? "border-primary bg-accent text-accent-foreground shadow-sm" : "border-border bg-background hover:border-primary"}`}>
-                  <span className="block text-2xl font-bold">{size}×{size}</span>
-                  <span className="mt-1 block text-xs text-muted-foreground">{size * size} pieces</span>
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => {
+                    setConfig((old) => ({ ...old, gridSize: size }));
+                    startGame();
+                  }}
+                  data-testid={`select-grid-${size}`}
+                  className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-amber-400/35 bg-white/75 px-2 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"
+                >
+                  <span className="font-bold text-base leading-none text-amber-700">{size}×{size}</span>
+                  <span className="mt-1 text-xs leading-none text-muted-foreground">{size * size} pieces</span>
                 </button>
               ))}
             </div>
-            <div className="mt-8">
-              <p className="mb-3 text-xs font-bold uppercase tracking-[.18em] text-muted-foreground">Choose your pace</p>
+          </div>
+          <div className="relative z-10">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Level</p>
+            <div className="flex gap-2 flex-wrap">
+              {LEVELS.map((level) => (
+                <button
+                  key={level.value}
+                  type="button"
+                  onClick={() => setConfig((old) => ({ ...old, level: level.value }))}
+                  data-testid={`select-level-${level.value}`}
+                  className={[
+                    'flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-xs font-semibold transition-all',
+                    config.level === level.value ? 'border-amber-600 bg-amber-600 text-white' : 'border-amber-200/80 bg-white/50 hover:border-amber-400 dark:border-amber-800/60 dark:bg-slate-950/20',
+                  ].join(' ')}
+                >
+                  <span className="grid h-4 w-4 place-items-center rounded-full text-[10px] font-bold">{level.value}</span>
+                  {level.title}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="relative z-10">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Picture</p>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {Array.from({ length: themeLength }, (_, index) => index + 1).map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setConfig((old) => ({ ...old, imageKey: key }))}
+                  aria-label={`Choose picture ${key}`}
+                  aria-pressed={config.imageKey === key}
+                  data-testid={`select-image-${key}`}
+                  className={[
+                    'h-10 w-10 shrink-0 rounded-lg border-2 transition flex items-center justify-center font-bold text-sm',
+                    config.imageKey === key ? 'border-amber-600 bg-amber-600 text-white' : 'border-border bg-background hover:border-amber-400 text-muted-foreground',
+                  ].join(' ')}
+                >
+                  {key}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop layout */}
+        <div className="hidden sm:block rounded-2xl border-2 border-amber-200/80 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 shadow-xl shadow-amber-500/10 dark:border-amber-800/50 dark:from-amber-950/70 dark:via-orange-950/65 dark:to-yellow-950/70 p-6">
+          <h2 className="text-2xl font-serif font-bold mb-2">Choose your puzzle</h2>
+          <p className="text-sm text-muted-foreground mb-6">Select a board size to start playing</p>
+
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Board Size</label>
+              <div className={`grid gap-2 ${availableSizes.length <= 2 ? "grid-cols-2" : "grid-cols-4"}`}>
+                {availableSizes.map((size) => (
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() => {
+                      setConfig((old) => ({ ...old, gridSize: size }));
+                      startGame();
+                    }}
+                    data-testid={`select-grid-${size}`}
+                    className="flex flex-col items-center justify-center rounded-xl border-2 border-amber-400/35 bg-white/75 px-2 py-3 shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"
+                  >
+                    <span className="font-bold text-lg leading-none text-amber-700">{size}×{size}</span>
+                    <span className="mt-1 text-xs leading-none text-muted-foreground">{size * size} pieces</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Level</label>
               <div className="space-y-2">
                 {LEVELS.map((level) => (
-                  <button key={level.value} type="button" onClick={() => setConfig((old) => ({ ...old, level: level.value }))} data-testid={`select-level-${level.value}`}
-                    className={`flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${config.level === level.value ? "border-primary bg-accent text-accent-foreground" : "border-border bg-background hover:border-primary"}`}>
-                    <span className={`grid h-7 w-7 place-items-center rounded-full text-xs font-bold ${config.level === level.value ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{level.value}</span>
+                  <button
+                    key={level.value}
+                    type="button"
+                    onClick={() => setConfig((old) => ({ ...old, level: level.value }))}
+                    data-testid={`select-level-${level.value}`}
+                    className={`flex w-full items-center gap-3 rounded-xl border-2 px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${config.level === level.value ? "border-amber-600 bg-amber-50 dark:bg-amber-950/30" : "border-border bg-background hover:border-amber-400"}`}
+                  >
+                    <span className={`grid h-8 w-8 place-items-center rounded-full text-sm font-bold ${config.level === level.value ? "bg-amber-600 text-white" : "bg-muted text-muted-foreground"}`}>{level.value}</span>
                     <span className="flex-1"><span className="block text-sm font-semibold">{level.title}</span><span className="block text-xs text-muted-foreground">{level.copy}</span></span>
-                    {config.level === level.value && <Check size={17} className="text-primary" />}
+                    {config.level === level.value && <Check size={17} className="text-amber-600" />}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Picture</label>
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {Array.from({ length: themeLength }, (_, index) => index + 1).map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setConfig((old) => ({ ...old, imageKey: key }))}
+                    aria-label={`Choose picture ${key}`}
+                    aria-pressed={config.imageKey === key}
+                    data-testid={`select-image-${key}`}
+                    className={[
+                      'h-12 w-12 shrink-0 rounded-lg border-2 transition flex items-center justify-center font-bold text-base',
+                      config.imageKey === key ? 'border-amber-600 bg-amber-600 text-white' : 'border-border bg-background hover:border-amber-400 text-muted-foreground',
+                    ].join(' ')}
+                  >
+                    {key}
                   </button>
                 ))}
               </div>
             </div>
           </div>
-          <div className="min-w-0 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
-            <div className="mb-4 flex items-center justify-between">
-              <div><p className="text-xs font-bold uppercase tracking-[.18em] text-muted-foreground">Your picture</p><p className="mt-1 font-serif text-2xl">{themeId} collection</p></div>
-              <ImageIcon className="text-primary" size={21} />
-            </div>
-            <div className="relative aspect-square overflow-hidden rounded-xl border-4 border-background bg-muted shadow-inner">
-              <ReferenceImage themeId={themeId} imageKey={config.imageKey} className="h-full w-full object-cover" />
-              <div className="pointer-events-none absolute inset-0 grid grid-cols-2 grid-rows-2 opacity-60">
-                {[0, 1, 2, 3].map((n) => <div key={n} className="border border-white/75" />)}
-              </div>
-              <div className="absolute bottom-3 left-3 rounded-full bg-foreground/85 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.16em] text-background">Picture {config.imageKey}</div>
-            </div>
-            <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1" aria-label="Choose image">
-              {Array.from({ length: themeLength }, (_, index) => index + 1).map((key) => (
-                <button key={key} type="button" onClick={() => setConfig((old) => ({ ...old, imageKey: key }))} aria-label={`Choose picture ${key}`} aria-pressed={config.imageKey === key} data-testid={`select-image-${key}`}
-                  className={`h-12 w-12 shrink-0 overflow-hidden rounded-lg border-2 transition ${config.imageKey === key ? "border-primary ring-2 ring-primary/25" : "border-border opacity-75 hover:opacity-100"}`}>
-                  <ReferenceImage themeId={themeId} imageKey={key} className="h-full w-full object-cover" />
-                </button>
-              ))}
-            </div>
-            {savedSession && !config.dailyDate && phase === "setup" && (
-              <button type="button" onClick={() => restoreSession(savedSession)} data-testid="button-resume-jigsaw" className="mt-4 flex w-full items-center justify-between gap-3 rounded-xl border border-primary/35 bg-accent px-4 py-3 text-left text-sm font-semibold text-accent-foreground transition hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                <span><span className="block">Resume your puzzle</span><span className="mt-0.5 block text-xs font-normal text-muted-foreground">{savedSession.gridSize}×{savedSession.gridSize} · {savedSession.moves} moves · {formatTime(savedSession.elapsed)}</span></span>
-                <RotateCcw size={16} />
-              </button>
-            )}
-            <button type="button" onClick={() => startGame()} data-testid="button-start-jigsaw" className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3.5 text-sm font-bold text-primary-foreground shadow-sm transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-              <Sparkles size={17} /> Start building
-            </button>
-            <button type="button" onClick={() => void createChallengeAndPlay()} disabled={isCreatingChallenge} className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-background px-5 py-3 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary disabled:opacity-60">
-              <Share2 size={16} /> {isCreatingChallenge ? "Preparing challenge…" : "Challenge a friend"}
-            </button>
-            <Link href="/jigsaw-challenge" data-testid="link-daily-jigsaw" className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground transition hover:border-primary">
-              <CalendarDays size={16} /> Play today&apos;s daily challenge <ArrowRight size={15} />
+        </div>
+
+        {/* Additional options */}
+        <div className="mt-6 space-y-3">
+          <button
+            type="button"
+            onClick={() => void createChallengeAndPlay()}
+            disabled={isCreatingChallenge}
+            className="w-full flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-5 py-3 text-sm font-semibold text-foreground transition hover:border-amber-600 hover:text-amber-600 disabled:opacity-60"
+          >
+            <Share2 size={16} /> {isCreatingChallenge ? "Preparing challenge…" : "Challenge a friend"}
+          </button>
+          <Link
+            href="/jigsaw-challenge"
+            data-testid="link-daily-jigsaw"
+            className="w-full flex items-center justify-center gap-2 rounded-xl border border-orange-300/50 bg-white/75 px-5 py-3 text-sm font-semibold text-orange-600 transition hover:border-orange-400/70 hover:bg-white dark:bg-slate-950/35 dark:hover:bg-slate-950/55"
+          >
+            <Flame size={16} /> Daily Challenge
+          </Link>
+          
+          <div className="grid grid-cols-2 gap-2">
+            <Link
+              href="/profile"
+              className="flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-semibold text-foreground transition hover:border-amber-600 hover:text-amber-600"
+            >
+              <BarChart2 size={14} /> My Stats
             </Link>
-            <Link href="/jigsaw-challenges" className="mt-3 block text-center text-xs font-semibold text-muted-foreground hover:text-primary">View your Jigsaw challenges</Link>
-            <p className="mt-3 text-center text-[11px] text-muted-foreground">Plays offline. Your score syncs when available.</p>
+            <Link
+              href="/leaderboard/jigsaw"
+              className="flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-semibold text-foreground transition hover:border-amber-600 hover:text-amber-600"
+            >
+              <Trophy size={14} /> Leaderboard
+            </Link>
           </div>
-        </section>
+
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              className="flex flex-col items-center justify-center gap-1 rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground transition hover:border-amber-600 hover:text-amber-600"
+            >
+              <Scroll size={14} /> Rules
+            </button>
+            <button
+              type="button"
+              className="flex flex-col items-center justify-center gap-1 rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground transition hover:border-amber-600 hover:text-amber-600"
+            >
+              <BookOpen size={14} /> Backstory
+            </button>
+            <button
+              type="button"
+              className="flex flex-col items-center justify-center gap-1 rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground transition hover:border-amber-600 hover:text-amber-600"
+            >
+              <Keyboard size={14} /> Controls
+            </button>
+          </div>
+
+          <Link href="/jigsaw-challenges" className="block text-center text-xs font-semibold text-muted-foreground hover:text-foreground">View your Jigsaw challenges</Link>
+          <p className="text-center text-[11px] text-muted-foreground">Plays offline. Your score syncs when available.</p>
+        </div>
+
+        {/* More about jigsaw puzzle */}
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <h3 className="text-sm font-bold mb-2">More about Jigsaw Puzzle</h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Jigsaw puzzles are classic brain games that challenge your spatial reasoning and pattern recognition skills. 
+            Choose from different board sizes and difficulty levels to customize your experience. 
+            Complete daily challenges to compete with players worldwide, or challenge friends to see who can solve puzzles faster!
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
+              <Hash size={10} /> Spatial reasoning
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
+              <Timer size={10} /> Time-based scoring
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
+              <Trophy size={10} /> Daily challenges
+            </span>
+          </div>
+        </div>
       </main>
     );
   }
@@ -655,15 +837,33 @@ export default function JigsawPage() {
 
   return (
     <main className="mx-auto min-h-0 w-full max-w-7xl px-2 pb-4 pt-2 text-foreground sm:px-4 sm:pt-3">
-      <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <button type="button" onClick={exitToSetup} className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground transition hover:border-primary" data-testid="link-exit-jigsaw"><ArrowLeft size={16} /> Setup</button>
-        <div className="flex items-center gap-2 rounded-full bg-muted px-4 py-2 text-xs font-bold uppercase tracking-[.14em] text-muted-foreground"><span>Level {config.level}</span><span className="text-border">/</span><span>{tileCount} pieces</span></div>
+      {/* Top options bar */}
+      <header className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-card px-3 py-2 shadow-sm sm:px-4 sm:py-2.5">
+        <button type="button" onClick={exitToSetup} className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition hover:border-primary sm:px-4 sm:py-2 sm:text-sm" data-testid="link-exit-jigsaw"><ArrowLeft size={14} /> Setup</button>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-bold uppercase tracking-[.12em] text-muted-foreground sm:px-4 sm:py-2">
+            <span>Level {config.level}</span>
+            <span className="text-border">/</span>
+            <span>{tileCount} pieces</span>
+          </div>
+          <div className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 font-mono text-xs sm:px-4 sm:py-2 sm:text-sm" data-testid="status-timer">
+            <Timer size={13} className="text-primary" />{formatTime(elapsed)}
+          </div>
+          <div className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 font-mono text-xs sm:px-4 sm:py-2 sm:text-sm" data-testid="status-moves">
+            <span className="text-primary">{moves}</span> moves
+          </div>
+          {config.level === 2 && (
+            <button type="button" onClick={() => setShowReference((value) => !value)} aria-label={showReference ? "Hide reference picture" : "Show reference picture"} data-testid="button-toggle-reference" className="grid h-8 w-8 place-items-center rounded-full bg-background border border-border text-foreground hover:border-primary sm:h-9 sm:w-9">{showReference ? <EyeOff size={15} /> : <Eye size={15} />}</button>
+          )}
+          {!hasLinkedChallenge && <button type="button" onClick={() => startGame()} data-testid="button-restart-jigsaw" className="inline-flex items-center gap-1.5 rounded-full bg-background border border-border px-3 py-1.5 text-xs font-semibold text-foreground transition hover:border-primary hover:text-primary sm:px-4 sm:py-2 sm:text-sm"><RotateCcw size={13} /> Restart</button>}
+        </div>
       </header>
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+
+      {/* Game board and pieces */}
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
         <section className="rounded-2xl border border-border bg-card p-2 shadow-sm sm:p-4">
-          <div className="mb-4 flex items-center justify-between gap-3 px-1">
-            <div><p className="text-[10px] font-bold uppercase tracking-[.2em] text-muted-foreground">The board</p><h1 className="font-serif text-2xl font-bold sm:text-3xl">Find the picture.</h1></div>
-            <div className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2 font-mono text-sm" data-testid="status-timer"><Timer size={15} className="text-primary" />{formatTime(elapsed)}</div>
+          <div className="mb-3 px-1">
+            <h1 className="font-serif text-xl font-bold sm:text-2xl">Find the picture.</h1>
           </div>
           <div className="mx-auto grid aspect-square w-full max-w-[min(90vw,660px)] gap-1 rounded-xl bg-muted p-1 sm:gap-2 sm:rounded-2xl sm:p-2" style={{ gridTemplateColumns: `repeat(${config.gridSize}, minmax(0, 1fr))` }} role="grid" aria-label={`${config.gridSize} by ${config.gridSize} puzzle board`}>
             {board.map((piece, slot) => (
@@ -679,33 +879,31 @@ export default function JigsawPage() {
           </div>
           <p className="mt-3 flex items-center justify-center gap-2 text-center text-xs text-muted-foreground"><Move size={14} /> Select a piece, then its home. You can also drag it into place.</p>
         </section>
-        <aside className="flex flex-col gap-4">
-          <section className="rounded-2xl border border-border bg-card p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-muted-foreground">Reference</p><p className="font-serif text-xl font-semibold">{config.level === 3 ? "Picture memory" : "Keep it in view"}</p></div>
-              {config.level === 2 && <button type="button" onClick={() => setShowReference((value) => !value)} aria-label={showReference ? "Hide reference picture" : "Show reference picture"} data-testid="button-toggle-reference" className="grid h-10 w-10 place-items-center rounded-xl bg-muted text-foreground hover:text-primary">{showReference ? <EyeOff size={18} /> : <Eye size={18} />}</button>}
-            </div>
-            {canSeeReference ? <div className="aspect-square overflow-hidden rounded-xl border-4 border-background"><ReferenceImage themeId={puzzleThemeId} imageKey={config.imageKey} className="h-full w-full object-cover" /></div> : <div className="grid aspect-square place-items-center rounded-xl border border-dashed border-border bg-muted p-6 text-center"><div><EyeOff size={23} className="mx-auto mb-2 text-muted-foreground" /><p className="font-serif text-xl">Build it from memory</p><p className="mt-1 text-xs text-muted-foreground">This level keeps the picture hidden.</p></div></div>}
-            <p className="mt-3 text-xs leading-5 text-muted-foreground">{LEVELS[config.level - 1].copy}</p>
-          </section>
-          <section className="rounded-2xl border border-border bg-card p-4">
-            <div className="mb-3 flex items-end justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-muted-foreground">Loose pieces</p><p className="font-serif text-xl font-semibold">On the table</p></div><span className="font-mono text-sm text-primary" data-testid="status-pieces-left">{tray.length} left</span></div>
-            <div className="grid max-h-[40vh] grid-cols-4 gap-2 overflow-y-auto pr-1 sm:grid-cols-5 lg:grid-cols-4">
+
+        {/* Loose pieces tray */}
+        <aside className="flex flex-col gap-4 lg:w-64">
+          <section className="rounded-2xl border border-border bg-card p-3">
+            <div className="mb-2 flex items-end justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-muted-foreground">Loose pieces</p><p className="font-serif text-lg font-semibold">On the table</p></div><span className="font-mono text-sm text-primary" data-testid="status-pieces-left">{tray.length} left</span></div>
+            <div className="grid max-h-[40vh] grid-cols-4 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-4 lg:grid-cols-3">
               {tray.map((piece) => (
                 <Tile key={piece} piece={piece} index={piece} gridSize={config.gridSize} themeId={puzzleThemeId} imageKey={config.imageKey} selected={selected?.from === "tray" && selected.piece === piece}
                   onClick={() => setSelected((current) => current?.from === "tray" && current.piece === piece ? null : { piece, from: "tray" })}
                   onDragStart={dragStart({ piece, from: "tray" })} onDragEnd={() => setDragged(null)} label={`Piece ${piece + 1}, select to place`} />
               ))}
-              {tray.length === 0 && <div className="col-span-full rounded-lg bg-muted px-3 py-5 text-center text-xs text-muted-foreground">All pieces are on the board. Adjust any that need a new home.</div>}
+              {tray.length === 0 && <div className="col-span-full rounded-lg bg-muted px-3 py-4 text-center text-xs text-muted-foreground">All pieces are on the board. Adjust any that need a new home.</div>}
             </div>
           </section>
-          <section className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
-            <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-muted-foreground">Moves</p><p className="font-mono text-2xl" data-testid="status-moves">{moves}</p></div>
-            {!hasLinkedChallenge && <button type="button" onClick={() => startGame()} data-testid="button-restart-jigsaw" className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground transition hover:border-primary hover:text-primary"><RotateCcw size={14} /> Restart</button>}
-          </section>
-          <p className="flex items-center gap-2 px-1 text-[11px] text-muted-foreground"><Grip size={14} /> Select a piece, then select its home. Drag and drop also works on desktop.</p>
         </aside>
       </div>
+
+      {/* Reference preview at bottom */}
+      <section className="mt-4 rounded-2xl border border-border bg-card p-3 shadow-sm sm:p-4">
+        <div className="mb-2 flex items-center justify-between">
+          <div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-muted-foreground">Reference</p><p className="font-serif text-lg font-semibold">{config.level === 3 ? "Picture memory" : "Keep it in view"}</p></div>
+          <p className="text-xs text-muted-foreground">{LEVELS[config.level - 1].copy}</p>
+        </div>
+        {canSeeReference ? <div className="max-w-[min(90vw,400px)] mx-auto aspect-square overflow-hidden rounded-xl border-4 border-background"><ReferenceImage themeId={puzzleThemeId} imageKey={config.imageKey} className="h-full w-full object-cover" /></div> : <div className="max-w-[min(90vw,400px)] mx-auto grid aspect-square place-items-center rounded-xl border border-dashed border-border bg-muted p-6 text-center"><div><EyeOff size={23} className="mx-auto mb-2 text-muted-foreground" /><p className="font-serif text-xl">Build it from memory</p><p className="mt-1 text-xs text-muted-foreground">This level keeps the picture hidden.</p></div></div>}
+      </section>
     </main>
   );
 }

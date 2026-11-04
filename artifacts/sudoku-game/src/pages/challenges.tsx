@@ -38,8 +38,10 @@ import { challengeInviteUrl } from "@/lib/app-links";
 type Difficulty = "easy" | "medium" | "hard" | "expert";
 type SudokuGridSize = 3 | 4 | 6 | 9 | 16;
 type MemoryGridSize = 2 | 4 | 6 | 8;
+type JigsawGridSize = 2 | 3 | 4 | 5;
+type JigsawLevel = 1 | 2 | 3;
 type ChallengeStatus = "pending" | "accepted" | "declined" | "completed" | "expired";
-type GameType = "sudoku" | "memory";
+type GameType = "sudoku" | "memory" | "jigsaw";
 
 interface ChallengeDetail {
   id: number;
@@ -86,6 +88,30 @@ interface MemoryDuelDetail {
   createdAt: string;
 }
 
+interface JigsawChallengeDetail {
+  id: number;
+  gameType: "jigsaw";
+  challengerId: number;
+  challengedId: number | null;
+  gridSize: JigsawGridSize;
+  level: JigsawLevel;
+  imageKey: number;
+  status: ChallengeStatus;
+  challengerGameId: number | null;
+  challengedGameId: number | null;
+  winnerId: number | null;
+  challengerUsername: string;
+  challengedUsername: string | null;
+  challengerAvatar: string | null;
+  challengedAvatar: string | null;
+  challengerXp: number;
+  challengedXp: number;
+  challengerPoints: number | null;
+  challengedPoints: number | null;
+  shareToken: string | null;
+  createdAt: string;
+}
+
 interface ProfileSummary {
   id: number;
   username: string;
@@ -115,6 +141,19 @@ const MEMORY_GRID_LABELS: Record<number, string> = {
   4: "4×4 Easy",
   6: "8×4 Medium",
   8: "8×8 Hard",
+};
+
+const JIGSAW_GRID_LABELS: Record<number, string> = {
+  2: "2×2",
+  3: "3×3",
+  4: "4×4",
+  5: "5×5",
+};
+
+const JIGSAW_LEVEL_LABELS: Record<number, string> = {
+  1: "Easy",
+  2: "Medium",
+  3: "Hard",
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -728,6 +767,208 @@ function MemoryDuelCard({
   );
 }
 
+// ─── Jigsaw ChallengeCard ───────────────────────────────────────────────────────
+
+function JigsawChallengeCard({
+  challenge,
+  myProfileId,
+  onAccept,
+  onDecline,
+  onPlay,
+  onRematch,
+  onShare,
+  isResponding,
+}: {
+  challenge: JigsawChallengeDetail;
+  myProfileId: number;
+  onAccept: (id: number) => void;
+  onDecline: (id: number) => void;
+  onPlay: (challenge: JigsawChallengeDetail) => void;
+  onRematch?: (c: JigsawChallengeDetail) => void;
+  onShare?: (token: string, label: string) => void;
+  isResponding: boolean;
+}) {
+  const isChallenger = challenge.challengerId === myProfileId;
+  const opponent = isChallenger
+    ? challenge.challengedUsername ?? "A friend"
+    : challenge.challengerUsername;
+  const opponentAvatar = isChallenger
+    ? challenge.challengedAvatar
+    : challenge.challengerAvatar;
+  const opponentXp = isChallenger
+    ? (challenge.challengedXp ?? 0)
+    : (challenge.challengerXp ?? 0);
+  const myPoints = isChallenger ? challenge.challengerPoints : challenge.challengedPoints;
+  const theirPoints = isChallenger
+    ? challenge.challengedPoints
+    : challenge.challengerPoints;
+  const myGameId = isChallenger ? challenge.challengerGameId : challenge.challengedGameId;
+  const isWinner = challenge.winnerId === myProfileId;
+  const isTie = challenge.status === "completed" && challenge.winnerId === null;
+  const hasPlayed = myPoints != null;
+
+  return (
+    <Card className="hover:shadow-md transition-shadow">
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <Avatar src={opponentAvatar} name={opponent} size={10} />
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-semibold truncate">{opponent}</p>
+                <LevelBadge xp={opponentXp} size="xs" />
+                {challenge.status === "completed" && (
+                  <span
+                    className={`text-xs font-bold flex items-center gap-1 ${isWinner ? "text-yellow-600" : isTie ? "text-slate-500" : "text-red-500"}`}
+                  >
+                    {isWinner ? (
+                      <>
+                        <Crown className="w-3 h-3" /> Won +10 💎
+                      </>
+                    ) : isTie ? (
+                      <>
+                        <Minus className="w-3 h-3" /> Tie
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="w-3 h-3" /> Lost
+                      </>
+                    )}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full border font-medium bg-amber-100 text-amber-700 border-amber-200">
+                  Jigsaw
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {JIGSAW_GRID_LABELS[challenge.gridSize] ?? `${challenge.gridSize}×${challenge.gridSize}`}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  Level {challenge.level}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  Picture #{challenge.imageKey}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {timeAgo(challenge.createdAt)}
+                </span>
+                {isChallenger ? (
+                  <span className="text-[10px] text-muted-foreground italic">
+                    You challenged
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-blue-600 font-medium">
+                    Challenged you
+                  </span>
+                )}
+              </div>
+
+              {(challenge.status === "accepted" ||
+                challenge.status === "completed" ||
+                (challenge.status === "pending" && myPoints != null)) && (
+                <div className="flex items-center gap-3 mt-2 text-xs">
+                  <span className="text-muted-foreground">
+                    You:{" "}
+                    <span className="font-bold text-foreground">
+                      {myPoints != null ? myPoints.toLocaleString() : "—"}
+                    </span>
+                  </span>
+                  <span className="text-muted-foreground">
+                    Them:{" "}
+                    <span className="font-bold text-foreground">
+                      {theirPoints != null ? theirPoints.toLocaleString() : "—"}
+                    </span>
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-col items-end gap-2 shrink-0">
+            <StatusBadge status={challenge.status} />
+            {challenge.status === "pending" && !isChallenger && (
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs text-red-600 border-red-200 hover:bg-red-50"
+                  onClick={() => onDecline(challenge.id)}
+                  disabled={isResponding}
+                >
+                  Decline
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => onAccept(challenge.id)}
+                  disabled={isResponding}
+                >
+                  Accept
+                </Button>
+              </div>
+            )}
+            {challenge.status === "accepted" && myGameId && (
+              <Button
+                size="sm"
+                className="h-7 text-xs gap-1"
+                onClick={() => onPlay(challenge)}
+              >
+                {hasPlayed ? "Done ✓" : "Play"}{" "}
+                <ChevronRight className="w-3 h-3" />
+              </Button>
+            )}
+            {challenge.status === "pending" && isChallenger && myGameId && (
+              hasPlayed ? (
+                <div className="flex flex-col items-end gap-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs gap-1"
+                    onClick={() => onPlay(challenge)}
+                  >
+                    View <ChevronRight className="w-3 h-3" />
+                  </Button>
+                  <span className="text-[10px] text-muted-foreground italic">Waiting for opponent</span>
+                </div>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs gap-1"
+                  onClick={() => onPlay(challenge)}
+                >
+                  Play now <ChevronRight className="w-3 h-3" />
+                </Button>
+              )
+            )}
+            {challenge.status === "pending" && isChallenger && challenge.shareToken && onShare && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-xs gap-1 text-muted-foreground hover:text-amber-600"
+                onClick={() => onShare(challenge.shareToken!, `I challenge you to a Jigsaw puzzle (${JIGSAW_GRID_LABELS[challenge.gridSize] ?? ""})`)}
+              >
+                <Share2 className="w-3 h-3" /> Share
+              </Button>
+            )}
+            {challenge.status === "completed" && onRematch && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-xs gap-1"
+                onClick={() => onRematch(challenge)}
+              >
+                <RotateCcw className="w-3 h-3" /> Rematch
+              </Button>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 // ─── NewChallengeDialog ───────────────────────────────────────────────────────
 
 interface RematchData {
@@ -736,6 +977,8 @@ interface RematchData {
   difficulty?: Difficulty;
   sudokuGridSize?: SudokuGridSize;
   memoryGridSize?: MemoryGridSize;
+  jigsawGridSize?: JigsawGridSize;
+  jigsawLevel?: JigsawLevel;
 }
 
 type GameMode = 'children' | 'adult' | '4all';
@@ -753,6 +996,19 @@ const MEMORY_SIZE_OPTIONS: { value: MemoryGridSize; label: string }[] = [
   { value: 4, label: '4×4 Easy · 8 pairs' },
   { value: 6, label: '8×4 Medium · 16 pairs' },
   { value: 8, label: '8×8 Hard · 32 pairs' },
+];
+
+const JIGSAW_SIZE_OPTIONS: { value: JigsawGridSize; label: string }[] = [
+  { value: 2, label: '2×2 Easy' },
+  { value: 3, label: '3×3 Medium' },
+  { value: 4, label: '4×4 Hard' },
+  { value: 5, label: '5×5 Expert' },
+];
+
+const JIGSAW_LEVEL_OPTIONS: { value: JigsawLevel; label: string }[] = [
+  { value: 1, label: 'Level 1' },
+  { value: 2, label: 'Level 2' },
+  { value: 3, label: 'Level 3' },
 ];
 
 const DIFFICULTY_OPTIONS: { value: Difficulty; label: string }[] = [
@@ -778,6 +1034,14 @@ function filteredMemorySizes(gameMode: GameMode) {
   );
 }
 
+function filteredJigsawSizes(gameMode: GameMode) {
+  return JIGSAW_SIZE_OPTIONS.filter(o =>
+    gameMode === 'children' ? [2, 3].includes(o.value) :
+    gameMode === 'adult'    ? [4, 5].includes(o.value) :
+    true
+  );
+}
+
 function filteredDifficulties(_gameMode: GameMode) {
   return DIFFICULTY_OPTIONS;
 }
@@ -795,7 +1059,7 @@ function NewChallengeDialog({
   myProfileId: number;
   gameMode: GameMode;
   initialData?: RematchData;
-  onShareCreated?: (data: { token: string; gameId: number; gameType: "sudoku" | "memory"; gridSize?: number }) => void;
+  onShareCreated?: (data: { token: string; gameId: number; gameType: "sudoku" | "memory" | "jigsaw"; gridSize?: number }) => void;
 }) {
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
@@ -805,13 +1069,20 @@ function NewChallengeDialog({
   const [gameType, setGameType] = useState<GameType>("sudoku");
   const sudokuSizes = filteredSudokuSizes(gameMode);
   const memorySizes = filteredMemorySizes(gameMode);
+  const jigsawSizes = filteredJigsawSizes(gameMode);
   const diffs = filteredDifficulties(gameMode);
   const defaultSudokuSize = sudokuSizes[0]?.value ?? 9;
   const defaultMemorySize = memorySizes[0]?.value ?? 4;
+  const defaultJigsawSize = jigsawSizes[0]?.value ?? 2;
   const defaultDiff = diffs[0]?.value ?? 'medium';
+  const defaultJigsawLevel: JigsawLevel = 1;
+  const defaultJigsawImageKey = 1;
   const [difficulty, setDifficulty] = useState<Difficulty>(defaultDiff);
   const [sudokuGridSize, setSudokuGridSize] = useState<SudokuGridSize>(defaultSudokuSize);
   const [memoryGridSize, setMemoryGridSize] = useState<MemoryGridSize>(defaultMemorySize);
+  const [jigsawGridSize, setJigsawGridSize] = useState<JigsawGridSize>(defaultJigsawSize);
+  const [jigsawLevel, setJigsawLevel] = useState<JigsawLevel>(defaultJigsawLevel);
+  const [jigsawImageKey, setJigsawImageKey] = useState<number>(defaultJigsawImageKey);
 
   // Reset sizes/difficulty to valid options whenever gameMode or dialog open state changes
   React.useEffect(() => {
@@ -822,6 +1093,10 @@ function NewChallengeDialog({
     const validMemory = memorySizes.map(o => o.value);
     if (!validMemory.includes(memoryGridSize)) {
       setMemoryGridSize(memorySizes[0]?.value ?? 4);
+    }
+    const validJigsaw = jigsawSizes.map(o => o.value);
+    if (!validJigsaw.includes(jigsawGridSize)) {
+      setJigsawGridSize(jigsawSizes[0]?.value ?? 2);
     }
   }, [gameMode, open]);
 
@@ -836,6 +1111,12 @@ function NewChallengeDialog({
       }
       if (initialData.memoryGridSize && memorySizes.some(o => o.value === initialData.memoryGridSize)) {
         setMemoryGridSize(initialData.memoryGridSize);
+      }
+      if (initialData.jigsawGridSize && jigsawSizes.some(o => o.value === initialData.jigsawGridSize)) {
+        setJigsawGridSize(initialData.jigsawGridSize);
+      }
+      if (initialData.jigsawLevel) {
+        setJigsawLevel(initialData.jigsawLevel);
       }
     }
     if (!open) {
@@ -896,6 +1177,34 @@ function NewChallengeDialog({
     onError: () => toast.error("Failed to send challenge"),
   });
 
+  const createJigsawMutation = useMutation({
+    mutationFn: (data: {
+      challengerId: number;
+      challengedId: number | null;
+      gridSize: JigsawGridSize;
+      level: JigsawLevel;
+      imageKey: number;
+    }) =>
+      customFetch<JigsawChallengeDetail>("/api/jigsaw-challenges", { method: "POST", data }),
+    onSuccess: (challenge) => {
+      queryClient.invalidateQueries({ queryKey: ["jigsaw-challenges"] });
+      if (selected) {
+        toast.success(`Jigsaw challenge sent to ${selected?.username}!`, {
+          description: "You can start playing now — they'll join once they accept.",
+        });
+      } else {
+        toast.success("Jigsaw challenge link created!", {
+          description: "Share the link to find an opponent.",
+        });
+      }
+      onClose();
+      if (challenge.challengerGameId) {
+        setLocation(`/jigsaw?gridSize=${challenge.gridSize}&level=${challenge.level}&imageKey=${challenge.imageKey}&gameId=${challenge.challengerGameId}&challengeId=${challenge.id}&shareToken=${challenge.shareToken}`);
+      }
+    },
+    onError: () => toast.error("Failed to send challenge"),
+  });
+
   // Open (shareable) challenge mutations — no specific opponent
   const openSudokuMutation = useMutation({
     mutationFn: (data: { challengerId: number; difficulty: Difficulty; gridSize: SudokuGridSize }) =>
@@ -932,6 +1241,24 @@ function NewChallengeDialog({
     onError: () => toast.error("Failed to create challenge link"),
   });
 
+  const openJigsawMutation = useMutation({
+    mutationFn: (data: { challengerId: number; gridSize: JigsawGridSize; level: JigsawLevel; imageKey: number }) =>
+      customFetch<JigsawChallengeDetail>("/api/jigsaw-challenges", { method: "POST", data }),
+    onSuccess: (challenge) => {
+      queryClient.invalidateQueries({ queryKey: ["jigsaw-challenges"] });
+      onClose();
+      if (challenge.shareToken) {
+        onShareCreated?.({
+          token: challenge.shareToken,
+          gameId: challenge.challengerGameId!,
+          gameType: "jigsaw",
+          gridSize: challenge.gridSize,
+        });
+      }
+    },
+    onError: () => toast.error("Failed to create challenge link"),
+  });
+
   const handleSend = () => {
     if (!selected) return;
     if (gameType === "sudoku") {
@@ -944,7 +1271,7 @@ function NewChallengeDialog({
         difficulty,
         gridSize: validSize,
       });
-    } else {
+    } else if (gameType === "memory") {
       const validSize = memorySizes.some(o => o.value === memoryGridSize)
         ? memoryGridSize
         : (memorySizes[0]?.value ?? 4);
@@ -952,6 +1279,17 @@ function NewChallengeDialog({
         challengerId: myProfileId,
         challengedId: selected.id,
         gridSize: validSize,
+      });
+    } else {
+      const validSize = jigsawSizes.some(o => o.value === jigsawGridSize)
+        ? jigsawGridSize
+        : (jigsawSizes[0]?.value ?? 2);
+      createJigsawMutation.mutate({
+        challengerId: myProfileId,
+        challengedId: selected.id,
+        gridSize: validSize,
+        level: jigsawLevel,
+        imageKey: jigsawImageKey,
       });
     }
   };
@@ -962,18 +1300,23 @@ function NewChallengeDialog({
         ? sudokuGridSize
         : (sudokuSizes[0]?.value ?? 9);
       openSudokuMutation.mutate({ challengerId: myProfileId, difficulty, gridSize: validSize });
-    } else {
+    } else if (gameType === "memory") {
       const validSize = memorySizes.some(o => o.value === memoryGridSize)
         ? memoryGridSize
         : (memorySizes[0]?.value ?? 4);
       openMemoryMutation.mutate({ challengerId: myProfileId, gridSize: validSize });
+    } else {
+      const validSize = jigsawSizes.some(o => o.value === jigsawGridSize)
+        ? jigsawGridSize
+        : (jigsawSizes[0]?.value ?? 2);
+      openJigsawMutation.mutate({ challengerId: myProfileId, gridSize: validSize, level: jigsawLevel, imageKey: jigsawImageKey });
     }
   };
 
   const isPending =
-    createSudokuMutation.isPending || createMemoryMutation.isPending;
+    createSudokuMutation.isPending || createMemoryMutation.isPending || createJigsawMutation.isPending;
   const isLinkPending =
-    openSudokuMutation.isPending || openMemoryMutation.isPending;
+    openSudokuMutation.isPending || openMemoryMutation.isPending || openJigsawMutation.isPending;
 
   const handleClose = () => {
     setSearch("");
@@ -1014,7 +1357,7 @@ function NewChallengeDialog({
             /* Open challenge — game settings only */
             <div className="space-y-3">
               {/* Game type */}
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <button
                   onClick={() => setGameType("sudoku")}
                   className={`flex items-center gap-2.5 rounded-xl border-2 px-3 py-2.5 transition-all text-sm font-medium ${gameType === "sudoku" ? "border-primary bg-primary/5 text-primary" : "border-border bg-muted/30 text-muted-foreground hover:border-primary/40"}`}
@@ -1028,6 +1371,13 @@ function NewChallengeDialog({
                 >
                   <Brain className="w-4 h-4 shrink-0" />
                   Memory
+                </button>
+                <button
+                  onClick={() => setGameType("jigsaw")}
+                  className={`flex items-center gap-2.5 rounded-xl border-2 px-3 py-2.5 transition-all text-sm font-medium ${gameType === "jigsaw" ? "border-amber-500 bg-amber-50 text-amber-700" : "border-border bg-muted/30 text-muted-foreground hover:border-amber-300"}`}
+                >
+                  <Puzzle className="w-4 h-4 shrink-0" />
+                  Jigsaw
                 </button>
               </div>
               {gameType === "sudoku" && (
@@ -1061,6 +1411,28 @@ function NewChallengeDialog({
                       {memorySizes.map(o => <SelectItem key={o.value} value={String(o.value)}>{o.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                </div>
+              )}
+              {gameType === "jigsaw" && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Grid Size</label>
+                    <Select value={String(jigsawGridSize)} onValueChange={(v) => setJigsawGridSize(Number(v) as JigsawGridSize)}>
+                      <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {jigsawSizes.map(o => <SelectItem key={o.value} value={String(o.value)}>{o.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Level</label>
+                    <Select value={String(jigsawLevel)} onValueChange={(v) => setJigsawLevel(Number(v) as JigsawLevel)}>
+                      <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {JIGSAW_LEVEL_OPTIONS.map(o => <SelectItem key={o.value} value={String(o.value)}>{o.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               )}
               <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2.5 text-xs text-amber-800 flex items-center gap-2">
@@ -1141,7 +1513,7 @@ function NewChallengeDialog({
               </div>
 
               {/* Game type selector */}
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <button
                   onClick={() => setGameType("sudoku")}
                   className={`flex flex-col items-center gap-1.5 rounded-xl border-2 p-3 transition-all text-sm font-medium ${gameType === "sudoku" ? "border-primary bg-primary/5 text-primary" : "border-border bg-muted/30 text-muted-foreground hover:border-primary/40"}`}
@@ -1155,6 +1527,13 @@ function NewChallengeDialog({
                 >
                   <Brain className="w-5 h-5" />
                   Memory
+                </button>
+                <button
+                  onClick={() => setGameType("jigsaw")}
+                  className={`flex flex-col items-center gap-1.5 rounded-xl border-2 p-3 transition-all text-sm font-medium ${gameType === "jigsaw" ? "border-amber-500 bg-amber-50 text-amber-700" : "border-border bg-muted/30 text-muted-foreground hover:border-amber-300"}`}
+                >
+                  <Puzzle className="w-5 h-5" />
+                  Jigsaw
                 </button>
               </div>
 
@@ -1217,6 +1596,48 @@ function NewChallengeDialog({
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+              )}
+
+              {/* Jigsaw options */}
+              {gameType === "jigsaw" && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium">Grid Size</label>
+                    <Select
+                      value={String(jigsawGridSize)}
+                      onValueChange={(v) =>
+                        setJigsawGridSize(Number(v) as JigsawGridSize)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {jigsawSizes.map(o => (
+                          <SelectItem key={o.value} value={String(o.value)}>{o.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium">Level</label>
+                    <Select
+                      value={String(jigsawLevel)}
+                      onValueChange={(v) =>
+                        setJigsawLevel(Number(v) as JigsawLevel)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {JIGSAW_LEVEL_OPTIONS.map(o => (
+                          <SelectItem key={o.value} value={String(o.value)}>{o.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               )}
 
@@ -1346,6 +1767,17 @@ export default function Challenges() {
     },
   );
 
+  // ── Jigsaw challenges ───────────────────────────────────────────────────────────
+  const { data: jigsawChallenges, isLoading: jigsawLoading } = useQuery<JigsawChallengeDetail[]>(
+    {
+      queryKey: ["jigsaw-challenges", profileId],
+      queryFn: () =>
+        customFetch<JigsawChallengeDetail[]>(`/api/jigsaw-challenges/for/${profileId}`),
+      enabled: !!profileId,
+      refetchInterval: 10000,
+    },
+  );
+
   const respondDuelMutation = useMutation({
     mutationFn: ({
       id,
@@ -1374,6 +1806,36 @@ export default function Challenges() {
     onError: () => {
       setRespondingId(null);
       toast.error("Failed to respond to duel");
+    },
+  });
+
+  const respondJigsawMutation = useMutation({
+    mutationFn: ({
+      id,
+      action,
+    }: {
+      id: number;
+      action: "accept" | "decline";
+    }) =>
+      customFetch<{ gameId?: number }>(`/api/jigsaw-challenges/${id}/respond`, {
+        method: "POST",
+        data: { profileId, action },
+      }),
+    onSuccess: (result, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["jigsaw-challenges"] });
+      setRespondingId(null);
+      if (vars.action === "accept" && result.gameId) {
+        const challenge = jigsawChallenges?.find((item) => item.id === vars.id);
+        if (challenge) {
+          setLocation(`/jigsaw?gridSize=${challenge.gridSize}&level=${challenge.level}&imageKey=${challenge.imageKey}&gameId=${result.gameId}&challengeId=${challenge.id}&shareToken=${challenge.shareToken}`);
+        }
+      } else {
+        toast("Challenge declined.");
+      }
+    },
+    onError: () => {
+      setRespondingId(null);
+      toast.error("Failed to respond to challenge");
     },
   });
 
@@ -1431,6 +1893,35 @@ export default function Challenges() {
     [setLocation, profileId],
   );
 
+  const handleJigsawAccept = useCallback(
+    (id: number) => {
+      setRespondingId(id);
+      respondJigsawMutation.mutate({ id, action: "accept" });
+    },
+    [respondJigsawMutation],
+  );
+
+  const handleJigsawDecline = useCallback(
+    (id: number) => {
+      setRespondingId(id);
+      respondJigsawMutation.mutate({ id, action: "decline" });
+    },
+    [respondJigsawMutation],
+  );
+
+  const handleJigsawPlay = useCallback(
+    (challenge: JigsawChallengeDetail) => {
+      const myGameId =
+        challenge.challengerId === profileId
+          ? challenge.challengerGameId
+          : challenge.challengedGameId;
+      if (myGameId) {
+        setLocation(`/jigsaw?gridSize=${challenge.gridSize}&level=${challenge.level}&imageKey=${challenge.imageKey}&gameId=${myGameId}&challengeId=${challenge.id}&shareToken=${challenge.shareToken}`);
+      }
+    },
+    [setLocation, profileId],
+  );
+
   const handleSudokuRematch = useCallback(
     (challenge: ChallengeDetail) => {
       const isChallenger = challenge.challengerId === profileId;
@@ -1479,6 +1970,44 @@ export default function Challenges() {
     },
     [profileId],
   );
+
+  const handleJigsawRematch = useCallback(
+    (challenge: JigsawChallengeDetail) => {
+      const isChallenger = challenge.challengerId === profileId;
+      const opponentId = isChallenger ? challenge.challengedId : challenge.challengerId;
+      if (!opponentId) {
+        toast.error("This challenge no longer has an opponent.");
+        return;
+      }
+
+      setRematchData({
+        opponent: {
+          id: opponentId,
+          username: isChallenger ? challenge.challengedUsername ?? "Player" : challenge.challengerUsername,
+          avatar: isChallenger ? challenge.challengedAvatar : challenge.challengerAvatar,
+          gems: 0,
+        },
+        gameType: "jigsaw",
+        jigsawGridSize: challenge.gridSize,
+        jigsawLevel: challenge.level,
+      });
+      setShowNew(true);
+    },
+    [profileId],
+  );
+
+  // Ensure profileId is not null before rendering
+  if (!profileId) {
+    return (
+      <div className="max-w-2xl mx-auto w-full space-y-6 animate-in fade-in duration-500">
+        <Card>
+          <CardContent className="pt-10 pb-10 flex flex-col items-center gap-3 text-center">
+            <p className="font-semibold text-lg">Please sign in to view challenges</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (showNew || !challenges || !Number.isFinite(rematchChallengeId) || rematchChallengeId <= 0) {
@@ -1541,6 +2070,20 @@ export default function Challenges() {
     duels?.filter((d) => d.status === "completed" || d.status === "declined") ??
     [];
 
+  const jigsawPending =
+    jigsawChallenges?.filter(
+      (c) => c.status === "pending" && c.challengedId === profileId,
+    ) ?? [];
+  const jigsawActive = jigsawChallenges?.filter((c) => c.status === "accepted") ?? [];
+  const jigsawOutgoing =
+    jigsawChallenges?.filter(
+      (c) => c.status === "pending" && c.challengerId === profileId,
+    ) ?? [];
+  const jigsawFinished =
+    jigsawChallenges?.filter(
+      (c) => c.status === "completed" || c.status === "declined",
+    ) ?? [];
+
   // Badge counts for tab labels
   const sudokuAlert =
     pending.length +
@@ -1558,8 +2101,15 @@ export default function Challenges() {
         d.challengerId === profileId ? d.challengerPoints : d.challengedPoints;
       return myPoints == null;
     }).length;
+  const jigsawAlert =
+    jigsawPending.length +
+    jigsawActive.filter((c) => {
+      const myPoints =
+        c.challengerId === profileId ? c.challengerPoints : c.challengedPoints;
+      return myPoints == null;
+    }).length;
 
-  const isLoading = activeTab === "sudoku" ? challengesLoading : duelsLoading;
+  const isLoading = activeTab === "sudoku" ? challengesLoading : activeTab === "memory" ? duelsLoading : jigsawLoading;
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-6 animate-in fade-in duration-500">
@@ -1574,7 +2124,7 @@ export default function Challenges() {
         </div>
         <div className="font-size-mobile-actions flex items-center gap-1.5 shrink-0">
           <Link
-            href="/sudoku"
+            href="/sudoku/"
             className="inline-flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg border border-border bg-card text-xs sm:text-sm font-medium text-foreground hover:bg-muted transition-colors"
             title="Play Sudoku"
           >
@@ -1588,6 +2138,14 @@ export default function Challenges() {
           >
             <Brain className="w-3.5 h-3.5 text-primary" />
             <span className="hidden sm:inline">Memory</span>
+          </Link>
+          <Link
+            href="/jigsaw/"
+            className="inline-flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg border border-border bg-card text-xs sm:text-sm font-medium text-foreground hover:bg-muted transition-colors"
+            title="Play Jigsaw"
+          >
+            <Puzzle className="w-3.5 h-3.5 text-amber-600" />
+            <span className="hidden sm:inline">Jigsaw</span>
           </Link>
           <Button size="sm" className="gap-1.5" onClick={openNewChallenge}>
             <Swords className="w-4 h-4" />
@@ -1633,6 +2191,18 @@ export default function Challenges() {
           {memoryAlert > 0 && (
             <span className="w-4 h-4 rounded-full bg-violet-500 text-white text-[10px] font-bold flex items-center justify-center">
               {memoryAlert}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab("jigsaw")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${activeTab === "jigsaw" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+        >
+          <Puzzle className="w-4 h-4" />
+          <span className="hidden sm:inline">Jigsaw</span>
+          {jigsawAlert > 0 && (
+            <span className="w-4 h-4 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center">
+              {jigsawAlert}
             </span>
           )}
         </button>
@@ -1742,6 +2312,112 @@ export default function Challenges() {
                 </p>
                 <Button className="mt-2 gap-2" onClick={openNewChallenge}>
                   <Swords className="w-4 h-4" /> Send your first challenge
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      ) : activeTab === "jigsaw" ? (
+        <div className="space-y-6">
+          {jigsawPending.length > 0 && (
+            <section className="space-y-3">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 w-fit shadow-sm">
+                <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />{" "}
+                Waiting for you ({jigsawPending.length})
+              </h2>
+              {jigsawPending.map((c) => (
+                <JigsawChallengeCard
+                  key={c.id}
+                  challenge={c}
+                  myProfileId={profileId!}
+                  onAccept={handleJigsawAccept}
+                  onDecline={handleJigsawDecline}
+                  onPlay={handleJigsawPlay}
+                  onRematch={handleJigsawRematch}
+                  onShare={handleShare}
+                  isResponding={respondingId === c.id}
+                />
+              ))}
+            </section>
+          )}
+          {jigsawActive.length > 0 && (
+            <section className="space-y-3">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 w-fit shadow-sm">
+                <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />{" "}
+                In Progress ({jigsawActive.length})
+              </h2>
+              {jigsawActive.map((c) => (
+                <JigsawChallengeCard
+                  key={c.id}
+                  challenge={c}
+                  myProfileId={profileId!}
+                  onAccept={handleJigsawAccept}
+                  onDecline={handleJigsawDecline}
+                  onPlay={handleJigsawPlay}
+                  onRematch={handleJigsawRematch}
+                  onShare={handleShare}
+                  isResponding={respondingId === c.id}
+                />
+              ))}
+            </section>
+          )}
+          {jigsawOutgoing.length > 0 && (
+            <section className="space-y-3">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 w-fit shadow-sm">
+                <Clock className="w-3.5 h-3.5" /> Waiting for them (
+                {jigsawOutgoing.length})
+              </h2>
+              {jigsawOutgoing.map((c) => (
+                <JigsawChallengeCard
+                  key={c.id}
+                  challenge={c}
+                  myProfileId={profileId!}
+                  onAccept={handleJigsawAccept}
+                  onDecline={handleJigsawDecline}
+                  onPlay={handleJigsawPlay}
+                  onRematch={handleJigsawRematch}
+                  onShare={handleShare}
+                  isResponding={respondingId === c.id}
+                />
+              ))}
+            </section>
+          )}
+          {jigsawFinished.length > 0 && (
+            <section className="space-y-3">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 w-fit shadow-sm">
+                <CheckCircle2 className="w-3.5 h-3.5" /> Finished
+              </h2>
+              {jigsawFinished.map((c) => (
+                <JigsawChallengeCard
+                  key={c.id}
+                  challenge={c}
+                  myProfileId={profileId!}
+                  onAccept={handleJigsawAccept}
+                  onDecline={handleJigsawDecline}
+                  onPlay={handleJigsawPlay}
+                  onRematch={handleJigsawRematch}
+                  onShare={handleShare}
+                  isResponding={false}
+                />
+              ))}
+            </section>
+          )}
+          {(!jigsawChallenges || jigsawChallenges.length === 0) && (
+            <Card>
+              <CardContent className="pt-10 pb-10 flex flex-col items-center gap-3 text-center">
+                <Puzzle className="w-12 h-12 text-muted-foreground/30" />
+                <p className="font-semibold text-lg">
+                  No Jigsaw challenges yet
+                </p>
+                <p className="text-sm text-muted-foreground max-w-xs">
+                  Challenge a friend to solve the same picture puzzle. Compare
+                  scores to win 10 gems!
+                </p>
+                <Button
+                  className="mt-2 gap-2 bg-amber-600 hover:bg-amber-700"
+                  onClick={openNewChallenge}
+                >
+                  <Puzzle className="w-4 h-4" /> Send a jigsaw challenge
                 </Button>
               </CardContent>
             </Card>
