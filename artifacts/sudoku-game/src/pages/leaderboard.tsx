@@ -1470,7 +1470,7 @@ export default function Leaderboard({
               <span className="hidden sm:inline">Play Sudoku</span>
             </Link>
             <Link
-              href="/memory"
+              href="/memory/"
               aria-label="Play Memory Match"
               title="Play Memory Match"
               className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card p-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors sm:px-2.5 sm:py-1.5 sm:text-sm"

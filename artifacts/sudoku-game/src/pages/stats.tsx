@@ -543,7 +543,7 @@ export default function Stats() {
             <span className="hidden sm:inline">Play </span>Sudoku
           </Link>
           <Link
-            href="/memory"
+            href="/memory/"
             className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-card text-xs sm:text-sm font-medium text-foreground hover:bg-muted transition-colors"
           >
             <Brain className="w-3.5 h-3.5 text-primary" />

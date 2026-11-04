@@ -216,6 +216,26 @@ const publicPages = [
     schemaType: "WebApplication",
   },
   {
+    route: "/memory-challenge",
+    title: "Memory Match Challenges | Play Brain Games . Online",
+    description:
+      "Take on daily and weekly Memory Match challenges, improve your recall, and compare results on Play Brain Games . Online.",
+    heading: "Daily & Weekly Memory Match Challenges",
+    intro:
+      "Take on daily and weekly Memory Match challenges, practise your recall, and compare your results with other players.",
+    sections: [
+      ["Daily and weekly challenges", "Choose a shared Memory Match challenge and work through the card pairs at your own pace."],
+      ["Compare challenge results", "Review completion times, flips, and scores on the challenge leaderboards."],
+      ["Keep practising", "Play regular Memory Match boards to build recall, or return to the challenges to track your progress."],
+    ],
+    links: [
+      ["/memory", "Play Memory Match"],
+      ["/leaderboard/memory/", "View the Memory Match leaderboard"],
+      ["/guides", "Read the Memory Match guide"],
+    ],
+    schemaType: "CollectionPage",
+  },
+  {
     route: "/daily-challenge",
     title: "Daily Sudoku Challenge | Play Today's Puzzle Online",
     description:

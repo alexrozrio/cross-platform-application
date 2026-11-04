@@ -318,11 +318,11 @@ export function MemoryGuide() {
 
       <p className="text-foreground">
         Ready to play?{" "}
-        <Link href="/memory" className="font-semibold text-primary underline underline-offset-2">
+        <Link href="/memory/" className="font-semibold text-primary underline underline-offset-2">
           Choose a Memory Match board
         </Link>{" "}
         or{" "}
-        <Link href="/memory-challenge" className="font-semibold text-primary underline underline-offset-2">
+        <Link href="/memory-challenge/" className="font-semibold text-primary underline underline-offset-2">
           open the Memory Match challenge
         </Link>
         .

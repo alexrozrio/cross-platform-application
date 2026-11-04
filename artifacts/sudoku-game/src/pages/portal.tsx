@@ -408,7 +408,7 @@ export default function Portal() {
               </div>
             </div>
             <button
-              onClick={() => setLocation("/memory")}
+              onClick={() => setLocation("/memory/")}
               className="rounded-full bg-violet-500 px-3 py-1.5 text-[11px] font-bold text-white shadow-sm transition-colors hover:bg-violet-600"
             >
               All options
@@ -451,7 +451,7 @@ export default function Portal() {
               gs === 2 ? "2×4" : gs === 4 ? "4×4" : gs === 6 ? "8×4" : "8×8";
             return (
               <button
-                onClick={() => setLocation("/memory")}
+                onClick={() => setLocation("/memory/")}
                 className="w-full flex items-center gap-3 rounded-xl border-2 border-violet-400/30 bg-card px-4 py-2.5 text-left hover:bg-muted transition-all"
               >
                 <RotateCcw className="w-4 h-4 text-violet-600 shrink-0" />
@@ -554,7 +554,7 @@ export default function Portal() {
               <span className="shrink-0 text-sm text-orange-400">→</span>
             </button>
             <button
-              onClick={() => setLocation("/memory-challenge")}
+              onClick={() => setLocation("/memory-challenge/")}
               className="flex w-full items-center gap-3 rounded-xl border border-orange-200 bg-white/60 px-3 py-2.5 text-left transition-all hover:bg-white/90 dark:bg-orange-950/30 dark:hover:bg-orange-950/50"
             >
               <span className="shrink-0 text-lg leading-none">🃏</span>
@@ -876,7 +876,7 @@ export default function Portal() {
                     className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-fuchsia-300/35 blur-2xl dark:bg-fuchsia-400/15"
                   />
                   <button
-                    onClick={() => setLocation("/memory")}
+                    onClick={() => setLocation("/memory/")}
                     className="relative z-10 w-full text-left p-6 space-y-4 transition-all duration-200 hover:bg-white/20 dark:hover:bg-slate-950/20"
                   >
                     <div className="flex items-center gap-3">
@@ -938,7 +938,7 @@ export default function Portal() {
                               : "8×8";
                       return (
                         <button
-                          onClick={() => setLocation("/memory")}
+                          onClick={() => setLocation("/memory/")}
                           className="mx-6 mb-3 flex items-center gap-2 rounded-lg bg-violet-500/10 border border-violet-400/25 px-3 py-2 text-left hover:bg-violet-500/20 transition-colors w-[calc(100%-3rem)]"
                         >
                           <RotateCcw className="w-3.5 h-3.5 text-violet-600 shrink-0" />
@@ -1065,7 +1065,7 @@ export default function Portal() {
                 <span className="shrink-0 text-orange-400">→</span>
               </button>
               <button
-                onClick={() => setLocation("/memory-challenge")}
+                onClick={() => setLocation("/memory-challenge/")}
                 className="flex items-center gap-3 rounded-xl border border-orange-200 bg-white/60 px-4 py-3 text-left transition-all hover:bg-white/90 dark:bg-orange-950/30 dark:hover:bg-orange-950/50"
               >
                 <span className="shrink-0 text-2xl leading-none">🃏</span>
@@ -1160,7 +1160,7 @@ export default function Portal() {
               </button>
               <button
                 type="button"
-                onClick={() => setLocation("/memory")}
+                onClick={() => setLocation("/memory/")}
                 className="w-full rounded-2xl border border-border bg-muted p-4 flex gap-3 items-start text-left hover:bg-muted/70 hover:border-primary/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <span className="text-lg mt-0.5 shrink-0">🃏</span>
@@ -1243,10 +1243,10 @@ export default function Portal() {
           <Link href="/sudoku" className="font-semibold text-primary underline-offset-2 hover:underline">
             Sudoku setup
           </Link>
-          <Link href="/memory" className="font-semibold text-primary underline-offset-2 hover:underline">
+          <Link href="/memory/" className="font-semibold text-primary underline-offset-2 hover:underline">
             Memory Match setup
           </Link>
-          <Link href="/guides" className="font-semibold text-primary underline-offset-2 hover:underline">
+          <Link href="/guides/" className="font-semibold text-primary underline-offset-2 hover:underline">
             Read the puzzle guides
           </Link>
           <Link href="/daily-challenge" className="font-semibold text-primary underline-offset-2 hover:underline">

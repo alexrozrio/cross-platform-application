@@ -102,7 +102,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       iconCls: "text-amber-400", activeIconCls: "text-amber-600 dark:text-amber-400", activeBgCls: "bg-amber-100 dark:bg-amber-900/40" },
     { href: "/challenges", label: "Challenges", shortLabel: "Duels", icon: Swords, badge: pendingCount, tooltip: "Challenge others to a duel — win for 10 💎 gems; ties award 2 💎 each",
       iconCls: "text-rose-400", activeIconCls: "text-rose-600 dark:text-rose-400", activeBgCls: "bg-rose-100 dark:bg-rose-900/40" },
-    { href: "/themes", label: "Themes", shortLabel: "Themes", icon: Palette, badge: 0, tooltip: "Unlock new board themes and fonts with your gems",
+    { href: "/themes/", label: "Themes", shortLabel: "Themes", icon: Palette, badge: 0, tooltip: "Unlock new board themes and fonts with your gems",
       iconCls: "text-violet-400", activeIconCls: "text-violet-600 dark:text-violet-400", activeBgCls: "bg-violet-100 dark:bg-violet-900/40" },
     { href: "/profile", label: isSignedIn ? (profile?.username || replitUser?.firstName || "Account") : "Profile", shortLabel: isSignedIn ? "Account" : "Profile", icon: User, badge: 0, tooltip: "Your profile, XP rank, badges, and game settings",
       iconCls: "text-emerald-400", activeIconCls: "text-emerald-600 dark:text-emerald-400", activeBgCls: "bg-emerald-100 dark:bg-emerald-900/40" },
@@ -264,7 +264,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               About
             </Link>
             <span aria-hidden="true" className="text-border">·</span>
-            <Link href="/guides" className="text-muted-foreground transition-colors hover:text-foreground">
+            <Link href="/guides/" className="text-muted-foreground transition-colors hover:text-foreground">
               Guides
             </Link>
             <span aria-hidden="true" className="text-border">·</span>

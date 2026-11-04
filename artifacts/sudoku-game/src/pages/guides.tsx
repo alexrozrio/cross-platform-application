@@ -77,13 +77,13 @@ export default function Guides() {
           <Link href="/sudoku" className="rounded-lg bg-primary px-4 py-2 font-semibold text-primary-foreground transition-colors hover:bg-primary/90">
             Play Sudoku
           </Link>
-          <Link href="/memory" className="rounded-lg border border-border bg-background px-4 py-2 font-semibold text-foreground transition-colors hover:bg-muted">
+          <Link href="/memory/" className="rounded-lg border border-border bg-background px-4 py-2 font-semibold text-foreground transition-colors hover:bg-muted">
             Play Memory Match
           </Link>
           <Link href="/jigsaw" className="rounded-lg border border-border bg-background px-4 py-2 font-semibold text-foreground transition-colors hover:bg-muted">
             Play Jigsaw
           </Link>
-          <Link href="/about" className="rounded-lg border border-border bg-background px-4 py-2 font-semibold text-foreground transition-colors hover:bg-muted">
+          <Link href="/about/" className="rounded-lg border border-border bg-background px-4 py-2 font-semibold text-foreground transition-colors hover:bg-muted">
             About the site
           </Link>
         </div>

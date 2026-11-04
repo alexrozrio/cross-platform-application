@@ -336,7 +336,7 @@ export default function MemoryChallengePage() {
       {/* Header */}
       <div className="space-y-1 bg-card rounded-2xl px-5 py-4 border border-border">
         <button
-          onClick={() => setLocation('/memory')}
+          onClick={() => setLocation('/memory/')}
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-2"
         >
           <ArrowLeft className="w-4 h-4" /> Memory Match

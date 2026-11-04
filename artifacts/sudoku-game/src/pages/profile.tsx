@@ -270,7 +270,7 @@ function MemoryStreakCalendar({ profileId }: { profileId: number }) {
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider">best</p>
             </div>
             <Link
-              href="/memory-challenge"
+              href="/memory-challenge/"
               className="text-xs text-purple-500 underline underline-offset-2 ml-1 whitespace-nowrap"
             >
               Play today →

@@ -1582,7 +1582,7 @@ export default function Challenges() {
             <span className="hidden sm:inline">Sudoku</span>
           </Link>
           <Link
-            href="/memory"
+            href="/memory/"
             className="inline-flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg border border-border bg-card text-xs sm:text-sm font-medium text-foreground hover:bg-muted transition-colors"
             title="Play Memory"
           >

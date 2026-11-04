@@ -128,7 +128,7 @@ export default function AccountDeletion() {
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Read our <Link className="underline underline-offset-2" href="/privacy">Privacy Policy</Link> for details.
+            Read our <Link className="underline underline-offset-2" href="/privacy/">Privacy Policy</Link> for details.
           </p>
         </CardContent>
       </Card>

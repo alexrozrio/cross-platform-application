@@ -51,6 +51,14 @@ from = "/memory/"
 to = "/memory/index.html"
 
 [[services.production.rewrites]]
+from = "/memory-challenge"
+to = "/memory-challenge/index.html"
+
+[[services.production.rewrites]]
+from = "/memory-challenge/"
+to = "/memory-challenge/index.html"
+
+[[services.production.rewrites]]
 from = "/daily-challenge"
 to = "/daily-challenge/index.html"
 

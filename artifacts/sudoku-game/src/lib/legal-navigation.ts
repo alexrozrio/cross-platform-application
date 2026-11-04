@@ -1,7 +1,8 @@
 const LEGAL_PATHS = ["/about", "/privacy", "/terms"];
 
 export function buildLegalHref(path: string, returnTo: string): string {
-  return `${path}?returnTo=${encodeURIComponent(returnTo || "/")}`;
+  const canonicalPath = path.endsWith("/") ? path : `${path}/`;
+  return `${canonicalPath}?returnTo=${encodeURIComponent(returnTo || "/")}`;
 }
 
 export function getLegalReturnPath(search: string): string {

@@ -861,7 +861,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
 
         {/* Challenge banner */}
         <button
-          onClick={() => setLocation('/memory-challenge')}
+          onClick={() => setLocation('/memory-challenge/')}
           className="w-full flex items-center justify-between rounded-xl border-2 border-violet-300/50 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/20 dark:to-purple-950/20 dark:border-violet-800/30 hover:border-violet-400/60 hover:from-violet-100 hover:to-purple-100 dark:hover:from-violet-950/30 dark:hover:to-purple-950/30 transition-all px-4 py-3 text-left"
         >
           <div className="flex items-center gap-3">
@@ -1229,7 +1229,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
             <Button
               variant="outline"
               className="w-full gap-2 border-violet-300/70 bg-background/70 hover:bg-violet-100/70 dark:border-violet-700/60 dark:hover:bg-violet-900/40"
-              onClick={() => setLocation('/memory-challenge')}
+              onClick={() => setLocation('/memory-challenge/')}
             >
               View Memory Challenges
               <ArrowRight className="w-4 h-4" />
@@ -1253,7 +1253,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
             <Button
               variant="outline"
               className="w-full gap-2 border-violet-300/70 bg-background/70 hover:bg-violet-100/70 dark:border-violet-700/60 dark:hover:bg-violet-900/40"
-              onClick={() => setLocation('/memory-challenge')}
+              onClick={() => setLocation('/memory-challenge/')}
             >
               Play Daily Challenge
               <ArrowRight className="w-4 h-4" />
