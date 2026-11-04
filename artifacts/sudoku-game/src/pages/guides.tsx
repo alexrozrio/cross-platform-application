@@ -55,8 +55,21 @@ export default function Guides() {
           <Puzzle className="h-5 w-5" />
           <h2 id="jigsaw-guide-title" className="text-xl font-serif font-bold text-foreground">Jigsaw Puzzle guide</h2>
         </div>
-        <p className="text-sm leading-relaxed text-muted-foreground">Choose a picture and a board from 2×2 to 5×5. Drag pieces into place, or tap two pieces to swap them. The reference picture, timer, and move count help you track your progress.</p>
-        <p className="text-sm leading-relaxed text-muted-foreground">Larger boards and higher levels earn more base points. Finish faster than the board's target time to earn a time bonus. Try today's shared puzzle or challenge a friend to complete the same picture.</p>
+        <p className="text-sm leading-relaxed text-muted-foreground">Choose an image and a grid from 2×2 to 5×5. Your Game Mode controls which sizes are offered: Kids mode has 2×2 and 3×3, Adult mode has 4×4 and 5×5, and the default 4 All mode has all four sizes. Smaller boards are a good way to learn how the pieces move; larger boards have more pieces to track. Drag a piece into an empty space or tap two pieces to swap them. Each placement or swap uses a move, so look for pieces that clearly belong before moving several around.</p>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {[
+            { level: "Easy", detail: "The full reference picture stays visible beside the board." },
+            { level: "Medium", detail: "Use up to three five-second previews to check the reference." },
+            { level: "Hard", detail: "The reference stays hidden; use piece details and memory to rebuild the image." },
+          ].map(({ level, detail }) => (
+            <div key={level} className="rounded-xl border border-amber-200/70 bg-amber-50/60 p-3 dark:border-amber-900/50 dark:bg-amber-950/20">
+              <h3 className="text-sm font-semibold text-foreground">{level}</h3>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{detail}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-sm leading-relaxed text-muted-foreground">Use the Tip control when you need help identifying a piece. Tips and previews count as assists and reduce the final score. Board size and level set the base points; finishing under the target time adds a bonus, while extra moves also lower points. Completing a puzzle awards XP based on level and gems based on board size.</p>
+        <p className="text-sm leading-relaxed text-muted-foreground">For a simple strategy, place obvious corner and edge pieces first, then use colours and image details to group pieces that belong together. Try the daily challenge to solve the same picture as other players, or create a friend challenge to compare results on a shared puzzle.</p>
         <div className="flex flex-wrap gap-3">
           <Link href="/jigsaw" className="rounded-lg bg-amber-700 px-4 py-2 font-semibold text-white transition-colors hover:bg-amber-800">Play Jigsaw</Link>
           <Link href="/jigsaw-challenge" className="rounded-lg border border-border bg-background px-4 py-2 font-semibold text-foreground transition-colors hover:bg-muted">Daily challenge</Link>

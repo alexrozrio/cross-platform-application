@@ -281,14 +281,14 @@ export default function Portal() {
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
-                <Grid3X3 className="w-6 h-6" />
+                <Grid3X3 className="h-6 w-6" />
               </div>
               <div>
                 <span className="block text-xl font-black leading-tight text-slate-900 dark:text-white">
                   Sudoku
                 </span>
                 <span className="mt-1 inline-flex w-fit rounded-full bg-white/65 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-primary shadow-sm dark:bg-slate-950/30">
-                  Number puzzle
+                  Numbers · letters · icons
                 </span>
               </div>
             </div>
@@ -496,7 +496,7 @@ export default function Portal() {
           </div>
           <div className="relative z-10 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-600 text-white shadow-md"><Puzzle className="h-5 w-5" /></div>
+              <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-amber-600 text-white shadow-md"><Puzzle className="h-6 w-6" /><span className="absolute -bottom-1 -right-1 rounded-md border border-amber-200 bg-white p-0.5 shadow-sm"><ThemeIcon themeId={themeId} value={1} size={13} /></span></div>
               <div><span className="block text-xl font-bold leading-tight text-foreground">Jigsaw Puzzle</span><span className="mt-1 inline-flex rounded-full bg-white/65 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-700 shadow-sm dark:bg-slate-950/30 dark:text-amber-300">Picture puzzle</span></div>
             </div>
             <button onClick={() => setLocation("/jigsaw")} className="rounded-full bg-amber-600 px-3 py-1.5 text-[11px] font-bold text-white shadow-sm transition-colors hover:bg-amber-700">All options</button>
@@ -510,13 +510,6 @@ export default function Portal() {
               </button>
             ))}
           </div>
-          <button
-            onClick={() => setLocation("/jigsaw-challenge")}
-            className="relative z-10 flex items-center justify-center gap-2 rounded-xl border-2 border-orange-300/50 bg-white/75 px-3 py-2.5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-orange-400/70 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"
-          >
-            <Flame className="h-4 w-4 shrink-0 text-orange-500" />
-            <span className="text-xs font-semibold text-orange-600">Daily Challenge</span>
-          </button>
         </div>
 
         {/* Daily Challenges */}
@@ -762,12 +755,12 @@ export default function Portal() {
               >
                 <div className="flex items-center gap-3">
                   <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center ring-1 ring-primary/20">
-                    <Grid3X3 className="w-7 h-7 text-primary" />
+                    <Grid3X3 className="h-8 w-8 text-primary" />
                   </div>
                   <div>
                     <h2 className="text-xl font-bold font-serif">Sudoku</h2>
                     <p className="text-xs text-muted-foreground">
-                      Number puzzle
+                      Numbers · letters · image icons
                     </p>
                   </div>
                 </div>
@@ -776,6 +769,8 @@ export default function Portal() {
                   symbol exactly once.
                 </p>
                 <div className="flex gap-1">
+                  <span className="mr-1 inline-flex h-[22px] w-[22px] items-center justify-center rounded bg-primary/10 text-xs font-black text-primary">1</span>
+                  <span className="inline-flex h-[22px] w-[22px] items-center justify-center rounded bg-primary/10 text-xs font-black text-primary">A</span>
                   {[1, 2, 3, 4].map((n) => (
                     <div
                       key={n}
@@ -1004,8 +999,9 @@ export default function Portal() {
                 className="relative z-10 w-full text-left p-6 space-y-4 transition-all duration-200 hover:bg-white/20 dark:hover:bg-slate-950/20"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-xl bg-amber-500/10 flex items-center justify-center ring-1 ring-amber-400/20">
-                    <Puzzle className="w-7 h-7 text-amber-600 dark:text-amber-400" />
+                  <div className="relative flex h-14 w-14 items-center justify-center rounded-xl bg-amber-500/10 ring-1 ring-amber-400/20">
+                    <Puzzle className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+                    <span className="absolute -bottom-1 -right-1 rounded-md border border-amber-200 bg-background p-0.5 shadow-sm"><ThemeIcon themeId={themeId} value={1} size={17} /></span>
                   </div>
                   <div>
                     <h2 className="text-xl font-bold font-serif">Jigsaw Puzzle</h2>
@@ -1157,7 +1153,7 @@ export default function Portal() {
                   Play Brain Games . Online
                 </span>
                 <span className="text-[11px] leading-tight text-muted-foreground">
-                  Two classic brain games, endlessly replayable
+                  Three classic brain games, endlessly replayable
                 </span>
               </span>
               <ChevronDown
@@ -1210,6 +1206,21 @@ export default function Portal() {
                   <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                     Flip cards to find matching pairs. Beat the clock and
                     minimise your flips to maximise your score.
+                  </p>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setLocation("/jigsaw")}
+                className="w-full rounded-2xl border border-border bg-muted p-4 flex gap-3 items-start text-left hover:bg-muted/70 hover:border-amber-500/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Puzzle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-semibold text-sm">Jigsaw Puzzle</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                    Kids mode has 2×2 and 3×3; Adult mode has 4×4 and 5×5;
+                    default 4 All mode has all four. Choose a level, use tips
+                    and previews, and earn points, XP, and gems.
                   </p>
                 </div>
               </button>
@@ -1270,6 +1281,18 @@ export default function Portal() {
             </p>
           </div>
           <div>
+            <h3 className="font-semibold text-foreground">Rebuild a Jigsaw picture</h3>
+            <p className="mt-1">
+              Choose a 2×2 to 5×5 board. Kids mode offers 2×2 and 3×3, Adult
+              offers 4×4 and 5×5, and default 4 All mode offers every size.
+              Drag pieces into empty spaces or tap two pieces to swap them.
+              Easy keeps the reference visible,
+              Medium gives three short previews, and Hard hides the reference.
+              Tips can reveal piece information; efficient moves and fewer
+              assists help protect your score.
+            </p>
+          </div>
+          <div>
             <h3 className="font-semibold text-foreground">Choose symbols and track progress</h3>
             <p className="mt-1">
               Smaller Sudoku boards also support letter or image-symbol play,
@@ -1287,11 +1310,17 @@ export default function Portal() {
           <Link href="/memory/" className="font-semibold text-primary underline-offset-2 hover:underline">
             Memory Match setup
           </Link>
+          <Link href="/jigsaw" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Jigsaw setup
+          </Link>
           <Link href="/guides/" className="font-semibold text-primary underline-offset-2 hover:underline">
             Read the puzzle guides
           </Link>
           <Link href="/daily-challenge" className="font-semibold text-primary underline-offset-2 hover:underline">
             Try today’s Sudoku challenge
+          </Link>
+          <Link href="/jigsaw-challenge" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Try today’s Jigsaw challenge
           </Link>
         </div>
       </section>

@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type DragEvent } from "react";
 import { Link, useLocation, useSearch } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ArrowRight, BarChart2, BookOpen, CalendarDays, Check, Eye, EyeOff, Flame, Grip, Hash, Image as ImageIcon, Keyboard, Lightbulb, Move, RotateCcw, Scroll, Share2, Sparkles, Timer, Trophy } from "lucide-react";
+import { ArrowLeft, ArrowRight, BarChart2, BookOpen, CalendarDays, Check, Eye, EyeOff, Flame, Gem, Grip, Hash, Image as ImageIcon, Keyboard, Lightbulb, Move, RotateCcw, Scroll, Share2, Sparkles, Timer, Trophy, Zap } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useImageTheme } from "@/hooks/use-image-theme";
 import { useThemeImageSrc } from "@/components/theme-icons";
 import { MobileContentDisclosure } from "@/components/mobile-content-disclosure";
+import { Confetti } from "@/components/confetti";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { usePageMeta } from "@/components/page-meta";
 import { getTheme } from "@/lib/themes";
 import { useGetProfile, customFetch } from "@workspace/api-client-react";
+import { calculateJigsawPoints, getJigsawGemsEarned, getJigsawXpEarned } from "@workspace/api-zod/jigsaw-scoring";
 import { appShareUrlForPath } from "@/lib/app-links";
 import { shareOrDownloadShareCard } from "@/lib/share-card";
 import { ACHIEVEMENT_COMPLETION_EVENT } from "@/lib/achievement-events";
@@ -35,6 +37,7 @@ type Result = {
   isPersonalBest?: boolean;
   elapsedSeconds: number;
   moves: number;
+  tipsUsed: number;
   gridSize: GridSize;
   level: 1 | 2 | 3;
   imageKey: number;
@@ -206,7 +209,7 @@ export default function JigsawPage() {
   const referencePeeksUsedRef = useRef(0);
   const revealedPieceNumbersRef = useRef<number[]>([]);
   const referencePeekTimeoutRef = useRef<number | null>(null);
-  const pendingCompletion = useRef<{ elapsedSeconds: number; moves: number } | null>(null);
+  const pendingCompletion = useRef<{ elapsedSeconds: number; moves: number; tipsUsed: number } | null>(null);
   const puzzleThemeId = sessionThemeId ?? themeId;
   const tileCount = config.gridSize * config.gridSize;
   const isSolved = board.length > 0 && board.every((piece, index) => piece === index);
@@ -250,19 +253,14 @@ export default function JigsawPage() {
     return () => window.clearInterval(timer);
   }, [phase]);
 
-  const pointsFor = useCallback((seconds: number) => {
-    const basePoints: Record<GridSize, number> = { 2: 250, 3: 500, 4: 900, 5: 1400 };
-    const parSeconds: Record<GridSize, number> = { 2: 45, 3: 90, 4: 150, 5: 240 };
-    const levelMultiplier = 1 + (config.level - 1) * 0.5;
-    const adjustedPar = parSeconds[config.gridSize] * (1 + (config.level - 1) * 0.35);
-    const speedBonus = Math.round(Math.max(0, adjustedPar - seconds) * 2 * config.level);
-    return Math.max(10, Math.round(basePoints[config.gridSize] * levelMultiplier + speedBonus));
-  }, [config.gridSize, config.level]);
+  const pointsFor = useCallback((seconds: number, moveCount: number, tipsUsed: number) =>
+    calculateJigsawPoints(config.gridSize, config.level, seconds, moveCount, tipsUsed),
+  [config.gridSize, config.level]);
 
-  const submitCompletion = useCallback((id: number, elapsedSeconds: number, moveCount: number) => {
-    void customFetch<{ id: number; points: number; xpEarned: number; gemsEarned: number; isPersonalBest?: boolean; completedAt: string }>(
+  const submitCompletion = useCallback((id: number, elapsedSeconds: number, moveCount: number, tipsUsed: number) => {
+    void customFetch<{ id: number; points: number; xpEarned: number; gemsEarned: number; tipsUsed: number; isPersonalBest?: boolean; completedAt: string }>(
       `/api/jigsaw-games/${id}/complete`,
-      { method: "POST", body: JSON.stringify({ elapsedSeconds, moves: moveCount }) },
+      { method: "POST", body: JSON.stringify({ elapsedSeconds, moves: moveCount, tipsUsed }) },
     ).then((server) => {
       setResult((current) => current ? { ...current, ...server } : current);
       if (profileId) {
@@ -380,7 +378,7 @@ export default function JigsawPage() {
         }
         gameIdRef.current = session.id;
         syncJigsawProgress(gameProgress.elapsed, gameProgress.moves);
-        if (pendingCompletion.current) submitCompletion(session.id, pendingCompletion.current.elapsedSeconds, pendingCompletion.current.moves);
+        if (pendingCompletion.current) submitCompletion(session.id, pendingCompletion.current.elapsedSeconds, pendingCompletion.current.moves, pendingCompletion.current.tipsUsed);
       })
       .catch(() => undefined);
   }, [challengeId, clearReferencePeekTimer, config, profileId, requestedGameId, saveJigsawProgress, setLocation, shareToken, submitCompletion, syncJigsawProgress, themeId]);
@@ -593,11 +591,12 @@ export default function JigsawPage() {
     if (completedRef.current) return;
     clearReferencePeekTimer();
     completedRef.current = true;
+    const tipsUsed = revealedPieceNumbersRef.current.length + referencePeeksUsedRef.current;
     const offline: Result = {
-      points: pointsFor(finalElapsed),
-      xpEarned: Math.max(1, Math.round(config.gridSize * config.level / 2)),
-      gemsEarned: config.gridSize >= 4 ? 2 : 1,
-      elapsedSeconds: finalElapsed, moves: finalMoves, gridSize: config.gridSize, level: config.level, imageKey: config.imageKey,
+      points: pointsFor(finalElapsed, finalMoves, tipsUsed),
+      xpEarned: getJigsawXpEarned(config.level),
+      gemsEarned: getJigsawGemsEarned(config.gridSize),
+      elapsedSeconds: finalElapsed, moves: finalMoves, tipsUsed, gridSize: config.gridSize, level: config.level, imageKey: config.imageKey,
     };
     setResult(offline);
     setPhase("complete");
@@ -608,8 +607,8 @@ export default function JigsawPage() {
     if (profileId) {
       window.dispatchEvent(new CustomEvent(ACHIEVEMENT_COMPLETION_EVENT, { detail: { profileId } }));
     }
-    pendingCompletion.current = { elapsedSeconds: finalElapsed, moves: finalMoves };
-    if (gameIdRef.current) submitCompletion(gameIdRef.current, finalElapsed, finalMoves);
+    pendingCompletion.current = { elapsedSeconds: finalElapsed, moves: finalMoves, tipsUsed };
+    if (gameIdRef.current) submitCompletion(gameIdRef.current, finalElapsed, finalMoves, tipsUsed);
   }, [clearReferencePeekTimer, config, pointsFor, profileId, submitCompletion]);
 
   const placePiece = useCallback((source: { piece: number; from: "tray" | "board"; slot?: number }, targetSlot: number) => {
@@ -659,8 +658,8 @@ export default function JigsawPage() {
     const url = appShareUrlForPath(inviteToken ? `/jigsaw-invite/${inviteToken}` : "/jigsaw");
     const lines = [
       `Finished a ${result.gridSize} × ${result.gridSize} picture puzzle on level ${result.level}.`,
-      `${result.moves} moves · ${formatTime(result.elapsedSeconds)}`,
-      `${result.points.toLocaleString()} points`,
+      `${result.moves} moves · ${result.tipsUsed} assists · ${formatTime(result.elapsedSeconds)}`,
+      `+${result.points.toLocaleString()} points · +${result.xpEarned} XP · +${result.gemsEarned} gems`,
       "Play Brain Games . Online",
       url,
     ];
@@ -942,7 +941,7 @@ export default function JigsawPage() {
               <article>
                 <h3 className="font-semibold text-foreground">Choose a comfortable board</h3>
                 <p className="mt-1">
-                  A 2×2 board has 4 pieces, 3×3 has 9, 4×4 has 16, and 5×5 has 25. Smaller boards are a quick way to learn the placement flow; larger boards ask you to compare more details at once.
+                  A 2×2 board has 4 pieces, 3×3 has 9, 4×4 has 16, and 5×5 has 25. Kids mode offers 2×2 and 3×3, Adult mode offers 4×4 and 5×5, and default 4 All mode offers every size. Smaller boards are a quick way to learn the placement flow; larger boards ask you to compare more details at once.
                 </p>
               </article>
               <article>
@@ -960,7 +959,7 @@ export default function JigsawPage() {
               <article>
                 <h3 className="font-semibold text-foreground">Build a personal best</h3>
                 <p className="mt-1">
-                  Completion time contributes to your score, and finished games can earn XP and gems. Daily challenges and friend challenges give you another way to compare completed puzzles.
+                  Board size and level set the base score. Faster times add a bonus, while extra moves and used tips reduce it. Finishing earns XP based on level and gems based on board size.
                 </p>
               </article>
             </div>
@@ -1007,7 +1006,7 @@ export default function JigsawPage() {
                   </li>
                 ))}
               </ul>
-              <p className="pt-1">Faster completions earn more points. Finished games can also award XP and gems.</p>
+              <p className="pt-1">Board size and level set the base points. Finish under par for a time bonus; extra moves and used tips reduce the score. Wins award 1–3 XP by level and 1–3 gems by board size.</p>
             </div>
           </DialogContent>
         </Dialog>
@@ -1067,34 +1066,149 @@ export default function JigsawPage() {
   }
 
   if (phase === "complete" && result) {
+    const startWithResultOptions = (changes: Partial<Config> = {}) => {
+      const nextConfig: Config = {
+        ...config,
+        gridSize: result.gridSize,
+        level: result.level,
+        imageKey: result.imageKey,
+        dailyDate: undefined,
+        ...changes,
+      };
+      startGame(undefined, undefined, true, nextConfig, true);
+    };
+
     return (
-      <main className="mx-auto min-h-0 w-full max-w-5xl px-3 pb-6 pt-3 text-foreground sm:px-5 sm:pt-5">
-        <div className="mx-auto max-w-2xl overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-          <div className="relative bg-primary px-6 py-8 text-center text-primary-foreground sm:px-12">
-            <div className="absolute -right-10 -top-16 h-48 w-48 rounded-full border border-white/10" />
-            <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-background/20 text-primary-foreground"><Trophy size={25} /></div>
-            <p className="text-xs font-bold uppercase tracking-[.2em] text-primary-foreground/75">Picture complete</p>
-            <h1 className="mt-2 font-serif text-4xl sm:text-5xl">Every piece, in place.</h1>
-          </div>
-          <div className="grid gap-5 p-4 sm:grid-cols-[1fr_0.9fr] sm:p-6">
-            <div className="aspect-square overflow-hidden rounded-xl border-4 border-background shadow-sm">
+      <main className="mx-auto min-h-0 w-full max-w-lg px-3 pb-6 pt-3 text-foreground animate-in fade-in duration-500 sm:px-5 sm:pt-5">
+        <Confetti />
+        <section className="relative overflow-hidden rounded-2xl bg-primary p-4 text-center text-primary-foreground shadow-lg sm:p-5">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full border border-white/15" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-16 -left-10 h-40 w-40 rounded-full border border-white/10" />
+          <div className="relative z-10 space-y-2">
+            <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-white/15"><Sparkles size={25} /></div>
+            <p className="text-[10px] font-bold uppercase tracking-[.2em] text-primary-foreground/75">Picture complete</p>
+            <h1 className="font-serif text-2xl font-bold leading-tight sm:text-3xl">Every piece, in place!</h1>
+            <div className="mx-auto aspect-square w-full max-w-[160px] overflow-hidden rounded-xl border-4 border-white/70 shadow-md">
               <ReferenceImage themeId={puzzleThemeId} imageKey={result.imageKey} className="h-full w-full object-cover" />
             </div>
-            <div className="flex flex-col justify-center">
-              <p className="text-xs font-bold uppercase tracking-[.18em] text-muted-foreground">Your result</p>
-              <p className="mt-2 font-serif text-6xl text-primary" data-testid="result-points">{result.points.toLocaleString()}<span className="ml-2 text-base font-sans font-semibold text-muted-foreground">pts</span></p>
-              <div className="my-5 grid grid-cols-2 gap-2">
-                <div className="rounded-xl bg-muted p-3"><p className="text-[10px] uppercase tracking-[.14em] text-muted-foreground">Time</p><p className="mt-1 font-mono text-xl" data-testid="result-time">{formatTime(result.elapsedSeconds)}</p></div>
-                <div className="rounded-xl bg-muted p-3"><p className="text-[10px] uppercase tracking-[.14em] text-muted-foreground">Moves</p><p className="mt-1 font-mono text-xl" data-testid="result-moves">{result.moves}</p></div>
-              </div>
-              <p className="mb-5 text-sm text-muted-foreground" data-testid="result-rewards">+{result.xpEarned} XP <span className="px-1 text-border">/</span> +{result.gemsEarned} gems{result.isPersonalBest ? " / Personal best" : ""}</p>
-              <button type="button" onClick={() => void handleShare()} data-testid="button-share-result" className="mb-2 inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-3 text-sm font-semibold transition hover:bg-muted"><Share2 size={16} /> Share result</button>
-              {!hasLinkedChallenge && <button type="button" onClick={() => startGame()} data-testid="button-play-again" className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground transition hover:opacity-90"><RotateCcw size={16} /> Play again</button>}
-              {!config.dailyDate && <Link href="/jigsaw-challenge" className="mt-2 inline-flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground transition hover:border-primary"><CalendarDays size={16} /> Try today&apos;s daily challenge</Link>}
-              <button type="button" onClick={exitToSetup} className="mt-3 text-center text-xs font-semibold text-muted-foreground hover:text-primary" data-testid="link-new-picture">Change picture or difficulty</button>
-            </div>
+            <p className="text-xs text-primary-foreground/80">{result.gridSize}×{result.gridSize} · {LEVELS[result.level - 1]?.title} · {formatTime(result.elapsedSeconds)} · {result.moves} moves · {result.tipsUsed} assists</p>
+            <p className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pt-1 text-sm font-black sm:text-base" data-testid="result-rewards">
+              <span data-testid="result-points">+{result.points.toLocaleString()} pts</span>
+              <span>+{result.xpEarned} XP</span>
+              <span>+{result.gemsEarned} 💎</span>
+            </p>
+            <button type="button" onClick={() => void handleShare()} data-testid="button-share-result" className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-white/20 px-4 py-2 text-sm font-semibold transition hover:bg-white/30">
+              <Share2 size={16} /> Share your result
+            </button>
           </div>
+        </section>
+
+        {result.isPersonalBest && (
+          <div className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-yellow-300/60 bg-card px-4 py-2.5">
+            <span className="text-lg">🏆</span>
+            <span className="text-sm font-bold text-yellow-700 dark:text-yellow-400">New Personal Best!</span>
+          </div>
+        )}
+
+        <section className="mt-4 min-w-0 space-y-2 overflow-hidden rounded-2xl border border-border bg-card p-3 shadow-sm sm:p-4">
+          {!hasLinkedChallenge && (
+            <button type="button" onClick={() => startWithResultOptions()} data-testid="button-play-again" className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition hover:opacity-90">
+              <RotateCcw size={16} /> Play again ({result.gridSize}×{result.gridSize})
+            </button>
+          )}
+          <div className="min-w-0 space-y-4 rounded-xl border border-border bg-background p-3 sm:p-4">
+            <div>
+              <h2 className="text-center text-sm font-bold">Choose your next Jigsaw</h2>
+              <p className="mt-1 text-center text-xs text-muted-foreground">Tap any option to start. Your other selections stay the same.</p>
+            </div>
+            <fieldset className="min-w-0">
+              <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Board size</legend>
+              <div className="grid grid-cols-4 gap-2">
+                {availableSizes.map((size) => (
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() => startWithResultOptions({ gridSize: size })}
+                    aria-label={`Start a ${size} by ${size} Jigsaw`}
+                    aria-pressed={result.gridSize === size}
+                    data-testid={`result-select-grid-${size}`}
+                    className={`min-h-11 rounded-lg border-2 px-2 py-2 text-sm font-bold transition ${result.gridSize === size ? "border-amber-600 bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-200" : "border-border hover:border-amber-400"}`}
+                  >
+                    {size}×{size}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Level</legend>
+              <div className="grid grid-cols-3 gap-2">
+                {LEVELS.map((level) => (
+                  <button
+                    key={level.value}
+                    type="button"
+                    onClick={() => startWithResultOptions({ level: level.value })}
+                    aria-label={`Start a ${level.title} Jigsaw`}
+                    aria-pressed={result.level === level.value}
+                    data-testid={`result-select-level-${level.value}`}
+                    className={`min-h-11 rounded-lg border-2 px-2 py-2 text-sm font-semibold transition ${result.level === level.value ? "border-amber-600 bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-200" : "border-border hover:border-amber-400"}`}
+                  >
+                    {level.title}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset className="min-w-0">
+              <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Picture</legend>
+              <div className="flex w-full min-w-0 max-w-full snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain pb-2">
+                {Array.from({ length: themeLength }, (_, index) => index + 1).map((imageKey) => (
+                  <button
+                    key={imageKey}
+                    type="button"
+                    onClick={() => startWithResultOptions({ imageKey })}
+                    aria-label={`Start with picture ${imageKey}`}
+                    aria-pressed={result.imageKey === imageKey}
+                    data-testid={`result-select-image-${imageKey}`}
+                    className={`relative h-12 w-12 shrink-0 snap-start overflow-hidden rounded-lg border-2 transition ${result.imageKey === imageKey ? "border-amber-600 ring-2 ring-amber-500/30" : "border-border hover:border-amber-400"}`}
+                  >
+                    <ReferenceImage themeId={themeId} imageKey={imageKey} className="h-full w-full object-cover" />
+                    {result.imageKey === imageKey && <span className="absolute inset-0 grid place-items-center bg-black/25 text-white"><Check size={18} /></span>}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+          </div>
+          {!config.dailyDate && <Link href="/jigsaw-challenge" className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground transition hover:border-primary"><CalendarDays size={16} /> Try today&apos;s daily challenge</Link>}
+        </section>
+
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          {[
+            { icon: Timer, label: "Time", value: formatTime(result.elapsedSeconds) },
+            { icon: Move, label: "Moves", value: result.moves.toString() },
+            { icon: Trophy, label: "Points", value: result.points.toLocaleString() },
+          ].map(({ icon: Icon, label, value }) => (
+            <div key={label} className="space-y-1 rounded-xl border bg-card p-3 text-center">
+              <Icon className="mx-auto h-4 w-4 text-primary" />
+              <p className="text-lg font-black tabular-nums sm:text-xl">{value}</p>
+              <p className="text-xs text-muted-foreground">{label}</p>
+            </div>
+          ))}
         </div>
+
+        <section className="mt-3 flex items-center justify-center gap-6 rounded-xl border-2 border-primary/20 bg-card p-4">
+          <div className="flex items-center gap-2"><Zap className="h-5 w-5 text-yellow-500" /><span className="font-black text-lg">+{result.xpEarned} XP</span></div>
+          <div className="flex items-center gap-2"><Gem className="h-5 w-5 text-cyan-500" /><span className="font-black text-lg">+{result.gemsEarned} 💎</span></div>
+        </section>
+
+        <section className="mt-4 rounded-2xl border border-border bg-card p-3 sm:p-4">
+          <p className="mb-2 text-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Or play another game</p>
+          <div className="grid grid-cols-2 gap-2">
+            <Link href="/sudoku" className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-semibold transition hover:border-primary hover:bg-muted"><span aria-hidden="true">🔢</span> Sudoku</Link>
+            <Link href="/memory" className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-semibold transition hover:border-primary hover:bg-muted"><span aria-hidden="true">🃏</span> Memory Match</Link>
+          </div>
+          <Link href="/" className="mt-2 flex min-h-10 items-center justify-center text-center text-sm text-muted-foreground transition hover:text-primary">Back to Play Brain Games . Online</Link>
+        </section>
       </main>
     );
   }
@@ -1258,10 +1372,10 @@ export default function JigsawPage() {
                 draggable={piece !== null} onDragStart={piece === null ? undefined : dragStart({ piece, from: "board", slot })} onDragEnd={() => setDragged(null)}
                 aria-label={`Puzzle position ${slot + 1}${piece !== null ? `, piece ${piece + 1}` : ", empty"}`} aria-pressed={selected?.from === "board" && selected.slot === slot}
                 data-testid={`board-slot-${slot}`}
-                className={`relative min-h-0 transition ${piece === null ? "z-0 overflow-hidden rounded-md border-2 border-dashed border-border bg-background" : interlockingPieces ? "z-10 overflow-visible border-0 bg-transparent" : "overflow-hidden rounded-md border-2 border-background shadow-sm"} ${selected?.from === "board" && selected.slot === slot ? "ring-4 ring-primary/40" : ""} focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring`}>
+                className={`relative min-h-0 transition ${piece === null ? "z-20 overflow-hidden rounded-md border-2 border-dashed border-amber-500/70 bg-amber-100/70 shadow-inner dark:border-amber-600/70 dark:bg-amber-950/40" : interlockingPieces ? "z-10 overflow-visible border-0 bg-transparent" : "overflow-hidden rounded-md border-2 border-background shadow-sm"} ${selected?.from === "board" && selected.slot === slot ? "ring-4 ring-primary/40" : ""} focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring`}>
                 {piece !== null && <PuzzlePiece themeId={puzzleThemeId} imageKey={config.imageKey} piece={piece} gridSize={config.gridSize} />}
                 {piece !== null && piece !== slot && revealedPieceNumbers.includes(piece) && <span className="absolute bottom-1 right-1 z-20 grid h-5 w-5 place-items-center rounded-full bg-foreground/85 text-[10px] font-semibold text-background">{piece + 1}</span>}
-                {piece === null && <span className="absolute inset-0 grid place-items-center text-[10px] font-mono text-muted-foreground">{String(slot + 1).padStart(2, "0")}</span>}
+                {piece === null && <span className="absolute inset-0 grid place-items-center"><span className="grid h-7 w-7 place-items-center rounded-full border border-dashed border-amber-500/70 bg-background/90 text-xs font-bold tabular-nums text-amber-800 shadow-sm dark:border-amber-500/60 dark:bg-background/90 dark:text-amber-300">{String(slot + 1).padStart(2, "0")}</span></span>}
               </button>
             ))}
           </div>

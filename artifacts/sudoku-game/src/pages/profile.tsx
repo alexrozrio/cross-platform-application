@@ -933,7 +933,7 @@ export default function Profile() {
                       <ul className="space-y-2 text-muted-foreground">
                         <li className="flex items-start gap-2">
                           <span className="text-base leading-none mt-0.5">🧩</span>
-                          <span><span className="font-medium text-foreground">Complete a Sudoku</span> — earn gems based on difficulty. <span className="font-medium text-foreground">Complete Memory Match</span> — earn gems based on board size. <span className="font-medium text-foreground">Complete a Jigsaw</span> — earn points, XP, and gems based on board size, level, and time.</span>
+                          <span><span className="font-medium text-foreground">Complete a Sudoku</span> — earn gems based on difficulty. <span className="font-medium text-foreground">Complete Memory Match</span> — earn gems based on board size. <span className="font-medium text-foreground">Complete a Jigsaw</span> — earn points based on board size, level, time, moves, and tips, plus XP for level and gems for board size.</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-base leading-none mt-0.5">🔥</span>

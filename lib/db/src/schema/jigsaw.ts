@@ -9,6 +9,7 @@ export const jigsawGamesTable = pgTable("jigsaw_games", {
   imageKey: integer("image_key").notNull().default(1),
   elapsedSeconds: integer("elapsed_seconds").notNull().default(0),
   moves: integer("moves").notNull().default(0),
+  tipsUsed: integer("tips_used").notNull().default(0),
   dailyDate: text("daily_date"),
   status: text("status").notNull().default("active"),
   points: integer("points"),

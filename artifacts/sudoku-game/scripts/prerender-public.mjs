@@ -24,7 +24,7 @@ const publicPages = [
       ["Use constraints instead of guessing", "A legal placement must fit the row, column, and marked box. Start with a group that has few empty cells, list its missing symbols, and check which candidates remain in each cell. When more than one candidate fits, use notes and revisit the cell after a nearby placement."],
       ["Build a location map in Memory Match", "Turn over two cards at a time. If they match, they stay visible; if not, remember both positions before they turn face-down again. Scanning in a consistent order helps you connect a symbol to a location when you see it later."],
       ["Choose a Memory Match board", "The 2×4 Beginner board has 4 pairs, 4×4 Easy has 8, 8×4 Medium has 16, and 8×8 Hard has 32. A small board is useful for learning the routine; larger boards ask you to remember more locations. Completion time and flips contribute to the result."],
-      ["Build a picture in Jigsaw", "Choose a 2×2 or 3×3 board for a smaller puzzle, or a 4×4 or 5×5 board for a larger challenge. Swap or drag pieces into place. Higher levels and larger boards earn more base points, while a fast finish adds a time bonus."],
+      ["Build a picture in Jigsaw", "Kids mode offers 2×2 and 3×3 boards, Adult mode offers 4×4 and 5×5, and default 4 All mode offers every size. Choose one of three levels. Points use a size-based base, level multiplier, time bonus, move efficiency, and tips used. Wins award XP by level and gems by board size."],
       ["Change the display without changing the rules", "Sudoku and Memory Match can use numbers, letters, or curated image symbols where those modes are available. Jigsaw uses themed pictures. Themes change the appearance of the board, while each game's rules stay the same."],
       ["Play as a guest or keep progress in a profile", "You can start a game without an account. Optional Google sign-in connects game statistics, achievements, and streaks to a profile so progress can sync across devices."],
       ["Use daily challenges for a shared benchmark", "The daily Sudoku challenge gives players the same 9×9 medium puzzle for that date. Memory Match has daily and weekly challenges, and Jigsaw gives everyone the same picture puzzle each day."],
@@ -45,13 +45,13 @@ const publicPages = [
     route: "/jigsaw",
     title: "Jigsaw Picture Puzzles Online | Play Brain Games . Online",
     description:
-      "Rebuild themed pictures on 2×2, 3×3, 4×4, and 5×5 Jigsaw boards. Choose a level, earn time-based points, and challenge friends.",
+      "Rebuild themed pictures on 2×2, 3×3, 4×4, and 5×5 Jigsaw boards. Points account for board size, level, time, moves, and tips; wins award XP and gems.",
     heading: "Jigsaw Picture Puzzles Online",
     intro:
       "Choose a picture, set the board size and level, then place each piece. Complete today's shared puzzle or invite a friend to solve the same image.",
     sections: [
-      ["Choose a board for your experience", "2×2 and 3×3 boards offer smaller puzzles. 4×4 and 5×5 boards add more pieces and earn higher base points. The 4 All game mode includes all four sizes."],
-      ["Earn points from size, level, and time", "Larger boards and harder levels raise the base score. Finish faster than the target time to earn an additional speed bonus."],
+      ["Choose a board for your experience", "Kids mode offers 2×2 and 3×3 boards. Adult mode offers 4×4 and 5×5 boards. Default 4 All mode includes all four sizes. Larger boards have more pieces and earn higher base points."],
+      ["Earn points from size, level, and time", "Board size and level set base points. Time adds a capped bonus, while extra moves and used tips reduce the score."],
       ["Play together or on your own", "Try the daily Jigsaw challenge to share the same board with everyone, or create a friend challenge and compare results after both players finish."],
     ],
     links: [
@@ -66,7 +66,7 @@ const publicPages = [
     route: "/jigsaw-challenge",
     title: "Daily Jigsaw Puzzle Challenge | Play Brain Games . Online",
     description:
-      "Play today's shared Jigsaw picture puzzle, earn points for size, level, and time, and compare your result on the daily leaderboard.",
+      "Play today's shared Jigsaw picture puzzle, earn points for size, level, time, moves, and tips, and compare your result on the daily leaderboard.",
     heading: "Daily Jigsaw Puzzle Challenge",
     intro:
       "Everyone gets the same picture puzzle today. Complete it to post a score, then compare your time and points with other players.",
@@ -116,10 +116,10 @@ const publicPages = [
   },
   {
     route: "/guides",
-    title: "Puzzle Guides: Sudoku & Memory Match | Play Brain Games . Online",
+    title: "Puzzle Guides: Sudoku, Memory Match & Jigsaw | Play Brain Games . Online",
     description:
-      "Learn Sudoku and Memory Match with practical strategies, a worked 4×4 Sudoku move, a sample card sequence, and board-size guidance.",
-    heading: "Puzzle Guides: Sudoku & Memory Match",
+      "Learn Sudoku, Memory Match, and Jigsaw with practical strategies, board-size guidance, and tips for daily puzzles and friend challenges.",
+    heading: "Puzzle Guides: Sudoku, Memory Match & Jigsaw",
     intro:
       "Use these practical guides to learn the rules, work through a sample move, and choose a board that fits your experience. The examples use the same row, column, box, and card-position ideas you can apply while playing.",
     sections: [
@@ -156,6 +156,10 @@ const publicPages = [
         "Suppose row 1, column 1 shows a star and row 1, column 2 shows a moon. They do not match, so both turn face-down. Later, row 2, column 1 reveals a star: pair it with the remembered star at row 1, column 1. Keep the moon's position in mind for when its partner appears. These positions are examples only; each round shuffles its own board.",
       ],
       [
+        "Jigsaw picture puzzles",
+        "Rebuild themed pictures on 2×2 to 5×5 grids: Kids mode has 2×2 and 3×3, Adult mode has 4×4 and 5×5, and default 4 All mode has all four. Choose one of three levels, then solve the shared daily puzzle or challenge a friend. Points depend on grid size, level, time, moves, and tips; completions also award XP and gems.",
+      ],
+      [
         "Play as a guest or save progress",
         "You can start a puzzle without creating an account. Guest play is useful for a quick session; signing in is optional and lets the site associate completed results, rewards, and personal progress with your profile across devices.",
       ],
@@ -163,6 +167,7 @@ const publicPages = [
     links: [
       ["/sudoku", "Start a Sudoku puzzle"],
       ["/memory", "Start a Memory Match game"],
+      ["/jigsaw", "Play a Jigsaw picture puzzle"],
       ["/daily-challenge", "Try the daily challenge"],
     ],
     schemaType: "Article",
@@ -211,7 +216,7 @@ const publicPages = [
       ["/themes", "Browse card themes"],
       ["/memory-challenge", "Try a memory challenge"],
       ["/leaderboard/memory/", "View the Memory Match leaderboard"],
-      ["/about", "Learn about both games"],
+      ["/about", "Learn about all three games"],
     ],
     schemaType: "WebApplication",
   },
@@ -259,18 +264,19 @@ const publicPages = [
     route: "/leaderboard",
     title: "All Games Leaderboard | Play Brain Games . Online",
     description:
-      "Compare Sudoku and Memory Match scores across weekly, monthly, and all-time leaderboards.",
+      "Compare Sudoku, Memory Match, and Jigsaw scores across weekly, monthly, and all-time leaderboards.",
     heading: "All Games Leaderboard",
     intro:
-      "Compare combined Sudoku and Memory Match points across weekly tournaments, monthly tournaments, and all-time rankings.",
+      "Compare combined Sudoku, Memory Match, and Jigsaw points across weekly tournaments, monthly tournaments, and all-time rankings.",
     sections: [
       ["Weekly and monthly tournaments", "Follow changing tournament standings and compete for a place near the top."],
-      ["All-time combined scores", "Completed Sudoku and Memory Match games both contribute points to the all-games ranking."],
-      ["Game-specific leaderboards", "Open separate all-time boards to compare Sudoku grid scores or Memory Match level scores."],
+      ["All-time combined scores", "Completed Sudoku, Memory Match, and Jigsaw games contribute points to the all-games ranking."],
+      ["Game-specific leaderboards", "Open separate all-time boards to compare Sudoku grids, Memory Match levels, or Jigsaw puzzles."],
     ],
     links: [
       ["/leaderboard/sudoku/", "View all-time Sudoku scores"],
       ["/leaderboard/memory/", "View all-time Memory Match scores"],
+      ["/leaderboard/jigsaw/", "View all-time Jigsaw scores"],
       ["/sudoku/", "Play Sudoku for leaderboard points"],
       ["/memory/", "Play Memory Match for leaderboard points"],
       ["/challenges", "Challenge another player"],
@@ -287,11 +293,12 @@ const publicPages = [
       "See the players with the highest combined points across completed Sudoku games of every grid size.",
     sections: [
       ["Scores across every grid", "Points from completed 3×3, 4×4, 6×6, 9×9, and 16×16 Sudoku games count toward this all-time board."],
-      ["Compare all games", "The all-games leaderboard also includes Memory Match scores from weekly, monthly, and all-time results."],
+      ["Compare all games", "The all-games leaderboard also includes Memory Match and Jigsaw scores from weekly, monthly, and all-time results."],
     ],
     links: [
       ["/leaderboard/", "View the all-games leaderboard"],
       ["/leaderboard/memory/", "View the Memory Match leaderboard"],
+      ["/leaderboard/jigsaw/", "View the Jigsaw leaderboard"],
       ["/sudoku/", "Play Sudoku"],
     ],
     schemaType: "CollectionPage",
@@ -306,7 +313,7 @@ const publicPages = [
       "See the players with the highest combined points across completed Memory Match games of every level.",
     sections: [
       ["Scores across every level", "Points from completed Beginner, Easy, Medium, and Hard games count toward this all-time board."],
-      ["Compare all games", "The all-games leaderboard also includes Sudoku scores from weekly, monthly, and all-time results."],
+      ["Compare all games", "The all-games leaderboard also includes Sudoku and Jigsaw scores from weekly, monthly, and all-time results."],
     ],
     links: [
       ["/leaderboard/", "View the all-games leaderboard"],
@@ -319,12 +326,12 @@ const publicPages = [
     route: "/challenges",
     title: "Puzzle Challenges & Duels | Play Brain Games . Online",
     description:
-      "Create and join Sudoku and Memory Match challenges, compare scores, and compete with friends.",
+      "Create and join Sudoku, Memory Match, and Jigsaw challenges, compare scores, and compete with friends.",
     heading: "Puzzle Challenges & Duels",
     intro:
-      "Create a Sudoku duel or Memory Match competition without signing in. Share an invitation link, compare scores, and replay finished challenges.",
+      "Create a Sudoku duel, Memory Match competition, or Jigsaw picture challenge. Share an invitation link, compare results, and replay finished challenges.",
     sections: [
-      ["What challenges are", "A challenge lets two players compete on the same Sudoku puzzle or Memory Match board. Each player completes their own round, then the higher score wins."],
+      ["What challenges are", "Challenges let two players compete on the same Sudoku puzzle, Memory Match board, or Jigsaw picture. Each player completes a round, then the higher score wins."],
       ["How invitations work", "Create a challenge and share the invitation link with a friend. They can open the link and accept the duel without signing in."],
       ["How scoring works", "Scores reward speed and difficulty while accounting for mistakes, hints, or extra card flips. The winner earns gems; ties reward both players."],
     ],
@@ -337,22 +344,23 @@ const publicPages = [
   },
   {
     route: "/about",
-    title: "About Play Brain Games . Online | Sudoku & Memory Match",
+    title: "About Play Brain Games . Online | Three Puzzle Games",
     description:
-      "Learn how Play Brain Games combines practical Sudoku and Memory Match sessions, daily challenges, guest play, optional synced progress, and player support.",
+      "Learn about Sudoku, Memory Match, and Jigsaw, including board choices, daily and friend challenges, guest play, and saved progress.",
     heading: "About Play Brain Games . Online",
     intro:
-      "Play Brain Games . Online brings together two familiar puzzle formats with adjustable boards, practical guides, daily challenges, and guest play.",
+      "Play Brain Games . Online brings together three puzzle formats with adjustable boards, practical guides, daily challenges, and guest play.",
     sections: [
-      ["Two games, two kinds of attention", "Sudoku is a logic puzzle: each symbol must fit its row, column, and marked box. Memory Match is a recall game: reveal two cards, remember their positions, and use those locations to find pairs."],
-      ["Board choices for different experience levels", "Sudoku ranges from small 3×3, 4×4, and 6×6 grids through 9×9 Classic and 16×16 Pro. Memory Match ranges from a 2×4 board with 4 pairs to an 8×8 board with 32 pairs."],
+      ["Three games, three kinds of play", "Sudoku is a logic puzzle; Memory Match is a recall game; Jigsaw asks you to rebuild a picture by placing its pieces."],
+      ["Board choices for different experience levels", "Sudoku ranges from small grids to 16×16 Pro; Memory Match has 2×4 through 8×8 boards; Jigsaw offers 2×2 and 3×3 in Kids mode, 4×4 and 5×5 in Adult mode, or all four in default 4 All mode."],
       ["Progress is optional", "Start as a guest without signing in. Google sign-in connects profile statistics, achievements, and streaks so progress can sync across devices. The games remain available without a profile."],
-      ["Daily practice and shared results", "The daily Sudoku challenge gives players the same 9×9 medium puzzle for that date. Memory Match has daily and weekly challenges, while leaderboards show recorded results for players who choose to participate."],
+      ["Daily practice and shared results", "The daily Sudoku challenge shares one 9×9 medium puzzle, Memory Match offers daily and weekly challenges, and Jigsaw shares a daily picture puzzle and friend challenges. Leaderboards cover all three games."],
       ["Privacy and account control", "The Privacy Policy describes how account and game-progress information is used. The account deletion page explains how to request removal of an account and associated server data."],
     ],
     links: [
       ["/sudoku", "Play Sudoku"],
       ["/memory", "Play Memory Match"],
+      ["/jigsaw", "Play Jigsaw"],
       ["/guides", "Read the puzzle guides"],
       ["/account-deletion", "Account deletion"],
       ["/privacy", "Read the privacy policy"],
@@ -383,7 +391,7 @@ const publicPages = [
     route: "/account-deletion",
     title: "Delete Your Account and Data | Play Brain Games . Online",
     description:
-      "Request deletion of your Play Brain Games account and associated Sudoku, Memory Match, and profile data.",
+      "Request deletion of your Play Brain Games account and associated Sudoku, Memory Match, Jigsaw, and profile data.",
     heading: "Delete Your Account and Data",
     intro:
       "You can permanently delete your Play Brain Games account and associated server data from the app's Account page. Sign in to the account you want deleted, then confirm the deletion request.",
@@ -405,7 +413,7 @@ const publicPages = [
       "Read the terms for using Play Brain Games . Online, including guest play, accounts, family-friendly use, acceptable behavior, and game content.",
     heading: "Terms of Service",
     intro:
-      "These terms describe the rules for using Play Brain Games . Online, including its Sudoku and Memory Match games, accounts, challenges, and virtual rewards.",
+      "These terms describe the rules for using Play Brain Games . Online, including its Sudoku, Memory Match, and Jigsaw games, accounts, challenges, and virtual rewards.",
     sections: [
       ["Using the service", "By using the games, you agree to these terms. The service is general-audience and family-friendly, with optional child-friendly modes."],
       ["Fair play", "Do not use bots or automated tools to manipulate scores, disrupt the service, impersonate another user, or violate applicable laws."],

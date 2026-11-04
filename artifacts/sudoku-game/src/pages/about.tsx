@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft, Hash, Type, Palette, Trophy, Flame, BarChart2, Gem, Grid3x3, Brain } from "lucide-react";
+import { ArrowLeft, Hash, Type, Palette, Trophy, Flame, BarChart2, Gem, Grid3x3, Brain, Puzzle, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { usePageMeta } from "@/components/page-meta";
 import { getLegalReturnPath } from "@/lib/legal-navigation";
@@ -16,6 +16,13 @@ const MEMORY_FEATURES = [
   { icon: Grid3x3, label: "Multiple grid sizes", desc: "From 2×4 (4 pairs) up to 8×8 (32 pairs) — quick rounds or long challenges." },
   { icon: Brain, label: "Numbers, letters, or images", desc: "Match numbered cards, letters, or themed picture pairs." },
   { icon: Palette, label: "Image themes", desc: "The same themed icon sets from Sudoku carry over to Memory Match." },
+];
+
+const JIGSAW_FEATURES = [
+  { icon: Puzzle, label: "Flexible puzzle grids", desc: "Kids mode offers 2×2 and 3×3, Adult mode offers 4×4 and 5×5, and default 4 All mode offers every size." },
+  { icon: Sparkles, label: "Three levels and themed images", desc: "Choose how much picture guidance you want and pick an image for each round." },
+  { icon: Flame, label: "Daily and friend challenges", desc: "Try the shared daily picture or invite a friend to solve the same puzzle." },
+  { icon: Gem, label: "Points, XP, and gems", desc: "Earn points based on grid size, level, time, moves, and tips, with XP and gems for completing puzzles." },
 ];
 
 const SHARED_FEATURES = [
@@ -61,7 +68,7 @@ export default function About() {
           In Memory Match, flip cards to find matching pairs across grids from a quick 2×4 warm-up to a demanding 8×8 marathon — with the same number, letter, and image themes carried over from Sudoku.
         </p>
         <p>
-          In Jigsaw, rebuild themed pictures on boards from 2×2 to 5×5. Choose a level, race the clock for a time bonus, or invite a friend to solve the same picture.
+          In Jigsaw, rebuild themed pictures on boards from 2×2 to 5×5. Kids mode offers 2×2 and 3×3 boards, Adult mode offers 4×4 and 5×5, and default 4 All mode offers all four. Choose a level, earn points based on time, moves, and tips, or invite a friend to solve the same picture. Wins also award XP by level and gems by board size.
         </p>
       </div>
 
@@ -71,6 +78,27 @@ export default function About() {
         </h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {SUDOKU_FEATURES.map(({ icon: Icon, label, desc }) => (
+            <Card key={label} className="border-border/60">
+              <CardContent className="pt-4 pb-4 flex gap-3 items-start">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3 bg-card rounded-2xl border border-border px-5 py-4">
+        <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+          <Puzzle className="w-4 h-4 text-primary" /> Jigsaw
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {JIGSAW_FEATURES.map(({ icon: Icon, label, desc }) => (
             <Card key={label} className="border-border/60">
               <CardContent className="pt-4 pb-4 flex gap-3 items-start">
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
@@ -154,7 +182,8 @@ export default function About() {
         <p>
           The daily Sudoku challenge gives players the same 9×9 medium puzzle
           for that day, so completion time and mistakes can be compared on the
-          same board. Memory Match also offers daily and weekly challenges.
+          same board. Memory Match also offers daily and weekly challenges, and
+          Jigsaw has a shared daily picture puzzle plus friend challenges.
           Weekly, monthly, and all-time leaderboards show recorded game results
           for players who choose to take part.
         </p>

@@ -1,12 +1,11 @@
 import { Router, type IRouter } from "express";
 import { and, asc, desc, eq, gte, lt, sql } from "drizzle-orm";
 import { db, jigsawGamesTable, profilesTable } from "@workspace/db";
+import { calculateJigsawPoints, getJigsawGemsEarned, getJigsawXpEarned } from "@workspace/api-zod";
 
 const router: IRouter = Router();
 const GRID_SIZES = [2, 3, 4, 5] as const;
 const LEVELS = [1, 2, 3] as const;
-const BASE_POINTS: Record<number, number> = { 2: 250, 3: 500, 4: 900, 5: 1400 };
-const PAR_SECONDS: Record<number, number> = { 2: 45, 3: 90, 4: 150, 5: 240 };
 
 function todayUtc(): string {
   return new Date().toISOString().slice(0, 10);
@@ -20,13 +19,6 @@ function getDailyConfig(date: string) {
     level: LEVELS[Math.floor(seed / 7) % LEVELS.length],
     imageKey: ((seed * 7) % 32) + 1,
   };
-}
-
-function calculatePoints(gridSize: number, level: number, elapsedSeconds: number): number {
-  const levelMultiplier = 1 + (level - 1) * 0.5;
-  const adjustedPar = PAR_SECONDS[gridSize] * (1 + (level - 1) * 0.35);
-  const speedBonus = Math.round(Math.max(0, adjustedPar - elapsedSeconds) * 2 * level);
-  return Math.max(10, Math.round(BASE_POINTS[gridSize] * levelMultiplier + speedBonus));
 }
 
 function validConfig(gridSize: unknown, level: unknown, imageKey: unknown): boolean {
@@ -99,6 +91,7 @@ router.post("/jigsaw-games/:id/complete", async (req, res): Promise<void> => {
       points: existing.points ?? 0,
       xpEarned: existing.xpEarned ?? 0,
       gemsEarned: existing.gemsEarned ?? 0,
+      tipsUsed: existing.tipsUsed ?? 0,
       completedAt: existing.completedAt?.toISOString() ?? null,
     });
     return;
@@ -119,15 +112,22 @@ router.post("/jigsaw-games/:id/complete", async (req, res): Promise<void> => {
     isPersonalBest = !previousBest || Number(elapsedSeconds) < previousBest.elapsedSeconds;
   }
 
-  const points = calculatePoints(existing.gridSize, existing.level, Number(elapsedSeconds));
-  const xpEarned = Math.max(1, Math.floor(existing.gridSize * existing.level / 2));
-  const gemsEarned = Math.max(1, Math.floor(points / 3000));
+  const rawTipsUsed = (req.body as { tipsUsed?: unknown }).tipsUsed ?? 0;
+  if (!Number.isInteger(rawTipsUsed) || Number(rawTipsUsed) < 0 || Number(rawTipsUsed) > 6) {
+    res.status(400).json({ error: "A valid tip count is required (0 to 6)." });
+    return;
+  }
+  const tipsUsed = Number(rawTipsUsed);
+  const points = calculateJigsawPoints(existing.gridSize, existing.level, Number(elapsedSeconds), Number(moves), tipsUsed);
+  const xpEarned = getJigsawXpEarned(existing.level);
+  const gemsEarned = getJigsawGemsEarned(existing.gridSize);
   const completedAt = new Date();
   const [game] = await db.update(jigsawGamesTable)
     .set({
       status: "completed",
       elapsedSeconds: Number(elapsedSeconds),
       moves: Number(moves),
+      tipsUsed,
       points,
       xpEarned,
       gemsEarned,
@@ -144,6 +144,7 @@ router.post("/jigsaw-games/:id/complete", async (req, res): Promise<void> => {
         points: completed.points ?? 0,
         xpEarned: completed.xpEarned ?? 0,
         gemsEarned: completed.gemsEarned ?? 0,
+        tipsUsed: completed.tipsUsed ?? 0,
         completedAt: completed.completedAt?.toISOString() ?? null,
       });
       return;
@@ -168,6 +169,7 @@ router.post("/jigsaw-games/:id/complete", async (req, res): Promise<void> => {
     points,
     xpEarned,
     gemsEarned,
+    tipsUsed,
     isPersonalBest,
     completedAt: completedAt.toISOString(),
   });

@@ -198,6 +198,18 @@ function XpGuide() {
           <p className="text-[11px] text-muted-foreground leading-relaxed">
             Applies to all grid sizes — 3×3, 4×4, <span className="font-semibold text-foreground">6×6</span>, 9×9, and 16×16.
           </p>
+          <div className="border-t border-border pt-3">
+            <p className="mb-2 text-xs font-semibold text-foreground">Jigsaw XP by level</p>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              {[{ level: "Easy", xp: 1 }, { level: "Medium", xp: 2 }, { level: "Hard", xp: 3 }].map((item) => (
+                <div key={item.level} className="rounded-lg border border-border bg-background px-2 py-2">
+                  <p className="text-[10px] font-semibold text-muted-foreground">{item.level}</p>
+                  <p className="text-xs font-bold text-amber-600">{item.xp} XP</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">Jigsaw XP is awarded for each completed picture puzzle and increases with the selected level.</p>
+          </div>
         </div>
       )}
     </div>
@@ -250,6 +262,32 @@ function PointsGuide() {
             <p className="text-[10px] text-muted-foreground mt-2 italic">
               Fast bonus: finish before par time to earn up to +50%. The faster,
               the higher the bonus.
+            </p>
+          </div>
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              🧩 Jigsaw — base points by board size
+            </p>
+            <div className="rounded-xl border overflow-x-auto text-xs">
+              <div className="min-w-[340px]">
+                <div className="grid grid-cols-5 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+                  <span>Board</span><span className="text-center">Base</span><span className="text-center">Easy par</span><span className="text-center">Medium</span><span className="text-center">Hard</span>
+                </div>
+                {[
+                  { size: 2, base: 100, par: "0:45", gems: 1 },
+                  { size: 3, base: 250, par: "1:30", gems: 2 },
+                  { size: 4, base: 500, par: "2:30", gems: 3 },
+                  { size: 5, base: 1000, par: "4:00", gems: 3 },
+                ].map((row, i) => (
+                  <div key={row.size} className={`grid grid-cols-5 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}>
+                    <span className="font-semibold">{row.size}×{row.size}<span className="block text-[9px] font-normal text-muted-foreground">{row.gems} gem{row.gems === 1 ? "" : "s"} on win</span></span>
+                    <span className="text-center font-mono">{row.base}</span><span className="text-center font-mono">{row.par}</span><span className="text-center font-mono">×1.5</span><span className="text-center font-mono">×2</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2">
+              Medium and Hard multiply base points by 1.5× and 2×. Finish under par for up to +50%; each extra move costs 2% and each tip costs 10% (each penalty has a 50% floor). XP per win: Easy 1, Medium 2, Hard 3.
             </p>
           </div>
           {/* Sudoku base points table */}
@@ -378,38 +416,43 @@ function PointsGuide() {
               Your Game Mode (set in Profile) controls which grid sizes and difficulties are available to you across all games and challenges.
             </p>
             <div className="rounded-xl border overflow-hidden text-xs">
-              <div className="grid grid-cols-3 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+              <div className="grid grid-cols-4 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
                 <span>Mode</span>
                 <span className="text-center">Sudoku</span>
                 <span className="text-center">Memory Match</span>
+                <span className="text-center">Jigsaw</span>
               </div>
               {[
                 {
                   mode: "👶 Kids",
                   sudoku: "3×3 Baby · 4×4 Mini",
                   memory: "4 pairs · 8 pairs",
+                  jigsaw: "2×2 · 3×3",
                   cls: "text-green-700",
                 },
                 {
                   mode: "🧑 Adult",
                   sudoku: "9×9 Classic · 16×16 Pro",
                   memory: "16 pairs · 32 pairs",
+                  jigsaw: "4×4 · 5×5",
                   cls: "text-blue-700",
                 },
                 {
                   mode: "🌍 4 All",
                   sudoku: "All four sizes",
                   memory: "All four sizes",
+                  jigsaw: "All four sizes",
                   cls: "text-violet-700",
                 },
               ].map((row, i) => (
                 <div
                   key={row.mode}
-                  className={`grid grid-cols-3 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}
+                  className={`grid grid-cols-4 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}
                 >
                   <span className={`font-semibold ${row.cls}`}>{row.mode}</span>
                   <span className="text-center text-muted-foreground">{row.sudoku}</span>
                   <span className="text-center text-muted-foreground">{row.memory}</span>
+                  <span className="text-center text-muted-foreground">{row.jigsaw}</span>
                 </div>
               ))}
             </div>
@@ -1271,22 +1314,38 @@ function JigsawScoringGuide() {
       <button onClick={() => setOpen((value) => !value)} className="flex w-full items-center justify-between bg-card px-5 py-4 text-left transition-colors hover:bg-muted/40">
         <div>
           <p className="text-sm font-semibold">How Jigsaw points are calculated</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">Board size, level, and completion time all count.</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Board size, level, time, moves, and tips all count.</p>
         </div>
         {open ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
       </button>
       {open && (
-        <div className="space-y-3 border-t bg-muted/20 px-5 py-4 text-sm">
+        <div className="space-y-4 border-t border-border bg-muted px-5 py-4 text-sm">
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {[{ size: 2, base: 250, par: 45 }, { size: 3, base: 500, par: 90 }, { size: 4, base: 900, par: 150 }, { size: 5, base: 1400, par: 240 }].map((item) => (
-              <div key={item.size} className="rounded-xl border bg-card p-3">
+            {[{ size: 2, base: 100, par: 45, gems: 1 }, { size: 3, base: 250, par: 90, gems: 2 }, { size: 4, base: 500, par: 150, gems: 3 }, { size: 5, base: 1_000, par: 240, gems: 3 }].map((item) => (
+              <div key={item.size} className="rounded-xl border border-border bg-background p-3">
                 <p className="font-bold">{item.size}×{item.size} board</p>
                 <p className="mt-1 text-xs text-muted-foreground">Base {item.base.toLocaleString()} pts</p>
-                <p className="text-xs text-muted-foreground">Par {formatTime(item.par)}</p>
+                <p className="text-xs text-muted-foreground">Easy par {formatTime(item.par)}</p>
+                <p className="text-xs text-muted-foreground">{item.gems} 💎 per win</p>
               </div>
             ))}
           </div>
-          <p className="text-xs leading-relaxed text-muted-foreground">Levels multiply base points by 1×, 1.5×, or 2×. Finishing faster than the size's par time adds a time bonus; every extra second beyond par earns no speed bonus.</p>
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Level multipliers and XP</p>
+            <div className="overflow-hidden rounded-xl border border-border text-xs">
+              <div className="grid grid-cols-4 bg-muted-foreground/15 px-3 py-2 text-[10px] font-semibold text-muted-foreground"><span>Level</span><span className="text-center">Multiplier</span><span className="text-center">XP</span><span className="text-center">Par time</span></div>
+              {[
+                { label: "Easy", multiplier: "×1", xp: "1 XP", par: "Base" },
+                { label: "Medium", multiplier: "×1.5", xp: "2 XP", par: "+35%" },
+                { label: "Hard", multiplier: "×2", xp: "3 XP", par: "+70%" },
+              ].map((row, index) => <div key={row.label} className={`grid grid-cols-4 px-3 py-2 ${index % 2 === 0 ? "bg-background" : "bg-muted/20"}`}><span className="font-semibold">{row.label}</span><span className="text-center font-mono">{row.multiplier}</span><span className="text-center font-semibold text-amber-600">{row.xp}</span><span className="text-center font-mono">{row.par}</span></div>)}
+            </div>
+          </div>
+          <div className="rounded-lg border border-border bg-background px-4 py-3 text-[11px] text-muted-foreground">
+            <p className="font-semibold text-foreground">Score formula</p>
+            <p className="mt-1 font-mono leading-relaxed">base × level multiplier × (1 + time bonus) × move factor × tip factor</p>
+            <p className="mt-1 leading-relaxed">Finish under par for up to +50%. Each move beyond one placement per piece reduces points by 2%, and each tip or preview reduces points by 10%; both penalties stop at a 50% factor. Minimum score: 10 points. Gems: 1 for 2×2, 2 for 3×3, and 3 for 4×4 or 5×5.</p>
+          </div>
         </div>
       )}
     </div>

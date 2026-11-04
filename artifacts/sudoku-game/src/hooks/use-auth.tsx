@@ -96,10 +96,11 @@ export function AuthProvider({
 
   useEffect(() => {
     const controller = new AbortController();
-    // Cap the auth check at 3 s so a hung API never blocks the UI indefinitely.
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
     const url = apiUrl('/api/auth/user');
     const isCrossOrigin = url.startsWith('http');
+    // The deployed API may be waking from an idle period. A short timeout
+    // makes native startup silently skip guest-profile creation on cold starts.
+    const timeoutId = setTimeout(() => controller.abort(), isCrossOrigin ? 60_000 : 15_000);
     fetch(url, { credentials: isCrossOrigin ? 'omit' : 'include', signal: controller.signal })
       .then((res) => {
         if (res.status === 401) return null;
@@ -130,7 +131,8 @@ export function AuthProvider({
 
     const syncProfile = async () => {
       const controller = new AbortController();
-      const timeoutId = window.setTimeout(() => controller.abort(), 2500);
+      // Allow time for the deployed API to wake on native cold starts.
+      const timeoutId = window.setTimeout(() => controller.abort(), 60_000);
       try {
         let body: Record<string, string>;
 

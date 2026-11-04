@@ -72,7 +72,7 @@ export default function TermsOfService() {
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">6. Intellectual Property</h2>
           <p>
-            All content in the Service — including Sudoku puzzles, Memory Match boards, graphics, themes, and code — is owned by or licensed to us. You may not reproduce or distribute it without our written permission.
+            All content in the Service — including Sudoku puzzles, Memory Match boards, Jigsaw puzzle images and pieces, graphics, themes, and code — is owned by or licensed to us. You may not reproduce or distribute it without our written permission.
           </p>
         </section>
 

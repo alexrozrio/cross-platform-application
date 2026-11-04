@@ -174,3 +174,5 @@ Without Google credentials the app runs in guest-only mode.
 ## Native apps
 
 Capacitor config is `artifacts/sudoku-game/capacitor.config.ts` (`appId`: `online.playbraingames.app`). Web build output is `dist/public`. Android App Links live in `artifacts/sudoku-game/public/.well-known/assetlinks.json`.
+
+Native builds use the deployed API at `https://cross-platform-application.onrender.com` by default. Set `VITE_API_BASE_URL` at build time to override it. Rebuild the web assets and run `npx cap sync android` after changing API configuration.

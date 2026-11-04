@@ -50,6 +50,7 @@ export async function ensureDatabaseSchema(): Promise<void> {
       image_key integer NOT NULL DEFAULT 1,
       elapsed_seconds integer NOT NULL DEFAULT 0,
       moves integer NOT NULL DEFAULT 0,
+      tips_used integer NOT NULL DEFAULT 0,
       daily_date text,
       status text NOT NULL DEFAULT 'active',
       points integer,
@@ -58,6 +59,7 @@ export async function ensureDatabaseSchema(): Promise<void> {
       completed_at timestamptz,
       created_at timestamptz NOT NULL DEFAULT now()
     )`,
+    `ALTER TABLE jigsaw_games ADD COLUMN IF NOT EXISTS tips_used integer NOT NULL DEFAULT 0`,
     `CREATE INDEX IF NOT EXISTS jigsaw_games_status_completed_at_idx
       ON jigsaw_games(status, completed_at)`,
     `CREATE INDEX IF NOT EXISTS jigsaw_games_profile_id_idx

@@ -15,7 +15,7 @@ const APP_LINK_PATHS = [
   /^\/players?\/[^/]+$/,
   /^\/badges\/[^/]+$/,
   /^\/daily-challenge$/,
-  /^\/leaderboard(?:\/(?:sudoku|memory))?$/,
+  /^\/leaderboard(?:\/(?:sudoku|memory|jigsaw))?$/,
   /^\/challenges$/,
 ];
 

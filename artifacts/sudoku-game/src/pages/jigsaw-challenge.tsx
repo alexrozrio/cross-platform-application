@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, Puzzle, Share2, Trophy } from "lucide-react";
+import { ArrowLeft, CalendarDays, Clock3, Flame, Puzzle, Share2, Trophy } from "lucide-react";
 import { customFetch } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
 import { usePageMeta } from "@/components/page-meta";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { appShareUrlForPath } from "@/lib/app-links";
 import { toast } from "sonner";
@@ -61,74 +61,88 @@ export default function JigsawDailyChallengePage() {
   };
 
   const config = configQuery.data;
+  const completedToday = statusQuery.data?.completed ?? false;
+  const leaderboard = leaderboardQuery.data?.entries ?? [];
   const startHref = config
     ? `/jigsaw?gridSize=${config.gridSize}&level=${config.level}&imageKey=${config.imageKey}&dailyDate=${config.date}&start=1`
     : "/jigsaw";
 
   return (
-    <main className="mx-auto w-full max-w-5xl space-y-5 px-4 pb-12 pt-5 sm:px-7">
-      <header className="flex items-center justify-between gap-3">
-        <Link href="/" className="inline-flex items-center gap-2 rounded-full border bg-card px-4 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground">
-          <ArrowLeft size={16} /> All games
+    <main className="mx-auto w-full max-w-lg space-y-6 px-4 pb-12 pt-5">
+      <div className="space-y-1 rounded-2xl border border-border bg-card px-5 py-4">
+        <Link href="/jigsaw" className="mb-2 inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground">
+          <ArrowLeft size={16} /> Jigsaw
         </Link>
-        <Link href="/leaderboard/jigsaw" className="text-sm font-semibold text-primary hover:underline">Jigsaw leaderboard</Link>
-      </header>
-
-      <section className="overflow-hidden rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50 via-orange-50 to-emerald-50 p-5 shadow-sm dark:border-amber-900/50 dark:from-amber-950/30 dark:via-orange-950/20 dark:to-emerald-950/20 sm:p-8">
-        <div className="flex flex-wrap items-start justify-between gap-5">
-          <div className="max-w-xl">
-            <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-amber-700 dark:text-amber-300"><CalendarDays size={15} /> Daily Jigsaw</p>
-            <h1 className="font-serif text-4xl font-bold tracking-tight sm:text-5xl">One picture. One shared challenge.</h1>
-            <p className="mt-4 text-sm leading-6 text-muted-foreground">Everyone gets the same board today. Assemble the image, finish quickly, and earn points based on the board size, level, and your time.</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => void shareChallenge()} className="gap-2"><Share2 size={16} /> Share</Button>
-            <Button asChild className="gap-2 bg-amber-700 text-white hover:bg-amber-800">
-              <Link href={startHref}><Puzzle size={16} /> Play today's puzzle</Link>
-            </Button>
-          </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <CalendarDays size={16} />
+          {config ? new Date(`${config.date}T00:00:00Z`).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }) : <Skeleton className="h-4 w-32" />}
         </div>
+        <h1 className="flex items-center gap-2 font-serif text-3xl font-bold tracking-tight">
+          <Flame className="h-7 w-7 text-amber-500" /> Daily Challenge
+        </h1>
+        <p className="text-sm text-muted-foreground">One shared picture puzzle, refreshed at 00:00 UTC each day.</p>
+      </div>
 
-        {configQuery.isLoading ? (
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">{Array.from({ length: 4 }, (_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}</div>
-        ) : config ? (
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="rounded-xl border border-amber-200/80 bg-white/70 p-3 dark:bg-background/60"><p className="text-xs text-muted-foreground">Board</p><p className="mt-1 font-serif text-2xl font-bold">{config.gridSize}×{config.gridSize}</p></div>
-            <div className="rounded-xl border border-amber-200/80 bg-white/70 p-3 dark:bg-background/60"><p className="text-xs text-muted-foreground">Level</p><p className="mt-1 font-serif text-2xl font-bold">{config.level}</p></div>
-            <div className="rounded-xl border border-amber-200/80 bg-white/70 p-3 dark:bg-background/60"><p className="text-xs text-muted-foreground">Picture</p><p className="mt-1 font-serif text-2xl font-bold">#{config.imageKey}</p></div>
-            <div className="rounded-xl border border-amber-200/80 bg-white/70 p-3 dark:bg-background/60">
-              <p className="text-xs text-muted-foreground">Your best today</p>
-              <p className="mt-1 flex items-center gap-1.5 font-serif text-2xl font-bold">{statusQuery.data?.bestPoints?.toLocaleString() ?? "—"}{statusQuery.data?.completed && <CheckCircle2 size={17} className="text-green-600" />}</p>
-            </div>
-          </div>
-        ) : (
-          <p className="mt-5 text-sm text-destructive">Today's puzzle could not be loaded. Please try again shortly.</p>
-        )}
-      </section>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between gap-3">
-          <CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5 text-amber-600" /> Today's leaderboard</CardTitle>
-          <span className="text-xs text-muted-foreground">Best score per player</span>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {leaderboardQuery.isLoading ? Array.from({ length: 4 }, (_, i) => <Skeleton key={i} className="h-14 w-full" />)
-            : (leaderboardQuery.data?.entries ?? []).length === 0 ? (
-              <p className="rounded-xl bg-muted/50 p-5 text-center text-sm text-muted-foreground">No completed Jigsaw challenges yet today. Be the first to post a score.</p>
-            ) : (leaderboardQuery.data?.entries ?? []).map((entry) => (
-              <div key={entry.profileId} className="flex items-center gap-3 rounded-xl border bg-card px-3 py-3">
-                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-amber-100 text-sm font-bold text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">{entry.rank}</span>
-                <Link href={`/player/${entry.profileId}`} className="min-w-0 flex-1 truncate font-semibold hover:underline">{entry.username}</Link>
-                <span className="flex items-center gap-1 text-xs text-muted-foreground"><Clock3 size={13} />{formatTime(entry.elapsedSeconds)}</span>
-                <span className="min-w-16 text-right font-bold tabular-nums">{entry.points.toLocaleString()} pts</span>
+      <Card className="border-amber-200/60 bg-gradient-to-br from-amber-50 to-orange-50 shadow-md dark:border-amber-800/50 dark:from-amber-950/40 dark:to-orange-950/30">
+        <CardContent className="space-y-4 pb-5 pt-6">
+          {configQuery.isLoading ? (
+            <div className="space-y-2"><Skeleton className="h-5 w-32" /><Skeleton className="h-5 w-24" /></div>
+          ) : config ? (
+            <>
+              <div className="flex items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Today's picture puzzle</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full border border-amber-200 bg-amber-100 px-2 py-0.5 text-sm font-semibold text-amber-800 dark:border-amber-800 dark:bg-amber-900/40 dark:text-amber-200">{config.gridSize}×{config.gridSize}</span>
+                    <span className="text-sm text-muted-foreground">{["Easy", "Medium", "Hard"][config.level - 1]} · Picture #{config.imageKey}</span>
+                  </div>
+                  {completedToday && <div className="mt-1 flex items-center gap-1 text-xs font-medium text-green-600"><Trophy size={13} /> You've completed today's challenge!</div>}
+                  {statusQuery.data?.bestPoints != null && <p className="text-xs text-muted-foreground">Your best: {statusQuery.data.bestPoints.toLocaleString()} points</p>}
+                </div>
+                <Button asChild disabled={configQuery.isLoading} className="shrink-0 gap-2 bg-amber-600 text-white hover:bg-amber-700">
+                  <Link href={startHref}><Puzzle size={16} /> {completedToday ? "Play Again" : "Play"}</Link>
+                </Button>
               </div>
-            ))}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-            <Link href="/leaderboard/jigsaw" className="text-sm font-semibold text-primary hover:underline">View all-time Jigsaw leaderboard →</Link>
-            <Link href="/jigsaw-challenges" className="text-sm font-semibold text-muted-foreground hover:text-foreground">Challenge a friend</Link>
-          </div>
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-amber-200/70 pt-3 dark:border-amber-800/50">
+                <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><Clock3 size={13} />Refreshes at 00:00 UTC each day</span>
+                <Button variant="ghost" size="sm" onClick={() => void shareChallenge()} className="h-8 gap-1.5 px-2 text-xs"><Share2 size={14} /> Share challenge</Button>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-destructive">Today's puzzle could not be loaded. Please try again shortly.</p>
+          )}
         </CardContent>
       </Card>
+
+      <div className="space-y-3">
+        <h2 className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-base font-semibold shadow-sm">
+          <Trophy className="h-4 w-4 text-amber-500" /> Today's Leaderboard
+          <span className="ml-auto text-xs font-normal text-muted-foreground">{leaderboard.length} completion{leaderboard.length !== 1 ? "s" : ""}</span>
+        </h2>
+        <Card className="border-primary/10 shadow-md">
+          {leaderboardQuery.isLoading ? (
+            <CardContent className="space-y-3 pb-4 pt-4">{[1, 2, 3].map((i) => <div key={i} className="flex items-center gap-3"><Skeleton className="h-9 w-9 shrink-0 rounded-full" /><div className="flex-1 space-y-1"><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-20" /></div><Skeleton className="h-4 w-14" /></div>)}</CardContent>
+          ) : leaderboard.length === 0 ? (
+            <CardContent className="pb-8 pt-8 text-center"><Trophy className="mx-auto mb-2 h-8 w-8 text-muted-foreground/30" /><p className="text-sm font-medium text-muted-foreground">No completions yet today</p><p className="mt-0.5 text-xs text-muted-foreground">Be the first to finish!</p></CardContent>
+          ) : (
+            <CardContent className="divide-y divide-border pb-2 pt-2">
+              {leaderboard.map((entry) => (
+                <div key={entry.profileId} className={`flex items-center gap-3 py-3 ${entry.profileId === profileId ? "-mx-6 rounded-lg bg-primary/5 px-6" : ""}`}>
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-amber-100 text-sm font-bold text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">{entry.rank}</span>
+                  <div className="min-w-0 flex-1"><Link href={`/player/${entry.profileId}`} className="truncate text-sm font-semibold hover:underline">{entry.username}{entry.profileId === profileId && <span className="ml-1 text-xs text-primary">(you)</span>}</Link><p className="text-xs text-muted-foreground">{formatTime(entry.elapsedSeconds)}</p></div>
+                  <div className="shrink-0 text-right"><p className="font-mono text-sm font-bold">{entry.points.toLocaleString()}</p><p className="text-xs text-muted-foreground">points</p></div>
+                </div>
+              ))}
+            </CardContent>
+          )}
+        </Card>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card px-4 py-3 text-center">
+        <Link href="/leaderboard/jigsaw/" className="text-xs text-muted-foreground underline underline-offset-2 transition-colors hover:text-foreground">View all-time leaderboard →</Link>
+        <span className="mx-2 text-muted-foreground/50">·</span>
+        <Link href="/jigsaw-challenges" className="text-xs text-muted-foreground underline underline-offset-2 transition-colors hover:text-foreground">Challenge a friend</Link>
+      </div>
     </main>
   );
 }

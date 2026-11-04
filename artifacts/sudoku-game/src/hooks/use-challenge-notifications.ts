@@ -114,6 +114,14 @@ export function usePendingChallengeCount(profileId: number | null): number {
     staleTime: 10000,
   });
 
+  const { data: jigsawChallenges } = useQuery<ChallengeNotif[]>({
+    queryKey: ["jigsaw-challenges", profileId],
+    queryFn: () => customFetch<ChallengeNotif[]>(`/api/jigsaw-challenges/for/${profileId}`),
+    enabled: !!profileId,
+    refetchInterval: 15000,
+    staleTime: 10000,
+  });
+
   if (!profileId) return 0;
   const sudokuPending = (sudokuChallenges ?? []).filter(
     (c) => c.status === "pending" && c.challengedId === profileId,
@@ -121,5 +129,8 @@ export function usePendingChallengeCount(profileId: number | null): number {
   const memoryPending = (memoryDuels ?? []).filter(
     (c) => c.status === "pending" && c.challengedId === profileId,
   ).length;
-  return sudokuPending + memoryPending;
+  const jigsawPending = (jigsawChallenges ?? []).filter(
+    (c) => c.status === "pending" && c.challengedId === profileId,
+  ).length;
+  return sudokuPending + memoryPending + jigsawPending;
 }

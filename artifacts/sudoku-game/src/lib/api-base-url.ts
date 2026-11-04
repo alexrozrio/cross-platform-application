@@ -1,3 +1,7 @@
+import { Capacitor } from "@capacitor/core";
+
+const DEPLOYED_API_BASE_URL = "https://cross-platform-application.onrender.com";
+
 // Central place that decides which API server the frontend talks to.
 //
 // By default (no VITE_API_BASE_URL set) all requests stay relative
@@ -17,10 +21,14 @@ export function getConfiguredApiBaseUrl(): string | null {
   // preview tied to the current workspace so backend changes are immediately
   // visible; production builds may still use the configured remote API.
   // VITE_API_BASE_URL_LOCAL allows overriding this for local testing with remote API.
-  if (import.meta.env.DEV && !import.meta.env.VITE_API_BASE_URL_LOCAL) return null;
+  if (import.meta.env.DEV && !import.meta.env.VITE_API_BASE_URL_LOCAL) {
+    // The browser uses Vite's local proxy. Capacitor has no Vite proxy, so
+    // native builds must call the deployed API unless explicitly overridden.
+    return Capacitor.isNativePlatform() ? DEPLOYED_API_BASE_URL : null;
+  }
 
   const raw = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_BASE_URL_LOCAL;
-  if (!raw) return null;
+  if (!raw) return Capacitor.isNativePlatform() ? DEPLOYED_API_BASE_URL : null;
   const trimmed = raw.trim().replace(/\/+$/, "");
   return trimmed === "" ? null : trimmed;
 }
