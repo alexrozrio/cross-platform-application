@@ -1018,6 +1018,8 @@ export default function Portal() {
                   Choose a picture and board size, then assemble the pieces at
                   your own pace.
                 </p>
+              </button>
+              <div className="px-6 pb-5 pt-1">
                 <div className="grid grid-cols-4 gap-1.5">
                   {visibleJigsawSizes.map((size) => (
                     <button
@@ -1031,7 +1033,13 @@ export default function Portal() {
                     </button>
                   ))}
                 </div>
-              </button>
+                <button
+                  onClick={() => setLocation("/jigsaw")}
+                  className="text-[10px] text-amber-600/70 hover:text-amber-600 dark:text-amber-400/70 dark:hover:text-amber-400 underline underline-offset-2 transition-colors"
+                >
+                  More options (level, image) →
+                </button>
+              </div>
               {canResumeJigsaw && jigsawSession && (
                 <button
                   onClick={() => setLocation("/jigsaw?resume=1")}
@@ -1046,14 +1054,6 @@ export default function Portal() {
                   </span>
                 </button>
               )}
-              <div className="px-6 pb-5 pt-1">
-                <button
-                  onClick={() => setLocation("/jigsaw")}
-                  className="text-[10px] text-amber-600/70 hover:text-amber-600 dark:text-amber-400/70 dark:hover:text-amber-400 underline underline-offset-2 transition-colors"
-                >
-                  More options (level, image) →
-                </button>
-              </div>
               <div
                 className="absolute top-3 right-3 w-2 h-2 rounded-full bg-green-400"
                 title="Available"
