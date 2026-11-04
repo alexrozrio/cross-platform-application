@@ -1,5 +1,7 @@
 export const JIGSAW_SESSION_STORAGE_KEY = "brain-games-jigsaw-session";
 export const JIGSAW_SESSION_MAX_AGE_MS = 12 * 60 * 60 * 1000;
+export const JIGSAW_MAX_REFERENCE_PEEKS = 3;
+export const JIGSAW_MAX_PIECE_NUMBER_HINTS = 3;
 
 export type JigsawGridSize = 2 | 3 | 4 | 5;
 export type JigsawLevel = 1 | 2 | 3;
@@ -14,6 +16,8 @@ export interface SavedJigsawSession {
   moves: number;
   elapsed: number;
   showReference: boolean;
+  referencePeeksUsed: number;
+  revealedPieceNumbers: number[];
   gameId: number | null;
   challengeId: number | null;
   shareToken: string | null;
@@ -47,6 +51,10 @@ export function parseSavedJigsawSession(
       !Number.isInteger(session.elapsed) ||
       (session.elapsed ?? -1) < 0 ||
       typeof session.showReference !== "boolean" ||
+      (session.referencePeeksUsed !== undefined &&
+        (!Number.isInteger(session.referencePeeksUsed) ||
+          session.referencePeeksUsed < 0 ||
+          session.referencePeeksUsed > JIGSAW_MAX_REFERENCE_PEEKS)) ||
       !Number.isFinite(session.savedAt) ||
       (session.savedAt ?? 0) > now ||
       now - (session.savedAt ?? 0) > JIGSAW_SESSION_MAX_AGE_MS
@@ -57,6 +65,14 @@ export function parseSavedJigsawSession(
     const gridSize = session.gridSize as JigsawGridSize;
     const pieceCount = gridSize * gridSize;
     if (session.board.length !== pieceCount) return null;
+
+    if (session.revealedPieceNumbers !== undefined && !Array.isArray(session.revealedPieceNumbers)) return null;
+    const revealedPieceNumbers = session.revealedPieceNumbers ?? [];
+    if (
+      revealedPieceNumbers.length > JIGSAW_MAX_PIECE_NUMBER_HINTS ||
+      revealedPieceNumbers.some((piece) => !Number.isInteger(piece) || piece < 0 || piece >= pieceCount) ||
+      new Set(revealedPieceNumbers).size !== revealedPieceNumbers.length
+    ) return null;
 
     const boardPieces = session.board.filter((piece): piece is number => piece !== null);
     const allPieces = [...boardPieces, ...session.tray];
@@ -76,7 +92,11 @@ export function parseSavedJigsawSession(
     if (session.shareToken !== null && typeof session.shareToken !== "string") return null;
     if (session.dailyDate !== undefined && typeof session.dailyDate !== "string") return null;
 
-    return session as SavedJigsawSession;
+    return {
+      ...session,
+      referencePeeksUsed: session.referencePeeksUsed ?? 0,
+      revealedPieceNumbers,
+    } as SavedJigsawSession;
   } catch {
     return null;
   }

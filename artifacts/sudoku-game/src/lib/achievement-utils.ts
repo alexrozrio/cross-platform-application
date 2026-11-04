@@ -86,11 +86,21 @@ export const ACHIEVEMENT_META: AchievementMeta[] = [
   // ── Jigsaw Puzzle ──────────────────────────────────────────────────────────
   { id: 'jigsaw_first_win',       game: 'jigsaw', emoji: '🧩', title: 'Piece by Piece',   description: 'Complete your first Jigsaw puzzle',                     group: 'Jigsaw Milestones' },
   { id: 'jigsaw_dedicated',       game: 'jigsaw', emoji: '🗺️', title: 'Picture Builder', description: 'Complete 10 Jigsaw puzzles',                            group: 'Jigsaw Milestones' },
+  { id: 'jigsaw_quarter_century', game: 'jigsaw', emoji: '🎨', title: 'Puzzle Regular',  description: 'Complete 25 Jigsaw puzzles',                            group: 'Jigsaw Milestones' },
+  { id: 'jigsaw_half_century',    game: 'jigsaw', emoji: '🏅', title: 'Gallery Keeper',  description: 'Complete 50 Jigsaw puzzles',                            group: 'Jigsaw Milestones' },
+  { id: 'jigsaw_century',         game: 'jigsaw', emoji: '💯', title: 'Grand Collector', description: 'Complete 100 Jigsaw puzzles',                           group: 'Jigsaw Milestones' },
   { id: 'jigsaw_all_sizes',       game: 'jigsaw', emoji: '📐', title: 'Shape Explorer',  description: 'Complete all four Jigsaw board sizes',                  group: 'Jigsaw Skill' },
+  { id: 'jigsaw_grid_veteran',    game: 'jigsaw', emoji: '🧭', title: 'Board Veteran',   description: 'Complete 10 puzzles at each Jigsaw board size',          group: 'Jigsaw Skill' },
   { id: 'jigsaw_speedster',       game: 'jigsaw', emoji: '⚡', title: 'Quick Assembly',  description: 'Finish a 2×2 Jigsaw in 30 seconds or less',             group: 'Jigsaw Skill' },
+  { id: 'jigsaw_speed_3x3',       game: 'jigsaw', emoji: '💨', title: 'Swift Builder',   description: 'Finish a 3×3 Jigsaw in 60 seconds or less',             group: 'Jigsaw Skill' },
+  { id: 'jigsaw_speed_4x4',       game: 'jigsaw', emoji: '🚀', title: 'Rapid Assembler', description: 'Finish a 4×4 Jigsaw in 120 seconds or less',            group: 'Jigsaw Skill' },
+  { id: 'jigsaw_speed_5x5',       game: 'jigsaw', emoji: '🌠', title: 'Lightning Hands',description: 'Finish a 5×5 Jigsaw in 180 seconds or less',            group: 'Jigsaw Skill' },
+  { id: 'jigsaw_advanced_10',     game: 'jigsaw', emoji: '🧠', title: 'Expert Assembler',description: 'Complete 10 level 3 Jigsaw puzzles',                    group: 'Jigsaw Skill' },
   { id: 'jigsaw_master',          game: 'jigsaw', emoji: '🏆', title: 'Puzzle Master',   description: 'Complete a level 3 puzzle on the 5×5 board',            group: 'Jigsaw Skill' },
   { id: 'jigsaw_from_memory',     game: 'jigsaw', emoji: '🧠', title: 'Picture Recall',  description: 'Complete a Jigsaw without the reference picture',       group: 'Jigsaw Skill' },
   { id: 'jigsaw_daily_7',         game: 'jigsaw', emoji: '📅', title: 'Daily Assembler', description: 'Complete 7 Jigsaw daily challenges',                     group: 'Jigsaw Daily' },
+  { id: 'jigsaw_daily_30',        game: 'jigsaw', emoji: '🗓️', title: 'Daily Craft',     description: 'Complete 30 Jigsaw daily challenges',                    group: 'Jigsaw Daily' },
+  { id: 'jigsaw_daily_100',       game: 'jigsaw', emoji: '🏆', title: 'Daily Master',    description: 'Complete 100 Jigsaw daily challenges',                   group: 'Jigsaw Daily' },
 ];
 
 export interface AchievementStatus {

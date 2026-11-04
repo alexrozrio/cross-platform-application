@@ -1,7 +1,11 @@
 import { Router, type IRouter } from "express";
 import { eq, and } from "drizzle-orm";
 import { db, gamesTable, puzzlesTable, dailyChallengesTable, memoryGamesTable, jigsawGamesTable, profilesTable } from "@workspace/db";
-import { countAchievementProgress, SUDOKU_ACHIEVEMENT_TARGETS } from "../utils/achievement-progress";
+import {
+  countAchievementProgress,
+  getJigsawAchievementProgress,
+  SUDOKU_ACHIEVEMENT_TARGETS,
+} from "../utils/achievement-progress";
 
 const router: IRouter = Router();
 
@@ -137,13 +141,6 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
     })
     .from(jigsawGamesTable)
     .where(and(eq(jigsawGamesTable.profileId, profileId), eq(jigsawGamesTable.status, "completed")));
-  const jigsawWins = completedJigsaw.length;
-  const jigsawSizes = new Set(completedJigsaw.map((game) => game.gridSize));
-  const jigsawDailyDates = new Set(completedJigsaw.flatMap((game) => game.dailyDate ? [game.dailyDate] : []));
-  const hasJigsawSpeedWin = completedJigsaw.some((game) => game.gridSize === 2 && game.elapsedSeconds <= 30);
-  const hasJigsawMaster = completedJigsaw.some((game) => game.gridSize === 5 && game.level === 3);
-  const hasJigsawNoReference = completedJigsaw.some((game) => game.level === 3);
-
   res.json({
     // ── Sudoku: Milestones ───────────────────────────────────────────────────
     first_win:        { unlocked: totalWins >= 1,   progress: Math.min(totalWins, 1),   total: 1   },
@@ -230,13 +227,7 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
     memory_streak_30:     { unlocked: memoryStreak >= 30, progress: Math.min(memoryStreak, 30), total: 30 },
 
     // ── Jigsaw ───────────────────────────────────────────────────────────────
-    jigsaw_first_win:    { unlocked: jigsawWins >= 1, progress: Math.min(jigsawWins, 1), total: 1 },
-    jigsaw_dedicated:    { unlocked: jigsawWins >= 10, progress: Math.min(jigsawWins, 10), total: 10 },
-    jigsaw_all_sizes:    { unlocked: jigsawSizes.size === 4, progress: jigsawSizes.size, total: 4 },
-    jigsaw_speedster:    { unlocked: hasJigsawSpeedWin, progress: hasJigsawSpeedWin ? 1 : 0, total: 1 },
-    jigsaw_master:       { unlocked: hasJigsawMaster, progress: hasJigsawMaster ? 1 : 0, total: 1 },
-    jigsaw_from_memory:  { unlocked: hasJigsawNoReference, progress: hasJigsawNoReference ? 1 : 0, total: 1 },
-    jigsaw_daily_7:      { unlocked: jigsawDailyDates.size >= 7, progress: Math.min(jigsawDailyDates.size, 7), total: 7 },
+    ...getJigsawAchievementProgress(completedJigsaw),
   });
 });
 

@@ -3,6 +3,7 @@ import { eq, and, desc } from "drizzle-orm";
 import { db, gamesTable, puzzlesTable, memoryGamesTable, jigsawGamesTable, profilesTable } from "@workspace/db";
 import { GetPlayerStatsParams, GetPlayerStatsResponse } from "@workspace/api-zod";
 import { hasMeaningfulMemoryActivity, hasMeaningfulSudokuActivity } from "../utils/game-activity";
+import { isJigsawGamePlayed } from "../utils/jigsaw-game-progress";
 
 const router: IRouter = Router();
 
@@ -108,13 +109,15 @@ router.get("/stats/:profileId", async (req, res): Promise<void> => {
       gridSize: jigsawGamesTable.gridSize,
       level: jigsawGamesTable.level,
       elapsedSeconds: jigsawGamesTable.elapsedSeconds,
+      moves: jigsawGamesTable.moves,
       points: jigsawGamesTable.points,
       dailyDate: jigsawGamesTable.dailyDate,
     })
     .from(jigsawGamesTable)
     .where(eq(jigsawGamesTable.profileId, profileId))
     .orderBy(desc(jigsawGamesTable.createdAt));
-  const jigsawWins = allJigsawGames.filter((game) => game.status === "completed");
+  const playedJigsawGames = allJigsawGames.filter(isJigsawGamePlayed);
+  const jigsawWins = playedJigsawGames.filter((game) => game.status === "completed");
   const jigsawBestTimes: Record<string, number | null> = {};
   for (const size of [2, 3, 4, 5]) {
     for (const level of [1, 2, 3]) {
@@ -126,7 +129,7 @@ router.get("/stats/:profileId", async (req, res): Promise<void> => {
   }
   const jigsawDailyDates = new Set(jigsawWins.flatMap((game) => game.dailyDate ? [game.dailyDate] : []));
   let jigsawWinStreak = 0;
-  for (const game of allJigsawGames) {
+  for (const game of playedJigsawGames) {
     if (game.status === "completed") jigsawWinStreak++;
     else break;
   }
@@ -152,9 +155,9 @@ router.get("/stats/:profileId", async (req, res): Promise<void> => {
       winStreak: memoryWinStreak,
     },
     jigsaw: {
-      totalGames: allJigsawGames.length,
+      totalGames: playedJigsawGames.length,
       totalWins: jigsawWins.length,
-      winRate: allJigsawGames.length > 0 ? jigsawWins.length / allJigsawGames.length : 0,
+      winRate: playedJigsawGames.length > 0 ? jigsawWins.length / playedJigsawGames.length : 0,
       bestTimes: jigsawBestTimes,
       averageTime: jigsawWins.length > 0
         ? Math.round(jigsawWins.reduce((sum, game) => sum + game.elapsedSeconds, 0) / jigsawWins.length)

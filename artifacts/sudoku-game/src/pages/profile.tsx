@@ -325,6 +325,100 @@ function MemoryStreakCalendar({ profileId }: { profileId: number }) {
   );
 }
 
+function JigsawDailyCalendar({ profileId }: { profileId: number }) {
+  const now = new Date();
+  const utcYear = now.getUTCFullYear();
+  const utcMonth = now.getUTCMonth();
+  const [viewYear, setViewYear] = useState(utcYear);
+  const [viewMonth, setViewMonth] = useState(utcMonth);
+  const month = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}`;
+
+  const { data: historyData } = useQuery({
+    queryKey: [`/api/jigsaw-daily-challenge/history/${profileId}`, month],
+    queryFn: () =>
+      customFetch<{ month: string; completedDates: string[] }>(
+        `/api/jigsaw-daily-challenge/history/${profileId}?month=${month}`,
+      ),
+    enabled: !!profileId,
+  });
+
+  const completedSet = new Set(historyData?.completedDates ?? []);
+  const daysInMonth = new Date(Date.UTC(viewYear, viewMonth + 1, 0)).getUTCDate();
+  const startWeekday = new Date(Date.UTC(viewYear, viewMonth, 1)).getUTCDay();
+  const todayStr = now.toISOString().slice(0, 10);
+
+  const goPrev = () => {
+    if (viewMonth === 0) { setViewYear((year) => year - 1); setViewMonth(11); }
+    else setViewMonth((currentMonth) => currentMonth - 1);
+  };
+  const goNext = () => {
+    if (viewMonth === 11) { setViewYear((year) => year + 1); setViewMonth(0); }
+    else setViewMonth((currentMonth) => currentMonth + 1);
+  };
+  const isPrevDisabled = viewYear < utcYear - 1 || (viewYear === utcYear - 1 && viewMonth <= utcMonth);
+  const isNextDisabled = viewYear === utcYear && viewMonth >= utcMonth;
+
+  return (
+    <Card className="shadow-sm border-amber-200/60 dark:border-amber-800/40">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Puzzle className="w-4 h-4 text-amber-600" /> Daily Jigsaw Challenge
+          </CardTitle>
+          <Link
+            href="/jigsaw-challenge"
+            className="text-xs text-amber-700 dark:text-amber-300 underline underline-offset-2 whitespace-nowrap"
+          >
+            Play today →
+          </Link>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="flex items-center justify-between">
+          <button onClick={goPrev} disabled={isPrevDisabled} className="p-1 rounded hover:bg-muted disabled:opacity-30 transition-colors">
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <p className="text-sm font-semibold">{MONTH_NAMES[viewMonth]} {viewYear}</p>
+          <button onClick={goNext} disabled={isNextDisabled} className="p-1 rounded hover:bg-muted disabled:opacity-30 transition-colors">
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="grid grid-cols-7 gap-1">
+          {WEEKDAYS.map((day) => (
+            <div key={day} className="text-center text-[10px] font-semibold text-muted-foreground py-1">{day}</div>
+          ))}
+          {Array.from({ length: startWeekday }, (_, index) => <div key={`e-${index}`} />)}
+          {Array.from({ length: daysInMonth }, (_, index) => {
+            const day = index + 1;
+            const dateStr = `${month}-${String(day).padStart(2, "0")}`;
+            const done = completedSet.has(dateStr);
+            const isToday = dateStr === todayStr;
+            const isFuture = dateStr > todayStr;
+            return (
+              <div
+                key={day}
+                title={done ? `Completed ${dateStr}` : undefined}
+                className={[
+                  "aspect-square flex items-center justify-center rounded-full text-xs font-semibold transition-colors",
+                  done ? "bg-amber-600 text-white"
+                    : isToday ? "ring-2 ring-amber-500 text-foreground"
+                    : isFuture ? "text-muted-foreground/40"
+                    : "text-muted-foreground",
+                ].join(" ")}
+              >
+                {done ? "🧩" : day}
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-[11px] text-muted-foreground text-center">
+          {completedSet.size} day{completedSet.size !== 1 ? "s" : ""} completed this month
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
 // ─── Achievements Card ────────────────────────────────────────────────────────
 
 function AchievementsCard({ profileId, game }: { profileId: number; game: "sudoku" | "memory" | "jigsaw" }) {
@@ -1344,13 +1438,15 @@ export default function Profile() {
           {/* ── Jigsaw tab ───────────────────────────────────── */}
           {!statsLoading && gameTab === "jigsaw" && (
             <div className="space-y-4 animate-in fade-in duration-300">
+              <JigsawDailyCalendar profileId={profileId} />
+
               {jigsawStats ? (
                 <>
                   <div className="grid grid-cols-2 gap-4">
                     <Card className="border-amber-200/60 bg-card shadow-sm dark:border-amber-900/40">
                       <CardContent className="flex flex-col items-center gap-2 p-5 text-center">
                         <div className="rounded-full bg-amber-100 p-3 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"><Puzzle className="h-5 w-5" /></div>
-                        <p className="text-xs text-muted-foreground">Completed Games</p>
+                        <p className="text-xs text-muted-foreground">Games Played</p>
                         <p className="text-2xl font-bold">{jigsawStats.totalGames ?? 0}</p>
                       </CardContent>
                     </Card>

@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lt, sql } from "drizzle-orm";
 import { db, jigsawGamesTable, profilesTable } from "@workspace/db";
 
 const router: IRouter = Router();
@@ -72,6 +72,46 @@ router.post("/jigsaw-games", async (req, res): Promise<void> => {
     status: "active",
   }).returning({ id: jigsawGamesTable.id, createdAt: jigsawGamesTable.createdAt });
   res.status(201).json({ id: game.id, createdAt: game.createdAt.toISOString() });
+});
+
+router.patch("/jigsaw-games/:id/progress", async (req, res): Promise<void> => {
+  const id = Number.parseInt(req.params.id, 10);
+  const { elapsedSeconds, moves } = req.body as { elapsedSeconds?: number; moves?: number };
+  if (!Number.isInteger(id) || id <= 0) {
+    res.status(400).json({ error: "Invalid game id." });
+    return;
+  }
+  if (!Number.isInteger(elapsedSeconds) || Number(elapsedSeconds) < 0 || Number(elapsedSeconds) > 86_400
+    || !Number.isInteger(moves) || Number(moves) < 0 || Number(moves) > 100_000) {
+    res.status(400).json({ error: "A valid elapsed time and move count are required." });
+    return;
+  }
+
+  const [game] = await db.update(jigsawGamesTable)
+    .set({
+      elapsedSeconds: sql`GREATEST(${jigsawGamesTable.elapsedSeconds}, ${Number(elapsedSeconds)})`,
+      moves: sql`GREATEST(${jigsawGamesTable.moves}, ${Number(moves)})`,
+    })
+    .where(and(eq(jigsawGamesTable.id, id), eq(jigsawGamesTable.status, "active")))
+    .returning({ id: jigsawGamesTable.id });
+
+  if (game) {
+    res.json({ id: game.id, saved: true });
+    return;
+  }
+
+  const [existing] = await db.select({ id: jigsawGamesTable.id, status: jigsawGamesTable.status })
+    .from(jigsawGamesTable)
+    .where(eq(jigsawGamesTable.id, id));
+  if (!existing) {
+    res.status(404).json({ error: "Game not found." });
+    return;
+  }
+  if (existing.status === "completed") {
+    res.json({ id: existing.id, saved: false, completed: true });
+    return;
+  }
+  res.status(409).json({ error: "This game is no longer active." });
 });
 
 router.post("/jigsaw-games/:id/complete", async (req, res): Promise<void> => {
@@ -187,6 +227,36 @@ router.get("/jigsaw-daily-challenge/status/:profileId", async (req, res): Promis
     null,
   );
   res.json({ date, completed: games.length > 0, attempts: games.length, bestPoints: best?.points ?? null });
+});
+
+router.get("/jigsaw-daily-challenge/history/:profileId", async (req, res): Promise<void> => {
+  const profileId = Number.parseInt(req.params.profileId, 10);
+  if (!Number.isInteger(profileId) || profileId <= 0) {
+    res.status(400).json({ error: "Invalid profile id." });
+    return;
+  }
+
+  const month = typeof req.query.month === "string" ? req.query.month : todayUtc().slice(0, 7);
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) {
+    res.status(400).json({ error: "Invalid month. Use YYYY-MM format." });
+    return;
+  }
+
+  const [year, monthNumber] = month.split("-").map(Number);
+  const monthStart = `${month}-01`;
+  const nextYear = monthNumber === 12 ? year + 1 : year;
+  const nextMonth = monthNumber === 12 ? 1 : monthNumber + 1;
+  const monthEnd = `${nextYear}-${String(nextMonth).padStart(2, "0")}-01`;
+  const rows = await db.select({ date: jigsawGamesTable.dailyDate })
+    .from(jigsawGamesTable)
+    .where(and(
+      eq(jigsawGamesTable.profileId, profileId),
+      eq(jigsawGamesTable.status, "completed"),
+      gte(jigsawGamesTable.dailyDate, monthStart),
+      lt(jigsawGamesTable.dailyDate, monthEnd),
+    ));
+
+  res.json({ month, completedDates: [...new Set(rows.map((row) => row.date).filter((date): date is string => !!date))] });
 });
 
 router.get("/jigsaw-daily-challenge/leaderboard", async (_req, res): Promise<void> => {

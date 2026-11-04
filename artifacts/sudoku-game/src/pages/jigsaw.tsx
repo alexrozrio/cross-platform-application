@@ -1,25 +1,32 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type DragEvent } from "react";
 import { Link, useLocation, useSearch } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ArrowRight, BarChart2, BookOpen, CalendarDays, Check, Eye, EyeOff, Flame, Grip, Hash, Image as ImageIcon, Keyboard, Move, RotateCcw, Scroll, Share2, Sparkles, Timer, Trophy } from "lucide-react";
+import { ArrowLeft, ArrowRight, BarChart2, BookOpen, CalendarDays, Check, Eye, EyeOff, Flame, Grip, Hash, Image as ImageIcon, Keyboard, Lightbulb, Move, RotateCcw, Scroll, Share2, Sparkles, Timer, Trophy } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useImageTheme } from "@/hooks/use-image-theme";
 import { useThemeImageSrc } from "@/components/theme-icons";
+import { MobileContentDisclosure } from "@/components/mobile-content-disclosure";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { usePageMeta } from "@/components/page-meta";
 import { getTheme } from "@/lib/themes";
 import { useGetProfile, customFetch } from "@workspace/api-client-react";
 import { appShareUrlForPath } from "@/lib/app-links";
 import { shareOrDownloadShareCard } from "@/lib/share-card";
 import { ACHIEVEMENT_COMPLETION_EVENT } from "@/lib/achievement-events";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
+  JIGSAW_MAX_PIECE_NUMBER_HINTS,
+  JIGSAW_MAX_REFERENCE_PEEKS,
   JIGSAW_SESSION_STORAGE_KEY,
   parseSavedJigsawSession,
   type SavedJigsawSession,
 } from "@/lib/jigsaw-session";
+import { getJigsawPiecePath } from "@/lib/jigsaw-piece-shapes";
 import { toast } from "sonner";
 
 type GridSize = 2 | 3 | 4 | 5;
 type Phase = "setup" | "playing" | "complete";
+type InfoModal = "rules" | "controls" | "backstory" | null;
 type Result = {
   id?: number;
   points: number;
@@ -35,9 +42,10 @@ type Result = {
 type Config = { gridSize: GridSize; level: 1 | 2 | 3; imageKey: number; dailyDate?: string };
 
 const SIZES: GridSize[] = [2, 3, 4, 5];
+const REFERENCE_PEEK_DURATION_MS = 5000;
 const LEVELS: { value: 1 | 2 | 3; title: string; copy: string }[] = [
   { value: 1, title: "Easy", copy: "Reference stays beside your puzzle" },
-  { value: 2, title: "Medium", copy: "Peek at the picture whenever you need" },
+  { value: 2, title: "Medium", copy: "5-second preview, up to 3 times" },
   { value: 3, title: "Hard", copy: "No reference image during play" },
 ];
 
@@ -61,6 +69,33 @@ function PuzzlePiece({ themeId, imageKey, piece, gridSize, className = "" }: {
   const src = useThemeImageSrc(themeId, imageKey);
   const row = Math.floor(piece / gridSize);
   const col = piece % gridSize;
+  const clipId = `jigsaw-piece-${useId().replaceAll(":", "")}`;
+  if (gridSize >= 4) {
+    const path = getJigsawPiecePath(gridSize, piece);
+    return (
+      <div aria-hidden="true" className={`relative h-full w-full overflow-visible ${className}`}>
+        <svg className="absolute -inset-[12%] h-[124%] w-[124%] overflow-visible" viewBox="-12 -12 124 124" preserveAspectRatio="none">
+          <defs>
+            <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
+              <path d={path} />
+            </clipPath>
+          </defs>
+          {src && (
+            <image
+              href={src}
+              x={-col * 100}
+              y={-row * 100}
+              width={gridSize * 100}
+              height={gridSize * 100}
+              preserveAspectRatio="none"
+              clipPath={`url(#${clipId})`}
+            />
+          )}
+          <path d={path} fill={src ? "none" : "hsl(var(--muted))"} stroke="hsl(var(--background))" strokeWidth="1.5" />
+        </svg>
+      </div>
+    );
+  }
   return (
     <div
       aria-hidden="true"
@@ -82,10 +117,11 @@ function ReferenceImage({ themeId, imageKey, className = "" }: { themeId: string
     : <div aria-label="Puzzle artwork loading" className={`${className} bg-muted`} />;
 }
 
-function Tile({ piece, index, gridSize, themeId, imageKey, selected, onClick, onDragStart, onDragEnd, label }: {
-  piece: number; index: number; gridSize: GridSize; themeId: string; imageKey: number; selected: boolean;
+function Tile({ piece, index, gridSize, themeId, imageKey, selected, showNumber, onClick, onDragStart, onDragEnd, label }: {
+  piece: number; index: number; gridSize: GridSize; themeId: string; imageKey: number; selected: boolean; showNumber: boolean;
   onClick: () => void; onDragStart: (event: DragEvent) => void; onDragEnd: () => void; label: string;
 }) {
+  const isInterlocking = gridSize >= 4;
   return (
     <button
       type="button"
@@ -96,10 +132,10 @@ function Tile({ piece, index, gridSize, themeId, imageKey, selected, onClick, on
       aria-label={label}
       aria-pressed={selected}
       data-testid={`tile-piece-${piece}`}
-      className={`group relative aspect-square overflow-hidden rounded-lg border-2 bg-background shadow-sm transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring ${selected ? "border-primary ring-2 ring-primary/25" : "border-border"}`}
+      className={`group relative aspect-square ${isInterlocking ? "overflow-visible bg-transparent" : "overflow-hidden rounded-lg border-2 bg-background shadow-sm"} transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring ${selected ? "border-primary ring-2 ring-primary/25" : isInterlocking ? "" : "border-border"}`}
     >
       <PuzzlePiece themeId={themeId} imageKey={imageKey} piece={piece} gridSize={gridSize} />
-      <span className="absolute bottom-1 right-1 grid h-5 w-5 place-items-center rounded-full bg-foreground/75 text-[10px] font-semibold text-background">{index + 1}</span>
+      {showNumber && <span className="absolute bottom-1 right-1 z-20 grid h-5 w-5 place-items-center rounded-full bg-foreground/85 text-[10px] font-semibold text-background">{index + 1}</span>}
     </button>
   );
 }
@@ -132,6 +168,9 @@ export default function JigsawPage() {
     dailyDate: requestedDailyDate ?? undefined,
   });
   const requestedGameId = Number(params.get("gameId"));
+  const shouldAutoStartGame = params.get("play") === "1"
+    && !requestedDailyDate
+    && !(Number.isInteger(requestedGameId) && requestedGameId > 0);
   const [challengeId, setChallengeId] = useState<number | null>(
     Number.isInteger(Number(params.get("challengeId"))) && Number(params.get("challengeId")) > 0
       ? Number(params.get("challengeId"))
@@ -139,14 +178,18 @@ export default function JigsawPage() {
   );
   const [shareToken, setShareToken] = useState<string | null>(params.get("shareToken"));
   const [isCreatingChallenge, setIsCreatingChallenge] = useState(false);
+  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const hasLinkedChallenge = challengeId !== null;
   const [phase, setPhase] = useState<Phase>("setup");
+  const [infoModal, setInfoModal] = useState<InfoModal>(null);
   const [board, setBoard] = useState<(number | null)[]>([]);
   const [tray, setTray] = useState<number[]>([]);
   const [selected, setSelected] = useState<{ piece: number; from: "tray" | "board"; slot?: number } | null>(null);
   const [moves, setMoves] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [showReference, setShowReference] = useState(false);
+  const [referencePeeksUsed, setReferencePeeksUsed] = useState(0);
+  const [revealedPieceNumbers, setRevealedPieceNumbers] = useState<number[]>([]);
   const [result, setResult] = useState<Result | null>(null);
   const [dragged, setDragged] = useState<{ piece: number; from: "tray" | "board"; slot?: number } | null>(null);
   const [savedSession, setSavedSession] = useState<SavedJigsawSession | null>(null);
@@ -156,11 +199,43 @@ export default function JigsawPage() {
   const restoreCheckedRef = useRef(false);
   const autoStartedGameIdRef = useRef<number | null>(null);
   const autoStartedDailyDateRef = useRef<string | null>(null);
+  const autoStartedPlayRef = useRef(false);
   const gameIdRef = useRef<number | null>(null);
+  const activeGameProgressRef = useRef({ elapsed: 0, moves: 0 });
+  const lastProgressSyncRef = useRef({ gameId: null as number | null, elapsed: 0, moves: 0 });
+  const referencePeeksUsedRef = useRef(0);
+  const revealedPieceNumbersRef = useRef<number[]>([]);
+  const referencePeekTimeoutRef = useRef<number | null>(null);
   const pendingCompletion = useRef<{ elapsedSeconds: number; moves: number } | null>(null);
   const puzzleThemeId = sessionThemeId ?? themeId;
   const tileCount = config.gridSize * config.gridSize;
   const isSolved = board.length > 0 && board.every((piece, index) => piece === index);
+
+  const clearReferencePeekTimer = useCallback(() => {
+    if (referencePeekTimeoutRef.current !== null) {
+      window.clearTimeout(referencePeekTimeoutRef.current);
+      referencePeekTimeoutRef.current = null;
+    }
+  }, []);
+
+  const startReferencePeek = () => {
+    if (
+      config.level !== 2 ||
+      referencePeeksUsedRef.current >= JIGSAW_MAX_REFERENCE_PEEKS ||
+      referencePeekTimeoutRef.current !== null
+    ) return;
+    clearReferencePeekTimer();
+    const nextPeeksUsed = referencePeeksUsedRef.current + 1;
+    referencePeeksUsedRef.current = nextPeeksUsed;
+    setReferencePeeksUsed(nextPeeksUsed);
+    setShowReference(true);
+    referencePeekTimeoutRef.current = window.setTimeout(() => {
+      referencePeekTimeoutRef.current = null;
+      setShowReference(false);
+    }, REFERENCE_PEEK_DURATION_MS);
+  };
+
+  useEffect(() => () => clearReferencePeekTimer(), [clearReferencePeekTimer]);
 
   useEffect(() => {
     if (config.dailyDate || (Number.isInteger(requestedGameId) && requestedGameId > 0)) return;
@@ -174,6 +249,12 @@ export default function JigsawPage() {
     }, 1000);
     return () => window.clearInterval(timer);
   }, [phase]);
+
+  useEffect(() => {
+    activeGameProgressRef.current.elapsed = elapsed;
+    activeGameProgressRef.current.moves = moves;
+    if (phase === "playing") syncJigsawProgress(elapsed, moves);
+  }, [elapsed, moves, phase, syncJigsawProgress]);
 
   const pointsFor = useCallback((seconds: number) => {
     const basePoints: Record<GridSize, number> = { 2: 250, 3: 500, 4: 900, 5: 1400 };
@@ -203,39 +284,82 @@ export default function JigsawPage() {
     }).catch(() => undefined);
   }, [profileId, queryClient]);
 
+  const saveJigsawProgress = useCallback((gameId: number, elapsedSeconds: number, moveCount: number) => {
+    if (elapsedSeconds <= 0 && moveCount <= 0) return;
+    void customFetch<{ id: number; saved: boolean }>(`/api/jigsaw-games/${gameId}/progress`, {
+      method: "PATCH",
+      body: JSON.stringify({ elapsedSeconds, moves: moveCount }),
+    }).then(() => {
+      if (profileId) queryClient.invalidateQueries({ queryKey: [`/api/stats/${profileId}`] });
+    }).catch(() => undefined);
+  }, [profileId, queryClient]);
+
+  const syncJigsawProgress = useCallback((elapsedSeconds: number, moveCount: number) => {
+    const gameId = gameIdRef.current;
+    if (!gameId || (elapsedSeconds <= 0 && moveCount <= 0)) return;
+
+    const lastSync = lastProgressSyncRef.current;
+    if (
+      lastSync.gameId === gameId &&
+      moveCount <= lastSync.moves &&
+      elapsedSeconds - lastSync.elapsed < 5
+    ) return;
+
+    lastProgressSyncRef.current = { gameId, elapsed: elapsedSeconds, moves: moveCount };
+    saveJigsawProgress(gameId, elapsedSeconds, moveCount);
+  }, [saveJigsawProgress]);
+
   const startGame = useCallback((
     linkedGameId?: number,
     linkedChallenge?: { challengeId: number; shareToken: string },
+    resetReferencePeeks = true,
+    gameConfig: Config = config,
+    forceNewGame = false,
   ) => {
-    const pieces = shuffledTiles(config.gridSize * config.gridSize);
-    setBoard(Array(config.gridSize * config.gridSize).fill(null));
+    clearReferencePeekTimer();
+    const gameProgress = { elapsed: 0, moves: 0 };
+    activeGameProgressRef.current = gameProgress;
+    lastProgressSyncRef.current = { gameId: null, elapsed: 0, moves: 0 };
+    const pieces = shuffledTiles(gameConfig.gridSize * gameConfig.gridSize);
+    setConfig(gameConfig);
+    setBoard(Array(gameConfig.gridSize * gameConfig.gridSize).fill(null));
     setTray(pieces);
     setSelected(null);
     setMoves(0);
     setElapsed(0);
     setResult(null);
-    gameIdRef.current = linkedGameId ?? (Number.isInteger(requestedGameId) && requestedGameId > 0 ? requestedGameId : null);
+    gameIdRef.current = linkedGameId ?? (!forceNewGame && Number.isInteger(requestedGameId) && requestedGameId > 0 ? requestedGameId : null);
     pendingCompletion.current = null;
     if (linkedChallenge) {
       setChallengeId(linkedChallenge.challengeId);
       setShareToken(linkedChallenge.shareToken);
     }
-    setShowReference(config.level === 1);
+    if (resetReferencePeeks) {
+      referencePeeksUsedRef.current = 0;
+      setReferencePeeksUsed(0);
+      revealedPieceNumbersRef.current = [];
+      setRevealedPieceNumbers([]);
+    }
+    setShowReference(gameConfig.level === 1);
+    if (forceNewGame) {
+      setChallengeId(null);
+      setShareToken(null);
+    }
     completedRef.current = false;
     startedAt.current = Date.now();
     setSessionThemeId(themeId);
     setPhase("playing");
 
     const nextParams = new URLSearchParams({
-      gridSize: String(config.gridSize),
-      level: String(config.level),
-      imageKey: String(config.imageKey),
+      gridSize: String(gameConfig.gridSize),
+      level: String(gameConfig.level),
+      imageKey: String(gameConfig.imageKey),
       play: "1",
     });
-    if (config.dailyDate) nextParams.set("dailyDate", config.dailyDate);
+    if (gameConfig.dailyDate) nextParams.set("dailyDate", gameConfig.dailyDate);
     if (gameIdRef.current) nextParams.set("gameId", String(gameIdRef.current));
-    const nextChallengeId = linkedChallenge?.challengeId ?? challengeId;
-    const nextShareToken = linkedChallenge?.shareToken ?? shareToken;
+    const nextChallengeId = linkedChallenge?.challengeId ?? (forceNewGame ? null : challengeId);
+    const nextShareToken = linkedChallenge?.shareToken ?? (forceNewGame ? null : shareToken);
     if (nextChallengeId !== null) nextParams.set("challengeId", String(nextChallengeId));
     if (nextShareToken) nextParams.set("shareToken", nextShareToken);
     setLocation(`/jigsaw?${nextParams.toString()}`);
@@ -243,20 +367,41 @@ export default function JigsawPage() {
     if (gameIdRef.current) return;
     const body = {
       ...(profileId ? { profileId } : {}),
-      gridSize: config.gridSize,
-      level: config.level,
-      imageKey: config.imageKey,
-      ...(config.dailyDate ? { dailyDate: config.dailyDate } : {}),
+      gridSize: gameConfig.gridSize,
+      level: gameConfig.level,
+      imageKey: gameConfig.imageKey,
+      ...(gameConfig.dailyDate ? { dailyDate: gameConfig.dailyDate } : {}),
     };
     void customFetch<{ id: number }>("/api/jigsaw-games", { method: "POST", body: JSON.stringify(body) })
       .then((session) => {
+        if (activeGameProgressRef.current !== gameProgress) {
+          saveJigsawProgress(session.id, gameProgress.elapsed, gameProgress.moves);
+          return;
+        }
         gameIdRef.current = session.id;
+        syncJigsawProgress(gameProgress.elapsed, gameProgress.moves);
         if (pendingCompletion.current) submitCompletion(session.id, pendingCompletion.current.elapsedSeconds, pendingCompletion.current.moves);
       })
       .catch(() => undefined);
-  }, [challengeId, config, profileId, requestedGameId, setLocation, shareToken, submitCompletion, themeId]);
+  }, [challengeId, clearReferencePeekTimer, config, profileId, requestedGameId, saveJigsawProgress, setLocation, shareToken, submitCompletion, syncJigsawProgress, themeId]);
+
+  const startNewGameWithOptions = (changes: Partial<Config>) => {
+    const nextConfig = { ...config, ...changes, dailyDate: undefined };
+    if (
+      nextConfig.gridSize === config.gridSize &&
+      nextConfig.level === config.level &&
+      nextConfig.imageKey === config.imageKey
+    ) {
+      setIsOptionsOpen(false);
+      return;
+    }
+    setIsOptionsOpen(false);
+    syncJigsawProgress(elapsed, moves);
+    startGame(undefined, undefined, true, nextConfig, true);
+  };
 
   const restoreSession = useCallback((session: SavedJigsawSession) => {
+    clearReferencePeekTimer();
     setConfig({
       gridSize: session.gridSize,
       level: session.level,
@@ -269,7 +414,12 @@ export default function JigsawPage() {
     setDragged(null);
     setMoves(session.moves);
     setElapsed(session.elapsed);
-    setShowReference(session.showReference);
+    activeGameProgressRef.current = { elapsed: session.elapsed, moves: session.moves };
+    referencePeeksUsedRef.current = session.referencePeeksUsed;
+    setReferencePeeksUsed(session.referencePeeksUsed);
+    revealedPieceNumbersRef.current = session.revealedPieceNumbers;
+    setRevealedPieceNumbers(session.revealedPieceNumbers);
+    setShowReference(session.level === 1);
     setResult(null);
     setChallengeId(session.challengeId);
     setShareToken(session.shareToken);
@@ -292,7 +442,7 @@ export default function JigsawPage() {
     setLocation(`/jigsaw?${resumeParams.toString()}`);
     setPhase("playing");
     toast.info("Resuming your Jigsaw puzzle…", { duration: 2500 });
-  }, [setLocation]);
+  }, [clearReferencePeekTimer, setLocation]);
 
   useEffect(() => {
     if (restoreCheckedRef.current) return;
@@ -318,6 +468,10 @@ export default function JigsawPage() {
     }
 
     if (params.get("dailyDate")) return;
+    if (params.get("play") === "1") {
+      setSavedSession(null);
+      return;
+    }
 
     const requestedSize = Number(params.get("gridSize") ?? params.get("size"));
     if (session && Number.isInteger(requestedSize) && requestedSize > 0 && requestedSize !== session.gridSize) {
@@ -355,6 +509,12 @@ export default function JigsawPage() {
   }, [phase, requestedDailyDate, requestedGameId, shouldStartDailyChallenge, startGame]);
 
   useEffect(() => {
+    if (!shouldAutoStartGame || phase !== "setup" || autoStartedPlayRef.current) return;
+    autoStartedPlayRef.current = true;
+    startGame();
+  }, [phase, shouldAutoStartGame, startGame]);
+
+  useEffect(() => {
     if (phase !== "playing" || board.length !== tileCount) return;
     const session: SavedJigsawSession = {
       gridSize: config.gridSize,
@@ -366,6 +526,8 @@ export default function JigsawPage() {
       moves,
       elapsed,
       showReference,
+      referencePeeksUsed,
+      revealedPieceNumbers,
       gameId: gameIdRef.current,
       challengeId,
       shareToken,
@@ -376,7 +538,7 @@ export default function JigsawPage() {
     try {
       localStorage.setItem(JIGSAW_SESSION_STORAGE_KEY, JSON.stringify(session));
     } catch {}
-  }, [board, challengeId, config, elapsed, moves, phase, puzzleThemeId, shareToken, showReference, tileCount, tray]);
+  }, [board, challengeId, config, elapsed, moves, phase, puzzleThemeId, referencePeeksUsed, revealedPieceNumbers, shareToken, showReference, tileCount, tray]);
 
   const createChallengeAndPlay = async () => {
     if (!profileId) {
@@ -429,6 +591,7 @@ export default function JigsawPage() {
 
   const finishGame = useCallback((finalElapsed: number, finalMoves: number) => {
     if (completedRef.current) return;
+    clearReferencePeekTimer();
     completedRef.current = true;
     const offline: Result = {
       points: pointsFor(finalElapsed),
@@ -447,7 +610,7 @@ export default function JigsawPage() {
     }
     pendingCompletion.current = { elapsedSeconds: finalElapsed, moves: finalMoves };
     if (gameIdRef.current) submitCompletion(gameIdRef.current, finalElapsed, finalMoves);
-  }, [config, pointsFor, profileId, submitCompletion]);
+  }, [clearReferencePeekTimer, config, pointsFor, profileId, submitCompletion]);
 
   const placePiece = useCallback((source: { piece: number; from: "tray" | "board"; slot?: number }, targetSlot: number) => {
     setBoard((current) => {
@@ -522,6 +685,7 @@ export default function JigsawPage() {
   };
 
   const exitToSetup = () => {
+    clearReferencePeekTimer();
     setPhase("setup");
     setSelected(null);
     setDragged(null);
@@ -581,10 +745,7 @@ export default function JigsawPage() {
                 <button
                   key={size}
                   type="button"
-                  onClick={() => {
-                    setConfig((old) => ({ ...old, gridSize: size }));
-                    startGame();
-                  }}
+                  onClick={() => startGame(undefined, undefined, true, { ...config, gridSize: size, dailyDate: undefined }, true)}
                   data-testid={`select-grid-${size}`}
                   className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-amber-400/35 bg-white/75 px-2 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"
                 >
@@ -626,11 +787,11 @@ export default function JigsawPage() {
                   aria-pressed={config.imageKey === key}
                   data-testid={`select-image-${key}`}
                   className={[
-                    'h-10 w-10 shrink-0 rounded-lg border-2 transition flex items-center justify-center font-bold text-sm',
+                    'h-10 w-10 shrink-0 overflow-hidden rounded-lg border-2 transition',
                     config.imageKey === key ? 'border-amber-600 bg-amber-600 text-white' : 'border-border bg-background hover:border-amber-400 text-muted-foreground',
                   ].join(' ')}
                 >
-                  {key}
+                  <ReferenceImage themeId={themeId} imageKey={key} className="h-full w-full object-cover" />
                 </button>
               ))}
             </div>
@@ -650,10 +811,7 @@ export default function JigsawPage() {
                   <button
                     key={size}
                     type="button"
-                    onClick={() => {
-                      setConfig((old) => ({ ...old, gridSize: size }));
-                      startGame();
-                    }}
+                    onClick={() => startGame(undefined, undefined, true, { ...config, gridSize: size, dailyDate: undefined }, true)}
                     data-testid={`select-grid-${size}`}
                     className="flex flex-col items-center justify-center rounded-xl border-2 border-amber-400/35 bg-white/75 px-2 py-3 shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"
                   >
@@ -695,11 +853,11 @@ export default function JigsawPage() {
                     aria-pressed={config.imageKey === key}
                     data-testid={`select-image-${key}`}
                     className={[
-                      'h-12 w-12 shrink-0 rounded-lg border-2 transition flex items-center justify-center font-bold text-base',
+                      'h-12 w-12 shrink-0 overflow-hidden rounded-lg border-2 transition',
                       config.imageKey === key ? 'border-amber-600 bg-amber-600 text-white' : 'border-border bg-background hover:border-amber-400 text-muted-foreground',
                     ].join(' ')}
                   >
-                    {key}
+                    <ReferenceImage themeId={themeId} imageKey={key} className="h-full w-full object-cover" />
                   </button>
                 ))}
               </div>
@@ -727,7 +885,7 @@ export default function JigsawPage() {
           
           <div className="grid grid-cols-2 gap-2">
             <Link
-              href="/profile"
+              href="/profile?tab=jigsaw"
               className="flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-semibold text-foreground transition hover:border-amber-600 hover:text-amber-600"
             >
               <BarChart2 size={14} /> My Stats
@@ -743,18 +901,21 @@ export default function JigsawPage() {
           <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
+              onClick={() => setInfoModal("rules")}
               className="flex flex-col items-center justify-center gap-1 rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground transition hover:border-amber-600 hover:text-amber-600"
             >
               <Scroll size={14} /> Rules
             </button>
             <button
               type="button"
+              onClick={() => setInfoModal("backstory")}
               className="flex flex-col items-center justify-center gap-1 rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground transition hover:border-amber-600 hover:text-amber-600"
             >
               <BookOpen size={14} /> Backstory
             </button>
             <button
               type="button"
+              onClick={() => setInfoModal("controls")}
               className="flex flex-col items-center justify-center gap-1 rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground transition hover:border-amber-600 hover:text-amber-600"
             >
               <Keyboard size={14} /> Controls
@@ -765,26 +926,142 @@ export default function JigsawPage() {
           <p className="text-center text-[11px] text-muted-foreground">Plays offline. Your score syncs when available.</p>
         </div>
 
-        {/* More about jigsaw puzzle */}
-        <div className="rounded-2xl border border-border bg-card p-4">
-          <h3 className="text-sm font-bold mb-2">More about Jigsaw Puzzle</h3>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            Jigsaw puzzles are classic brain games that challenge your spatial reasoning and pattern recognition skills. 
-            Choose from different board sizes and difficulty levels to customize your experience. 
-            Complete daily challenges to compete with players worldwide, or challenge friends to see who can solve puzzles faster!
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
-              <Hash size={10} /> Spatial reasoning
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
-              <Timer size={10} /> Time-based scoring
-            </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
-              <Trophy size={10} /> Daily challenges
-            </span>
-          </div>
-        </div>
+        <MobileContentDisclosure
+          id="jigsaw-guidance"
+          title="More about Jigsaw puzzles"
+          className="rounded-2xl border border-amber-400/25 bg-card p-5 sm:p-6"
+        >
+          <section className="space-y-4">
+            <div>
+              <h2 className="text-xl font-serif font-bold text-foreground">How to solve picture puzzles</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+                Each tile is a square crop from the finished picture. Rebuild the image by placing every tile in its original board position. Look for distinctive colors, shapes, and neighboring details, then use the reference image when your selected level allows it.
+              </p>
+            </div>
+            <div className="grid gap-4 text-sm leading-relaxed text-muted-foreground sm:grid-cols-2">
+              <article>
+                <h3 className="font-semibold text-foreground">Choose a comfortable board</h3>
+                <p className="mt-1">
+                  A 2×2 board has 4 pieces, 3×3 has 9, 4×4 has 16, and 5×5 has 25. Smaller boards are a quick way to learn the placement flow; larger boards ask you to compare more details at once.
+                </p>
+              </article>
+              <article>
+                <h3 className="font-semibold text-foreground">Set your reference level</h3>
+                <p className="mt-1">
+                  Easy keeps the full picture visible. Medium offers three five-second previews per game. Hard removes the reference, so solve from the tile details and your memory of the image.
+                </p>
+              </article>
+              <article>
+                <h3 className="font-semibold text-foreground">Place and rearrange</h3>
+                <p className="mt-1">
+                  Select a loose piece and its board position, or drag the piece into place. If a board tile is already there, placing another tile sends the displaced piece back to the tray; board tiles can also be swapped.
+                </p>
+              </article>
+              <article>
+                <h3 className="font-semibold text-foreground">Build a personal best</h3>
+                <p className="mt-1">
+                  Completion time contributes to your score, and finished games can earn XP and gems. Daily challenges and friend challenges give you another way to compare completed puzzles.
+                </p>
+              </article>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
+                <Hash size={10} /> Spatial reasoning
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
+                <Timer size={10} /> Time-based scoring
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
+                <Trophy size={10} /> Daily challenges
+              </span>
+            </div>
+            <Link
+              href="/guides/#jigsaw-guide-title"
+              className="inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
+            >
+              Read the full Jigsaw guide
+            </Link>
+          </section>
+        </MobileContentDisclosure>
+
+        <Dialog open={infoModal === "rules"} onOpenChange={(open) => !open && setInfoModal(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Scroll className="h-5 w-5 text-amber-600" /> Rules
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">
+              <p>Rebuild the complete picture by placing each shuffled tile in its original board position.</p>
+              <ul className="list-none space-y-2">
+                {[
+                  "Choose a board from 2×2 to 5×5; each square is one picture tile.",
+                  "Move tiles from the loose-piece tray onto the matching board positions.",
+                  "A tile placed on an occupied position sends the displaced tile back to the tray; board tiles can be swapped.",
+                  "Finish when every tile is in its correct position and the full image is restored.",
+                  "Easy keeps the reference visible, Medium allows three five-second previews, and Hard hides the reference.",
+                ].map((rule, index) => (
+                  <li key={rule} className="flex gap-2">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500/10 text-xs font-bold text-amber-700 dark:text-amber-300">{index + 1}</span>
+                    <span>{rule}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="pt-1">Faster completions earn more points. Finished games can also award XP and gems.</p>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={infoModal === "controls"} onOpenChange={(open) => !open && setInfoModal(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Keyboard className="h-5 w-5 text-amber-600" /> Controls
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 text-sm">
+              <div>
+                <p className="mb-2 font-semibold text-foreground">Mouse / Touch</p>
+                <div className="space-y-1.5 text-muted-foreground">
+                  {[
+                    ["Tap or click a loose piece", "Select it"],
+                    ["Tap or click a board position", "Place the selected piece"],
+                    ["Drag a tile", "Move it to a board position"],
+                    ["Preview button (Medium)", "Show the picture for 5 seconds (3 uses)"],
+                    ["Restart", "Shuffle and restart this puzzle"],
+                  ].map(([action, result]) => (
+                    <div key={action} className="flex justify-between gap-4">
+                      <span>{action}</span>
+                      <span className="text-right font-medium text-foreground">{result}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <p className="border-t pt-3 text-muted-foreground">You can also select a tile already on the board, then select another position to swap them.</p>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={infoModal === "backstory"} onOpenChange={(open) => !open && setInfoModal(null)}>
+          <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-md overflow-y-auto overscroll-contain">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-amber-600" /> Backstory
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">
+              <p>
+                Picture puzzles are often traced to 18th-century “dissected maps.” English mapmaker John Spilsbury is commonly credited with making early examples around the 1760s by mounting maps on wood and cutting them into pieces for geography lessons.
+              </p>
+              <p>
+                Those teaching tools inspired a pastime: assemble the pieces to recover the map or picture. As printing and manufacturing changed, puzzles became available in many subjects and difficulty levels, from familiar scenes to intricate designs.
+              </p>
+              <p>
+                This digital Jigsaw keeps the same picture-reconstruction idea in a square-tile format. The pieces begin shuffled in a tray; your task is to place each image fragment back where it belongs.
+              </p>
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
     );
   }
@@ -822,7 +1099,24 @@ export default function JigsawPage() {
     );
   }
 
-  const canSeeReference = config.level === 1 || showReference;
+  const canSeeReference = config.level === 1 || (config.level === 2 && showReference);
+  const interlockingPieces = config.gridSize >= 4;
+  const hintablePieces = [
+    ...tray,
+    ...board.flatMap((piece, slot) => piece !== null && piece !== slot ? [piece] : []),
+  ].filter((piece) => !revealedPieceNumbers.includes(piece));
+  const revealPieceNumber = () => {
+    if (revealedPieceNumbersRef.current.length >= JIGSAW_MAX_PIECE_NUMBER_HINTS) return;
+    const availablePieces = [
+      ...tray,
+      ...board.flatMap((piece, slot) => piece !== null && piece !== slot ? [piece] : []),
+    ].filter((piece) => !revealedPieceNumbersRef.current.includes(piece));
+    if (availablePieces.length === 0) return;
+    const piece = selected && availablePieces.includes(selected.piece) ? selected.piece : availablePieces[0];
+    const nextRevealed = [...revealedPieceNumbersRef.current, piece];
+    revealedPieceNumbersRef.current = nextRevealed;
+    setRevealedPieceNumbers(nextRevealed);
+  };
   const dragStart = (source: { piece: number; from: "tray" | "board"; slot?: number }) => (event: DragEvent) => {
     setDragged(source);
     event.dataTransfer.effectAllowed = "move";
@@ -841,6 +1135,75 @@ export default function JigsawPage() {
       <header className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-card px-3 py-2 shadow-sm sm:px-4 sm:py-2.5">
         <button type="button" onClick={exitToSetup} className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition hover:border-primary sm:px-4 sm:py-2 sm:text-sm" data-testid="link-exit-jigsaw"><ArrowLeft size={14} /> Setup</button>
         <div className="flex items-center gap-2">
+          {!hasLinkedChallenge && (
+            <Popover open={isOptionsOpen} onOpenChange={setIsOptionsOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Change puzzle picture, level, or size"
+                  title="Change puzzle options"
+                  data-testid="button-jigsaw-options"
+                  className="relative h-9 w-9 overflow-hidden rounded-full border-2 border-border bg-background transition hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <ReferenceImage themeId={themeId} imageKey={config.imageKey} className="h-full w-full object-cover" />
+                  <ImageIcon size={12} className="absolute bottom-0 right-0 rounded-tl bg-background/90 p-0.5 text-foreground" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-[min(22rem,calc(100vw-1rem))] space-y-4 p-3">
+                <section>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Picture</p>
+                  <div className="grid max-h-36 grid-cols-6 gap-1.5 overflow-y-auto">
+                    {Array.from({ length: themeLength }, (_, index) => index + 1).map((key) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => startNewGameWithOptions({ imageKey: key })}
+                        aria-label={`Start a new game with picture ${key}`}
+                        aria-pressed={config.imageKey === key}
+                        title={`Picture ${key}`}
+                        className={`aspect-square overflow-hidden rounded-md border-2 transition ${config.imageKey === key ? "border-amber-600 ring-2 ring-amber-500/30" : "border-border hover:border-amber-400"}`}
+                      >
+                        <ReferenceImage themeId={themeId} imageKey={key} className="h-full w-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                </section>
+                <section>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Board size</p>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {availableSizes.map((size) => (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => startNewGameWithOptions({ gridSize: size })}
+                        aria-pressed={config.gridSize === size}
+                        className={`rounded-md border px-2 py-2 text-xs font-semibold transition ${config.gridSize === size ? "border-amber-600 bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-200" : "border-border hover:border-amber-400"}`}
+                      >
+                        {size}×{size}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+                <section>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Level</p>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {LEVELS.map((level) => (
+                      <button
+                        key={level.value}
+                        type="button"
+                        onClick={() => startNewGameWithOptions({ level: level.value })}
+                        aria-pressed={config.level === level.value}
+                        title={level.copy}
+                        className={`rounded-md border px-2 py-2 text-xs font-semibold transition ${config.level === level.value ? "border-amber-600 bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-200" : "border-border hover:border-amber-400"}`}
+                      >
+                        {level.title}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              </PopoverContent>
+            </Popover>
+          )}
           <div className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-bold uppercase tracking-[.12em] text-muted-foreground sm:px-4 sm:py-2">
             <span>Level {config.level}</span>
             <span className="text-border">/</span>
@@ -852,10 +1215,34 @@ export default function JigsawPage() {
           <div className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 font-mono text-xs sm:px-4 sm:py-2 sm:text-sm" data-testid="status-moves">
             <span className="text-primary">{moves}</span> moves
           </div>
+          <button
+            type="button"
+            onClick={revealPieceNumber}
+            disabled={revealedPieceNumbers.length >= JIGSAW_MAX_PIECE_NUMBER_HINTS || hintablePieces.length === 0}
+            aria-label={`Reveal a piece number, ${JIGSAW_MAX_PIECE_NUMBER_HINTS - revealedPieceNumbers.length} tips remaining`}
+            title="Reveal the number of one unmatched piece"
+            data-testid="button-jigsaw-tip"
+            className="inline-flex h-8 items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2 text-xs font-semibold text-amber-800 transition hover:border-amber-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-amber-950/30 dark:text-amber-200 sm:h-9"
+          >
+            <Lightbulb size={14} />
+            <span>Tip</span>
+            <span className="tabular-nums">{JIGSAW_MAX_PIECE_NUMBER_HINTS - revealedPieceNumbers.length}</span>
+          </button>
           {config.level === 2 && (
-            <button type="button" onClick={() => setShowReference((value) => !value)} aria-label={showReference ? "Hide reference picture" : "Show reference picture"} data-testid="button-toggle-reference" className="grid h-8 w-8 place-items-center rounded-full bg-background border border-border text-foreground hover:border-primary sm:h-9 sm:w-9">{showReference ? <EyeOff size={15} /> : <Eye size={15} />}</button>
+            <button
+              type="button"
+              onClick={startReferencePeek}
+              disabled={showReference || referencePeeksUsed >= JIGSAW_MAX_REFERENCE_PEEKS}
+              aria-label={`Preview reference picture, ${JIGSAW_MAX_REFERENCE_PEEKS - referencePeeksUsed} previews remaining`}
+              title={`${JIGSAW_MAX_REFERENCE_PEEKS - referencePeeksUsed} previews remaining`}
+              data-testid="button-toggle-reference"
+              className="inline-flex h-8 items-center gap-1 rounded-full border border-border bg-background px-2 text-foreground transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-50 sm:h-9"
+            >
+              <Eye size={15} />
+              <span className="text-[10px] font-semibold tabular-nums">{JIGSAW_MAX_REFERENCE_PEEKS - referencePeeksUsed}</span>
+            </button>
           )}
-          {!hasLinkedChallenge && <button type="button" onClick={() => startGame()} data-testid="button-restart-jigsaw" className="inline-flex items-center gap-1.5 rounded-full bg-background border border-border px-3 py-1.5 text-xs font-semibold text-foreground transition hover:border-primary hover:text-primary sm:px-4 sm:py-2 sm:text-sm"><RotateCcw size={13} /> Restart</button>}
+          {!hasLinkedChallenge && <button type="button" onClick={() => startGame(undefined, undefined, false)} data-testid="button-restart-jigsaw" className="inline-flex items-center gap-1.5 rounded-full bg-background border border-border px-3 py-1.5 text-xs font-semibold text-foreground transition hover:border-primary hover:text-primary sm:px-4 sm:py-2 sm:text-sm"><RotateCcw size={13} /> Restart</button>}
         </div>
       </header>
 
@@ -865,14 +1252,15 @@ export default function JigsawPage() {
           <div className="mb-3 px-1">
             <h1 className="font-serif text-xl font-bold sm:text-2xl">Find the picture.</h1>
           </div>
-          <div className="mx-auto grid aspect-square w-full max-w-[min(90vw,660px)] gap-1 rounded-xl bg-muted p-1 sm:gap-2 sm:rounded-2xl sm:p-2" style={{ gridTemplateColumns: `repeat(${config.gridSize}, minmax(0, 1fr))` }} role="grid" aria-label={`${config.gridSize} by ${config.gridSize} puzzle board`}>
+          <div className={`mx-auto grid aspect-square w-full max-w-[min(90vw,660px)] ${interlockingPieces ? "gap-0" : "gap-1 sm:gap-2"} rounded-xl bg-muted p-1 sm:rounded-2xl sm:p-2`} style={{ gridTemplateColumns: `repeat(${config.gridSize}, minmax(0, 1fr))` }} role="grid" aria-label={`${config.gridSize} by ${config.gridSize} puzzle board`}>
             {board.map((piece, slot) => (
               <button key={slot} type="button" role="gridcell" onClick={() => chooseSlot(slot)} onDragOver={(event) => event.preventDefault()} onDrop={dropOnSlot(slot)}
                 draggable={piece !== null} onDragStart={piece === null ? undefined : dragStart({ piece, from: "board", slot })} onDragEnd={() => setDragged(null)}
                 aria-label={`Puzzle position ${slot + 1}${piece !== null ? `, piece ${piece + 1}` : ", empty"}`} aria-pressed={selected?.from === "board" && selected.slot === slot}
                 data-testid={`board-slot-${slot}`}
-                className={`relative min-h-0 overflow-hidden rounded-md border-2 transition ${piece === null ? "border-dashed border-border bg-background" : "border-background shadow-sm"} ${selected?.from === "board" && selected.slot === slot ? "ring-4 ring-primary/40" : ""} focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring`}>
+                className={`relative min-h-0 transition ${piece === null ? "z-0 overflow-hidden rounded-md border-2 border-dashed border-border bg-background" : interlockingPieces ? "z-10 overflow-visible border-0 bg-transparent" : "overflow-hidden rounded-md border-2 border-background shadow-sm"} ${selected?.from === "board" && selected.slot === slot ? "ring-4 ring-primary/40" : ""} focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring`}>
                 {piece !== null && <PuzzlePiece themeId={puzzleThemeId} imageKey={config.imageKey} piece={piece} gridSize={config.gridSize} />}
+                {piece !== null && piece !== slot && revealedPieceNumbers.includes(piece) && <span className="absolute bottom-1 right-1 z-20 grid h-5 w-5 place-items-center rounded-full bg-foreground/85 text-[10px] font-semibold text-background">{piece + 1}</span>}
                 {piece === null && <span className="absolute inset-0 grid place-items-center text-[10px] font-mono text-muted-foreground">{String(slot + 1).padStart(2, "0")}</span>}
               </button>
             ))}
@@ -884,9 +1272,9 @@ export default function JigsawPage() {
         <aside className="flex flex-col gap-4 lg:w-64">
           <section className="rounded-2xl border border-border bg-card p-3">
             <div className="mb-2 flex items-end justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-muted-foreground">Loose pieces</p><p className="font-serif text-lg font-semibold">On the table</p></div><span className="font-mono text-sm text-primary" data-testid="status-pieces-left">{tray.length} left</span></div>
-            <div className="grid max-h-[40vh] grid-cols-4 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-4 lg:grid-cols-3">
+            <div className={`grid max-h-[40vh] grid-cols-4 ${interlockingPieces ? "gap-3 p-2" : "gap-1.5 pr-1"} overflow-y-auto sm:grid-cols-4 lg:grid-cols-3`}>
               {tray.map((piece) => (
-                <Tile key={piece} piece={piece} index={piece} gridSize={config.gridSize} themeId={puzzleThemeId} imageKey={config.imageKey} selected={selected?.from === "tray" && selected.piece === piece}
+                <Tile key={piece} piece={piece} index={piece} gridSize={config.gridSize} themeId={puzzleThemeId} imageKey={config.imageKey} selected={selected?.from === "tray" && selected.piece === piece} showNumber={revealedPieceNumbers.includes(piece)}
                   onClick={() => setSelected((current) => current?.from === "tray" && current.piece === piece ? null : { piece, from: "tray" })}
                   onDragStart={dragStart({ piece, from: "tray" })} onDragEnd={() => setDragged(null)} label={`Piece ${piece + 1}, select to place`} />
               ))}
@@ -898,11 +1286,29 @@ export default function JigsawPage() {
 
       {/* Reference preview at bottom */}
       <section className="mt-4 rounded-2xl border border-border bg-card p-3 shadow-sm sm:p-4">
-        <div className="mb-2 flex items-center justify-between">
-          <div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-muted-foreground">Reference</p><p className="font-serif text-lg font-semibold">{config.level === 3 ? "Picture memory" : "Keep it in view"}</p></div>
-          <p className="text-xs text-muted-foreground">{LEVELS[config.level - 1].copy}</p>
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-muted-foreground">Reference</p><p className="font-serif text-lg font-semibold">{config.level === 3 ? "Picture memory" : config.level === 2 ? "Limited previews" : "Keep it in view"}</p></div>
+          <p className="text-right text-xs text-muted-foreground">{config.level === 2 ? `${JIGSAW_MAX_REFERENCE_PEEKS - referencePeeksUsed} of ${JIGSAW_MAX_REFERENCE_PEEKS} previews left` : LEVELS[config.level - 1].copy}</p>
         </div>
-        {canSeeReference ? <div className="max-w-[min(90vw,400px)] mx-auto aspect-square overflow-hidden rounded-xl border-4 border-background"><ReferenceImage themeId={puzzleThemeId} imageKey={config.imageKey} className="h-full w-full object-cover" /></div> : <div className="max-w-[min(90vw,400px)] mx-auto grid aspect-square place-items-center rounded-xl border border-dashed border-border bg-muted p-6 text-center"><div><EyeOff size={23} className="mx-auto mb-2 text-muted-foreground" /><p className="font-serif text-xl">Build it from memory</p><p className="mt-1 text-xs text-muted-foreground">This level keeps the picture hidden.</p></div></div>}
+        {canSeeReference ? (
+          <div className="mx-auto aspect-square max-w-[min(90vw,400px)] overflow-hidden rounded-xl border-4 border-background">
+            <ReferenceImage themeId={puzzleThemeId} imageKey={config.imageKey} className="h-full w-full object-cover" />
+          </div>
+        ) : (
+          <div className="mx-auto grid aspect-square max-w-[min(90vw,400px)] place-items-center rounded-xl border border-dashed border-border bg-muted p-6 text-center">
+            <div>
+              <EyeOff size={23} className="mx-auto mb-2 text-muted-foreground" />
+              <p className="font-serif text-xl">{config.level === 2 ? "Reference hidden" : "Build it from memory"}</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {config.level === 2
+                  ? referencePeeksUsed >= JIGSAW_MAX_REFERENCE_PEEKS
+                    ? "You have used all 3 previews for this game."
+                    : "Use the eye button for a five-second preview."
+                  : "This level keeps the picture hidden."}
+              </p>
+            </div>
+          </div>
+        )}
       </section>
     </main>
   );
