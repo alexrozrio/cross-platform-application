@@ -98,7 +98,9 @@ export function AuthProvider({
     const controller = new AbortController();
     // Cap the auth check at 3 s so a hung API never blocks the UI indefinitely.
     const timeoutId = setTimeout(() => controller.abort(), 3000);
-    fetch(apiUrl('/api/auth/user'), { credentials: 'include', signal: controller.signal })
+    const url = apiUrl('/api/auth/user');
+    const isCrossOrigin = url.startsWith('http');
+    fetch(url, { credentials: isCrossOrigin ? 'omit' : 'include', signal: controller.signal })
       .then((res) => {
         if (res.status === 401) return null;
         if (!res.ok) return null;
@@ -148,20 +150,28 @@ export function AuthProvider({
         }
 
         const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
-        const res = await fetch(apiUrl(`${basePath}/api/profiles/sync`), {
+        const url = apiUrl(`${basePath}/api/profiles/sync`);
+        console.log('[Auth] Syncing profile to:', url, 'with body:', body);
+        const isCrossOrigin = url.startsWith('http');
+        const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
-          credentials: 'include',
+          credentials: isCrossOrigin ? 'omit' : 'include',
           signal: controller.signal,
         });
 
+        console.log('[Auth] Sync response status:', res.status);
         if (res.ok) {
           const profile = await res.json();
+          console.log('[Auth] Profile synced:', profile);
           setProfileId(profile.id);
           onProfileSynced?.(profile.id);
+        } else {
+          console.error('[Auth] Sync failed:', res.status, res.statusText);
         }
-      } catch {
+      } catch (err) {
+        console.error('[Auth] Sync error:', err);
         // Network error — keep whatever profileId is already cached
       } finally {
         window.clearTimeout(timeoutId);

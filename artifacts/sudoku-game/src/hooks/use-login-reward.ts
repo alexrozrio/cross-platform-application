@@ -37,9 +37,11 @@ export function useLoginReward() {
   const claimReward = useCallback(async (profileId: number) => {
     try {
       const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
-      const res = await fetch(apiUrl(`${basePath}/api/profiles/${profileId}/claim-login-reward`), {
+      const url = apiUrl(`${basePath}/api/profiles/${profileId}/claim-login-reward`);
+      const isCrossOrigin = url.startsWith('http');
+      const res = await fetch(url, {
         method: "POST",
-        credentials: "include",
+        credentials: isCrossOrigin ? "omit" : "include",
       });
       if (!res.ok) return;
       const data: LoginRewardResult = await res.json();

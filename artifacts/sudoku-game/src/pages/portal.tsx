@@ -988,45 +988,78 @@ export default function Portal() {
                 </div>
               );
             })()}
-          </div>
-        </div>
 
-        {canResumeJigsaw && jigsawSession && (
-          <button
-            type="button"
-            onClick={() => setLocation("/jigsaw?resume=1")}
-            data-testid="button-resume-jigsaw-from-portal-desktop"
-            className="flex w-full items-center gap-3 rounded-xl border-2 border-primary/30 bg-card px-5 py-3 text-left transition-all hover:border-primary/60 hover:bg-muted"
-          >
-            <RotateCcw className="h-5 w-5 shrink-0 text-primary" />
-            <span className="flex-1 min-w-0">
-              <span className="block font-semibold text-foreground">Resume Jigsaw</span>
-              <span className="text-sm text-muted-foreground">
-                {jigsawSession.gridSize}×{jigsawSession.gridSize} · {jigsawSession.moves} moves · {jigsawSessionTime}
-              </span>
-            </span>
-            <span className="shrink-0 text-primary">→</span>
-          </button>
-        )}
-
-        {/* Jigsaw Puzzle Card */}
-        <div className="group relative isolate overflow-hidden rounded-2xl border-2 border-border bg-card shadow-md">
-          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-primary/60 to-accent" />
-          <button onClick={() => setLocation("/jigsaw")} className="relative z-10 w-full space-y-4 p-6 text-left transition-all duration-200 hover:bg-white/20 dark:hover:bg-slate-950/20">
-            <div className="flex items-center gap-3">
-              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20"><Puzzle className="h-8 w-8" /></div>
-              <div><h2 className="font-serif text-xl font-bold">Jigsaw Puzzle</h2><p className="text-xs text-muted-foreground">Picture puzzle</p></div>
+            {/* Jigsaw Puzzle Card */}
+            <div className="group relative isolate overflow-hidden rounded-2xl border-2 border-amber-500/60 bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-100 shadow-xl shadow-amber-500/20 ring-1 ring-inset ring-white/70 dark:from-orange-950/75 dark:via-amber-950/80 dark:to-yellow-950/60 dark:ring-white/10">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400"
+              />
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -bottom-10 -left-8 h-28 w-28 rounded-full bg-orange-300/35 blur-2xl dark:bg-orange-400/15"
+              />
+              <button
+                onClick={() => setLocation("/jigsaw")}
+                className="relative z-10 w-full text-left p-6 space-y-4 transition-all duration-200 hover:bg-white/20 dark:hover:bg-slate-950/20"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-xl bg-amber-500/10 flex items-center justify-center ring-1 ring-amber-400/20">
+                    <Puzzle className="w-7 h-7 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold font-serif">Jigsaw Puzzle</h2>
+                    <p className="text-xs text-muted-foreground">
+                      Picture puzzle
+                    </p>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Choose a picture and board size, then assemble the pieces at
+                  your own pace.
+                </p>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {visibleJigsawSizes.map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => setLocation(`/jigsaw?gridSize=${size}&level=1&imageKey=1&play=1`)}
+                      className="flex flex-col items-center justify-center rounded-lg border border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/15 hover:border-amber-500/40 transition-all py-2 px-1 cursor-pointer min-h-[52px]"
+                    >
+                      <span className="font-bold text-xs leading-none text-amber-600 dark:text-amber-400">
+                        {size}×{size}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </button>
+              {canResumeJigsaw && jigsawSession && (
+                <button
+                  onClick={() => setLocation("/jigsaw?resume=1")}
+                  className="mx-6 mb-3 flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-400/25 px-3 py-2 text-left hover:bg-amber-500/20 transition-colors w-[calc(100%-3rem)]"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                  <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">
+                    Resume in progress
+                  </span>
+                  <span className="text-[10px] text-muted-foreground ml-auto">
+                    {jigsawSession.gridSize}×{jigsawSession.gridSize} · {jigsawSession.moves} moves
+                  </span>
+                </button>
+              )}
+              <div className="px-6 pb-5 pt-1">
+                <button
+                  onClick={() => setLocation("/jigsaw")}
+                  className="text-[10px] text-amber-600/70 hover:text-amber-600 dark:text-amber-400/70 dark:hover:text-amber-400 underline underline-offset-2 transition-colors"
+                >
+                  More options (level, image) →
+                </button>
+              </div>
+              <div
+                className="absolute top-3 right-3 w-2 h-2 rounded-full bg-green-400"
+                title="Available"
+              />
             </div>
-            <p className="text-sm leading-relaxed text-muted-foreground">Choose a picture and board size, then assemble the pieces at your own pace.</p>
-            <div className="grid grid-cols-4 gap-1.5">
-              {visibleJigsawSizes.map((size) => <span key={size} className="rounded-lg border border-border bg-muted py-2 text-center text-xs font-bold text-primary">{size}×{size}</span>)}
-            </div>
-          </button>
-          <div className="flex flex-wrap gap-x-4 gap-y-1 px-6 pb-5">
-            <Link href="/jigsaw-challenge" className="text-[10px] font-semibold text-primary underline underline-offset-2">Daily Jigsaw challenge →</Link>
-            <Link href="/jigsaw-challenges" className="text-[10px] font-semibold text-primary underline underline-offset-2">Challenge a friend →</Link>
           </div>
-          <div className="absolute right-3 top-3 h-2 w-2 rounded-full bg-green-400" title="Available" />
         </div>
 
         {/* Daily Challenges (desktop) */}

@@ -59,9 +59,11 @@ export async function signOut(): Promise<void> {
     return;
   }
 
-  const response = await fetch(apiUrl("/api/native/logout"), {
+  const url = apiUrl("/api/native/logout");
+  const isCrossOrigin = url.startsWith('http');
+  const response = await fetch(url, {
     method: "POST",
-    credentials: "include",
+    credentials: isCrossOrigin ? "omit" : "include",
     headers: { "Content-Type": "application/json" },
     body: "{}",
   });
@@ -95,9 +97,11 @@ export async function completeNativeGoogleSignIn(code: string): Promise<void> {
     throw new Error("This sign-in expired. Please try again.");
   }
 
-  const response = await fetch(apiUrl("/api/native-auth/exchange"), {
+  const url = apiUrl("/api/native-auth/exchange");
+  const isCrossOrigin = url.startsWith('http');
+  const response = await fetch(url, {
     method: "POST",
-    credentials: "include",
+    credentials: isCrossOrigin ? "omit" : "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ code, verifier: pending.verifier }),
   });

@@ -16,9 +16,10 @@ export function getConfiguredApiBaseUrl(): string | null {
   // Development preview has a local API workflow and Vite proxy. Keep the
   // preview tied to the current workspace so backend changes are immediately
   // visible; production builds may still use the configured remote API.
-  if (import.meta.env.DEV) return null;
+  // VITE_API_BASE_URL_LOCAL allows overriding this for local testing with remote API.
+  if (import.meta.env.DEV && !import.meta.env.VITE_API_BASE_URL_LOCAL) return null;
 
-  const raw = import.meta.env.VITE_API_BASE_URL;
+  const raw = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_BASE_URL_LOCAL;
   if (!raw) return null;
   const trimmed = raw.trim().replace(/\/+$/, "");
   return trimmed === "" ? null : trimmed;
@@ -32,5 +33,10 @@ export function getConfiguredApiBaseUrl(): string | null {
  */
 export function apiUrl(path: string): string {
   const base = getConfiguredApiBaseUrl();
-  return base ? `${base}${path}` : path;
+  if (!base) return path;
+  // If base URL already includes /api, don't duplicate it
+  if (base.endsWith('/api')) {
+    return path.startsWith('/api') ? `${base}${path.slice(4)}` : `${base}${path}`;
+  }
+  return `${base}${path}`;
 }
