@@ -19,11 +19,13 @@ import jigsawChallengesRouter from "./jigsaw-challenges";
 import testEmailRouter from "./test-email";
 import inviteRouter from "./invite";
 import accountRouter from "./account";
+import profileMergeRouter from "./profile-merge";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(profilesRouter);
+router.use(profileMergeRouter);
 router.use(puzzlesRouter);
 router.use(gamesRouter);
 router.use(leaderboardRouter);
