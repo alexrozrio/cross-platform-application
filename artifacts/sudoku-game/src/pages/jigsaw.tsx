@@ -250,12 +250,6 @@ export default function JigsawPage() {
     return () => window.clearInterval(timer);
   }, [phase]);
 
-  useEffect(() => {
-    activeGameProgressRef.current.elapsed = elapsed;
-    activeGameProgressRef.current.moves = moves;
-    if (phase === "playing") syncJigsawProgress(elapsed, moves);
-  }, [elapsed, moves, phase, syncJigsawProgress]);
-
   const pointsFor = useCallback((seconds: number) => {
     const basePoints: Record<GridSize, number> = { 2: 250, 3: 500, 4: 900, 5: 1400 };
     const parSeconds: Record<GridSize, number> = { 2: 45, 3: 90, 4: 150, 5: 240 };
@@ -308,6 +302,12 @@ export default function JigsawPage() {
     lastProgressSyncRef.current = { gameId, elapsed: elapsedSeconds, moves: moveCount };
     saveJigsawProgress(gameId, elapsedSeconds, moveCount);
   }, [saveJigsawProgress]);
+
+  useEffect(() => {
+    activeGameProgressRef.current.elapsed = elapsed;
+    activeGameProgressRef.current.moves = moves;
+    if (phase === "playing") syncJigsawProgress(elapsed, moves);
+  }, [elapsed, moves, phase, syncJigsawProgress]);
 
   const startGame = useCallback((
     linkedGameId?: number,
