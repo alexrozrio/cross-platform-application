@@ -28,7 +28,7 @@ export function getJigsawPieceEdges(gridSize: number, piece: number): JigsawPiec
 function edgePath(start: Point, end: Point, normal: Point, tab: number): string {
   if (tab === 0) return `L${end[0]} ${end[1]}`;
 
-  const depth = tab * 9;
+  const depth = tab * 16;
   const at = (position: number, offset = 0) => {
     const x = start[0] + (end[0] - start[0]) * position + normal[0] * offset;
     const y = start[1] + (end[1] - start[1]) * position + normal[1] * offset;
@@ -36,10 +36,11 @@ function edgePath(start: Point, end: Point, normal: Point, tab: number): string 
   };
 
   return [
-    `L${at(0.34)}`,
-    `C${at(0.38, depth * 0.15)} ${at(0.39, depth * 0.85)} ${at(0.44, depth * 0.85)}`,
-    `C${at(0.44, depth * 1.35)} ${at(0.56, depth * 1.35)} ${at(0.56, depth * 0.85)}`,
-    `C${at(0.61, depth * 0.85)} ${at(0.62, depth * 0.15)} ${at(0.66)}`,
+    `L${at(0.36)}`,
+    `C${at(0.37, depth * 0.2)} ${at(0.38, depth * 0.3)} ${at(0.38, depth * 0.45)}`,
+    `C${at(0.3, depth * 0.55)} ${at(0.3, depth * 1.05)} ${at(0.5, depth * 1.05)}`,
+    `C${at(0.7, depth * 1.05)} ${at(0.7, depth * 0.55)} ${at(0.62, depth * 0.45)}`,
+    `C${at(0.62, depth * 0.3)} ${at(0.63, depth * 0.2)} ${at(0.64)}`,
     `L${end[0]} ${end[1]}`,
   ].join(" ");
 }
