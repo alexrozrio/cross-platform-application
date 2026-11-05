@@ -68,6 +68,18 @@ export function emailAppOpenUrl(path: string): string {
   return `${PUBLIC_SITE_ORIGIN}/open?to=${encodeURIComponent(safe)}`;
 }
 
+export function appOpenPathFromUrl(rawUrl: string): string | null {
+  try {
+    const url = new URL(rawUrl);
+    if (url.protocol !== "https:" || url.origin !== PUBLIC_SITE_ORIGIN) return null;
+    const pathname = url.pathname.replace(/\/+$/, "") || "/";
+    if (pathname !== "/open") return null;
+    return sanitizeAppLinkPath(url.searchParams.get("to"));
+  } catch {
+    return null;
+  }
+}
+
 export type NativeAuthCallback =
   | { code: string; error: null }
   | { code: null; error: "cancelled" | "failed" };
@@ -124,6 +136,7 @@ export function appPathFromAppUrl(rawUrl: string): string | null {
 
     if (url.protocol === "https:" && url.origin === PUBLIC_SITE_ORIGIN) {
       const pathname = url.pathname.replace(/\/+$/, "") || "/";
+      if (pathname === "/open") return appOpenPathFromUrl(rawUrl);
       if (!isAppLinkPathname(pathname)) return null;
       return `${pathname}${url.search}${url.hash}`;
     }

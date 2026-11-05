@@ -33,6 +33,10 @@
                 <data
                     android:scheme="https"
                     android:host="playbraingames.online"
+                    android:path="/open" />
+                <data
+                    android:scheme="https"
+                    android:host="playbraingames.online"
                     android:pathPrefix="/invite/" />
                 <data
                     android:scheme="https"

@@ -1,5 +1,5 @@
 import { Resend } from "resend";
-import { db, users, profilesTable } from "@workspace/db";
+import { db, users, profilesTable, challengesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 
 export const DEFAULT_RESEND_FROM =
@@ -71,11 +71,14 @@ export async function sendChallengeNotification({
   const fromAddress = getResendFromAddress();
   console.log(`[email] sending to ${recipient.email} from ${fromAddress}`);
 
-  const frontendUrl =
-    process.env.FRONTEND_URL ??
-    (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : "http://localhost:19093");
-
-  const challengeUrl = `${frontendUrl}/challenges`;
+  const [challenge] = await db
+    .select({ shareToken: challengesTable.shareToken })
+    .from(challengesTable)
+    .where(eq(challengesTable.id, challengeId));
+  const invitePath = challenge?.shareToken
+    ? `/invite/${encodeURIComponent(challenge.shareToken)}`
+    : "/challenges";
+  const challengeUrl = `https://playbraingames.online/open?to=${encodeURIComponent(invitePath)}`;
 
   const gridLabel: Record<number, string> = { 3: "3×3 Baby", 4: "4×4 Mini", 9: "9×9 Classic", 16: "16×16 Pro" };
   const diffLabel = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);

@@ -16,7 +16,13 @@ import { ConsentManager } from "@/components/consent-manager";
 import { AndroidAppUpdatePrompt } from "@/components/android-app-update-prompt";
 import { SignInPromptModal } from "@/components/sign-in-prompt-modal";
 import { modeFromQuery } from "@/lib/sudoku-routes";
-import { appPathFromAppUrl, nativeAuthCallbackFromAppUrl } from "@/lib/app-links";
+import {
+  appOpenPathFromUrl,
+  appPathFromAppUrl,
+  nativeSchemeUrlForPath,
+  nativeAuthCallbackFromAppUrl,
+  PUBLIC_SITE_ORIGIN,
+} from "@/lib/app-links";
 import {
   cancelNativeGoogleSignIn,
   completeNativeGoogleSignIn,
@@ -91,6 +97,38 @@ function JigsawInviteRoute({ params }: { params: { token: string } }) {
 const PublicProfilePage = lazy(() => import("@/pages/public-profile"));
 const ChallengeInvitePage = lazy(() => import("@/pages/challenge-invite"));
 const NotFound = lazy(() => import("@/pages/not-found"));
+
+function OpenAppRoute() {
+  const [, setLocation] = useLocation();
+  const search = useSearch();
+  const destination =
+    appOpenPathFromUrl(`${PUBLIC_SITE_ORIGIN}/open${search ? `?${search}` : ""}`) ?? "/";
+
+  React.useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      setLocation(destination);
+      return;
+    }
+
+    // Universal Links open the native app before this page when iOS association
+    // is configured. This scheme handoff also supports installs without that
+    // association; if the app is absent, the timer keeps the user on the web.
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIOS) {
+      window.location.href = nativeSchemeUrlForPath(destination);
+    }
+
+    const fallback = window.setTimeout(() => setLocation(destination), isIOS ? 1400 : 0);
+    return () => window.clearTimeout(fallback);
+  }, [destination, setLocation]);
+
+  return (
+    <main className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center gap-4 px-6 text-center">
+      <p>Opening your challenge…</p>
+      <a className="text-primary underline" href={destination}>Continue to the challenge</a>
+    </main>
+  );
+}
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
@@ -178,6 +216,7 @@ function Router() {
         <Layout>
           <Suspense fallback={<PageLoader />}>
             <Switch>
+              <Route path="/open" component={OpenAppRoute} />
               <Route path="/" component={Portal} />
               <Route path="/guides" component={Guides} />
               <Route path="/sudoku/:grid/:difficulty" component={SudokuBookmarkRoute} />
