@@ -315,17 +315,18 @@ export async function resolveChallengeForGame(gameId: number): Promise<void> {
     if (cPoints > dPoints) winnerId = challenge.challengerId;
     else if (dPoints > cPoints) winnerId = challenge.challengedId;
 
-    await db
-      .update(challengesTable)
-      .set({ status: "completed", winnerId })
-      .where(eq(challengesTable.id, challenge.id));
-
-    if (winnerId) {
-      await db
-        .update(profilesTable)
-        .set({ gems: sql`gems + 10` })
-        .where(eq(profilesTable.id, winnerId));
-    }
+    await db.transaction(async (tx) => {
+      const [resolved] = await tx.update(challengesTable)
+        .set({ status: "completed", winnerId })
+        .where(and(eq(challengesTable.id, challenge.id), eq(challengesTable.status, "accepted")))
+        .returning({ id: challengesTable.id });
+      if (!resolved) return;
+      if (winnerId) await tx.update(profilesTable).set({ gems: sql`gems + 10` }).where(eq(profilesTable.id, winnerId));
+      else {
+        await tx.update(profilesTable).set({ gems: sql`gems + 2` }).where(eq(profilesTable.id, challenge.challengerId));
+        await tx.update(profilesTable).set({ gems: sql`gems + 2` }).where(eq(profilesTable.id, challenge.challengedId));
+      }
+    });
   }
 }
 

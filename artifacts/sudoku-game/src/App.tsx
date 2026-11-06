@@ -83,6 +83,8 @@ const PrivacyPolicy = lazy(() => import("@/pages/privacy-policy"));
 const AccountDeletion = lazy(() => import("@/pages/account-deletion"));
 const TermsOfService = lazy(() => import("@/pages/terms-of-service"));
 const MemoryMatch = lazy(() => import("@/pages/memory"));
+const WordSearch = lazy(() => import("@/pages/word-search"));
+const WordSearchDailyChallengePage = lazy(() => import("@/pages/word-search-challenge"));
 function MemoryBookmarkRoute({ params }: { params: { difficulty: string } }) {
   return <MemoryMatch difficultySlug={params.difficulty} />;
 }
@@ -236,6 +238,9 @@ function Router() {
               <Route path="/leaderboard/jigsaw">
                 {() => <Leaderboard gamePage="jigsaw" />}
               </Route>
+              <Route path="/leaderboard/word-search">
+                {() => <Leaderboard gamePage="word-search" />}
+              </Route>
               <Route path="/leaderboard">
                 {() => <Leaderboard />}
               </Route>
@@ -246,6 +251,8 @@ function Router() {
               <Route path="/memory">
                 {() => <MemoryMatch />}
               </Route>
+              <Route path="/word-search" component={WordSearch} />
+              <Route path="/word-search-challenge" component={WordSearchDailyChallengePage} />
               <Route path="/memory-challenge" component={MemoryChallengePage} />
               <Route path="/jigsaw" component={JigsawPage} />
               <Route path="/jigsaw-challenge" component={JigsawDailyChallengePage} />

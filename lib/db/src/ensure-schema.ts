@@ -66,6 +66,49 @@ export async function ensureDatabaseSchema(): Promise<void> {
       ON jigsaw_games(profile_id)`,
     `CREATE INDEX IF NOT EXISTS jigsaw_games_daily_date_idx
       ON jigsaw_games(daily_date)`,
+    `CREATE TABLE IF NOT EXISTS word_search_games (
+      id serial PRIMARY KEY,
+      profile_id integer REFERENCES profiles(id),
+      difficulty text NOT NULL,
+      theme text NOT NULL,
+      daily_date text,
+      challenge_id integer,
+      status text NOT NULL DEFAULT 'active',
+      elapsed_seconds integer NOT NULL DEFAULT 0,
+      tries integer NOT NULL DEFAULT 0,
+      tips_used integer NOT NULL DEFAULT 0,
+      points integer,
+      xp_earned integer,
+      gems_earned integer,
+      completed_at timestamptz,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )`,
+    `CREATE INDEX IF NOT EXISTS word_search_games_profile_id_idx
+      ON word_search_games(profile_id)`,
+    `CREATE INDEX IF NOT EXISTS word_search_games_status_completed_at_idx
+      ON word_search_games(status, completed_at)`,
+    `ALTER TABLE word_search_games ADD COLUMN IF NOT EXISTS daily_date text`,
+    `CREATE INDEX IF NOT EXISTS word_search_games_daily_date_idx
+      ON word_search_games(daily_date)`,
+    `ALTER TABLE word_search_games ADD COLUMN IF NOT EXISTS challenge_id integer`,
+    `CREATE INDEX IF NOT EXISTS word_search_games_challenge_id_idx
+      ON word_search_games(challenge_id)`,
+    `CREATE TABLE IF NOT EXISTS word_search_challenges (
+      id serial PRIMARY KEY,
+      challenger_id integer NOT NULL REFERENCES profiles(id),
+      challenged_id integer NOT NULL REFERENCES profiles(id),
+      difficulty text NOT NULL,
+      theme text NOT NULL,
+      seed integer NOT NULL,
+      status text NOT NULL DEFAULT 'pending',
+      challenger_game_id integer REFERENCES word_search_games(id),
+      challenged_game_id integer REFERENCES word_search_games(id),
+      winner_id integer REFERENCES profiles(id),
+      created_at timestamptz NOT NULL DEFAULT now(),
+      expires_at timestamptz NOT NULL
+    )`,
+    `CREATE INDEX IF NOT EXISTS word_search_challenges_challenger_id_idx ON word_search_challenges(challenger_id)`,
+    `CREATE INDEX IF NOT EXISTS word_search_challenges_challenged_id_idx ON word_search_challenges(challenged_id)`,
     `CREATE TABLE IF NOT EXISTS jigsaw_challenges (
       id serial PRIMARY KEY,
       challenger_id integer NOT NULL REFERENCES profiles(id),

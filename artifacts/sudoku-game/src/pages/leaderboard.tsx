@@ -20,6 +20,7 @@ import {
   ChevronUp,
   Brain,
   Puzzle,
+  Search,
   Timer,
   Repeat2,
   TrendingUp,
@@ -566,6 +567,7 @@ interface BreakdownData {
   sudoku: { gridSize: number; points: number; games: number }[];
   memory: { gridSize: number; points: number; games: number }[];
   jigsaw: { gridSize: number; points: number; games: number }[];
+  wordSearch: { difficulty: string; points: number; games: number }[];
 }
 
 const SUDOKU_GRID_NAMES: Record<number, string> = {
@@ -598,10 +600,10 @@ function BreakdownPanel({
   profileId: number;
   type: "weekly" | "monthly" | "alltime";
   period: string;
-  defaultGame?: "sudoku" | "memory" | "jigsaw";
-  onlyGame?: "sudoku" | "memory" | "jigsaw";
+  defaultGame?: "sudoku" | "memory" | "jigsaw" | "word-search";
+  onlyGame?: "sudoku" | "memory" | "jigsaw" | "word-search";
 }) {
-  const [bdTab, setBdTab] = useState<"sudoku" | "memory" | "jigsaw">(onlyGame ?? defaultGame ?? "sudoku");
+  const [bdTab, setBdTab] = useState<"sudoku" | "memory" | "jigsaw" | "word-search">(onlyGame ?? defaultGame ?? "sudoku");
   const { data, isLoading } = useQuery<BreakdownData>({
     queryKey: ["tournament-breakdown", profileId, type, period],
     queryFn: () =>
@@ -644,6 +646,9 @@ function BreakdownPanel({
             className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${bdTab === "jigsaw" ? "bg-amber-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}
           >
             🧩 Jigsaw
+          </button>
+          <button onClick={() => setBdTab("word-search")} className={`rounded-lg px-3 py-1 text-xs font-semibold transition-colors ${bdTab === "word-search" ? "bg-violet-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+            🔎 Word Search
           </button>
         </div>
       )}
@@ -711,6 +716,17 @@ function BreakdownPanel({
           ))}
         </div>
       )}
+      {bdTab === "word-search" && (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {(data?.wordSearch ?? ["beginner", "easy", "medium", "hard"].map((difficulty) => ({ difficulty, points: 0, games: 0 }))).map((item) => (
+            <div key={item.difficulty} className={`rounded-xl border p-2.5 text-center transition-colors ${item.games > 0 ? "border-violet-300 bg-background" : "border-border bg-muted/30 opacity-50"}`}>
+              <p className="text-xs font-bold capitalize text-foreground">{item.difficulty}</p>
+              <p className="mt-0.5 text-lg font-black tabular-nums leading-tight text-violet-700 dark:text-violet-300">{item.points > 0 ? item.points.toLocaleString() : "—"}</p>
+              <p className="mt-0.5 text-[10px] text-muted-foreground">{item.games > 0 ? `${item.games} game${item.games !== 1 ? "s" : ""}` : "no games"}</p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -723,7 +739,7 @@ function PlayerDetailsPanel({
   myProfileId,
 }: {
   profileId: number;
-  game: "sudoku" | "memory" | "jigsaw";
+  game: "sudoku" | "memory" | "jigsaw" | "word-search";
   myProfileId?: number;
 }) {
   const isMe = myProfileId === profileId;
@@ -978,9 +994,13 @@ function TournamentBoard({
                                 🧩 {(entry as any).jigsawGamesPlayed} jigsaw
                               </span>
                             )}
+                            {(entry as any).wordSearchGamesPlayed > 0 && (
+                              <span>🔎 {(entry as any).wordSearchGamesPlayed} word search</span>
+                            )}
                             {(entry as any).sudokuGamesPlayed === 0 &&
                               (entry as any).memoryGamesPlayed === 0 &&
-                              (entry as any).jigsawGamesPlayed === 0 && (
+                              (entry as any).jigsawGamesPlayed === 0 &&
+                              (entry as any).wordSearchGamesPlayed === 0 && (
                                 <span>
                                   {entry.gamesPlayed} game
                                   {entry.gamesPlayed !== 1 ? "s" : ""}
@@ -1418,22 +1438,55 @@ function JigsawBoard({ myProfileId }: { myProfileId?: number }) {
   );
 }
 
+type WordSearchLeaderboardEntry = { rank: number; profileId: number; username: string; avatar: string | null; xp: number; totalPoints: number; gamesPlayed: number };
+
+function WordSearchBoard({ myProfileId }: { myProfileId?: number }) {
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["/api/word-search-games/leaderboard"],
+    queryFn: () => customFetch<WordSearchLeaderboardEntry[]>("/api/word-search-games/leaderboard"),
+    refetchInterval: 60_000,
+  });
+  return <div className="space-y-5">
+    <Card className="shadow-md border-violet-200/60 dark:border-violet-800/40">
+      <CardHeader className="border-b bg-card pb-4"><CardTitle className="flex items-center gap-2 text-lg"><Search className="h-5 w-5 text-violet-600" /> Word Search — All Difficulties</CardTitle></CardHeader>
+      <CardContent className="p-0">
+        {isLoading ? <div className="space-y-4 p-6">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
+          : isError ? <div className="p-10 text-center text-sm text-muted-foreground">Word Search leaderboard could not be loaded. Please try again.</div>
+          : !data?.length ? <div className="p-12 text-center text-muted-foreground"><Search className="mx-auto mb-3 h-10 w-10 opacity-20" /><p className="font-medium">No completed Word Search games yet.</p><p className="mt-1 text-sm">Complete a puzzle to claim the top spot.</p></div>
+          : <div className="divide-y">{data.map((entry) => {
+            const isMe = myProfileId !== undefined && entry.profileId === myProfileId;
+            const isExpanded = expandedId === entry.profileId;
+            return <div key={entry.profileId}>
+              <button onClick={() => setExpandedId((current) => current === entry.profileId ? null : entry.profileId)} className={`flex w-full items-center justify-between gap-2 px-3 py-4 text-left transition-colors sm:px-5 ${isMe ? "bg-violet-50/70 hover:bg-violet-50 dark:bg-violet-950/20" : "hover:bg-muted/40"} ${isExpanded ? "bg-muted/30" : ""}`}>
+                <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4"><RankBadge rank={entry.rank} /><div className="min-w-0 flex-1"><div className="flex min-w-0 flex-wrap items-center gap-2"><p title={entry.username} className={`min-w-0 flex-1 truncate font-semibold ${isMe ? "text-violet-800 dark:text-violet-300" : ""}`}>{entry.username}</p>{isMe && <span className="rounded-full bg-violet-600 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">You</span>}</div><p className="mt-0.5 text-xs text-muted-foreground">{entry.gamesPlayed} game{entry.gamesPlayed !== 1 ? "s" : ""}</p></div></div>
+                <div className="flex shrink-0 items-center gap-2"><div className="text-right"><p className="whitespace-nowrap text-lg font-black tabular-nums text-violet-700 dark:text-violet-300 sm:text-xl">{entry.totalPoints.toLocaleString()}</p><p className="mt-0.5 text-xs text-muted-foreground">pts</p></div>{isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}</div>
+              </button>
+              {isExpanded && <PlayerDetailsPanel profileId={entry.profileId} game="word-search" myProfileId={myProfileId} />}
+            </div>;
+          })}</div>}
+      </CardContent>
+    </Card>
+  </div>;
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 function LeaderboardScopeLinks({
   active,
 }: {
-  active: "all" | "sudoku" | "memory" | "jigsaw";
+  active: "all" | "sudoku" | "memory" | "jigsaw" | "word-search";
 }) {
   const links = [
     { id: "all", href: "/leaderboard/", label: "All Games", icon: Trophy },
     { id: "sudoku", href: "/leaderboard/sudoku/", label: "Sudoku", icon: Zap },
     { id: "memory", href: "/leaderboard/memory/", label: "Memory Match", icon: Brain },
     { id: "jigsaw", href: "/leaderboard/jigsaw/", label: "Jigsaw", icon: Puzzle },
+    { id: "word-search", href: "/leaderboard/word-search/", label: "Word Search", icon: Search },
   ] as const;
 
   return (
-    <nav aria-label="Leaderboard category" className="grid grid-cols-2 gap-1 sm:grid-cols-4 sm:gap-2">
+    <nav aria-label="Leaderboard category" className="grid grid-cols-2 gap-1 sm:grid-cols-5 sm:gap-2">
       {links.map(({ id, href, label, icon: Icon }) => (
         <Link
           key={id}
@@ -1456,13 +1509,13 @@ function LeaderboardScopeLinks({
 export default function Leaderboard({
   gamePage: routeGamePage,
 }: {
-  gamePage?: "sudoku" | "memory" | "jigsaw";
+  gamePage?: "sudoku" | "memory" | "jigsaw" | "word-search";
 } = {}) {
   const search = useSearch();
   const requestedTab = new URLSearchParams(search).get("tab");
   const gamePage =
     routeGamePage ??
-    (requestedTab === "sudoku" || requestedTab === "memory" || requestedTab === "jigsaw" ? requestedTab : null);
+    (requestedTab === "sudoku" || requestedTab === "memory" || requestedTab === "jigsaw" || requestedTab === "word-search" ? requestedTab : null);
   const initialTab: MainTab =
     requestedTab === "monthly" || requestedTab === "alltime"
       ? requestedTab
@@ -1475,6 +1528,8 @@ export default function Leaderboard({
           ? "Memory Match Leaderboard | Play Brain Games . Online"
           : gamePage === "jigsaw"
             ? "Jigsaw Leaderboard | Play Brain Games . Online"
+          : gamePage === "word-search"
+            ? "Word Search Leaderboard | Play Brain Games . Online"
           : "All Games Leaderboard | Play Brain Games . Online",
     description:
       gamePage === "sudoku"
@@ -1483,7 +1538,9 @@ export default function Leaderboard({
           ? "Compare all-time Memory Match scores across every level on Play Brain Games . Online."
           : gamePage === "jigsaw"
             ? "Compare Jigsaw puzzle points across all board sizes on Play Brain Games . Online."
-            : "Compare weekly, monthly, and all-time Sudoku, Memory Match, and Jigsaw scores on Play Brain Games . Online.",
+          : gamePage === "word-search"
+            ? "Compare all-time Word Search points across every difficulty on Play Brain Games . Online."
+            : "Compare weekly, monthly, and all-time Sudoku, Memory Match, Jigsaw, and Word Search scores on Play Brain Games . Online.",
     path: gamePage ? `/leaderboard/${gamePage}/` : "/leaderboard/",
   });
   const [tab, setTab] = useState<MainTab>(initialTab);
@@ -1496,6 +1553,8 @@ export default function Leaderboard({
         ? "Memory Match Leaderboard"
         : gamePage === "jigsaw"
           ? "Jigsaw Leaderboard"
+        : gamePage === "word-search"
+          ? "Word Search Leaderboard"
         : "Leaderboard";
   const subtitle =
     gamePage === "sudoku"
@@ -1504,7 +1563,9 @@ export default function Leaderboard({
         ? "All-time scores across every Memory Match level."
         : gamePage === "jigsaw"
           ? "All-time points across every Jigsaw board size."
-          : "Weekly, monthly, and all-time rankings across all three games.";
+        : gamePage === "word-search"
+          ? "All-time points across every Word Search difficulty."
+          : "Weekly, monthly, and all-time rankings across all four games.";
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-3 sm:space-y-8 animate-in fade-in duration-500">
@@ -1546,6 +1607,9 @@ export default function Leaderboard({
               <Puzzle className="h-3.5 w-3.5 text-amber-600" />
               <span className="hidden sm:inline">Play Jigsaw</span>
             </Link>
+            <Link href="/word-search" aria-label="Play Word Search" title="Play Word Search" className="inline-flex items-center gap-1.5 rounded-lg border border-violet-200 bg-card p-1.5 text-xs font-medium text-foreground transition-colors hover:bg-violet-50 sm:px-2.5 sm:py-1.5 sm:text-sm dark:border-violet-800 dark:hover:bg-violet-950/30">
+              <Search className="h-3.5 w-3.5 text-violet-600" /><span className="hidden sm:inline">Word Search</span>
+            </Link>
           </div>
         </div>
       </div>
@@ -1558,6 +1622,8 @@ export default function Leaderboard({
         <MemoryBoard myProfileId={myProfileId} />
       ) : gamePage === "jigsaw" ? (
         <JigsawBoard myProfileId={myProfileId} />
+      ) : gamePage === "word-search" ? (
+        <WordSearchBoard myProfileId={myProfileId} />
       ) : (
         <>
           <Tabs

@@ -57,7 +57,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
     ? new URLSearchParams(location.split("?")[1])
     : new URLSearchParams();
   const isJigsawGamePage = isJigsawPage && (jigsawParams.has("play") || jigsawParams.has("gameId"));
-  const isGamePage = isGameRoute || isCanonicalSudokuGame || isJigsawGamePage;
+  const isWordSearchGamePage = location.startsWith("/word-search") && new URLSearchParams(location.split("?")[1] ?? "").has("play");
+  const isGamePage = isGameRoute || isCanonicalSudokuGame || isJigsawGamePage || isWordSearchGamePage;
   const isPublicPlayerPage =
     location.startsWith("/player/") || location.startsWith("/players/");
   const isOfflineGame =

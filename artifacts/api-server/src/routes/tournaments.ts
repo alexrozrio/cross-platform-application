@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and, gte, lt, inArray } from "drizzle-orm";
-import { db, gamesTable, puzzlesTable, profilesTable, memoryGamesTable, jigsawGamesTable, badgesTable } from "@workspace/db";
+import { db, gamesTable, puzzlesTable, profilesTable, memoryGamesTable, jigsawGamesTable, wordSearchGamesTable, badgesTable } from "@workspace/db";
 import {
   getWeekPeriod,
   getMonthPeriod,
@@ -104,6 +104,13 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
         )
     : [];
 
+  const wordSearchRows = gridSize === undefined
+    ? await db.select({ profileId: wordSearchGamesTable.profileId, username: profilesTable.username, avatar: profilesTable.avatar,
+        xp: profilesTable.xp, points: wordSearchGamesTable.points })
+        .from(wordSearchGamesTable).innerJoin(profilesTable, eq(wordSearchGamesTable.profileId, profilesTable.id))
+        .where(range ? and(eq(wordSearchGamesTable.status, "completed"), gte(wordSearchGamesTable.completedAt, range.start), lt(wordSearchGamesTable.completedAt, range.end)) : eq(wordSearchGamesTable.status, "completed"))
+    : [];
+
   // ── Filter Sudoku by gridSize if requested ────────────────────────────────
   const filteredSudoku = gridSize !== undefined
     ? sudokuRows.filter((r) => r.gridSizeVal === gridSize)
@@ -121,12 +128,13 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
       sudokuGamesPlayed: number;
       memoryGamesPlayed: number;
       jigsawGamesPlayed: number;
+      wordSearchGamesPlayed: number;
     }
   >();
 
   const ensureEntry = (profileId: number, username: string, avatar: string | null, xp: number) => {
     if (!grouped.has(profileId)) {
-      grouped.set(profileId, { username, avatar, xp, totalPoints: 0, gamesPlayed: 0, sudokuGamesPlayed: 0, memoryGamesPlayed: 0, jigsawGamesPlayed: 0 });
+      grouped.set(profileId, { username, avatar, xp, totalPoints: 0, gamesPlayed: 0, sudokuGamesPlayed: 0, memoryGamesPlayed: 0, jigsawGamesPlayed: 0, wordSearchGamesPlayed: 0 });
     }
     return grouped.get(profileId)!;
   };
@@ -153,6 +161,14 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
     entry.totalPoints += row.points ?? 0;
     entry.gamesPlayed += 1;
     entry.jigsawGamesPlayed += 1;
+  }
+
+  for (const row of wordSearchRows) {
+    if (!row.profileId) continue;
+    const entry = ensureEntry(row.profileId, row.username, row.avatar ?? null, row.xp ?? 0);
+    entry.totalPoints += row.points ?? 0;
+    entry.gamesPlayed += 1;
+    entry.wordSearchGamesPlayed += 1;
   }
 
   const sorted = Array.from(grouped.entries())
@@ -201,6 +217,7 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
     sudokuGamesPlayed: data.sudokuGamesPlayed,
     memoryGamesPlayed: data.memoryGamesPlayed,
     jigsawGamesPlayed: data.jigsawGamesPlayed,
+    wordSearchGamesPlayed: data.wordSearchGamesPlayed,
     streak: streakMap.get(profileId) ?? 0,
   }));
 
@@ -299,6 +316,9 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
           ),
     );
 
+  const wordSearchRows = await db.select({ difficulty: wordSearchGamesTable.difficulty, points: wordSearchGamesTable.points })
+    .from(wordSearchGamesTable).where(range ? and(eq(wordSearchGamesTable.status, "completed"), eq(wordSearchGamesTable.profileId, profileId), gte(wordSearchGamesTable.completedAt, range.start), lt(wordSearchGamesTable.completedAt, range.end)) : and(eq(wordSearchGamesTable.status, "completed"), eq(wordSearchGamesTable.profileId, profileId)));
+
   // Aggregate sudoku by grid size
   const sudokuByGrid = new Map<number, { points: number; games: number }>();
   for (const row of sudokuRows) {
@@ -328,6 +348,14 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
     jigsawByGrid.set(gs, cur);
   }
 
+  const wordSearchByDifficulty = new Map<string, { points: number; games: number }>();
+  for (const row of wordSearchRows) {
+    const current = wordSearchByDifficulty.get(row.difficulty) ?? { points: 0, games: 0 };
+    current.points += row.points ?? 0;
+    current.games += 1;
+    wordSearchByDifficulty.set(row.difficulty, current);
+  }
+
   res.json({
     profileId,
     period,
@@ -345,6 +373,11 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
       gridSize: gs,
       points: jigsawByGrid.get(gs)?.points ?? 0,
       games: jigsawByGrid.get(gs)?.games ?? 0,
+    })),
+    wordSearch: (["beginner", "easy", "medium", "hard"] as const).map((difficulty) => ({
+      difficulty,
+      points: wordSearchByDifficulty.get(difficulty)?.points ?? 0,
+      games: wordSearchByDifficulty.get(difficulty)?.games ?? 0,
     })),
   });
 });

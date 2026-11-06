@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { useLocation, Link } from "wouter";
+import { useLocation, useSearch, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { customFetch, useGetProfile } from "@workspace/api-client-react";
 import { Capacitor } from "@capacitor/core";
@@ -32,6 +32,7 @@ import { MobileContentDisclosure } from "@/components/mobile-content-disclosure"
 import { shareOrDownloadShareCard } from "@/lib/share-card";
 import { ShareCardPreview } from "@/components/share-card-preview";
 import { challengeInviteUrl } from "@/lib/app-links";
+import { WORD_SEARCH_LEVELS, WORD_SEARCH_THEMES, type WordSearchDifficulty, type WordSearchTheme } from "@/lib/word-search";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -41,7 +42,7 @@ type MemoryGridSize = 2 | 4 | 6 | 8;
 type JigsawGridSize = 2 | 3 | 4 | 5;
 type JigsawLevel = 1 | 2 | 3;
 type ChallengeStatus = "pending" | "accepted" | "declined" | "completed" | "expired";
-type GameType = "sudoku" | "memory" | "jigsaw";
+type GameType = "sudoku" | "memory" | "jigsaw" | "word-search";
 
 interface ChallengeDetail {
   id: number;
@@ -110,6 +111,13 @@ interface JigsawChallengeDetail {
   challengedPoints: number | null;
   shareToken: string | null;
   createdAt: string;
+}
+
+interface WordSearchChallengeDetail {
+  id: number; challengerId: number; challengedId: number; difficulty: WordSearchDifficulty; theme: WordSearchTheme; seed: number;
+  status: ChallengeStatus; challengerGameId: number | null; challengedGameId: number | null; winnerId: number | null;
+  challengerUsername: string; challengedUsername: string; challengerAvatar: string | null; challengedAvatar: string | null;
+  challengerXp: number; challengedXp: number; challengerPoints: number | null; challengedPoints: number | null; createdAt: string; gameId?: number;
 }
 
 interface ProfileSummary {
@@ -971,6 +979,29 @@ function JigsawChallengeCard({
 
 // ─── NewChallengeDialog ───────────────────────────────────────────────────────
 
+function WordSearchChallengeCard({ challenge, myProfileId, onAccept, onDecline, onPlay, isResponding }: {
+  challenge: WordSearchChallengeDetail; myProfileId: number; onAccept: (id: number) => void; onDecline: (id: number) => void;
+  onPlay: (challenge: WordSearchChallengeDetail) => void; isResponding: boolean;
+}) {
+  const isChallenger = challenge.challengerId === myProfileId;
+  const opponent = isChallenger ? challenge.challengedUsername : challenge.challengerUsername;
+  const avatar = isChallenger ? challenge.challengedAvatar : challenge.challengerAvatar;
+  const xp = isChallenger ? challenge.challengedXp : challenge.challengerXp;
+  const myPoints = isChallenger ? challenge.challengerPoints : challenge.challengedPoints;
+  const otherPoints = isChallenger ? challenge.challengedPoints : challenge.challengerPoints;
+  const myGameId = isChallenger ? challenge.challengerGameId : challenge.challengedGameId;
+  const theme = WORD_SEARCH_THEMES.find((item) => item.id === challenge.theme);
+  const isWinner = challenge.winnerId === myProfileId;
+  const isTie = challenge.status === "completed" && challenge.winnerId === null;
+  return <Card className="hover:shadow-md transition-shadow border-violet-200/70 dark:border-violet-800/40"><CardContent className="p-4"><div className="flex items-start justify-between gap-3">
+    <div className="flex min-w-0 items-center gap-3"><Avatar src={avatar} name={opponent} size={10}/><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><p className="truncate font-semibold">{opponent}</p><LevelBadge xp={xp} size="xs"/>{challenge.status === "completed" && <span className={`flex items-center gap-1 text-xs font-bold ${isWinner ? "text-yellow-600" : isTie ? "text-slate-500" : "text-red-500"}`}>{isWinner ? <><Crown className="h-3 w-3"/> Won +10 💎</> : isTie ? <><Minus className="h-3 w-3"/> Tie +2 💎</> : <><XCircle className="h-3 w-3"/> Lost</>}</span>}</div>
+      <div className="mt-0.5 flex flex-wrap items-center gap-2"><Badge className="border-violet-200 bg-violet-100 text-violet-700">Word Search</Badge><span className="text-xs capitalize text-muted-foreground">{WORD_SEARCH_LEVELS[challenge.difficulty].label} · {theme?.emoji} {theme?.label}</span><span className="text-xs text-muted-foreground">{timeAgo(challenge.createdAt)}</span><span className="text-[10px] text-muted-foreground italic">{isChallenger ? "You challenged" : "Challenged you"}</span></div>
+      {(challenge.status === "accepted" || challenge.status === "completed" || myPoints !== null) && <div className="mt-2 flex items-center gap-3 text-xs"><span className="text-muted-foreground">You: <b className="text-foreground">{myPoints?.toLocaleString() ?? "—"}</b></span><span className="text-muted-foreground">Them: <b className="text-foreground">{otherPoints?.toLocaleString() ?? "—"}</b></span></div>}
+    </div></div>
+    <div className="flex shrink-0 flex-col items-end gap-2"><StatusBadge status={challenge.status}/>{challenge.status === "pending" && !isChallenger && <div className="flex gap-2"><Button size="sm" variant="outline" className="h-7 border-red-200 text-xs text-red-600 hover:bg-red-50" onClick={() => onDecline(challenge.id)} disabled={isResponding}>Decline</Button><Button size="sm" className="h-7 text-xs" onClick={() => onAccept(challenge.id)} disabled={isResponding}>Accept</Button></div>}{myGameId && (challenge.status === "accepted" || (challenge.status === "pending" && isChallenger)) && <Button size="sm" variant={challenge.status === "pending" ? "outline" : "default"} className="h-7 gap-1 text-xs" onClick={() => onPlay(challenge)}>{myPoints !== null ? "View" : challenge.status === "pending" ? "Play now" : "Play"}<ChevronRight className="h-3 w-3"/></Button>}</div>
+  </div></CardContent></Card>;
+}
+
 interface RematchData {
   opponent: ProfileSummary;
   gameType: GameType;
@@ -979,6 +1010,8 @@ interface RematchData {
   memoryGridSize?: MemoryGridSize;
   jigsawGridSize?: JigsawGridSize;
   jigsawLevel?: JigsawLevel;
+  wordSearchDifficulty?: WordSearchDifficulty;
+  wordSearchTheme?: WordSearchTheme;
 }
 
 type GameMode = 'children' | 'adult' | '4all';
@@ -1071,18 +1104,22 @@ function NewChallengeDialog({
   const memorySizes = filteredMemorySizes(gameMode);
   const jigsawSizes = filteredJigsawSizes(gameMode);
   const diffs = filteredDifficulties(gameMode);
+  const wordSearchLevels = (Object.keys(WORD_SEARCH_LEVELS) as WordSearchDifficulty[]).filter((level) => gameMode === "children" ? WORD_SEARCH_LEVELS[level].mode === "baby" : gameMode === "adult" ? WORD_SEARCH_LEVELS[level].mode === "adult" : true);
   const defaultSudokuSize = sudokuSizes[0]?.value ?? 9;
   const defaultMemorySize = memorySizes[0]?.value ?? 4;
   const defaultJigsawSize = jigsawSizes[0]?.value ?? 2;
   const defaultDiff = diffs[0]?.value ?? 'medium';
   const defaultJigsawLevel: JigsawLevel = 1;
   const defaultJigsawImageKey = 1;
+  const defaultWordSearchDifficulty = wordSearchLevels[0] ?? "beginner";
   const [difficulty, setDifficulty] = useState<Difficulty>(defaultDiff);
   const [sudokuGridSize, setSudokuGridSize] = useState<SudokuGridSize>(defaultSudokuSize);
   const [memoryGridSize, setMemoryGridSize] = useState<MemoryGridSize>(defaultMemorySize);
   const [jigsawGridSize, setJigsawGridSize] = useState<JigsawGridSize>(defaultJigsawSize);
   const [jigsawLevel, setJigsawLevel] = useState<JigsawLevel>(defaultJigsawLevel);
   const [jigsawImageKey, setJigsawImageKey] = useState<number>(defaultJigsawImageKey);
+  const [wordSearchDifficulty, setWordSearchDifficulty] = useState<WordSearchDifficulty>(defaultWordSearchDifficulty);
+  const [wordSearchTheme, setWordSearchTheme] = useState<WordSearchTheme>("animals");
 
   // Reset sizes/difficulty to valid options whenever gameMode or dialog open state changes
   React.useEffect(() => {
@@ -1118,6 +1155,8 @@ function NewChallengeDialog({
       if (initialData.jigsawLevel) {
         setJigsawLevel(initialData.jigsawLevel);
       }
+      if (initialData.wordSearchDifficulty && wordSearchLevels.includes(initialData.wordSearchDifficulty)) setWordSearchDifficulty(initialData.wordSearchDifficulty);
+      if (initialData.wordSearchTheme) setWordSearchTheme(initialData.wordSearchTheme);
     }
     if (!open) {
       setSearch("");
@@ -1205,6 +1244,18 @@ function NewChallengeDialog({
     onError: () => toast.error("Failed to send challenge"),
   });
 
+  const createWordSearchMutation = useMutation({
+    mutationFn: (data: { challengerId: number; challengedId: number; difficulty: WordSearchDifficulty; theme: WordSearchTheme }) =>
+      customFetch<WordSearchChallengeDetail>("/api/word-search-challenges", { method: "POST", data }),
+    onSuccess: (challenge) => {
+      queryClient.invalidateQueries({ queryKey: ["word-search-challenges"] });
+      toast.success(`Word Search challenge sent to ${selected?.username}!`, { description: "Play the shared puzzle while they decide." });
+      onClose();
+      if (challenge.challengerGameId) setLocation(`/word-search?start=1&gameId=${challenge.challengerGameId}&challengeId=${challenge.id}&difficulty=${challenge.difficulty}&theme=${encodeURIComponent(challenge.theme)}&seed=${challenge.seed}`);
+    },
+    onError: () => toast.error("Failed to send Word Search challenge"),
+  });
+
   // Open (shareable) challenge mutations — no specific opponent
   const openSudokuMutation = useMutation({
     mutationFn: (data: { challengerId: number; difficulty: Difficulty; gridSize: SudokuGridSize }) =>
@@ -1280,7 +1331,7 @@ function NewChallengeDialog({
         challengedId: selected.id,
         gridSize: validSize,
       });
-    } else {
+    } else if (gameType === "jigsaw") {
       const validSize = jigsawSizes.some(o => o.value === jigsawGridSize)
         ? jigsawGridSize
         : (jigsawSizes[0]?.value ?? 2);
@@ -1291,6 +1342,8 @@ function NewChallengeDialog({
         level: jigsawLevel,
         imageKey: jigsawImageKey,
       });
+    } else {
+      createWordSearchMutation.mutate({ challengerId: myProfileId, challengedId: selected.id, difficulty: wordSearchDifficulty, theme: wordSearchTheme });
     }
   };
 
@@ -1314,7 +1367,7 @@ function NewChallengeDialog({
   };
 
   const isPending =
-    createSudokuMutation.isPending || createMemoryMutation.isPending || createJigsawMutation.isPending;
+    createSudokuMutation.isPending || createMemoryMutation.isPending || createJigsawMutation.isPending || createWordSearchMutation.isPending;
   const isLinkPending =
     openSudokuMutation.isPending || openMemoryMutation.isPending || openJigsawMutation.isPending;
 
@@ -1346,7 +1399,7 @@ function NewChallengeDialog({
           </button>
           <button
             className={`flex items-center justify-center gap-1.5 py-2 rounded-lg transition-all ${dialogMode === "open" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-            onClick={() => { setDialogMode("open"); setSelected(null); }}
+            onClick={() => { setDialogMode("open"); setSelected(null); setGameType("sudoku"); }}
           >
             <Share2 className="w-3.5 h-3.5" /> Share Link
           </button>
@@ -1435,6 +1488,7 @@ function NewChallengeDialog({
                   </div>
                 </div>
               )}
+
               <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2.5 text-xs text-amber-800 flex items-center gap-2">
                 <Trophy className="w-3.5 h-3.5 shrink-0 text-amber-600" />
                 <span>Winner gets <strong>10 gems</strong> — highest score wins!</span>
@@ -1513,7 +1567,7 @@ function NewChallengeDialog({
               </div>
 
               {/* Game type selector */}
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <button
                   onClick={() => setGameType("sudoku")}
                   className={`flex flex-col items-center gap-1.5 rounded-xl border-2 p-3 transition-all text-sm font-medium ${gameType === "sudoku" ? "border-primary bg-primary/5 text-primary" : "border-border bg-muted/30 text-muted-foreground hover:border-primary/40"}`}
@@ -1534,6 +1588,9 @@ function NewChallengeDialog({
                 >
                   <Puzzle className="w-5 h-5" />
                   Jigsaw
+                </button>
+                <button onClick={() => setGameType("word-search")} className={`flex flex-col items-center gap-1.5 rounded-xl border-2 p-3 transition-all text-sm font-medium ${gameType === "word-search" ? "border-violet-500 bg-violet-50 text-violet-700" : "border-border bg-muted/30 text-muted-foreground hover:border-violet-300"}`}>
+                  <Search className="h-5 w-5" />Word Search
                 </button>
               </div>
 
@@ -1641,6 +1698,13 @@ function NewChallengeDialog({
                 </div>
               )}
 
+              {gameType === "word-search" && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5"><label className="text-sm font-medium">Difficulty</label><Select value={wordSearchDifficulty} onValueChange={(value) => setWordSearchDifficulty(value as WordSearchDifficulty)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{wordSearchLevels.map((level) => <SelectItem key={level} value={level}>{WORD_SEARCH_LEVELS[level].label} · {WORD_SEARCH_LEVELS[level].size}×{WORD_SEARCH_LEVELS[level].size}</SelectItem>)}</SelectContent></Select></div>
+                  <div className="space-y-1.5"><label className="text-sm font-medium">Theme</label><Select value={wordSearchTheme} onValueChange={(value) => setWordSearchTheme(value as WordSearchTheme)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{WORD_SEARCH_THEMES.map((theme) => <SelectItem key={theme.id} value={theme.id}>{theme.emoji} {theme.label}</SelectItem>)}</SelectContent></Select></div>
+                </div>
+              )}
+
               <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 flex items-start gap-2">
                 <Trophy className="w-3.5 h-3.5 mt-0.5 shrink-0 text-amber-600" />
                 <span>
@@ -1690,13 +1754,14 @@ export default function Challenges() {
   usePageMeta({
     title: "Puzzle Challenges & Duels | Play Brain Games . Online",
     description:
-      "Create and join Sudoku, Memory Match, and Jigsaw challenges, compare scores, and compete with friends on Play Brain Games . Online.",
+      "Create and join Sudoku, Memory Match, Jigsaw, and Word Search challenges, compare scores, and compete with friends on Play Brain Games . Online.",
     path: "/challenges",
   });
   const queryClient = useQueryClient();
+  const searchParams = new URLSearchParams(useSearch());
   const [showNew, setShowNew] = useState(false);
   const [respondingId, setRespondingId] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<GameType>("sudoku");
+  const [activeTab, setActiveTab] = useState<GameType>(() => searchParams.get("tab") === "word-search" ? "word-search" : "sudoku");
   const [shareSheetData, setShareSheetData] = useState<{ token: string; label: string } | null>(null);
   const [rematchData, setRematchData] = useState<RematchData | null>(null);
 
@@ -1778,6 +1843,13 @@ export default function Challenges() {
     },
   );
 
+  const { data: wordSearchChallenges, isLoading: wordSearchLoading } = useQuery<WordSearchChallengeDetail[]>({
+    queryKey: ["word-search-challenges", profileId],
+    queryFn: () => customFetch<WordSearchChallengeDetail[]>(`/api/word-search-challenges/for/${profileId}`),
+    enabled: !!profileId,
+    refetchInterval: 10000,
+  });
+
   const respondDuelMutation = useMutation({
     mutationFn: ({
       id,
@@ -1837,6 +1909,18 @@ export default function Challenges() {
       setRespondingId(null);
       toast.error("Failed to respond to challenge");
     },
+  });
+
+  const respondWordSearchMutation = useMutation({
+    mutationFn: ({ id, action }: { id: number; action: "accept" | "decline" }) => customFetch<WordSearchChallengeDetail & { gameId?: number }>(`/api/word-search-challenges/${id}/respond`, { method: "PATCH", data: { profileId, action } }),
+    onSuccess: (result, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["word-search-challenges"] });
+      setRespondingId(null);
+      if (vars.action === "accept" && result.gameId) {
+        setLocation(`/word-search?start=1&gameId=${result.gameId}&challengeId=${result.id}&difficulty=${result.difficulty}&theme=${encodeURIComponent(result.theme)}&seed=${result.seed}`);
+      } else if (vars.action === "decline") toast("Challenge declined.");
+    },
+    onError: (error: Error) => { setRespondingId(null); toast.error(error.message || "Failed to respond to challenge"); },
   });
 
   // ── Handlers ──────────────────────────────────────────────────────────────────
@@ -1921,6 +2005,13 @@ export default function Challenges() {
     },
     [setLocation, profileId],
   );
+
+  const handleWordSearchAccept = useCallback((id: number) => { setRespondingId(id); respondWordSearchMutation.mutate({ id, action: "accept" }); }, [respondWordSearchMutation]);
+  const handleWordSearchDecline = useCallback((id: number) => { setRespondingId(id); respondWordSearchMutation.mutate({ id, action: "decline" }); }, [respondWordSearchMutation]);
+  const handleWordSearchPlay = useCallback((challenge: WordSearchChallengeDetail) => {
+    const gameId = challenge.challengerId === profileId ? challenge.challengerGameId : challenge.challengedGameId;
+    if (gameId) setLocation(`/word-search?start=1&gameId=${gameId}&challengeId=${challenge.id}&difficulty=${challenge.difficulty}&theme=${encodeURIComponent(challenge.theme)}&seed=${challenge.seed}`);
+  }, [profileId, setLocation]);
 
   const handleSudokuRematch = useCallback(
     (challenge: ChallengeDetail) => {
@@ -2083,6 +2174,10 @@ export default function Challenges() {
     jigsawChallenges?.filter(
       (c) => c.status === "completed" || c.status === "declined",
     ) ?? [];
+  const wordSearchPending = wordSearchChallenges?.filter((challenge) => challenge.status === "pending" && challenge.challengedId === profileId) ?? [];
+  const wordSearchActive = wordSearchChallenges?.filter((challenge) => challenge.status === "accepted") ?? [];
+  const wordSearchOutgoing = wordSearchChallenges?.filter((challenge) => challenge.status === "pending" && challenge.challengerId === profileId) ?? [];
+  const wordSearchFinished = wordSearchChallenges?.filter((challenge) => challenge.status === "completed" || challenge.status === "declined" || challenge.status === "expired") ?? [];
 
   // Badge counts for tab labels
   const sudokuAlert =
@@ -2108,8 +2203,9 @@ export default function Challenges() {
         c.challengerId === profileId ? c.challengerPoints : c.challengedPoints;
       return myPoints == null;
     }).length;
+  const wordSearchAlert = wordSearchPending.length + wordSearchActive.filter((challenge) => (challenge.challengerId === profileId ? challenge.challengerPoints : challenge.challengedPoints) == null).length;
 
-  const isLoading = activeTab === "sudoku" ? challengesLoading : activeTab === "memory" ? duelsLoading : jigsawLoading;
+  const isLoading = activeTab === "sudoku" ? challengesLoading : activeTab === "memory" ? duelsLoading : activeTab === "jigsaw" ? jigsawLoading : wordSearchLoading;
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-6 animate-in fade-in duration-500">
@@ -2155,7 +2251,7 @@ export default function Challenges() {
       </div>
 
       {/* Game type tabs */}
-      <div className="flex gap-2 p-1 bg-muted/50 rounded-xl border">
+      <div className="grid grid-cols-2 gap-2 p-1 bg-muted/50 rounded-xl border sm:grid-cols-4">
         <button
           onClick={() => setActiveTab("sudoku")}
           className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${activeTab === "sudoku" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
@@ -2192,6 +2288,9 @@ export default function Challenges() {
               {jigsawAlert}
             </span>
           )}
+        </button>
+        <button onClick={() => setActiveTab("word-search")} className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all ${activeTab === "word-search" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+          <Search className="h-4 w-4" /><span>Word Search</span>{wordSearchAlert > 0 && <span className="flex h-4 w-4 items-center justify-center rounded-full bg-violet-500 text-[10px] font-bold text-white">{wordSearchAlert}</span>}
         </button>
       </div>
 
@@ -2303,6 +2402,14 @@ export default function Challenges() {
               </CardContent>
             </Card>
           )}
+        </div>
+      ) : activeTab === "word-search" ? (
+        <div className="space-y-6">
+          {wordSearchPending.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><div className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse"/>Waiting for you ({wordSearchPending.length})</h2>{wordSearchPending.map((challenge) => <WordSearchChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleWordSearchAccept} onDecline={handleWordSearchDecline} onPlay={handleWordSearchPlay} isResponding={respondingId === challenge.id}/>)}</section>}
+          {wordSearchActive.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><div className="h-2 w-2 rounded-full bg-blue-400 animate-pulse"/>In Progress ({wordSearchActive.length})</h2>{wordSearchActive.map((challenge) => <WordSearchChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleWordSearchAccept} onDecline={handleWordSearchDecline} onPlay={handleWordSearchPlay} isResponding={respondingId === challenge.id}/>)}</section>}
+          {wordSearchOutgoing.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><Clock className="h-3.5 w-3.5"/>Waiting for them ({wordSearchOutgoing.length})</h2>{wordSearchOutgoing.map((challenge) => <WordSearchChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleWordSearchAccept} onDecline={handleWordSearchDecline} onPlay={handleWordSearchPlay} isResponding={respondingId === challenge.id}/>)}</section>}
+          {wordSearchFinished.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><CheckCircle2 className="h-3.5 w-3.5"/>Finished</h2>{wordSearchFinished.map((challenge) => <WordSearchChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleWordSearchAccept} onDecline={handleWordSearchDecline} onPlay={handleWordSearchPlay} isResponding={false}/>)}</section>}
+          {(!wordSearchChallenges || wordSearchChallenges.length === 0) && <Card><CardContent className="flex flex-col items-center gap-3 pb-10 pt-10 text-center"><Search className="h-12 w-12 text-muted-foreground/30"/><p className="text-lg font-semibold">No Word Search challenges yet</p><p className="max-w-xs text-sm text-muted-foreground">Challenge a player to find words in the same puzzle and compare points.</p><Button className="mt-2 gap-2 bg-violet-600 hover:bg-violet-700" onClick={openNewChallenge}><Swords className="h-4 w-4"/>Send a Word Search challenge</Button></CardContent></Card>}
         </div>
       ) : activeTab === "jigsaw" ? (
         <div className="space-y-6">
@@ -2532,7 +2639,7 @@ export default function Challenges() {
         </h2>
         <p className="mt-2">
           No account is needed to start a challenge. Choose the Challenge button,
-          select Sudoku or Memory Match here, or use Jigsaw challenges to invite a friend to solve the same picture.
+            select Sudoku, Memory Match, Jigsaw, or Word Search to challenge another player on the same puzzle.
         </p>
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           <div>

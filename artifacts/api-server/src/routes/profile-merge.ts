@@ -7,6 +7,7 @@ import {
   memoryGamesTable,
   jigsawGamesTable,
   profileMergesTable,
+  wordSearchGamesTable,
 } from "@workspace/db";
 
 const router: IRouter = Router();
@@ -91,8 +92,12 @@ router.get("/profiles/merge-preview", requireAuth, async (req, res): Promise<voi
     .select({ count: sql<number>`count(*)::int` })
     .from(jigsawGamesTable)
     .where(eq(jigsawGamesTable.profileId, guest.id));
+  const [wordSearchCount] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(wordSearchGamesTable)
+    .where(eq(wordSearchGamesTable.profileId, guest.id));
 
-  const totalGames = (sudokuCount?.count ?? 0) + (memoryCount?.count ?? 0) + (jigsawCount?.count ?? 0);
+  const totalGames = (sudokuCount?.count ?? 0) + (memoryCount?.count ?? 0) + (jigsawCount?.count ?? 0) + (wordSearchCount?.count ?? 0);
 
   // Only offer the merge if there is something to transfer.
   if (guest.xp === 0 && guest.gems === 0 && totalGames === 0) {
@@ -181,9 +186,13 @@ router.post("/profiles/merge", requireAuth, async (req, res): Promise<void> => {
     .select({ count: sql<number>`count(*)::int` })
     .from(jigsawGamesTable)
     .where(eq(jigsawGamesTable.profileId, guest.id));
+  const [wordSearchCount] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(wordSearchGamesTable)
+    .where(eq(wordSearchGamesTable.profileId, guest.id));
 
   const gamesTransferred =
-    (sudokuCount?.count ?? 0) + (memoryCount?.count ?? 0) + (jigsawCount?.count ?? 0);
+    (sudokuCount?.count ?? 0) + (memoryCount?.count ?? 0) + (jigsawCount?.count ?? 0) + (wordSearchCount?.count ?? 0);
   const xpTransferred = guest.xp;
   const gemsTransferred = guest.gems;
 
@@ -191,6 +200,7 @@ router.post("/profiles/merge", requireAuth, async (req, res): Promise<void> => {
   await db.update(gamesTable).set({ profileId: targetProfileId }).where(eq(gamesTable.profileId, guest.id));
   await db.update(memoryGamesTable).set({ profileId: targetProfileId }).where(eq(memoryGamesTable.profileId, guest.id));
   await db.update(jigsawGamesTable).set({ profileId: targetProfileId }).where(eq(jigsawGamesTable.profileId, guest.id));
+  await db.update(wordSearchGamesTable).set({ profileId: targetProfileId }).where(eq(wordSearchGamesTable.profileId, guest.id));
 
   // Add the guest's xp and gems to the signed-in profile.
   const [updatedTarget] = await db

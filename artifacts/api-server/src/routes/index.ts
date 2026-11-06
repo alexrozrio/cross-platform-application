@@ -20,6 +20,7 @@ import testEmailRouter from "./test-email";
 import inviteRouter from "./invite";
 import accountRouter from "./account";
 import profileMergeRouter from "./profile-merge";
+import wordSearchGamesRouter from "./word-search-games";
 
 const router: IRouter = Router();
 
@@ -41,6 +42,7 @@ router.use(memoryChallengesRouter);
 router.use(memoryDuelsRouter);
 router.use(jigsawGamesRouter);
 router.use(jigsawChallengesRouter);
+router.use(wordSearchGamesRouter);
 router.use(testEmailRouter);
 router.use(inviteRouter);
 router.use(accountRouter);

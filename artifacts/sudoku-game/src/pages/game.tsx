@@ -1023,13 +1023,15 @@ export default function Game({ id }: { id: string }) {
               setIsPersonalBest((data as any).isPersonalBest === true);
               const msg = pickCompletionMessage(game?.puzzle?.difficulty, game?.puzzle?.gridSize);
               setCompletionMessage(msg);
-              // Fetch challenge result (small delay so resolveChallengeForGame can run)
-              setTimeout(async () => {
+              // Resolve the local score first, then keep the result current while the opponent plays.
+              const refreshChallengeResult = async () => {
                 try {
-                  const cr = await customFetch<typeof challengeResult>(`/api/challenges/for-game/${gameId}`);
+                  const cr = await customFetch<NonNullable<typeof challengeResult>>(`/api/challenges/for-game/${gameId}`);
                   setChallengeResult(cr);
+                  if (cr.status !== "completed") window.setTimeout(() => void refreshChallengeResult(), 5000);
                 } catch {}
-              }, 800);
+              };
+              window.setTimeout(() => void refreshChallengeResult(), 800);
 
               if (isDailyChallengeGame) {
                 try {

@@ -20,14 +20,16 @@ async function formatDuel(duel: typeof memoryDuelsTable.$inferSelect) {
 
   let challengerPoints: number | null = null;
   let challengedPoints: number | null = null;
+  let challengerElapsedSeconds: number | null = null;
+  let challengedElapsedSeconds: number | null = null;
 
   if (duel.challengerGameId) {
     const [g] = await db.select().from(memoryGamesTable).where(eq(memoryGamesTable.id, duel.challengerGameId));
-    if (g) challengerPoints = g.points ?? null;
+    if (g) { challengerPoints = g.points ?? null; challengerElapsedSeconds = g.elapsedSeconds ?? null; }
   }
   if (duel.challengedGameId) {
     const [g] = await db.select().from(memoryGamesTable).where(eq(memoryGamesTable.id, duel.challengedGameId));
-    if (g) challengedPoints = g.points ?? null;
+    if (g) { challengedPoints = g.points ?? null; challengedElapsedSeconds = g.elapsedSeconds ?? null; }
   }
 
   return {
@@ -48,6 +50,8 @@ async function formatDuel(duel: typeof memoryDuelsTable.$inferSelect) {
     challengedXp: challenged?.xp ?? 0,
     challengerPoints,
     challengedPoints,
+    challengerElapsedSeconds,
+    challengedElapsedSeconds,
     shareToken: duel.shareToken ?? null,
     createdAt: duel.createdAt.toISOString(),
   };
@@ -235,17 +239,18 @@ export async function resolveDuelForMemoryGame(gameId: number): Promise<void> {
     if (cPoints > dPoints) winnerId = duel.challengerId;
     else if (dPoints > cPoints) winnerId = duel.challengedId;
 
-    await db
-      .update(memoryDuelsTable)
-      .set({ status: "completed", winnerId })
-      .where(eq(memoryDuelsTable.id, duel.id));
-
-    if (winnerId) {
-      await db
-        .update(profilesTable)
-        .set({ gems: sql`gems + 10` })
-        .where(eq(profilesTable.id, winnerId));
-    }
+    await db.transaction(async (tx) => {
+      const [resolved] = await tx.update(memoryDuelsTable)
+        .set({ status: "completed", winnerId })
+        .where(and(eq(memoryDuelsTable.id, duel.id), eq(memoryDuelsTable.status, "accepted")))
+        .returning({ id: memoryDuelsTable.id });
+      if (!resolved) return;
+      if (winnerId) await tx.update(profilesTable).set({ gems: sql`gems + 10` }).where(eq(profilesTable.id, winnerId));
+      else {
+        await tx.update(profilesTable).set({ gems: sql`gems + 2` }).where(eq(profilesTable.id, duel.challengerId));
+        if (duel.challengedId) await tx.update(profilesTable).set({ gems: sql`gems + 2` }).where(eq(profilesTable.id, duel.challengedId));
+      }
+    });
   }
 }
 

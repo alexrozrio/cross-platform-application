@@ -18,6 +18,7 @@ import { generateOfflinePuzzle } from "@/lib/sudoku-generator";
 import { getLevelFromXp } from "@/lib/levels";
 import { getTheme } from "@/lib/themes";
 import { sudokuGamePath } from "@/lib/sudoku-routes";
+import { WORD_SEARCH_LEVELS, type WordSearchDifficulty } from "@/lib/word-search";
 import {
   getLastPlayedDifficulty,
   LAST_GRID_SIZE_KEY,
@@ -110,6 +111,11 @@ export default function Portal() {
   const visibleJigsawSizes = ([2, 3, 4, 5] as const).filter((size) =>
     gameMode === "children" ? size <= 3 : gameMode === "adult" ? size >= 4 : true,
   );
+  const visibleWordSearchLevels: WordSearchDifficulty[] = (["beginner", "easy", "medium", "hard"] as WordSearchDifficulty[]).filter((level) =>
+    gameMode === "children" ? WORD_SEARCH_LEVELS[level].mode === "baby" : gameMode === "adult" ? WORD_SEARCH_LEVELS[level].mode === "adult" : true,
+  );
+  const launchWordSearch = (difficulty: WordSearchDifficulty) =>
+    setLocation(`/word-search?start=1&difficulty=${difficulty}&theme=${encodeURIComponent(`icon-${themeId}`)}`);
 
   const [activeGame, setActiveGame] = useState<ActiveGame | null>(null);
   const [memorySession, setMemorySession] = useState<MemorySession | null>(
@@ -254,6 +260,13 @@ export default function Portal() {
           MOBILE QUICK LAUNCH — shown only on mobile (top of screen)
           ═══════════════════════════════════════════════════════════ */}
       <div className="md:hidden space-y-3 mb-6">
+        <section className="rounded-2xl border border-violet-400/40 bg-gradient-to-r from-violet-100 to-pink-100 p-4 shadow-sm dark:from-violet-950/60 dark:to-pink-950/40">
+          <div className="flex items-center gap-3"><span className="text-2xl" aria-hidden>🔎</span><div className="flex-1"><p className="font-bold">Word Search</p><p className="text-xs text-muted-foreground">Choose a level and start playing</p></div></div>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            {visibleWordSearchLevels.map((level) => <button key={level} onClick={() => launchWordSearch(level)} className="rounded-xl border border-violet-300/70 bg-white/70 px-3 py-2 text-left text-sm font-semibold hover:bg-white dark:border-violet-700/50 dark:bg-black/20 dark:hover:bg-black/35">{WORD_SEARCH_LEVELS[level].label}<span className="block text-[11px] font-normal text-muted-foreground">{WORD_SEARCH_LEVELS[level].size}×{WORD_SEARCH_LEVELS[level].size} · {WORD_SEARCH_LEVELS[level].wordCount} words</span></button>)}
+          </div>
+          <button onClick={() => setLocation("/word-search")} className="mt-2 text-xs font-semibold text-violet-800 underline underline-offset-2 dark:text-violet-200">More options and themes</button>
+        </section>
         {/* Sudoku quick launch — featured game */}
         <div className="relative isolate overflow-hidden rounded-2xl border-2 border-primary/55 bg-gradient-to-br from-cyan-100 via-sky-50 to-indigo-100 p-4 space-y-3 shadow-xl shadow-primary/20 ring-1 ring-inset ring-white/70 dark:from-cyan-950/80 dark:via-sky-950/75 dark:to-indigo-950/80 dark:ring-white/10">
           <div
@@ -577,6 +590,9 @@ export default function Portal() {
                 <p className="text-xs text-muted-foreground">Daily picture challenge</p>
               </div>
               <span className="shrink-0 text-sm text-orange-400">→</span>
+            </button>
+            <button onClick={() => setLocation("/word-search-challenge")} className="flex w-full items-center gap-3 rounded-xl border border-violet-200 bg-white/60 px-3 py-2.5 text-left transition-all hover:bg-white/90 dark:bg-violet-950/20 dark:hover:bg-violet-950/40">
+              <span className="shrink-0 text-lg leading-none">🔎</span><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Word Search</p><p className="text-xs text-muted-foreground">One shared word puzzle each day</p></div><span className="shrink-0 text-sm text-violet-500">→</span>
             </button>
           </CollapsibleContent>
         </Collapsible>
@@ -1055,6 +1071,14 @@ export default function Portal() {
                 title="Available"
               />
             </div>
+            <section className="group relative overflow-hidden rounded-2xl border-2 border-violet-400/40 bg-gradient-to-br from-violet-100 via-fuchsia-50 to-pink-100 p-6 text-left shadow-lg transition hover:border-violet-500/70 dark:from-violet-950/60 dark:via-fuchsia-950/40 dark:to-pink-950/50">
+              <div className="flex items-center gap-3"><span className="flex h-14 w-14 items-center justify-center rounded-xl bg-violet-500/10 text-3xl">🔎</span><div><h2 className="font-serif text-xl font-bold">Word Search</h2><p className="text-xs text-muted-foreground">Hidden word puzzle</p></div></div>
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">Find themed words hidden across, down, and diagonally. Pick a level to start.</p>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                {visibleWordSearchLevels.map((level) => <button key={level} onClick={() => launchWordSearch(level)} className="rounded-xl border border-violet-300/70 bg-white/70 px-3 py-2 text-left text-sm font-semibold transition hover:bg-white dark:border-violet-700/50 dark:bg-black/20 dark:hover:bg-black/35">{WORD_SEARCH_LEVELS[level].label}<span className="block text-[11px] font-normal text-muted-foreground">{WORD_SEARCH_LEVELS[level].size}×{WORD_SEARCH_LEVELS[level].size} · {WORD_SEARCH_LEVELS[level].wordCount} words</span></button>)}
+              </div>
+              <button onClick={() => setLocation("/word-search")} className="mt-3 text-xs font-semibold text-violet-800 underline underline-offset-2 dark:text-violet-200">More options and themes</button>
+            </section>
           </div>
         </div>
 
@@ -1124,6 +1148,9 @@ export default function Portal() {
                   <p className="text-xs text-muted-foreground">Daily picture challenge</p>
                 </div>
                 <span className="shrink-0 text-orange-400">→</span>
+              </button>
+              <button onClick={() => setLocation("/word-search-challenge")} className="flex items-center gap-3 rounded-xl border border-violet-200 bg-white/60 px-4 py-3 text-left transition-all hover:bg-white/90 dark:bg-violet-950/20 dark:hover:bg-violet-950/40">
+                <span className="shrink-0 text-2xl leading-none">🔎</span><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Word Search</p><p className="text-xs text-muted-foreground">One shared word puzzle each day</p></div><span className="shrink-0 text-violet-500">→</span>
               </button>
             </div>
           </CollapsibleContent>
@@ -1221,6 +1248,19 @@ export default function Portal() {
                     Kids mode has 2×2 and 3×3; Adult mode has 4×4 and 5×5;
                     default 4 All mode has all four. Choose a level, use tips
                     and previews, and earn points, XP, and gems.
+                  </p>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setLocation("/word-search")}
+                className="w-full rounded-2xl border border-border bg-muted p-4 flex gap-3 items-start text-left hover:bg-muted/70 hover:border-violet-500/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <span className="text-lg mt-0.5 shrink-0" aria-hidden>🔎</span>
+                <div>
+                  <p className="font-semibold text-sm">Word Search</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                    Find theme-based words hidden in a letter grid. Choose one of four levels and resume your puzzle later.
                   </p>
                 </div>
               </button>

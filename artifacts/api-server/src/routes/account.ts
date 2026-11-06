@@ -13,6 +13,8 @@ import {
   sessions,
   unlockedItemsTable,
   users,
+  wordSearchGamesTable,
+  wordSearchChallengesTable,
 } from "@workspace/db";
 import { isAuthenticated } from "../middlewares/replitAuth";
 
@@ -86,6 +88,11 @@ router.delete("/account", isAuthenticated, async (req, res, next): Promise<void>
         await tx
           .delete(memoryGamesTable)
           .where(inArray(memoryGamesTable.profileId, profileIds));
+        await tx.delete(wordSearchChallengesTable).where(or(
+          inArray(wordSearchChallengesTable.challengerId, profileIds),
+          inArray(wordSearchChallengesTable.challengedId, profileIds),
+        ));
+        await tx.delete(wordSearchGamesTable).where(inArray(wordSearchGamesTable.profileId, profileIds));
         await tx.delete(profilesTable).where(inArray(profilesTable.id, profileIds));
       }
 

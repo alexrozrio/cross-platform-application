@@ -255,6 +255,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
   const [challengeBonus, setChallengeBonus] = useState<{ bonusXp: number; bonusGems: number } | null>(null);
   const [challengeCompleted, setChallengeCompleted] = useState(false);
   const [completedDuelId, setCompletedDuelId] = useState<number | null>(null);
+  const [duelResult, setDuelResult] = useState<{ id: number; status: string; challengerId: number; winnerId: number | null; challengerGameId: number | null; challengedGameId: number | null; challengerPoints: number | null; challengedPoints: number | null; challengerUsername: string; challengedUsername: string } | null>(null);
 
   // Read ?challenge=daily|weekly from URL
   const challengeType = (() => {
@@ -272,30 +273,26 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
 
   useEffect(() => {
     setCompletedDuelId(null);
+    setDuelResult(null);
     if (phase !== 'won' || !duelGameId || !profileId) return;
 
     let cancelled = false;
-    customFetch<Array<{
-      id: number;
-      challengerGameId: number | null;
-      challengedGameId: number | null;
-      status: string;
-    }>>(`/api/memory-duels/for/${profileId}`)
-      .then((duels) => {
+    let timer: ReturnType<typeof setTimeout>;
+    const refresh = async () => {
+      try {
+        const duels = await customFetch<Array<{ id: number; challengerGameId: number | null; challengedGameId: number | null; status: string; challengerId: number; winnerId: number | null; challengerPoints: number | null; challengedPoints: number | null; challengerUsername: string; challengedUsername: string }>>(`/api/memory-duels/for/${profileId}`);
         if (cancelled) return;
-        const completedDuel = duels.find(
-          (duel) =>
-            duel.status === 'completed' &&
-            (duel.challengerGameId === duelGameId || duel.challengedGameId === duelGameId),
-        );
-        setCompletedDuelId(completedDuel?.id ?? null);
-      })
-      .catch(() => {
-        if (!cancelled) setCompletedDuelId(null);
-      });
+        const duel = duels.find((item) => item.challengerGameId === duelGameId || item.challengedGameId === duelGameId) ?? null;
+        setDuelResult(duel);
+        setCompletedDuelId(duel?.status === 'completed' ? duel.id : null);
+        if (duel && duel.status !== 'completed') timer = setTimeout(refresh, 5000);
+      } catch { if (!cancelled) timer = setTimeout(refresh, 5000); }
+    };
+    void refresh();
 
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
   }, [duelGameId, phase, profileId]);
 
@@ -1123,6 +1120,17 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
             <span className="font-bold text-yellow-700 dark:text-yellow-400 text-sm">New Personal Best!</span>
           </div>
         )}
+
+        {duelGameId && <section className="rounded-xl border border-primary/25 bg-card p-4 text-center" aria-live="polite">
+          <h2 className="font-bold">Challenge result</h2>
+          {!duelResult || duelResult.status !== 'completed' ? <p className="mt-1 text-sm text-muted-foreground">You completed in {formatTime(elapsed)} and earned {winResult?.points.toLocaleString() ?? '…'} points. Waiting for your opponent to finish…</p> : (() => {
+            const mine = duelResult.challengerId === profileId ? duelResult.challengerPoints : duelResult.challengedPoints;
+            const theirs = duelResult.challengerId === profileId ? duelResult.challengedPoints : duelResult.challengerPoints;
+            const opponent = duelResult.challengerId === profileId ? duelResult.challengedUsername : duelResult.challengerUsername;
+            const outcome = duelResult.winnerId === null ? 'It’s a tie!' : duelResult.winnerId === profileId ? 'You won the challenge!' : 'You lost the challenge.';
+            return <><p className="mt-1 text-lg font-black">{outcome}</p><p className="mt-1 text-sm text-muted-foreground">You: {mine ?? 0} points · {opponent}: {theirs ?? 0} points</p><p className="mt-1 text-xs text-muted-foreground">Completed in {formatTime(elapsed)} · {duelResult.winnerId === null ? 'Both players earned 2 bonus gems.' : duelResult.winnerId === profileId ? 'You earned 10 bonus gems.' : `${opponent} earned 10 bonus gems.`}</p></>;
+          })()}
+        </section>}
 
         <div className="bg-card border border-border rounded-2xl p-3 sm:p-4 space-y-2 sm:space-y-3">
           <Button variant="outline" className="w-full gap-2" onClick={() => startGame(gridSize)}>

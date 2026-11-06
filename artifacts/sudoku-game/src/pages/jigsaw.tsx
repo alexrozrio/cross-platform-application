@@ -42,6 +42,7 @@ type Result = {
   level: 1 | 2 | 3;
   imageKey: number;
 };
+type JigsawChallengeResult = { id: number; status: string; challengerId: number; challengedId: number | null; winnerId: number | null; challengerUsername: string; challengedUsername: string | null; challengerPoints: number | null; challengedPoints: number | null };
 type Config = { gridSize: GridSize; level: 1 | 2 | 3; imageKey: number; dailyDate?: string };
 
 const SIZES: GridSize[] = [2, 3, 4, 5];
@@ -194,6 +195,7 @@ export default function JigsawPage() {
   const [referencePeeksUsed, setReferencePeeksUsed] = useState(0);
   const [revealedPieceNumbers, setRevealedPieceNumbers] = useState<number[]>([]);
   const [result, setResult] = useState<Result | null>(null);
+  const [challengeResult, setChallengeResult] = useState<JigsawChallengeResult | null>(null);
   const [dragged, setDragged] = useState<{ piece: number; from: "tray" | "board"; slot?: number } | null>(null);
   const [savedSession, setSavedSession] = useState<SavedJigsawSession | null>(null);
   const [sessionThemeId, setSessionThemeId] = useState<string | null>(null);
@@ -252,6 +254,22 @@ export default function JigsawPage() {
     }, 1000);
     return () => window.clearInterval(timer);
   }, [phase]);
+
+  useEffect(() => {
+    if (phase !== "complete" || !challengeId) { setChallengeResult(null); return; }
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const refresh = async () => {
+      try {
+        const detail = await customFetch<JigsawChallengeResult>(`/api/jigsaw-challenges/${challengeId}`);
+        if (cancelled) return;
+        setChallengeResult(detail);
+        if (detail.status !== "completed") timer = setTimeout(refresh, 5000);
+      } catch { if (!cancelled) timer = setTimeout(refresh, 5000); }
+    };
+    void refresh();
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [challengeId, phase]);
 
   const pointsFor = useCallback((seconds: number, moveCount: number, tipsUsed: number) =>
     calculateJigsawPoints(config.gridSize, config.level, seconds, moveCount, tipsUsed),
@@ -1102,6 +1120,17 @@ export default function JigsawPage() {
             </button>
           </div>
         </section>
+
+        {hasLinkedChallenge && <section className="mt-3 rounded-xl border border-primary/25 bg-card p-4 text-center" aria-live="polite">
+          <h2 className="font-bold">Challenge result</h2>
+          {!challengeResult || challengeResult.status !== "completed" ? <p className="mt-1 text-sm text-muted-foreground">You completed the puzzle in {formatTime(result.elapsedSeconds)} and earned {result.points.toLocaleString()} points. Waiting for your opponent to finish…</p> : (() => {
+            const mine = challengeResult.challengerId === profileId ? challengeResult.challengerPoints : challengeResult.challengedPoints;
+            const theirs = challengeResult.challengerId === profileId ? challengeResult.challengedPoints : challengeResult.challengerPoints;
+            const opponent = challengeResult.challengerId === profileId ? challengeResult.challengedUsername : challengeResult.challengerUsername;
+            const outcome = challengeResult.winnerId === null ? "It’s a tie!" : challengeResult.winnerId === profileId ? "You won the challenge!" : "You lost the challenge.";
+            return <><p className="mt-1 text-lg font-black">{outcome}</p><p className="mt-1 text-sm text-muted-foreground">You: {mine ?? 0} points · {opponent ?? "Opponent"}: {theirs ?? 0} points</p><p className="mt-1 text-xs text-muted-foreground">Completed in {formatTime(result.elapsedSeconds)} · {challengeResult.winnerId === null ? "Both players earned 2 bonus gems." : challengeResult.winnerId === profileId ? "You earned 10 bonus gems." : `${opponent ?? "Your opponent"} earned 10 bonus gems.`}</p></>;
+          })()}
+        </section>}
 
         {result.isPersonalBest && (
           <div className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-yellow-300/60 bg-card px-4 py-2.5">

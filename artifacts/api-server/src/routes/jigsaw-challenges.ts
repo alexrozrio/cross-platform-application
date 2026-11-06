@@ -126,6 +126,23 @@ router.get("/jigsaw-challenges/for/:profileId", async (req, res): Promise<void> 
   res.json(details.filter(Boolean));
 });
 
+router.get("/jigsaw-challenges/:id", async (req, res): Promise<void> => {
+  const id = Number.parseInt(req.params.id, 10);
+  if (!Number.isInteger(id) || id <= 0) { res.status(400).json({ error: "Invalid challenge id." }); return; }
+  const detail = await challengeDetail(id);
+  if (!detail) { res.status(404).json({ error: "Challenge not found." }); return; }
+  res.json(detail);
+});
+
+router.get("/jigsaw-challenges/for-game/:gameId", async (req, res): Promise<void> => {
+  const gameId = Number.parseInt(req.params.gameId, 10);
+  if (!Number.isInteger(gameId) || gameId <= 0) { res.status(400).json({ error: "Invalid game id." }); return; }
+  const [challenge] = await db.select({ id: jigsawChallengesTable.id }).from(jigsawChallengesTable)
+    .where(or(eq(jigsawChallengesTable.challengerGameId, gameId), eq(jigsawChallengesTable.challengedGameId, gameId)));
+  if (!challenge) { res.status(404).json({ error: "Challenge not found." }); return; }
+  res.json(await challengeDetail(challenge.id));
+});
+
 router.get("/jigsaw-challenges/invite/:token", async (req, res): Promise<void> => {
   const token = String(req.params.token ?? "").slice(0, 80);
   const [challenge] = await db.select({ id: jigsawChallengesTable.id })
@@ -241,15 +258,18 @@ export async function resolveJigsawChallengeForGame(gameId: number): Promise<voi
     : (challengerGame.points ?? 0) > (challengedGame.points ?? 0)
       ? challenge.challengerId
       : challenge.challengedId;
-  const [resolved] = await db.update(jigsawChallengesTable)
-    .set({ status: "completed", winnerId })
-    .where(and(eq(jigsawChallengesTable.id, challenge.id), eq(jigsawChallengesTable.status, "accepted")))
-    .returning({ id: jigsawChallengesTable.id });
-  if (resolved && winnerId) {
-    await db.update(profilesTable)
-      .set({ gems: sql`${profilesTable.gems} + 10` })
-      .where(eq(profilesTable.id, winnerId));
-  }
+  await db.transaction(async (tx) => {
+    const [resolved] = await tx.update(jigsawChallengesTable)
+      .set({ status: "completed", winnerId })
+      .where(and(eq(jigsawChallengesTable.id, challenge.id), eq(jigsawChallengesTable.status, "accepted")))
+      .returning({ id: jigsawChallengesTable.id });
+    if (!resolved) return;
+    if (winnerId) await tx.update(profilesTable).set({ gems: sql`${profilesTable.gems} + 10` }).where(eq(profilesTable.id, winnerId));
+    else {
+      await tx.update(profilesTable).set({ gems: sql`${profilesTable.gems} + 2` }).where(eq(profilesTable.id, challenge.challengerId));
+      if (challenge.challengedId) await tx.update(profilesTable).set({ gems: sql`${profilesTable.gems} + 2` }).where(eq(profilesTable.id, challenge.challengedId));
+    }
+  });
 }
 
 export default router;

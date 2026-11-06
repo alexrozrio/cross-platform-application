@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and } from "drizzle-orm";
-import { db, gamesTable, puzzlesTable, dailyChallengesTable, memoryGamesTable, jigsawGamesTable, profilesTable } from "@workspace/db";
+import { db, gamesTable, puzzlesTable, dailyChallengesTable, memoryGamesTable, jigsawGamesTable, wordSearchGamesTable, profilesTable } from "@workspace/db";
 import {
   countAchievementProgress,
   getJigsawAchievementProgress,
@@ -141,6 +141,22 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
     })
     .from(jigsawGamesTable)
     .where(and(eq(jigsawGamesTable.profileId, profileId), eq(jigsawGamesTable.status, "completed")));
+
+  const completedWordSearch = await db.select({
+    difficulty: wordSearchGamesTable.difficulty,
+    theme: wordSearchGamesTable.theme,
+    elapsedSeconds: wordSearchGamesTable.elapsedSeconds,
+    tipsUsed: wordSearchGamesTable.tipsUsed,
+    dailyDate: wordSearchGamesTable.dailyDate,
+  }).from(wordSearchGamesTable).where(and(
+    eq(wordSearchGamesTable.profileId, profileId), eq(wordSearchGamesTable.status, "completed"),
+  ));
+  const wordSearchWins = completedWordSearch.length;
+  const wordSearchDailyCount = new Set(completedWordSearch.map(({ dailyDate }) => dailyDate).filter((date): date is string => !!date)).size;
+  const wordSearchThemeCount = new Set(completedWordSearch.map(({ theme }) => theme)).size;
+  const wordSearchDifficultyCount = new Set(completedWordSearch.map(({ difficulty }) => difficulty)).size;
+  const noTipWordSearchCount = completedWordSearch.filter(({ tipsUsed }) => tipsUsed === 0).length;
+  const hasFastWordSearch = (difficulty: string, maxTime: number) => completedWordSearch.some((game) => game.difficulty === difficulty && game.elapsedSeconds < maxTime);
   res.json({
     // ── Sudoku: Milestones ───────────────────────────────────────────────────
     first_win:        { unlocked: totalWins >= 1,   progress: Math.min(totalWins, 1),   total: 1   },
@@ -228,6 +244,22 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
 
     // ── Jigsaw ───────────────────────────────────────────────────────────────
     ...getJigsawAchievementProgress(completedJigsaw),
+
+    // ── Word Search ─────────────────────────────────────────────────────────
+    word_search_first: { unlocked: wordSearchWins >= 1, progress: Math.min(wordSearchWins, 1), total: 1 },
+    word_search_10: { unlocked: wordSearchWins >= 10, progress: Math.min(wordSearchWins, 10), total: 10 },
+    word_search_50: { unlocked: wordSearchWins >= 50, progress: Math.min(wordSearchWins, 50), total: 50 },
+    word_search_100: { unlocked: wordSearchWins >= 100, progress: Math.min(wordSearchWins, 100), total: 100 },
+    word_search_all_levels: { unlocked: wordSearchDifficultyCount === 4, progress: wordSearchDifficultyCount, total: 4 },
+    word_search_themes_5: { unlocked: wordSearchThemeCount >= 5, progress: Math.min(wordSearchThemeCount, 5), total: 5 },
+    word_search_no_tips_10: { unlocked: noTipWordSearchCount >= 10, progress: Math.min(noTipWordSearchCount, 10), total: 10 },
+    word_search_speed_beginner: { unlocked: hasFastWordSearch("beginner", 60), progress: hasFastWordSearch("beginner", 60) ? 1 : 0, total: 1 },
+    word_search_speed_easy: { unlocked: hasFastWordSearch("easy", 120), progress: hasFastWordSearch("easy", 120) ? 1 : 0, total: 1 },
+    word_search_speed_medium: { unlocked: hasFastWordSearch("medium", 300), progress: hasFastWordSearch("medium", 300) ? 1 : 0, total: 1 },
+    word_search_speed_hard: { unlocked: hasFastWordSearch("hard", 480), progress: hasFastWordSearch("hard", 480) ? 1 : 0, total: 1 },
+    word_search_daily_7: { unlocked: wordSearchDailyCount >= 7, progress: Math.min(wordSearchDailyCount, 7), total: 7 },
+    word_search_daily_30: { unlocked: wordSearchDailyCount >= 30, progress: Math.min(wordSearchDailyCount, 30), total: 30 },
+    word_search_daily_100: { unlocked: wordSearchDailyCount >= 100, progress: Math.min(wordSearchDailyCount, 100), total: 100 },
   });
 });
 

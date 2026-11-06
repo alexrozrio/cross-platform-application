@@ -4,7 +4,7 @@ export interface AchievementMeta {
   title: string;
   description: string;
   group: string;
-  game: 'sudoku' | 'memory' | 'jigsaw';
+  game: 'sudoku' | 'memory' | 'jigsaw' | 'word-search';
 }
 
 export const ACHIEVEMENT_META: AchievementMeta[] = [
@@ -101,6 +101,22 @@ export const ACHIEVEMENT_META: AchievementMeta[] = [
   { id: 'jigsaw_daily_7',         game: 'jigsaw', emoji: '📅', title: 'Daily Assembler', description: 'Complete 7 Jigsaw daily challenges',                     group: 'Jigsaw Daily' },
   { id: 'jigsaw_daily_30',        game: 'jigsaw', emoji: '🗓️', title: 'Daily Craft',     description: 'Complete 30 Jigsaw daily challenges',                    group: 'Jigsaw Daily' },
   { id: 'jigsaw_daily_100',       game: 'jigsaw', emoji: '🏆', title: 'Daily Master',    description: 'Complete 100 Jigsaw daily challenges',                   group: 'Jigsaw Daily' },
+
+  // ── Word Search ───────────────────────────────────────────────────────────
+  { id: 'word_search_first', game: 'word-search', emoji: '🔎', title: 'First Find', description: 'Complete your first Word Search puzzle', group: 'Word Search Milestones' },
+  { id: 'word_search_10', game: 'word-search', emoji: '📚', title: 'Word Wanderer', description: 'Complete 10 Word Search puzzles', group: 'Word Search Milestones' },
+  { id: 'word_search_50', game: 'word-search', emoji: '🏆', title: 'Word Search Pro', description: 'Complete 50 Word Search puzzles', group: 'Word Search Milestones' },
+  { id: 'word_search_100', game: 'word-search', emoji: '🌟', title: 'Word Search Legend', description: 'Complete 100 Word Search puzzles', group: 'Word Search Milestones' },
+  { id: 'word_search_all_levels', game: 'word-search', emoji: '🌈', title: 'Level Explorer', description: 'Complete a puzzle at all four difficulty levels', group: 'Word Search Skills' },
+  { id: 'word_search_themes_5', game: 'word-search', emoji: '🎨', title: 'Theme Collector', description: 'Complete puzzles in 5 different themes', group: 'Word Search Skills' },
+  { id: 'word_search_no_tips_10', game: 'word-search', emoji: '🧠', title: 'Sharp Eyes', description: 'Complete 10 puzzles without using a tip', group: 'Word Search Skills' },
+  { id: 'word_search_speed_beginner', game: 'word-search', emoji: '🐇', title: 'Quick Finder', description: 'Finish a Beginner puzzle in under 60 seconds', group: 'Word Search Skills' },
+  { id: 'word_search_speed_easy', game: 'word-search', emoji: '⚡', title: 'Fast Searcher', description: 'Finish an Easy puzzle in under 120 seconds', group: 'Word Search Skills' },
+  { id: 'word_search_speed_medium', game: 'word-search', emoji: '🚀', title: 'Rapid Reader', description: 'Finish a Medium puzzle in under 300 seconds', group: 'Word Search Skills' },
+  { id: 'word_search_speed_hard', game: 'word-search', emoji: '💨', title: 'Word Sprint', description: 'Finish a Hard puzzle in under 480 seconds', group: 'Word Search Skills' },
+  { id: 'word_search_daily_7', game: 'word-search', emoji: '📅', title: 'Daily Finder', description: 'Complete 7 daily Word Search challenges', group: 'Word Search Daily' },
+  { id: 'word_search_daily_30', game: 'word-search', emoji: '🗓️', title: 'Daily Decoder', description: 'Complete 30 daily Word Search challenges', group: 'Word Search Daily' },
+  { id: 'word_search_daily_100', game: 'word-search', emoji: '🏅', title: 'Daily Word Master', description: 'Complete 100 daily Word Search challenges', group: 'Word Search Daily' },
 ];
 
 export interface AchievementStatus {
