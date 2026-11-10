@@ -77,6 +77,7 @@ export default function WordSearchPage() {
   const [hasSavedGame, setHasSavedGame] = React.useState(false);
   const [reward, setReward] = React.useState<WordSearchReward | null>(null);
   const [rewardLoading, setRewardLoading] = React.useState(false);
+  const [rewardError, setRewardError] = React.useState<string | null>(null);
   const [challengeResult, setChallengeResult] = React.useState<WordSearchChallengeResult | null>(null);
   const activeGameRef = React.useRef(game);
   activeGameRef.current = game;
@@ -121,7 +122,7 @@ export default function WordSearchPage() {
     sounds.click();
     const savedAt = Date.now();
     const nextGame: SavedGame = { difficulty: level, theme, puzzle: createWordSearch(level, theme, seed), found: [], elapsed: 0, savedAt, tries: 0, tipsUsed: 0, dailyDate, seed, challengeId, ...(existingGameId ? { gameId: existingGameId } : {}) };
-    setSelectedTheme(theme); setGame(nextGame); setReward(null); setRewardLoading(false);
+    setSelectedTheme(theme); setGame(nextGame); setReward(null); setRewardError(null); setRewardLoading(false);
     setElapsed(0); setSelected([]); setHintWord(null); setLocation(dailyDate ? `/word-search?play=1&dailyDate=${dailyDate}&difficulty=${level}&theme=${encodeURIComponent(theme)}&seed=${seed ?? Number(dailyDate.replaceAll("-", ""))}` : challengeId ? `/word-search?play=1&challengeId=${challengeId}&gameId=${existingGameId}&difficulty=${level}&theme=${encodeURIComponent(theme)}&seed=${seed}` : "/word-search?play=1");
     if (existingGameId) {
       pendingGameRef.current = { savedAt, promise: Promise.resolve(existingGameId) };
@@ -168,9 +169,32 @@ export default function WordSearchPage() {
 
   const completeGame = async (completed: SavedGame, finalElapsed: number) => {
     setRewardLoading(true);
+    setRewardError(null);
     try {
       const pending = pendingGameRef.current;
-      const gameId = completed.gameId ?? (pending?.savedAt === completed.savedAt ? await pending.promise : null);
+      let gameId = completed.gameId ?? (pending?.savedAt === completed.savedAt ? await pending.promise : null);
+      // Like Memory Match, recover if the game-create request failed or the
+      // player finished before it returned. This lets a completed game still
+      // use the server's normal points, XP, and gems calculation.
+      if (!gameId && profileId && navigator.onLine !== false) {
+        const createController = new AbortController();
+        const createTimeout = window.setTimeout(() => createController.abort(), 5000);
+        try {
+          const created = await customFetch<{ id: number }>("/api/word-search-games", {
+            method: "POST",
+            body: JSON.stringify({
+              profileId,
+              difficulty: completed.difficulty,
+              theme: completed.theme,
+              ...(completed.dailyDate ? { dailyDate: completed.dailyDate } : {}),
+            }),
+            signal: createController.signal,
+          });
+          gameId = created.id;
+        } finally {
+          window.clearTimeout(createTimeout);
+        }
+      }
       if (!gameId) throw new Error("Game could not be saved");
       const controller = new AbortController();
       const timeout = window.setTimeout(() => controller.abort(), 7000);
@@ -194,8 +218,12 @@ export default function WordSearchPage() {
         queryClient.invalidateQueries({ queryKey: ["/api/tournaments/leaderboard"] });
         window.dispatchEvent(new CustomEvent(ACHIEVEMENT_COMPLETION_EVENT, { detail: { profileId } }));
       }
-    } catch {
-      if (activeGameRef.current?.savedAt === completed.savedAt) setReward({ points: 0, xpEarned: 0, gemsEarned: 0, offline: true });
+    } catch (error) {
+      console.error("[Word Search] Could not save completion rewards:", error);
+      if (activeGameRef.current?.savedAt === completed.savedAt) {
+        setReward({ points: 0, xpEarned: 0, gemsEarned: 0, offline: true });
+        setRewardError(error instanceof Error ? error.message : "Unknown API error");
+      }
     } finally {
       if (activeGameRef.current?.savedAt === completed.savedAt) setRewardLoading(false);
     }
@@ -207,7 +235,13 @@ export default function WordSearchPage() {
     const line = getLineCells(dragStart, end, game.puzzle.grid.length);
     const word = line.map((index) => game.puzzle.grid[Math.floor(index / game.puzzle.grid.length)][index % game.puzzle.grid.length]).join("");
     const reverse = [...word].reverse().join("");
-    const foundWord = game.puzzle.words.find((item) => (item === word || item === reverse) && !game.found.includes(item));
+    const babyLevel = WORD_SEARCH_LEVELS[game.difficulty].mode === "baby";
+    const foundWord = game.puzzle.words.find((item) => {
+      if (game.found.includes(item)) return false;
+      if (!babyLevel) return item === word || item === reverse;
+      const placement = game.puzzle.placements[item];
+      return item === word && placement?.length === line.length && placement.every((cell, index) => cell === line[index]);
+    });
     if (foundWord) {
       const next = { ...game, tries, found: [...game.found, foundWord] };
       setGame(next); setSelected(game.puzzle.placements[foundWord]); setHintWord(null); sounds.complete();
@@ -332,7 +366,7 @@ export default function WordSearchPage() {
       </div>
 
       <section className="rounded-2xl border-2 border-amber-200/70 bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 p-4 shadow-sm dark:border-amber-800/50 dark:from-amber-950/30 dark:via-yellow-950/20 dark:to-orange-950/30">
-        {rewardLoading ? <div className="py-2 text-center text-sm font-semibold text-muted-foreground">Calculating your score and rewards…</div> : reward?.offline ? <div className="py-2 text-center"><p className="font-semibold text-amber-900 dark:text-amber-200">Rewards could not be saved</p><p className="mt-1 text-xs text-muted-foreground">Reconnect to the game server before your next puzzle to earn points, XP, and gems.</p></div> : reward ? <><div className="grid grid-cols-3 items-center gap-2 text-center">
+        {rewardLoading ? <div className="py-2 text-center text-sm font-semibold text-muted-foreground">Calculating your score and rewards…</div> : reward?.offline ? <div className="py-2 text-center"><p className="font-semibold text-amber-900 dark:text-amber-200">Rewards could not be saved</p><p className="mt-1 text-xs text-muted-foreground">{rewardError || "The game server could not save this result."} If the API reports 404, deploy the latest API server and try another game.</p></div> : reward ? <><div className="grid grid-cols-3 items-center gap-2 text-center">
           <div><p className="text-2xl font-black text-amber-800 dark:text-amber-200">{reward.points.toLocaleString()}</p><p className="text-xs font-semibold text-muted-foreground">Points</p></div>
           <div className="border-x border-amber-300/70 px-2 dark:border-amber-700/60"><p className="text-2xl font-black text-yellow-700 dark:text-yellow-300">+{reward.xpEarned}</p><p className="text-xs font-semibold text-muted-foreground">XP</p></div>
           <div><p className="text-2xl font-black text-cyan-700 dark:text-cyan-300">+{reward.gemsEarned} 💎</p><p className="text-xs font-semibold text-muted-foreground">Gems</p></div>
@@ -375,7 +409,7 @@ export default function WordSearchPage() {
             <div aria-hidden="true" className="pointer-events-none absolute -bottom-8 -left-8 h-24 w-24 rounded-full bg-fuchsia-300/25 blur-2xl dark:bg-fuchsia-400/10" />
             <div className="relative z-10 mb-4 flex items-center gap-3 rounded-xl border border-violet-200/70 bg-white/65 px-3 py-3 dark:border-violet-800/50 dark:bg-slate-950/20">
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-violet-500/15 text-2xl">🔎</span>
-              <div className="min-w-0 flex-1"><h2 className="font-serif text-lg font-bold">Ready for a word hunt?</h2><p className="text-xs leading-relaxed text-muted-foreground">Find the hidden words running across, down, and diagonally.</p></div>
+              <div className="min-w-0 flex-1"><h2 className="font-serif text-lg font-bold">Ready for a word hunt?</h2><p className="text-xs leading-relaxed text-muted-foreground">Beginner and Easy use forward horizontal and vertical words. Medium and Hard add diagonals and backwards words.</p></div>
               <div className="hidden grid-cols-3 gap-1 rounded-lg border border-violet-200/70 bg-white/70 p-1 sm:grid dark:border-violet-800/50 dark:bg-slate-950/30">{["W", "O", "R", "D", "S", "E", "A", "R", "C"].map((letter, i) => <span key={i} className="grid h-5 w-5 place-items-center rounded bg-violet-500/10 text-[9px] font-black text-violet-700 dark:text-violet-300">{letter}</span>)}</div>
             </div>
             <div className="relative z-10 mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-violet-200/70 bg-white/65 px-3 py-2.5 dark:border-violet-800/50 dark:bg-slate-950/20">
@@ -401,7 +435,7 @@ export default function WordSearchPage() {
             <button onClick={() => setLocation("/profile?tab=word-search")} className="flex items-center gap-3 rounded-xl border bg-card p-3 text-left transition hover:border-violet-300 hover:bg-muted/50"><Search className="h-5 w-5 shrink-0 text-violet-600"/><span><span className="block text-sm font-semibold">My Stats</span><span className="hidden text-xs text-muted-foreground sm:block">Best times & progress</span></span></button>
             <button onClick={share} className="flex items-center gap-3 rounded-xl border bg-card p-3 text-left transition hover:border-violet-300 hover:bg-muted/50"><Share2 className="h-5 w-5 shrink-0 text-violet-600"/><span><span className="block text-sm font-semibold">Share Game</span><span className="hidden text-xs text-muted-foreground sm:block">Invite someone to play</span></span></button>
           </div>
-          <div className="rounded-xl border border-border bg-card px-4 py-3 text-xs leading-relaxed text-muted-foreground"><strong className="text-foreground">How to play:</strong> Choose a difficulty, then drag from the first letter to the last. Words may run in any direction, including backwards. Tap Hint if you need a nudge.</div>
+          <div className="rounded-xl border border-border bg-card px-4 py-3 text-xs leading-relaxed text-muted-foreground"><strong className="text-foreground">How to play:</strong> Choose a difficulty, then drag from the first letter to the last. Beginner and Easy words go left-to-right or top-to-bottom without overlapping. Medium and Hard also include diagonals and backwards words. Tap Hint if you need a nudge.</div>
         </> : <section className="rounded-3xl border border-border bg-card p-3 shadow-sm sm:p-5">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><div><h2 className="font-bold">{WORD_SEARCH_LEVELS[game.difficulty].label} puzzle</h2><div className="mt-1 flex flex-wrap items-center gap-2"><label htmlFor="word-search-game-theme" className="text-xs text-muted-foreground">Word theme</label><select id="word-search-game-theme" value={game.theme} onChange={(event) => startGame(game.difficulty, event.target.value as WordSearchTheme)} className="rounded-lg border border-violet-200 bg-background px-2 py-1 text-xs font-semibold text-foreground outline-none focus:ring-2 focus:ring-violet-400 dark:border-violet-800">{WORD_SEARCH_THEMES.map((theme) => <option key={theme.id} value={theme.id}>{theme.emoji} {theme.label}</option>)}</select><span className="text-[10px] text-muted-foreground">Changing theme starts a new puzzle</span></div></div><div className="flex items-center gap-1 rounded-full bg-muted px-3 py-1.5 text-sm font-semibold"><Clock3 className="h-4 w-4"/>{fmt(elapsed)}</div></div>
           <div className="mx-auto w-full max-w-[560px] rounded-2xl bg-gradient-to-br from-rose-300 via-violet-300 to-cyan-300 p-1.5 shadow-lg shadow-violet-500/15 dark:from-rose-800 dark:via-violet-800 dark:to-cyan-800">

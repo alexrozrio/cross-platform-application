@@ -759,29 +759,29 @@ function WordSearchStatsPanel({ profileId }: { profileId: number | null }) {
   const stats = summarizeWordSearchStats(history);
   const fastest = Object.values(stats.bestTimes).length ? Math.min(...Object.values(stats.bestTimes) as number[]) : null;
   const format = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
-  return <div className="space-y-4 animate-in fade-in duration-300">
-    <div className="flex items-center justify-between rounded-xl border border-violet-200/60 bg-violet-50/70 px-4 py-3 dark:border-violet-800/40 dark:bg-violet-950/20">
-      <div><p className="text-sm font-semibold text-violet-800 dark:text-violet-200">Word Search progress</p><p className="text-xs text-muted-foreground">Saved on this device</p></div>
-      <Link href="/word-search" className="rounded-full bg-violet-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-violet-700">Play</Link>
+  return (
+    <div className="space-y-4 animate-in fade-in duration-300">
+      {profileId && <WordSearchDailyCalendar profileId={profileId} />}
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <Card className="border-violet-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-violet-100 p-2.5 text-violet-700"><Search className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Puzzles completed</p><p className="text-2xl font-bold">{stats.totalGames}</p></CardContent></Card>
+        <Card className="border-violet-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-blue-100 p-2.5 text-blue-700"><Clock className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Average time</p><p className="text-2xl font-bold">{stats.totalGames ? format(stats.averageTime) : "—"}</p></CardContent></Card>
+        <Card className="border-violet-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-amber-100 p-2.5 text-amber-700"><Trophy className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Fastest time</p><p className="text-2xl font-bold">{fastest === null ? "—" : format(fastest)}</p></CardContent></Card>
+        <Card className="border-violet-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-emerald-100 p-2.5 text-emerald-700"><TrendingUp className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Total time</p><p className="text-2xl font-bold">{stats.totalGames ? format(stats.totalTime) : "—"}</p></CardContent></Card>
+        <Card className="border-violet-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-orange-100 p-2.5 text-orange-700"><Flame className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Current day streak</p><p className="text-2xl font-bold">{stats.currentStreak}</p></CardContent></Card>
+        <Card className="border-violet-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-amber-100 p-2.5 text-amber-700"><Trophy className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Best day streak</p><p className="text-2xl font-bold">{stats.bestStreak}</p></CardContent></Card>
+      </div>
+
+      <Card className="overflow-hidden border-violet-200/60 dark:border-violet-800/40">
+        <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-base"><Clock className="h-4 w-4 text-violet-600" />Best times by level</CardTitle></CardHeader>
+        <CardContent className="space-y-2">
+          {(["beginner", "easy", "medium", "hard"] as const).map((difficulty) => <div key={difficulty} className="flex items-center justify-between rounded-lg border bg-background px-3 py-2.5"><span className="font-medium capitalize">{difficulty}</span><span className="font-mono font-bold text-violet-700 dark:text-violet-300">{stats.bestTimes[difficulty] === undefined ? "—" : format(stats.bestTimes[difficulty]!)}</span></div>)}
+        </CardContent>
+      </Card>
+
+      {profileId && <AchievementsCard profileId={profileId} game="word-search" />}
     </div>
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-      <Card className="border-violet-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-violet-100 p-2.5 text-violet-700"><Search className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Puzzles completed</p><p className="text-2xl font-bold">{stats.totalGames}</p></CardContent></Card>
-      <Card className="border-violet-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-blue-100 p-2.5 text-blue-700"><Clock className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Average time</p><p className="text-2xl font-bold">{stats.totalGames ? format(stats.averageTime) : "—"}</p></CardContent></Card>
-      <Card className="border-violet-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-amber-100 p-2.5 text-amber-700"><Trophy className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Fastest time</p><p className="text-2xl font-bold">{fastest === null ? "—" : format(fastest)}</p></CardContent></Card>
-      <Card className="border-violet-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-emerald-100 p-2.5 text-emerald-700"><TrendingUp className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Total time</p><p className="text-2xl font-bold">{stats.totalGames ? format(stats.totalTime) : "—"}</p></CardContent></Card>
-      <Card className="border-violet-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-orange-100 p-2.5 text-orange-700"><Flame className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Current day streak</p><p className="text-2xl font-bold">{stats.currentStreak}</p></CardContent></Card>
-      <Card className="border-violet-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-amber-100 p-2.5 text-amber-700"><Trophy className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Best day streak</p><p className="text-2xl font-bold">{stats.bestStreak}</p></CardContent></Card>
-    </div>
-    {profileId && <AchievementsCard profileId={profileId} game="word-search" />}
-    {profileId && <WordSearchDailyCalendar profileId={profileId} />}
-    <Card className="overflow-hidden border-violet-200/60 dark:border-violet-800/40">
-      <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-base"><Clock className="h-4 w-4 text-violet-600" />Personal bests by difficulty</CardTitle></CardHeader>
-      <CardContent className="space-y-2">
-        {(["beginner", "easy", "medium", "hard"] as const).map((difficulty) => <div key={difficulty} className="flex items-center justify-between rounded-lg border bg-background px-3 py-2.5"><span className="font-medium capitalize">{difficulty}</span><span className="font-mono font-bold text-violet-700 dark:text-violet-300">{stats.bestTimes[difficulty] === undefined ? "—" : format(stats.bestTimes[difficulty]!)}</span></div>)}
-      </CardContent>
-    </Card>
-    {stats.totalGames === 0 ? <p className="rounded-xl border bg-card p-5 text-center text-sm text-muted-foreground">Complete a Word Search puzzle to start tracking your statistics.</p> : <Card><CardHeader className="pb-2"><CardTitle className="text-base">Recent completions</CardTitle></CardHeader><CardContent className="space-y-2">{history.slice(-5).reverse().map((game, index) => <div key={`${game.completedAt}-${index}`} className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-sm"><span className="capitalize">{game.theme} · {game.difficulty} · {new Date(game.completedAt).toLocaleDateString()}</span><span className="font-mono font-semibold">{format(game.elapsedSeconds)}</span></div>)}</CardContent></Card>}
-  </div>;
+  );
 }
 
 function WordSearchDailyCalendar({ profileId }: { profileId: number }) {

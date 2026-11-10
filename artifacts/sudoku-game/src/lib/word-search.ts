@@ -150,6 +150,7 @@ export function isWordSearchTheme(value: string): value is WordSearchTheme {
 }
 
 const DIRECTIONS = [[0, 1], [1, 0], [1, 1], [-1, 1], [0, -1], [-1, 0], [-1, -1], [1, -1]] as const;
+const BABY_DIRECTIONS = [[0, 1], [1, 0]] as const;
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 export function createWordSearch(difficulty: WordSearchDifficulty, theme: WordSearchTheme = "animals", seed = Date.now()): WordSearchPuzzle {
@@ -159,19 +160,24 @@ export function createWordSearch(difficulty: WordSearchDifficulty, theme: WordSe
   const iconSetId = theme.startsWith("icon-") ? theme.slice("icon-".length) : null;
   const bank = iconSetId ? ICON_SET_WORD_BANKS[iconSetId] : WORD_BANKS[theme as BaseWordSearchTheme];
   const words = [...(bank?.[difficulty] ?? WORD_BANKS.animals[difficulty])];
+  const babyLevel = WORD_SEARCH_LEVELS[difficulty].mode === "baby";
+  const directions = babyLevel ? BABY_DIRECTIONS : DIRECTIONS;
   const placements: Record<string, number[]> = {};
 
   for (const word of words) {
     let placed = false;
     for (let attempt = 0; attempt < 500 && !placed; attempt++) {
-      const [dr, dc] = DIRECTIONS[Math.floor(random() * DIRECTIONS.length)];
+      const [dr, dc] = directions[Math.floor(random() * directions.length)];
       const row = Math.floor(random() * size);
       const col = Math.floor(random() * size);
       const endRow = row + dr * (word.length - 1);
       const endCol = col + dc * (word.length - 1);
       if (endRow < 0 || endRow >= size || endCol < 0 || endCol >= size) continue;
       const cells = Array.from({ length: word.length }, (_, i) => (row + dr * i) * size + col + dc * i);
-      if (cells.some((index, i) => { const value = grid[Math.floor(index / size)][index % size]; return value && value !== word[i]; })) continue;
+      if (cells.some((index, i) => {
+        const value = grid[Math.floor(index / size)][index % size];
+        return babyLevel ? Boolean(value) : Boolean(value && value !== word[i]);
+      })) continue;
       cells.forEach((index, i) => { grid[Math.floor(index / size)][index % size] = word[i]; });
       placements[word] = cells;
       placed = true;

@@ -411,7 +411,7 @@ export default function Portal() {
           {/* Stacked card backdrop */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute right-5 top-2 h-28 w-20 rotate-12 rounded-xl border-2 border-violet-400/30 bg-fuchsia-300/25 opacity-80 shadow-sm dark:bg-violet-400/10"
+            className="pointer-events-none absolute right-5 top-2 h-28 w-20 rotate-12 rounded-xl border-2 border-violet-300/20 bg-violet-100/30 opacity-55 shadow-sm dark:border-violet-300/10 dark:bg-violet-300/5"
           >
             <div className="flex h-full items-center justify-center text-3xl opacity-40">
               ?
@@ -419,10 +419,10 @@ export default function Portal() {
           </div>
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute right-14 top-5 h-28 w-20 -rotate-6 rounded-xl border-2 border-violet-400/35 bg-white/55 opacity-90 shadow-sm dark:bg-slate-950/35"
+            className="pointer-events-none absolute right-14 top-5 h-28 w-20 -rotate-6 rounded-xl border-2 border-violet-300/25 bg-violet-50/45 opacity-60 shadow-sm dark:border-violet-300/10 dark:bg-violet-200/5"
           >
             <div className="flex h-full items-center justify-center">
-              <Copy className="h-8 w-8 text-violet-700/60 dark:text-violet-200/60" />
+              <Copy className="h-8 w-8 text-violet-700/30 dark:text-violet-200/20" />
             </div>
           </div>
           <div className="relative z-10 flex items-center justify-between">
@@ -787,6 +787,19 @@ export default function Portal() {
                 aria-hidden="true"
                 className="pointer-events-none absolute -bottom-10 -left-8 h-28 w-28 rounded-full bg-cyan-300/35 blur-2xl dark:bg-cyan-400/15"
               />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-2 -top-3 grid h-32 w-32 rotate-6 grid-cols-3 overflow-hidden rounded-2xl border-2 border-primary/15 bg-white/20 opacity-60 dark:bg-white/5"
+            >
+              {[5, 2, 8, 1, 7, 3, 9, 4, 6].map((digit, index) => (
+                <span
+                  key={index}
+                  className="flex items-center justify-center border border-primary/10 text-lg font-black text-primary/20"
+                >
+                  {digit}
+                </span>
+              ))}
+            </div>
               <button
                 onClick={() => setLocation("/sudoku")}
                 className="relative z-10 w-full text-left p-6 space-y-4 transition-all duration-200 hover:bg-white/20 dark:hover:bg-slate-950/20"
@@ -916,6 +929,22 @@ export default function Portal() {
                     aria-hidden="true"
                     className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-fuchsia-300/35 blur-2xl dark:bg-fuchsia-400/15"
                   />
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute right-5 top-3 h-28 w-20 rotate-12 rounded-xl border-2 border-violet-300/20 bg-violet-100/30 opacity-50 shadow-sm dark:border-violet-300/10 dark:bg-violet-300/5"
+                  >
+                    <div className="flex h-full items-center justify-center text-4xl font-black text-violet-700/15 dark:text-violet-200/10">
+                      ?
+                    </div>
+                  </div>
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute right-14 top-6 h-28 w-20 -rotate-6 rounded-xl border-2 border-violet-300/25 bg-violet-50/45 opacity-55 shadow-sm dark:border-violet-300/10 dark:bg-violet-200/5"
+                  >
+                    <div className="flex h-full items-center justify-center">
+                      <Copy className="h-10 w-10 text-violet-700/25 dark:text-violet-200/15" />
+                    </div>
+                  </div>
                   <button
                     onClick={() => setLocation("/memory/")}
                     className="relative z-10 w-full text-left p-6 space-y-4 transition-all duration-200 hover:bg-white/20 dark:hover:bg-slate-950/20"
