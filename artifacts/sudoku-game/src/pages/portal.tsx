@@ -12,6 +12,8 @@ import {
   Flame,
   ChevronDown,
   Puzzle,
+  Search,
+  Copy,
 } from "lucide-react";
 import { customFetch, useGetProfile } from "@workspace/api-client-react";
 import { generateOfflinePuzzle } from "@/lib/sudoku-generator";
@@ -47,6 +49,19 @@ interface MemorySession {
   elapsed: number;
   savedAt: number;
   cards: { matched: boolean }[];
+}
+
+function IconSetPreview({ themeId, className = "" }: { themeId: string; className?: string }) {
+  return (
+    <div aria-label="Sample icons from the selected icon set" className={`relative z-10 flex items-center gap-1 ${className}`}>
+      {[1, 2, 3, 4].map((value) => (
+        <span key={value} className="inline-flex items-center justify-center opacity-80">
+          <ThemeIcon themeId={themeId} value={value} size={22} />
+        </span>
+      ))}
+      <span aria-hidden="true" className="ml-1 self-end pb-0.5 text-xs text-muted-foreground/60">…</span>
+    </div>
+  );
 }
 
 const GRID_QUICK_START = [
@@ -260,12 +275,16 @@ export default function Portal() {
           MOBILE QUICK LAUNCH — shown only on mobile (top of screen)
           ═══════════════════════════════════════════════════════════ */}
       <div className="md:hidden space-y-3 mb-6">
-        <section className="rounded-2xl border border-violet-400/40 bg-gradient-to-r from-violet-100 to-pink-100 p-4 shadow-sm dark:from-violet-950/60 dark:to-pink-950/40">
-          <div className="flex items-center gap-3"><span className="text-2xl" aria-hidden>🔎</span><div className="flex-1"><p className="font-bold">Word Search</p><p className="text-xs text-muted-foreground">Choose a level and start playing</p></div></div>
+        <section className="relative isolate overflow-hidden rounded-2xl border-2 border-violet-400/60 bg-gradient-to-br from-violet-100 via-fuchsia-50 to-pink-100 p-4 shadow-xl shadow-violet-500/20 ring-1 ring-inset ring-white/70 dark:from-violet-950/75 dark:via-fuchsia-950/70 dark:to-pink-950/60 dark:ring-white/10">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-400" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-fuchsia-300/35 blur-2xl dark:bg-fuchsia-400/15" />
+          <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-20 w-20 rotate-6 grid-cols-3 overflow-hidden rounded-xl border border-violet-400/15 bg-white/15 opacity-60 dark:bg-white/5">{"WORDSEARCH".slice(0, 9).split("").map((letter, index) => <span key={index} className="flex items-center justify-center border border-violet-400/10 text-xs font-black text-violet-700/25 dark:text-violet-200/20">{letter}</span>)}</div>
+          <div className="relative z-10 flex items-center gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-600 text-white shadow-md"><Search className="h-6 w-6" /></div><div className="flex-1"><p className="font-bold">Word Search</p><p className="text-xs text-muted-foreground">Choose a level and start playing</p></div></div>
+          <IconSetPreview themeId={themeId} className="mt-2" />
           <div className="mt-3 grid grid-cols-2 gap-2">
-            {visibleWordSearchLevels.map((level) => <button key={level} onClick={() => launchWordSearch(level)} className="rounded-xl border border-violet-300/70 bg-white/70 px-3 py-2 text-left text-sm font-semibold hover:bg-white dark:border-violet-700/50 dark:bg-black/20 dark:hover:bg-black/35">{WORD_SEARCH_LEVELS[level].label}<span className="block text-[11px] font-normal text-muted-foreground">{WORD_SEARCH_LEVELS[level].size}×{WORD_SEARCH_LEVELS[level].size} · {WORD_SEARCH_LEVELS[level].wordCount} words</span></button>)}
+            {visibleWordSearchLevels.map((level) => <button key={level} onClick={() => launchWordSearch(level)} className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-violet-400/35 bg-white/75 px-2 py-2 text-center shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"><span className="text-sm font-black leading-none text-violet-700 dark:text-violet-300">{WORD_SEARCH_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{WORD_SEARCH_LEVELS[level].size}×{WORD_SEARCH_LEVELS[level].size} · {WORD_SEARCH_LEVELS[level].wordCount} words</span></button>)}
           </div>
-          <button onClick={() => setLocation("/word-search")} className="mt-2 text-xs font-semibold text-violet-800 underline underline-offset-2 dark:text-violet-200">More options and themes</button>
+          <button onClick={() => setLocation("/word-search")} className="relative z-10 mt-2 text-xs font-semibold text-violet-800 underline underline-offset-2 dark:text-violet-200">More options and themes</button>
         </section>
         {/* Sudoku quick launch — featured game */}
         <div className="relative isolate overflow-hidden rounded-2xl border-2 border-primary/55 bg-gradient-to-br from-cyan-100 via-sky-50 to-indigo-100 p-4 space-y-3 shadow-xl shadow-primary/20 ring-1 ring-inset ring-white/70 dark:from-cyan-950/80 dark:via-sky-950/75 dark:to-indigo-950/80 dark:ring-white/10">
@@ -403,13 +422,13 @@ export default function Portal() {
             className="pointer-events-none absolute right-14 top-5 h-28 w-20 -rotate-6 rounded-xl border-2 border-violet-400/35 bg-white/55 opacity-90 shadow-sm dark:bg-slate-950/35"
           >
             <div className="flex h-full items-center justify-center">
-              <ThemeIcon themeId={themeId} value={2} size={30} />
+              <Copy className="h-8 w-8 text-violet-700/60 dark:text-violet-200/60" />
             </div>
           </div>
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-500 text-xl text-white shadow-md">
-                🃏
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-500 text-white shadow-md">
+                <Copy className="h-6 w-6" />
               </div>
               <div>
                 <span className="block text-xl font-black leading-tight text-slate-900 dark:text-white">
@@ -430,6 +449,7 @@ export default function Portal() {
           <p className="relative z-10 text-[11px] font-medium leading-tight text-foreground/80">
             Find matching pairs and beat your score.
           </p>
+          <IconSetPreview themeId={themeId} className="mt-1" />
           <div className={`grid gap-1.5 ${memoryGridCols}`}>
             {visibleMemoryOptions.map((opt) => (
               <button
@@ -446,6 +466,7 @@ export default function Portal() {
               </button>
             ))}
           </div>
+          <button onClick={() => setLocation("/memory/")} className="relative z-10 mt-1 text-xs font-semibold text-violet-700/80 underline underline-offset-2 transition-colors hover:text-violet-700 dark:text-violet-300/80 dark:hover:text-violet-200">More options →</button>
         </div>
 
         {memorySession &&
@@ -505,18 +526,19 @@ export default function Portal() {
           <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -left-8 h-28 w-28 rounded-full bg-amber-300/35 blur-2xl dark:bg-amber-400/15" />
           {/* Puzzle piece backdrop */}
           <div aria-hidden="true" className="pointer-events-none absolute -right-4 -top-4 h-24 w-24 rotate-12 rounded-xl border-2 border-amber-400/30 bg-amber-200/40 opacity-60 shadow-sm dark:bg-amber-400/10">
-            <div className="flex h-full items-center justify-center text-4xl opacity-30">🧩</div>
+            <div className="flex h-full items-center justify-center"><Puzzle className="h-16 w-16 text-amber-700/30 dark:text-amber-300/25" /></div>
           </div>
           <div className="relative z-10 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-amber-600 text-white shadow-md"><Puzzle className="h-6 w-6" /><span className="absolute -bottom-1 -right-1 rounded-md border border-amber-200 bg-white p-0.5 shadow-sm"><ThemeIcon themeId={themeId} value={1} size={13} /></span></div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-600 text-white shadow-md"><Puzzle className="h-6 w-6" /></div>
               <div><span className="block text-xl font-bold leading-tight text-foreground">Jigsaw Puzzle</span><span className="mt-1 inline-flex rounded-full bg-white/65 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-700 shadow-sm dark:bg-slate-950/30 dark:text-amber-300">Picture puzzle</span></div>
             </div>
             <button onClick={() => setLocation("/jigsaw")} className="rounded-full bg-amber-600 px-3 py-1.5 text-[11px] font-bold text-white shadow-sm transition-colors hover:bg-amber-700">All options</button>
           </div>
           <p className="relative z-10 text-[11px] font-medium leading-tight text-foreground/80">Rebuild a picture, one piece at a time.</p>
+          <IconSetPreview themeId={themeId} className="mt-1" />
           <div className={`relative z-10 grid gap-1.5 ${jigsawGridCols}`}>
-            {visibleJigsawSizes.map((size) => (
+                {visibleJigsawSizes.map((size) => (
               <button key={size} onClick={() => setLocation(`/jigsaw?gridSize=${size}&level=1&imageKey=1&play=1`)} className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-amber-400/35 bg-white/75 px-2 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55">
                 <span className="font-bold text-base leading-none text-amber-700">{size}×{size}</span>
                 <span className="mt-1 text-xs leading-none text-muted-foreground">{size * size} pieces</span>
@@ -900,7 +922,7 @@ export default function Portal() {
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-14 h-14 rounded-xl bg-violet-500/10 flex items-center justify-center ring-1 ring-violet-400/20">
-                        <ThemeIcon themeId={themeId} value={1} size={34} />
+                        <Copy className="h-8 w-8 text-violet-600 dark:text-violet-400" />
                       </div>
                       <div>
                         <h2 className="text-xl font-bold font-serif">
@@ -915,23 +937,7 @@ export default function Portal() {
                       Flip cards to find matching pairs. Beat the clock and
                       minimise your flips to maximise your score.
                     </p>
-                    <div className="flex gap-1 items-center">
-                      {[1, 2, 3, 4].map((value) => (
-                        <span
-                          key={value}
-                          className="inline-flex items-center justify-center opacity-80 group-hover:opacity-100 transition-opacity"
-                        >
-                          <ThemeIcon
-                            themeId={themeId}
-                            value={value}
-                            size={22}
-                          />
-                        </span>
-                      ))}
-                      <span className="text-muted-foreground/60 text-xs self-end pb-0.5 ml-1">
-                        …
-                      </span>
-                    </div>
+                    <IconSetPreview themeId={themeId} />
                   </button>
                   {memorySession &&
                     (() => {
@@ -985,12 +991,13 @@ export default function Portal() {
                           <span className="font-bold text-xs leading-none text-violet-600">
                             {opt.label}
                           </span>
-                          <span className="text-[10px] text-muted-foreground mt-0.5 leading-none">
+                          <span className="mt-0.5 text-[10px] text-muted-foreground leading-none">
                             {opt.sub}
                           </span>
                         </button>
                       ))}
                     </div>
+                    <button onClick={() => setLocation("/memory/")} className="mt-3 text-[10px] font-semibold text-violet-600/75 underline underline-offset-2 transition-colors hover:text-violet-600 dark:text-violet-400/75 dark:hover:text-violet-300">More options →</button>
                   </div>
                   <div
                     className="absolute top-3 right-3 w-2 h-2 rounded-full bg-green-400"
@@ -1010,6 +1017,9 @@ export default function Portal() {
                 aria-hidden="true"
                 className="pointer-events-none absolute -bottom-10 -left-8 h-28 w-28 rounded-full bg-orange-300/35 blur-2xl dark:bg-orange-400/15"
               />
+              <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 flex h-24 w-24 rotate-12 items-center justify-center rounded-2xl border-2 border-amber-500/15 bg-amber-300/10 opacity-70 dark:bg-amber-300/5">
+                <Puzzle className="h-16 w-16 text-amber-700/15 dark:text-amber-200/15" />
+              </div>
               <button
                 onClick={() => setLocation("/jigsaw")}
                 className="relative z-10 w-full text-left p-6 space-y-4 transition-all duration-200 hover:bg-white/20 dark:hover:bg-slate-950/20"
@@ -1017,7 +1027,6 @@ export default function Portal() {
                 <div className="flex items-center gap-3">
                   <div className="relative flex h-14 w-14 items-center justify-center rounded-xl bg-amber-500/10 ring-1 ring-amber-400/20">
                     <Puzzle className="h-8 w-8 text-amber-600 dark:text-amber-400" />
-                    <span className="absolute -bottom-1 -right-1 rounded-md border border-amber-200 bg-background p-0.5 shadow-sm"><ThemeIcon themeId={themeId} value={1} size={17} /></span>
                   </div>
                   <div>
                     <h2 className="text-xl font-bold font-serif">Jigsaw Puzzle</h2>
@@ -1030,6 +1039,7 @@ export default function Portal() {
                   Choose a picture and board size, then assemble the pieces at
                   your own pace.
                 </p>
+                <IconSetPreview themeId={themeId} />
               </button>
               <div className="px-6 pb-5 pt-1">
                 <div className="grid grid-cols-4 gap-1.5">
@@ -1041,6 +1051,9 @@ export default function Portal() {
                     >
                       <span className="font-bold text-xs leading-none text-amber-600 dark:text-amber-400">
                         {size}×{size}
+                      </span>
+                      <span className="mt-1 text-[10px] leading-none text-muted-foreground">
+                        {size * size} pieces
                       </span>
                     </button>
                   ))}
@@ -1071,13 +1084,17 @@ export default function Portal() {
                 title="Available"
               />
             </div>
-            <section className="group relative overflow-hidden rounded-2xl border-2 border-violet-400/40 bg-gradient-to-br from-violet-100 via-fuchsia-50 to-pink-100 p-6 text-left shadow-lg transition hover:border-violet-500/70 dark:from-violet-950/60 dark:via-fuchsia-950/40 dark:to-pink-950/50">
-              <div className="flex items-center gap-3"><span className="flex h-14 w-14 items-center justify-center rounded-xl bg-violet-500/10 text-3xl">🔎</span><div><h2 className="font-serif text-xl font-bold">Word Search</h2><p className="text-xs text-muted-foreground">Hidden word puzzle</p></div></div>
-              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">Find themed words hidden across, down, and diagonally. Pick a level to start.</p>
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                {visibleWordSearchLevels.map((level) => <button key={level} onClick={() => launchWordSearch(level)} className="rounded-xl border border-violet-300/70 bg-white/70 px-3 py-2 text-left text-sm font-semibold transition hover:bg-white dark:border-violet-700/50 dark:bg-black/20 dark:hover:bg-black/35">{WORD_SEARCH_LEVELS[level].label}<span className="block text-[11px] font-normal text-muted-foreground">{WORD_SEARCH_LEVELS[level].size}×{WORD_SEARCH_LEVELS[level].size} · {WORD_SEARCH_LEVELS[level].wordCount} words</span></button>)}
+            <section className="group relative isolate overflow-hidden rounded-2xl border-2 border-violet-400/60 bg-gradient-to-br from-violet-100 via-fuchsia-50 to-pink-100 p-6 text-left shadow-xl shadow-violet-500/20 ring-1 ring-inset ring-white/70 transition hover:border-violet-500/80 dark:from-violet-950/75 dark:via-fuchsia-950/70 dark:to-pink-950/60 dark:ring-white/10">
+              <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-400" />
+              <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-fuchsia-300/35 blur-2xl dark:bg-fuchsia-400/15" />
+              <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-24 w-24 rotate-6 grid-cols-3 overflow-hidden rounded-xl border border-violet-400/15 bg-white/15 opacity-60 dark:bg-white/5">{"WORDSEARCH".slice(0, 9).split("").map((letter, index) => <span key={index} className="flex items-center justify-center border border-violet-400/10 text-sm font-black text-violet-700/25 dark:text-violet-200/20">{letter}</span>)}</div>
+              <div className="relative z-10 flex items-center gap-3"><span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 ring-1 ring-violet-400/20 dark:text-violet-300"><Search className="h-8 w-8" /></span><div><h2 className="font-serif text-xl font-bold">Word Search</h2><p className="text-xs text-muted-foreground">Hidden word puzzle</p></div></div>
+              <p className="relative z-10 mt-4 text-sm leading-relaxed text-muted-foreground">Find themed words hidden across, down, and diagonally. Pick a level to start.</p>
+              <IconSetPreview themeId={themeId} className="mt-2" />
+              <div className="relative z-10 mt-4 grid grid-cols-2 gap-2">
+                {visibleWordSearchLevels.map((level) => <button key={level} onClick={() => launchWordSearch(level)} className="flex min-h-[52px] flex-col items-center justify-center rounded-lg border border-violet-400/20 bg-violet-500/5 px-1 py-2 text-center transition-all hover:border-violet-400/40 hover:bg-violet-500/15"><span className="text-xs font-bold leading-none text-violet-600 dark:text-violet-400">{WORD_SEARCH_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{WORD_SEARCH_LEVELS[level].size}×{WORD_SEARCH_LEVELS[level].size} · {WORD_SEARCH_LEVELS[level].wordCount} words</span></button>)}
               </div>
-              <button onClick={() => setLocation("/word-search")} className="mt-3 text-xs font-semibold text-violet-800 underline underline-offset-2 dark:text-violet-200">More options and themes</button>
+              <button onClick={() => setLocation("/word-search")} className="relative z-10 mt-3 text-xs font-semibold text-violet-800 underline underline-offset-2 dark:text-violet-200">More options and themes</button>
             </section>
           </div>
         </div>

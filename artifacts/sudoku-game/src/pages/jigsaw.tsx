@@ -67,8 +67,8 @@ function shuffledTiles(count: number) {
   return pieces;
 }
 
-function PuzzlePiece({ themeId, imageKey, piece, gridSize, className = "" }: {
-  themeId: string; imageKey: number; piece: number; gridSize: GridSize; className?: string;
+function PuzzlePiece({ themeId, imageKey, piece, gridSize, className = "", isPlacedCorrectly = false }: {
+  themeId: string; imageKey: number; piece: number; gridSize: GridSize; className?: string; isPlacedCorrectly?: boolean;
 }) {
   const src = useThemeImageSrc(themeId, imageKey);
   const row = Math.floor(piece / gridSize);
@@ -84,6 +84,7 @@ function PuzzlePiece({ themeId, imageKey, piece, gridSize, className = "" }: {
               <path d={path} />
             </clipPath>
           </defs>
+          <path d={path} fill="hsl(var(--card))" stroke={isPlacedCorrectly ? "hsl(var(--border) / 0.4)" : "hsl(var(--border))"} strokeWidth={isPlacedCorrectly ? "1" : "3"} strokeLinejoin="round" />
           {src && (
             <image
               href={src}
@@ -95,7 +96,7 @@ function PuzzlePiece({ themeId, imageKey, piece, gridSize, className = "" }: {
               clipPath={`url(#${clipId})`}
             />
           )}
-          <path d={path} fill={src ? "none" : "hsl(var(--muted))"} stroke="hsl(var(--background))" strokeWidth="1.5" />
+          <path d={path} fill="none" stroke={isPlacedCorrectly ? "hsl(var(--border) / 0.4)" : "hsl(var(--border))"} strokeWidth={isPlacedCorrectly ? "1" : "3"} strokeLinejoin="round" />
         </svg>
       </div>
     );
@@ -136,7 +137,7 @@ function Tile({ piece, index, gridSize, themeId, imageKey, selected, showNumber,
       aria-label={label}
       aria-pressed={selected}
       data-testid={`tile-piece-${piece}`}
-      className={`group relative aspect-square ${isInterlocking ? "overflow-visible bg-transparent" : "overflow-hidden rounded-lg border-2 bg-background shadow-sm"} transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring ${selected ? "border-primary ring-2 ring-primary/25" : isInterlocking ? "" : "border-border"}`}
+      className={`group relative aspect-square ${isInterlocking ? "overflow-visible rounded-lg border border-border bg-card shadow-sm" : "overflow-hidden rounded-lg border-2 bg-background shadow-sm"} transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring ${selected ? "border-primary ring-2 ring-primary/25" : isInterlocking ? "" : "border-border"}`}
     >
       <PuzzlePiece themeId={themeId} imageKey={imageKey} piece={piece} gridSize={gridSize} />
       {showNumber && <span className="absolute bottom-1 right-1 z-20 grid h-5 w-5 place-items-center rounded-full bg-foreground/85 text-[10px] font-semibold text-background">{index + 1}</span>}
@@ -1104,12 +1105,13 @@ export default function JigsawPage() {
           <div aria-hidden="true" className="pointer-events-none absolute -bottom-16 -left-10 h-40 w-40 rounded-full border border-white/10" />
           <div className="relative z-10 space-y-2">
             <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-white/15"><Sparkles size={25} /></div>
-            <p className="text-[10px] font-bold uppercase tracking-[.2em] text-primary-foreground/75">Picture complete</p>
+            <p className="text-[10px] font-bold uppercase tracking-[.2em] text-primary-foreground/75">{config.dailyDate ? "Daily Jigsaw challenge complete" : "Picture complete"}</p>
             <h1 className="font-serif text-2xl font-bold leading-tight sm:text-3xl">Every piece, in place!</h1>
             <div className="mx-auto aspect-square w-full max-w-[160px] overflow-hidden rounded-xl border-4 border-white/70 shadow-md">
               <ReferenceImage themeId={puzzleThemeId} imageKey={result.imageKey} className="h-full w-full object-cover" />
             </div>
             <p className="text-xs text-primary-foreground/80">{result.gridSize}×{result.gridSize} · {LEVELS[result.level - 1]?.title} · {formatTime(result.elapsedSeconds)} · {result.moves} moves · {result.tipsUsed} assists</p>
+            {config.dailyDate && <p className="text-xs font-semibold text-primary-foreground/90">📅 Today&apos;s shared daily puzzle</p>}
             <p className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pt-1 text-sm font-black sm:text-base" data-testid="result-rewards">
               <span data-testid="result-points">+{result.points.toLocaleString()} pts</span>
               <span>+{result.xpEarned} XP</span>
@@ -1230,14 +1232,13 @@ export default function JigsawPage() {
           <div className="flex items-center gap-2"><Gem className="h-5 w-5 text-cyan-500" /><span className="font-black text-lg">+{result.gemsEarned} 💎</span></div>
         </section>
 
-        <section className="mt-4 rounded-2xl border border-border bg-card p-3 sm:p-4">
-          <p className="mb-2 text-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Or play another game</p>
-          <div className="grid grid-cols-2 gap-2">
-            <Link href="/sudoku" className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-semibold transition hover:border-primary hover:bg-muted"><span aria-hidden="true">🔢</span> Sudoku</Link>
-            <Link href="/memory" className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-semibold transition hover:border-primary hover:bg-muted"><span aria-hidden="true">🃏</span> Memory Match</Link>
-          </div>
-          <Link href="/" className="mt-2 flex min-h-10 items-center justify-center text-center text-sm text-muted-foreground transition hover:text-primary">Back to Play Brain Games . Online</Link>
-        </section>
+        <button
+          type="button"
+          onClick={() => setLocation("/")}
+          className="mt-4 w-full rounded-lg border border-border bg-card px-4 py-2.5 text-center text-sm text-foreground transition-colors hover:bg-muted"
+        >
+          ← Back to Play Brain Games . Online
+        </button>
       </main>
     );
   }
@@ -1401,8 +1402,8 @@ export default function JigsawPage() {
                 draggable={piece !== null} onDragStart={piece === null ? undefined : dragStart({ piece, from: "board", slot })} onDragEnd={() => setDragged(null)}
                 aria-label={`Puzzle position ${slot + 1}${piece !== null ? `, piece ${piece + 1}` : ", empty"}`} aria-pressed={selected?.from === "board" && selected.slot === slot}
                 data-testid={`board-slot-${slot}`}
-                className={`relative min-h-0 transition ${piece === null ? "z-20 overflow-hidden rounded-md border-2 border-dashed border-amber-500/70 bg-amber-100/70 shadow-inner dark:border-amber-600/70 dark:bg-amber-950/40" : interlockingPieces ? "z-10 overflow-visible border-0 bg-transparent" : "overflow-hidden rounded-md border-2 border-background shadow-sm"} ${selected?.from === "board" && selected.slot === slot ? "ring-4 ring-primary/40" : ""} focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring`}>
-                {piece !== null && <PuzzlePiece themeId={puzzleThemeId} imageKey={config.imageKey} piece={piece} gridSize={config.gridSize} />}
+                className={`relative min-h-0 transition ${piece === null ? "z-20 overflow-hidden rounded-md border-2 border-dashed border-amber-500/70 bg-amber-100/70 shadow-inner dark:border-amber-600/70 dark:bg-amber-950/40" : interlockingPieces ? (piece === slot ? "z-10 overflow-visible rounded-md border-border/30 bg-transparent shadow-none" : "z-10 overflow-visible rounded-md border border-border bg-card shadow-sm") : piece === slot ? "overflow-hidden rounded-md border border-transparent bg-transparent shadow-none" : "overflow-hidden rounded-md border-2 border-background shadow-sm"} ${selected?.from === "board" && selected.slot === slot ? "ring-4 ring-primary/40" : ""} focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring`}>
+                {piece !== null && <PuzzlePiece themeId={puzzleThemeId} imageKey={config.imageKey} piece={piece} gridSize={config.gridSize} isPlacedCorrectly={piece === slot} />}
                 {piece !== null && piece !== slot && revealedPieceNumbers.includes(piece) && <span className="absolute bottom-1 right-1 z-20 grid h-5 w-5 place-items-center rounded-full bg-foreground/85 text-[10px] font-semibold text-background">{piece + 1}</span>}
                 {piece === null && <span className="absolute inset-0 grid place-items-center"><span className="grid h-7 w-7 place-items-center rounded-full border border-dashed border-amber-500/70 bg-background/90 text-xs font-bold tabular-nums text-amber-800 shadow-sm dark:border-amber-500/60 dark:bg-background/90 dark:text-amber-300">{String(slot + 1).padStart(2, "0")}</span></span>}
               </button>

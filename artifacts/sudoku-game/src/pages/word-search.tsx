@@ -274,46 +274,14 @@ export default function WordSearchPage() {
         <div aria-hidden="true" className="pointer-events-none absolute -bottom-16 -left-10 h-40 w-40 rounded-full border border-white/15" />
         <div className="relative z-10 space-y-2">
           <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-white/20 text-3xl">🎉</div>
-          <p className="text-[10px] font-bold uppercase tracking-[.2em] text-white/75">Word Search complete</p>
+          <p className="text-[10px] font-bold uppercase tracking-[.2em] text-white/75">{game.dailyDate ? "Daily Word Search complete" : "Word Search complete"}</p>
           <h1 className="font-serif text-2xl font-bold sm:text-3xl">You found every word!</h1>
           <p className="text-sm text-white/85">{theme.emoji} {theme.label} · {WORD_SEARCH_LEVELS[game.difficulty].label} · {game.puzzle.words.length} words · {game.tries} tries · {game.tipsUsed} tips</p>
+          {game.dailyDate && <p className="text-sm font-semibold text-white/90">📅 Today&apos;s shared daily puzzle</p>}
           {reward?.isPersonalBest && <p className="pt-1 text-sm font-bold text-amber-100">🏆 New personal best!</p>}
           {game.challengeId && <p className="pt-1 text-sm font-bold text-white">⚔️ Challenge score submitted</p>}
           <Button variant="secondary" className="mt-2 gap-2" onClick={() => void shareResult()}><Share2 className="h-4 w-4"/> Share your result</Button>
         </div>
-      </section>
-
-      {game.challengeId && <section className="rounded-xl border border-violet-200 bg-card p-4 text-center dark:border-violet-800" aria-live="polite">
-        <h2 className="font-bold">Challenge result</h2>
-        {!challengeResult || challengeResult.status !== "completed" ? <p className="mt-1 text-sm text-muted-foreground">You completed in {fmt(elapsed)} and earned {reward?.points?.toLocaleString() ?? "…"} points. Waiting for your opponent to finish…</p> : (() => {
-          const mine = challengeResult.challengerId === profileId ? challengeResult.challengerPoints : challengeResult.challengedPoints;
-          const theirs = challengeResult.challengerId === profileId ? challengeResult.challengedPoints : challengeResult.challengerPoints;
-          const opponent = challengeResult.challengerId === profileId ? challengeResult.challengedUsername : challengeResult.challengerUsername;
-          const outcome = challengeResult.winnerId === null ? "It’s a tie!" : challengeResult.winnerId === profileId ? "You won the challenge!" : "You lost the challenge.";
-          return <><p className="mt-1 text-lg font-black">{outcome}</p><p className="mt-1 text-sm text-muted-foreground">You: {mine ?? 0} points · {opponent}: {theirs ?? 0} points</p><p className="mt-1 text-xs text-muted-foreground">Completed in {fmt(elapsed)} · {challengeResult.winnerId === null ? "Both players earned 2 bonus gems." : challengeResult.winnerId === profileId ? "You earned 10 bonus gems." : `${opponent} earned 10 bonus gems.`}</p></>;
-        })()}
-      </section>}
-
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[
-          { icon: Clock3, label: "Time", value: fmt(elapsed) },
-          { icon: Search, label: "Level", value: WORD_SEARCH_LEVELS[game.difficulty].label },
-          { icon: Search, label: "Tries", value: String(game.tries) },
-          { icon: Lightbulb, label: "Tips used", value: String(game.tipsUsed) },
-        ].map(({ icon: Icon, label, value }) => <div key={label} className="space-y-1 rounded-xl border bg-card p-3 text-center sm:p-4"><Icon className="mx-auto h-4 w-4 text-violet-600"/><p className="text-base font-black tabular-nums sm:text-lg">{value}</p><p className="text-[11px] text-muted-foreground">{label}</p></div>)}
-      </div>
-
-      <section className="rounded-2xl border-2 border-amber-200/70 bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 p-4 shadow-sm dark:border-amber-800/50 dark:from-amber-950/30 dark:via-yellow-950/20 dark:to-orange-950/30">
-        {rewardLoading ? <div className="py-2 text-center text-sm font-semibold text-muted-foreground">Calculating your score and rewards…</div> : reward?.offline ? <div className="py-2 text-center"><p className="font-semibold text-amber-900 dark:text-amber-200">Rewards could not be saved</p><p className="mt-1 text-xs text-muted-foreground">Reconnect to the game server before your next puzzle to earn points, XP, and gems.</p></div> : reward ? <><div className="grid grid-cols-3 items-center gap-2 text-center">
-          <div><p className="text-2xl font-black text-amber-800 dark:text-amber-200">{reward.points.toLocaleString()}</p><p className="text-xs font-semibold text-muted-foreground">Points</p></div>
-          <div className="border-x border-amber-300/70 px-2 dark:border-amber-700/60"><p className="text-2xl font-black text-yellow-700 dark:text-yellow-300">+{reward.xpEarned}</p><p className="text-xs font-semibold text-muted-foreground">XP</p></div>
-          <div><p className="text-2xl font-black text-cyan-700 dark:text-cyan-300">+{reward.gemsEarned} 💎</p><p className="text-xs font-semibold text-muted-foreground">Gems</p></div>
-        </div><p className="col-span-3 mt-2 text-[11px] text-muted-foreground">Score reflects level, completion time, tries, and hints used.</p></> : <div className="py-2 text-center text-sm text-muted-foreground">Your rewards are being prepared.</div>}
-      </section>
-
-      <section className="rounded-2xl border border-border bg-card p-4 shadow-sm">
-        <h2 className="mb-3 text-center text-sm font-bold">Words you found</h2>
-        <div className="flex flex-wrap justify-center gap-2">{game.puzzle.words.map((word) => <span key={word} className={`rounded-full px-3 py-1.5 text-xs font-bold ${WORD_COLORS[game.puzzle.words.indexOf(word) % WORD_COLORS.length]}`}>✓ {word}</span>)}</div>
       </section>
 
       <section className="space-y-2 rounded-2xl border border-border bg-card p-3 shadow-sm sm:p-4">
@@ -348,6 +316,43 @@ export default function WordSearchPage() {
           <Button variant="ghost" className="gap-2" onClick={() => setLocation("/")}><ArrowLeft className="h-4 w-4"/> Home</Button>
         </div>
       </section>
+
+      <section className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <h2 className="mb-3 text-center text-sm font-bold">Words you found</h2>
+        <div className="flex flex-wrap justify-center gap-2">{game.puzzle.words.map((word) => <span key={word} className={`rounded-full px-3 py-1.5 text-xs font-bold ${WORD_COLORS[game.puzzle.words.indexOf(word) % WORD_COLORS.length]}`}>✓ {word}</span>)}</div>
+      </section>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          { icon: Clock3, label: "Time", value: fmt(elapsed) },
+          { icon: Search, label: "Level", value: WORD_SEARCH_LEVELS[game.difficulty].label },
+          { icon: Search, label: "Tries", value: String(game.tries) },
+          { icon: Lightbulb, label: "Tips used", value: String(game.tipsUsed) },
+        ].map(({ icon: Icon, label, value }) => <div key={label} className="space-y-1 rounded-xl border bg-card p-3 text-center sm:p-4"><Icon className="mx-auto h-4 w-4 text-violet-600"/><p className="text-base font-black tabular-nums sm:text-lg">{value}</p><p className="text-[11px] text-muted-foreground">{label}</p></div>)}
+      </div>
+
+      <section className="rounded-2xl border-2 border-amber-200/70 bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 p-4 shadow-sm dark:border-amber-800/50 dark:from-amber-950/30 dark:via-yellow-950/20 dark:to-orange-950/30">
+        {rewardLoading ? <div className="py-2 text-center text-sm font-semibold text-muted-foreground">Calculating your score and rewards…</div> : reward?.offline ? <div className="py-2 text-center"><p className="font-semibold text-amber-900 dark:text-amber-200">Rewards could not be saved</p><p className="mt-1 text-xs text-muted-foreground">Reconnect to the game server before your next puzzle to earn points, XP, and gems.</p></div> : reward ? <><div className="grid grid-cols-3 items-center gap-2 text-center">
+          <div><p className="text-2xl font-black text-amber-800 dark:text-amber-200">{reward.points.toLocaleString()}</p><p className="text-xs font-semibold text-muted-foreground">Points</p></div>
+          <div className="border-x border-amber-300/70 px-2 dark:border-amber-700/60"><p className="text-2xl font-black text-yellow-700 dark:text-yellow-300">+{reward.xpEarned}</p><p className="text-xs font-semibold text-muted-foreground">XP</p></div>
+          <div><p className="text-2xl font-black text-cyan-700 dark:text-cyan-300">+{reward.gemsEarned} 💎</p><p className="text-xs font-semibold text-muted-foreground">Gems</p></div>
+        </div><p className="col-span-3 mt-2 text-[11px] text-muted-foreground">Score reflects level, completion time, tries, and hints used.</p></> : <div className="py-2 text-center text-sm text-muted-foreground">Your rewards are being prepared.</div>}
+      </section>
+
+      {game.challengeId && <section className="rounded-xl border border-violet-200 bg-card p-4 text-center dark:border-violet-800" aria-live="polite">
+        <h2 className="font-bold">Challenge result</h2>
+        {!challengeResult || challengeResult.status !== "completed" ? <p className="mt-1 text-sm text-muted-foreground">You completed in {fmt(elapsed)} and earned {reward?.points?.toLocaleString() ?? "…"} points. Waiting for your opponent to finish…</p> : (() => {
+          const mine = challengeResult.challengerId === profileId ? challengeResult.challengerPoints : challengeResult.challengedPoints;
+          const theirs = challengeResult.challengerId === profileId ? challengeResult.challengedPoints : challengeResult.challengerPoints;
+          const opponent = challengeResult.challengerId === profileId ? challengeResult.challengedUsername : challengeResult.challengerUsername;
+          const outcome = challengeResult.winnerId === null ? "It’s a tie!" : challengeResult.winnerId === profileId ? "You won the challenge!" : "You lost the challenge.";
+          return <><p className="mt-1 text-lg font-black">{outcome}</p><p className="mt-1 text-sm text-muted-foreground">You: {mine ?? 0} points · {opponent}: {theirs ?? 0} points</p><p className="mt-1 text-xs text-muted-foreground">Completed in {fmt(elapsed)} · {challengeResult.winnerId === null ? "Both players earned 2 bonus gems." : challengeResult.winnerId === profileId ? "You earned 10 bonus gems." : `${opponent} earned 10 bonus gems.`}</p></>;
+        })()}
+      </section>}
+
+
+
+
     </main>;
   }
 
