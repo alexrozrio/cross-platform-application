@@ -25,9 +25,10 @@ export function getConfiguredApiBaseUrl(): string | null {
   // browser dev-server proxy.
   const raw = import.meta.env.VITE_API_BASE_URL_LOCAL || import.meta.env.VITE_API_BASE_URL;
   if (!raw) {
-    // When no API URL is configured, browser development uses Vite's local
-    // proxy. Native builds have no proxy and use the deployed API.
-    return Capacitor.isNativePlatform() ? DEPLOYED_API_BASE_URL : null;
+    // Production builds call the deployed API directly so static hosts
+    // (Cloudflare Pages, etc.) without an /api proxy still reach it.
+    // Browser development keeps using Vite's local /api proxy instead.
+    return import.meta.env.DEV && !Capacitor.isNativePlatform() ? null : DEPLOYED_API_BASE_URL;
   }
   const trimmed = raw.trim().replace(/\/+$/, "");
   return trimmed === "" ? null : trimmed;
