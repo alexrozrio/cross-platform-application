@@ -87,6 +87,9 @@ export default function WordSearchPage() {
   const pendingGameRef = React.useRef<{ savedAt: number; promise: Promise<number | null> } | null>(null);
   const userSelectedThemeRef = React.useRef(false);
   const directStartHandledRef = React.useRef(false);
+  const dragCellRef = React.useRef<number | null>(null);
+  const finishSelectionRef = React.useRef<(end: number) => void>(() => {});
+  const gridSizeRef = React.useRef(10);
 
   usePageMeta({
     title: "Word Search Game | Play Brain Games",
@@ -263,25 +266,34 @@ export default function WordSearchPage() {
 
   const finished = Boolean(game && game.found.length === game.puzzle.words.length);
   const size = game?.puzzle.grid.length ?? 10;
+  gridSizeRef.current = size;
+  finishSelectionRef.current = finishSelection;
 
   // Track the drag on window (not React synthetic events): touch pointers get
-  // implicit capture on the first cell, so per-element move/up handlers never
-  // see the finger leaving that cell. elementFromPoint hit-tests the real cell
-  // under the pointer regardless of capture.
+  // implicit pointer capture on the first cell, so per-element move/up handlers
+  // never see the finger leaving that cell. Listeners mount once and read the
+  // latest values through refs so they can never go stale; elementFromPoint
+  // hit-tests the real cell under the pointer regardless of capture.
   React.useEffect(() => {
-    if (dragStart === null) return;
+    const cellAt = (event: PointerEvent) =>
+      document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-cell]");
     const onMove = (event: PointerEvent) => {
-      const cell = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-cell]");
-      if (cell) setSelected(getLineCells(dragStart, Number(cell.dataset.cell), size));
+      const start = dragCellRef.current;
+      if (start === null) return;
+      const cell = cellAt(event);
+      if (cell) setSelected(getLineCells(start, Number(cell.dataset.cell), gridSizeRef.current));
     };
     const onUp = (event: PointerEvent) => {
-      const cell = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-cell]");
-      if (cell) finishSelection(Number(cell.dataset.cell));
+      const start = dragCellRef.current;
+      if (start === null) return;
+      dragCellRef.current = null;
+      const cell = cellAt(event);
+      if (cell) finishSelectionRef.current(Number(cell.dataset.cell));
       else setSelected([]);
       setDragStart(null);
     };
-    const onCancel = () => { setDragStart(null); setSelected([]); };
-    window.addEventListener("pointermove", onMove);
+    const onCancel = () => { dragCellRef.current = null; setDragStart(null); setSelected([]); };
+    window.addEventListener("pointermove", onMove, { passive: true });
     window.addEventListener("pointerup", onUp);
     window.addEventListener("pointercancel", onCancel);
     return () => {
@@ -289,7 +301,7 @@ export default function WordSearchPage() {
       window.removeEventListener("pointerup", onUp);
       window.removeEventListener("pointercancel", onCancel);
     };
-  }, [dragStart, size, finishSelection]);
+  }, []);
 
   React.useEffect(() => {
     const onUp = () => { setDragStart((start) => { if (start !== null) setSelected([]); return null; }); };
@@ -665,7 +677,7 @@ export default function WordSearchPage() {
                     ? "bg-amber-300 text-amber-950 ring-2 ring-inset ring-amber-600 dark:bg-amber-400/80 dark:text-amber-950 dark:ring-amber-200"
                     : "bg-blue-500 text-white ring-2 ring-inset ring-blue-800 shadow-inner dark:bg-blue-400 dark:text-blue-950 dark:ring-blue-100"
                   : "bg-violet-50 text-slate-800 hover:bg-violet-100 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800");
-                return <button key={index} data-cell={index} aria-label={`Row ${r + 1}, column ${c + 1}, ${letter}${foundWord ? `, part of ${foundWord}` : ""}`} onPointerDown={(e) => { e.preventDefault(); setHintWord(null); setDragStart(index); setSelected([index]); sounds.click(); }} className={`aspect-square min-w-0 border-[0.5px] border-violet-200/70 text-[clamp(10px,2.4vw,18px)] font-bold transition-colors dark:border-violet-800/60 sm:text-lg ${baseClass}`}>{letter}</button>;
+                return <button key={index} data-cell={index} aria-label={`Row ${r + 1}, column ${c + 1}, ${letter}${foundWord ? `, part of ${foundWord}` : ""}`} onPointerDown={(e) => { e.preventDefault(); setHintWord(null); dragCellRef.current = index; setDragStart(index); setSelected([index]); sounds.click(); }} className={`aspect-square min-w-0 border-[0.5px] border-violet-200/70 text-[clamp(10px,2.4vw,18px)] font-bold transition-colors dark:border-violet-800/60 sm:text-lg ${baseClass}`}>{letter}</button>;
               }))}
             </div>
           </div>
