@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type DragEvent } from "react";
 import { Link, useLocation, useSearch } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ArrowRight, BarChart2, BookOpen, CalendarDays, Check, Eye, EyeOff, Flame, Gem, Grip, Hash, Image as ImageIcon, Keyboard, Lightbulb, Move, RotateCcw, Scroll, Share2, Sparkles, Timer, Trophy, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight, BarChart2, BookOpen, CalendarDays, Check, Eye, EyeOff, Flame, Gem, Grip, Hash, Image as ImageIcon, Keyboard, Lightbulb, Move, RotateCcw, Scroll, Share2, Sparkles, Timer, Trophy, Volume2, VolumeX, Zap } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useImageTheme } from "@/hooks/use-image-theme";
 import { useThemeImageSrc } from "@/components/theme-icons";
@@ -25,6 +25,7 @@ import {
 } from "@/lib/jigsaw-session";
 import { getJigsawPiecePath } from "@/lib/jigsaw-piece-shapes";
 import { getLevelFromXp } from "@/lib/levels";
+import { useSound } from "@/hooks/use-sound";
 import { toast } from "sonner";
 
 type GridSize = 2 | 3 | 4 | 5;
@@ -158,6 +159,9 @@ export default function JigsawPage() {
   const { profileId } = useAuth();
   const { themeId } = useImageTheme();
   const { data: profile } = useGetProfile(profileId as number);
+  const sounds = useSound(profile?.soundEnabled);
+  const soundsRef = useRef(sounds);
+  soundsRef.current = sounds;
   const queryClient = useQueryClient();
   const gameMode = profile?.gameMode ?? "4all";
   const availableSizes = SIZES.filter((size) => gameMode === "children" ? size <= 3 : gameMode === "adult" ? size >= 4 : true);
@@ -232,6 +236,7 @@ export default function JigsawPage() {
       referencePeeksUsedRef.current >= JIGSAW_MAX_REFERENCE_PEEKS ||
       referencePeekTimeoutRef.current !== null
     ) return;
+    soundsRef.current.click();
     clearReferencePeekTimer();
     const nextPeeksUsed = referencePeeksUsedRef.current + 1;
     referencePeeksUsedRef.current = nextPeeksUsed;
@@ -335,6 +340,7 @@ export default function JigsawPage() {
     gameConfig: Config = config,
     forceNewGame = false,
   ) => {
+    soundsRef.current.click();
     clearReferencePeekTimer();
     const gameProgress = { elapsed: 0, moves: 0 };
     activeGameProgressRef.current = gameProgress;
@@ -610,6 +616,7 @@ export default function JigsawPage() {
 
   const finishGame = useCallback((finalElapsed: number, finalMoves: number) => {
     if (completedRef.current) return;
+    soundsRef.current.complete();
     clearReferencePeekTimer();
     completedRef.current = true;
     const tipsUsed = revealedPieceNumbersRef.current.length + referencePeeksUsedRef.current;
@@ -653,6 +660,8 @@ export default function JigsawPage() {
       setMoves((value) => value + 1);
       return next;
     });
+    if (source.from === "tray") soundsRef.current.place();
+    else soundsRef.current.click();
     setSelected(null);
   }, []);
 
@@ -663,11 +672,15 @@ export default function JigsawPage() {
   const chooseSlot = (slot: number) => {
     const existingPiece = board[slot];
     if (!selected) {
-      if (existingPiece !== null && existingPiece !== undefined) setSelected({ piece: existingPiece, from: "board", slot });
+      if (existingPiece !== null && existingPiece !== undefined) {
+        setSelected({ piece: existingPiece, from: "board", slot });
+        soundsRef.current.click();
+      }
       return;
     }
     if (selected.from === "board" && selected.slot === slot) {
       setSelected(null);
+      soundsRef.current.click();
       return;
     }
     placePiece(selected, slot);
@@ -721,12 +734,24 @@ export default function JigsawPage() {
         {/* Top bar */}
         <div className="relative isolate overflow-hidden flex items-center justify-between gap-3 rounded-2xl border-2 border-amber-200/80 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 px-4 py-3 shadow-lg shadow-amber-500/10 dark:border-amber-800/60 dark:from-amber-950/60 dark:via-card dark:to-yellow-950/60">
           <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full bg-amber-300/25 blur-2xl dark:bg-amber-400/15" />
-          <button
-            onClick={() => setLocation("/")}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
-          >
-            <ArrowLeft className="w-4 h-4" /> Home
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={sounds.toggle}
+              aria-label={sounds.enabled ? "Mute sounds" : "Enable sounds"}
+              title={sounds.enabled ? "Mute sounds" : "Enable sounds"}
+              data-testid="button-jigsaw-sound"
+              className="flex items-center justify-center rounded-lg border border-border bg-card/60 p-1.5 text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {sounds.enabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            </button>
+            <button
+              onClick={() => setLocation("/")}
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" /> Home
+            </button>
+          </div>
           <div className="text-right">
             <h1 className="text-xl sm:text-3xl font-serif font-bold tracking-tight leading-tight">Jigsaw Puzzle</h1>
             {profile && (
@@ -1261,6 +1286,7 @@ export default function JigsawPage() {
     ].filter((piece) => !revealedPieceNumbersRef.current.includes(piece));
     if (availablePieces.length === 0) return;
     const piece = selected && availablePieces.includes(selected.piece) ? selected.piece : availablePieces[0];
+    soundsRef.current.note();
     const nextRevealed = [...revealedPieceNumbersRef.current, piece];
     revealedPieceNumbersRef.current = nextRevealed;
     setRevealedPieceNumbers(nextRevealed);
@@ -1376,6 +1402,16 @@ export default function JigsawPage() {
             <span className="hidden sm:inline">Tip</span>
             <span className="tabular-nums">{JIGSAW_MAX_PIECE_NUMBER_HINTS - revealedPieceNumbers.length}</span>
           </button>
+          <button
+            type="button"
+            onClick={sounds.toggle}
+            aria-label={sounds.enabled ? "Mute sounds" : "Enable sounds"}
+            title={sounds.enabled ? "Mute sounds" : "Enable sounds"}
+            data-testid="button-jigsaw-sound"
+            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-background text-foreground transition hover:border-primary sm:h-9 sm:w-9"
+          >
+            {sounds.enabled ? <Volume2 size={15} /> : <VolumeX size={15} />}
+          </button>
           {!hasLinkedChallenge && <button type="button" onClick={() => startGame(undefined, undefined, false)} aria-label="Restart puzzle" data-testid="button-restart-jigsaw" className="inline-flex h-7 w-7 shrink-0 items-center justify-center gap-1.5 rounded-full border border-border bg-background text-foreground transition hover:border-primary hover:text-primary sm:h-auto sm:w-auto sm:px-4 sm:py-2 sm:text-sm"><RotateCcw size={13} /><span className="hidden sm:inline">Restart</span></button>}
         </div>
       </header>
@@ -1409,7 +1445,7 @@ export default function JigsawPage() {
             <div className={`grid max-h-[40vh] grid-cols-4 ${interlockingPieces ? "gap-3 p-2" : "gap-1.5 pr-1"} overflow-y-auto sm:grid-cols-4 lg:grid-cols-3`}>
               {tray.map((piece) => (
                 <Tile key={piece} piece={piece} index={piece} gridSize={config.gridSize} themeId={puzzleThemeId} imageKey={config.imageKey} selected={selected?.from === "tray" && selected.piece === piece} showNumber={revealedPieceNumbers.includes(piece)}
-                  onClick={() => setSelected((current) => current?.from === "tray" && current.piece === piece ? null : { piece, from: "tray" })}
+                  onClick={() => { soundsRef.current.click(); setSelected((current) => current?.from === "tray" && current.piece === piece ? null : { piece, from: "tray" }); }}
                   onDragStart={dragStart({ piece, from: "tray" })} onDragEnd={() => setDragged(null)} label={`Piece ${piece + 1}, select to place`} />
               ))}
               {tray.length === 0 && <div className="col-span-full rounded-lg bg-muted px-3 py-4 text-center text-xs text-muted-foreground">All pieces are on the board. Adjust any that need a new home.</div>}
