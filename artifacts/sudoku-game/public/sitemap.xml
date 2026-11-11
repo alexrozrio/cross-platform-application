@@ -2,41 +2,170 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://playbraingames.online/</loc>
+    <lastmod>2026-11-11</lastmod>
   </url>
   <url>
-    <loc>https://playbraingames.online/sudoku/</loc>
+    <loc>https://playbraingames.online/jigsaw/</loc>
+    <lastmod>2026-11-11</lastmod>
   </url>
   <url>
-    <loc>https://playbraingames.online/memory/</loc>
-  </url>
-  <url>
-    <loc>https://playbraingames.online/memory-challenge/</loc>
+    <loc>https://playbraingames.online/jigsaw-challenge/</loc>
+    <lastmod>2026-11-11</lastmod>
   </url>
   <url>
     <loc>https://playbraingames.online/themes/</loc>
-  </url>
-  <url>
-    <loc>https://playbraingames.online/daily-challenge/</loc>
-  </url>
-  <url>
-    <loc>https://playbraingames.online/leaderboard/</loc>
-  </url>
-  <url>
-    <loc>https://playbraingames.online/leaderboard/sudoku/</loc>
-  </url>
-  <url>
-    <loc>https://playbraingames.online/leaderboard/memory/</loc>
+    <lastmod>2026-11-11</lastmod>
   </url>
   <url>
     <loc>https://playbraingames.online/guides/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/sudoku/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/memory/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/memory-challenge/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/daily-challenge/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/leaderboard/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/leaderboard/sudoku/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/leaderboard/memory/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/challenges/</loc>
+    <lastmod>2026-11-11</lastmod>
   </url>
   <url>
     <loc>https://playbraingames.online/about/</loc>
+    <lastmod>2026-11-11</lastmod>
   </url>
   <url>
     <loc>https://playbraingames.online/privacy/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/account-deletion/</loc>
+    <lastmod>2026-11-11</lastmod>
   </url>
   <url>
     <loc>https://playbraingames.online/terms/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/word-search/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/word-search-challenge/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/jigsaw-challenges/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/leaderboard/jigsaw/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/leaderboard/word-search/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/sudoku/baby/easy/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/sudoku/baby/medium/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/sudoku/baby/hard/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/sudoku/baby/expert/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/sudoku/mini/easy/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/sudoku/mini/medium/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/sudoku/mini/hard/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/sudoku/mini/expert/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/sudoku/dual/easy/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/sudoku/dual/medium/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/sudoku/dual/hard/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/sudoku/dual/expert/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/sudoku/classic/easy/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/sudoku/classic/medium/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/sudoku/classic/hard/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/sudoku/classic/expert/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/sudoku/pro/easy/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/sudoku/pro/medium/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/sudoku/pro/hard/</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://playbraingames.online/sudoku/pro/expert/</loc>
+    <lastmod>2026-11-11</lastmod>
   </url>
 </urlset>

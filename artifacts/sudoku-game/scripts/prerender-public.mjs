@@ -707,6 +707,20 @@ async function prerender() {
     await writeFile(outputPath, html);
   }
 
+  const lastmod = new Date().toISOString().slice(0, 10);
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${publicPages
+  .map((page) => {
+    const publicRoute =
+      page.route === "/" || page.route.endsWith("/") ? page.route : `${page.route}/`;
+    return `  <url>\n    <loc>${siteUrl}${publicRoute}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`;
+  })
+  .join("\n")}
+</urlset>
+`;
+  await writeFile(path.join(outputDirectory, "sitemap.xml"), sitemap);
+
   console.log(`Prerendered ${publicPages.length} public routes to ${outputDirectory}`);
 }
 
