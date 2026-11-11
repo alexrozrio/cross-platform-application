@@ -1274,9 +1274,9 @@ export default function JigsawPage() {
   return (
     <main className="mx-auto min-h-0 w-full max-w-7xl px-2 pb-4 pt-2 text-foreground sm:px-4 sm:pt-3">
       {/* Top options bar */}
-      <header className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-card px-3 py-2 shadow-sm sm:px-4 sm:py-2.5">
-        <button type="button" onClick={exitToSetup} className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground transition hover:border-primary sm:px-4 sm:py-2 sm:text-sm" data-testid="link-exit-jigsaw"><ArrowLeft size={14} /> Setup</button>
-        <div className="flex items-center gap-2">
+      <header className="mb-3 flex flex-nowrap items-center justify-between gap-1.5 rounded-xl border border-border bg-card px-2 py-1.5 shadow-sm sm:mb-4 sm:gap-2 sm:rounded-2xl sm:px-4 sm:py-2.5">
+        <button type="button" onClick={exitToSetup} aria-label="Back to setup" className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-background text-foreground transition hover:border-primary sm:h-auto sm:w-auto sm:gap-2 sm:rounded-full sm:px-4 sm:py-2 sm:text-sm" data-testid="link-exit-jigsaw"><ArrowLeft size={14} /><span className="hidden sm:inline">Setup</span></button>
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-2">
           {!hasLinkedChallenge && (
             <Popover open={isOptionsOpen} onOpenChange={setIsOptionsOpen}>
               <PopoverTrigger asChild>
@@ -1285,7 +1285,7 @@ export default function JigsawPage() {
                   aria-label="Change puzzle picture, level, or size"
                   title="Change puzzle options"
                   data-testid="button-jigsaw-options"
-                  className="relative h-9 w-9 overflow-hidden rounded-full border-2 border-border bg-background transition hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full border-2 border-border bg-background transition hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-9 sm:w-9"
                 >
                   <ReferenceImage themeId={themeId} imageKey={config.imageKey} className="h-full w-full object-cover" />
                   <ImageIcon size={12} className="absolute bottom-0 right-0 rounded-tl bg-background/90 p-0.5 text-foreground" />
@@ -1346,16 +1346,16 @@ export default function JigsawPage() {
               </PopoverContent>
             </Popover>
           )}
-          <div className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs font-bold uppercase tracking-[.12em] text-muted-foreground sm:px-4 sm:py-2">
-            <span>Level {config.level}</span>
+          <div className="flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-1 text-[10px] font-bold uppercase tracking-[.08em] text-muted-foreground sm:gap-1.5 sm:px-4 sm:py-2 sm:text-xs sm:tracking-[.12em]">
+            <span>L{config.level}</span>
             <span className="text-border">/</span>
-            <span>{tileCount} pieces</span>
+            <span>{tileCount}pc</span>
           </div>
-          <div className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 font-mono text-xs sm:px-4 sm:py-2 sm:text-sm" data-testid="status-timer">
-            <Timer size={13} className="text-primary" />{formatTime(elapsed)}
+          <div className="flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-1 font-mono text-[11px] sm:gap-1.5 sm:px-4 sm:py-2 sm:text-sm" data-testid="status-timer">
+            <Timer size={12} className="text-primary sm:size-[13px]" />{formatTime(elapsed)}
           </div>
-          <div className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 font-mono text-xs sm:px-4 sm:py-2 sm:text-sm" data-testid="status-moves">
-            <span className="text-primary">{moves}</span> moves
+          <div className="flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-1 font-mono text-[11px] sm:gap-1.5 sm:px-4 sm:py-2 sm:text-sm" data-testid="status-moves">
+            <span className="text-primary">{moves}</span><span className="hidden sm:inline">moves</span>
           </div>
           <button
             type="button"
@@ -1364,27 +1364,13 @@ export default function JigsawPage() {
             aria-label={`Reveal a piece number, ${JIGSAW_MAX_PIECE_NUMBER_HINTS - revealedPieceNumbers.length} tips remaining`}
             title="Reveal the number of one unmatched piece"
             data-testid="button-jigsaw-tip"
-            className="inline-flex h-8 items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2 text-xs font-semibold text-amber-800 transition hover:border-amber-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-amber-950/30 dark:text-amber-200 sm:h-9"
+            className="inline-flex h-7 shrink-0 items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-1.5 text-[11px] font-semibold text-amber-800 transition hover:border-amber-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-amber-950/30 dark:text-amber-200 sm:h-9 sm:px-2 sm:text-xs"
           >
-            <Lightbulb size={14} />
-            <span>Tip</span>
+            <Lightbulb size={13} className="sm:size-[14px]" />
+            <span className="hidden sm:inline">Tip</span>
             <span className="tabular-nums">{JIGSAW_MAX_PIECE_NUMBER_HINTS - revealedPieceNumbers.length}</span>
           </button>
-          {config.level === 2 && (
-            <button
-              type="button"
-              onClick={startReferencePeek}
-              disabled={showReference || referencePeeksUsed >= JIGSAW_MAX_REFERENCE_PEEKS}
-              aria-label={`Preview reference picture, ${JIGSAW_MAX_REFERENCE_PEEKS - referencePeeksUsed} previews remaining`}
-              title={`${JIGSAW_MAX_REFERENCE_PEEKS - referencePeeksUsed} previews remaining`}
-              data-testid="button-toggle-reference"
-              className="inline-flex h-8 items-center gap-1 rounded-full border border-border bg-background px-2 text-foreground transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-50 sm:h-9"
-            >
-              <Eye size={15} />
-              <span className="text-[10px] font-semibold tabular-nums">{JIGSAW_MAX_REFERENCE_PEEKS - referencePeeksUsed}</span>
-            </button>
-          )}
-          {!hasLinkedChallenge && <button type="button" onClick={() => startGame(undefined, undefined, false)} data-testid="button-restart-jigsaw" className="inline-flex items-center gap-1.5 rounded-full bg-background border border-border px-3 py-1.5 text-xs font-semibold text-foreground transition hover:border-primary hover:text-primary sm:px-4 sm:py-2 sm:text-sm"><RotateCcw size={13} /> Restart</button>}
+          {!hasLinkedChallenge && <button type="button" onClick={() => startGame(undefined, undefined, false)} aria-label="Restart puzzle" data-testid="button-restart-jigsaw" className="inline-flex h-7 w-7 shrink-0 items-center justify-center gap-1.5 rounded-full border border-border bg-background text-foreground transition hover:border-primary hover:text-primary sm:h-auto sm:w-auto sm:px-4 sm:py-2 sm:text-sm"><RotateCcw size={13} /><span className="hidden sm:inline">Restart</span></button>}
         </div>
       </header>
 
@@ -1427,10 +1413,29 @@ export default function JigsawPage() {
       </div>
 
       {/* Reference preview at bottom */}
+      {config.level === 3 ? (
+        <p className="mt-4 flex items-center justify-center gap-2 text-center text-xs text-muted-foreground"><EyeOff size={14} /> Picture memory — the reference stays hidden on this level.</p>
+      ) : (
       <section className="mt-4 rounded-2xl border border-border bg-card p-3 shadow-sm sm:p-4">
         <div className="mb-2 flex items-center justify-between gap-3">
-          <div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-muted-foreground">Reference</p><p className="font-serif text-lg font-semibold">{config.level === 3 ? "Picture memory" : config.level === 2 ? "Limited previews" : "Keep it in view"}</p></div>
-          <p className="text-right text-xs text-muted-foreground">{config.level === 2 ? `${JIGSAW_MAX_REFERENCE_PEEKS - referencePeeksUsed} of ${JIGSAW_MAX_REFERENCE_PEEKS} previews left` : LEVELS[config.level - 1].copy}</p>
+          <div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-muted-foreground">Reference</p><p className="font-serif text-lg font-semibold">{config.level === 2 ? "Limited previews" : "Keep it in view"}</p></div>
+          <div className="flex items-center gap-2">
+            {config.level === 2 && (
+              <button
+                type="button"
+                onClick={startReferencePeek}
+                disabled={showReference || referencePeeksUsed >= JIGSAW_MAX_REFERENCE_PEEKS}
+                aria-label={`Preview reference picture, ${JIGSAW_MAX_REFERENCE_PEEKS - referencePeeksUsed} previews remaining`}
+                title={`${JIGSAW_MAX_REFERENCE_PEEKS - referencePeeksUsed} previews remaining`}
+                data-testid="button-toggle-reference"
+                className="inline-flex h-8 items-center gap-1 rounded-full border border-border bg-background px-2.5 text-xs font-semibold text-foreground transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-50 sm:h-9"
+              >
+                <Eye size={15} />
+                <span className="tabular-nums">{JIGSAW_MAX_REFERENCE_PEEKS - referencePeeksUsed}</span>
+              </button>
+            )}
+            <p className="text-right text-xs text-muted-foreground">{config.level === 2 ? `${JIGSAW_MAX_REFERENCE_PEEKS - referencePeeksUsed} of ${JIGSAW_MAX_REFERENCE_PEEKS} previews left` : LEVELS[config.level - 1].copy}</p>
+          </div>
         </div>
         {canSeeReference ? (
           <div className="mx-auto aspect-square max-w-[min(90vw,400px)] overflow-hidden rounded-xl border-4 border-background">
@@ -1440,18 +1445,17 @@ export default function JigsawPage() {
           <div className="mx-auto grid aspect-square max-w-[min(90vw,400px)] place-items-center rounded-xl border border-dashed border-border bg-muted p-6 text-center">
             <div>
               <EyeOff size={23} className="mx-auto mb-2 text-muted-foreground" />
-              <p className="font-serif text-xl">{config.level === 2 ? "Reference hidden" : "Build it from memory"}</p>
+              <p className="font-serif text-xl">Reference hidden</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                {config.level === 2
-                  ? referencePeeksUsed >= JIGSAW_MAX_REFERENCE_PEEKS
-                    ? "You have used all 3 previews for this game."
-                    : "Use the eye button for a five-second preview."
-                  : "This level keeps the picture hidden."}
+                {referencePeeksUsed >= JIGSAW_MAX_REFERENCE_PEEKS
+                  ? "You have used all 3 previews for this game."
+                  : "Use the eye button above for a five-second preview."}
               </p>
             </div>
           </div>
         )}
       </section>
+      )}
     </main>
   );
 }
