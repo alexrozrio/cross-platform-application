@@ -9,10 +9,15 @@ export interface ShareCardData {
   shareUrl?: string;
   accent?: string;
   filename?: string;
+  imageUrl?: string;
 }
 
 const WIDTH = 1080;
 const HEIGHT = 1350;
+const HEIGHT_WITH_IMAGE = 1700;
+const IMAGE_SIZE = 520;
+const IMAGE_X = (WIDTH - IMAGE_SIZE) / 2;
+const IMAGE_Y = 470;
 
 function escapeXml(value: string): string {
   return value
@@ -43,15 +48,17 @@ function wrapLine(line: string, maxCharacters = 34): string[] {
 
 export function buildShareCardSvg(data: ShareCardData): string {
   const accent = data.accent ?? "#f3b63f";
+  const height = data.imageUrl ? HEIGHT_WITH_IMAGE : HEIGHT;
+  const firstLineY = data.imageUrl ? 1060 : 560;
   const lines = data.lines.flatMap((line) => wrapLine(line));
   const lineMarkup = lines
     .map(
       (line, index) =>
-        `<text x="540" y="${560 + index * 68}" text-anchor="middle" class="line">${escapeXml(line)}</text>`,
+        `<text x="540" y="${firstLineY + index * 64}" text-anchor="middle" class="line">${escapeXml(line)}</text>`,
     )
     .join("");
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${height}" viewBox="0 0 ${WIDTH} ${height}">
     <defs>
       <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0%" stop-color="#111b33"/>
@@ -72,35 +79,80 @@ export function buildShareCardSvg(data: ShareCardData): string {
         .footer { font: 600 25px system-ui, sans-serif; fill: #b7c6dc; }
       </style>
     </defs>
-    <rect width="${WIDTH}" height="${HEIGHT}" rx="48" fill="url(#bg)"/>
+    <rect width="${WIDTH}" height="${height}" rx="48" fill="url(#bg)"/>
     <circle cx="90" cy="110" r="28" fill="url(#accent)"/>
     <text x="140" y="122" class="brand">PLAY BRAIN GAMES</text>
     <rect x="80" y="195" width="920" height="10" rx="5" fill="url(#accent)"/>
     <text x="540" y="310" text-anchor="middle" class="eyebrow">SHARE YOUR MOMENT</text>
     <text x="540" y="430" text-anchor="middle" class="title">${escapeXml(data.title)}</text>
     <g>${lineMarkup}</g>
-    <rect x="120" y="1120" width="840" height="2" fill="#ffffff" opacity=".18"/>
-    <text x="540" y="1195" text-anchor="middle" class="footer">Play puzzles. Match cards. Climb the ranks.</text>
-    <text x="540" y="1250" text-anchor="middle" class="footer">${escapeXml(typeof window !== "undefined" ? window.location.host : "Play Brain Games")}</text>
+    <rect x="120" y="${height - 230}" width="840" height="2" fill="#ffffff" opacity=".18"/>
+    <text x="540" y="${height - 155}" text-anchor="middle" class="footer">Play puzzles. Match cards. Climb the ranks.</text>
+    <text x="540" y="${height - 100}" text-anchor="middle" class="footer">${escapeXml(typeof window !== "undefined" ? window.location.host : "Play Brain Games")}</text>
   </svg>`;
+}
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Could not load share card image"));
+    image.src = src;
+  });
+}
+
+function drawCardImage(context: CanvasRenderingContext2D, image: HTMLImageElement): void {
+  const size = Math.min(image.naturalWidth, image.naturalHeight);
+  const sx = (image.naturalWidth - size) / 2;
+  const sy = (image.naturalHeight - size) / 2;
+  context.save();
+  context.beginPath();
+  context.roundRect(IMAGE_X, IMAGE_Y, IMAGE_SIZE, IMAGE_SIZE, 28);
+  context.clip();
+  context.drawImage(image, sx, sy, size, size, IMAGE_X, IMAGE_Y, IMAGE_SIZE, IMAGE_SIZE);
+  context.restore();
+  context.strokeStyle = "rgba(255,255,255,.85)";
+  context.lineWidth = 10;
+  context.beginPath();
+  context.roundRect(IMAGE_X + 5, IMAGE_Y + 5, IMAGE_SIZE - 10, IMAGE_SIZE - 10, 24);
+  context.stroke();
 }
 
 function renderShareCard(data: ShareCardData): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const svg = buildShareCardSvg(data);
+    const height = data.imageUrl ? HEIGHT_WITH_IMAGE : HEIGHT;
     const image = new Image();
     const objectUrl = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
     image.onload = () => {
       URL.revokeObjectURL(objectUrl);
       const canvas = document.createElement("canvas");
       canvas.width = WIDTH;
-      canvas.height = HEIGHT;
+      canvas.height = height;
       const context = canvas.getContext("2d");
       if (!context) {
         reject(new Error("Canvas is unavailable"));
         return;
       }
-      context.drawImage(image, 0, 0, WIDTH, HEIGHT);
+      context.drawImage(image, 0, 0, WIDTH, height);
+      if (data.imageUrl) {
+        loadImage(data.imageUrl)
+          .then((cardImage) => {
+            drawCardImage(context, cardImage);
+            canvas.toBlob((blob) => {
+              if (blob) resolve(blob);
+              else reject(new Error("Could not render share image"));
+            }, "image/png");
+          })
+          .catch(() => {
+            canvas.toBlob((blob) => {
+              if (blob) resolve(blob);
+              else reject(new Error("Could not render share image"));
+            }, "image/png");
+          });
+        return;
+      }
       canvas.toBlob((blob) => {
         if (blob) resolve(blob);
         else reject(new Error("Could not render share image"));

@@ -24,6 +24,7 @@ import {
   type SavedJigsawSession,
 } from "@/lib/jigsaw-session";
 import { getJigsawPiecePath } from "@/lib/jigsaw-piece-shapes";
+import { getLevelFromXp } from "@/lib/levels";
 import { toast } from "sonner";
 
 type GridSize = 2 | 3 | 4 | 5;
@@ -214,6 +215,7 @@ export default function JigsawPage() {
   const referencePeekTimeoutRef = useRef<number | null>(null);
   const pendingCompletion = useRef<{ elapsedSeconds: number; moves: number; tipsUsed: number } | null>(null);
   const puzzleThemeId = sessionThemeId ?? themeId;
+  const resultImageSrc = useThemeImageSrc(puzzleThemeId, result?.imageKey ?? config.imageKey);
   const tileCount = config.gridSize * config.gridSize;
   const isSolved = board.length > 0 && board.every((piece, index) => piece === index);
 
@@ -675,12 +677,13 @@ export default function JigsawPage() {
     if (!result) return;
     const inviteToken = shareToken;
     const url = appShareUrlForPath(inviteToken ? `/jigsaw-invite/${inviteToken}` : "/jigsaw");
+    const rank = profile ? getLevelFromXp(profile.xp ?? 0).name : null;
     const lines = [
-      `Finished a ${result.gridSize} × ${result.gridSize} picture puzzle on level ${result.level}.`,
-      `${result.moves} moves · ${result.tipsUsed} assists · ${formatTime(result.elapsedSeconds)}`,
+      `🧩 Finished a ${result.gridSize} × ${result.gridSize} picture puzzle on level ${result.level}.`,
+      `🔄 ${result.moves} moves · 💡 ${result.tipsUsed} assists · ⏱ ${formatTime(result.elapsedSeconds)}`,
       `+${result.points.toLocaleString()} points · +${result.xpEarned} XP · +${result.gemsEarned} gems`,
-      "Play Brain Games . Online",
-      url,
+      rank ? `🏅 ${rank} · Play Brain Games . Online` : "🧠 Play Brain Games . Online",
+      `🔗 ${url}`,
     ];
     try {
       const shareResult = await shareOrDownloadShareCard({
@@ -690,6 +693,7 @@ export default function JigsawPage() {
         shareUrl: url,
         accent: "#d7804d",
         filename: "jigsaw-result.png",
+        imageUrl: resultImageSrc ?? undefined,
       });
       if (shareResult === "downloaded") toast.success("Result card downloaded.");
     } catch {
@@ -1104,12 +1108,7 @@ export default function JigsawPage() {
           <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-14 hidden h-40 w-40 rounded-full border border-white/15 sm:block" />
           <div aria-hidden="true" className="pointer-events-none absolute -bottom-16 -left-10 hidden h-40 w-40 rounded-full border border-white/10 sm:block" />
           <div className="relative z-10 space-y-1.5 sm:space-y-2">
-            <div className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-white/15 sm:h-12 sm:w-12"><Sparkles size={22} /></div>
-            <p className="text-[10px] font-bold uppercase tracking-[.2em] text-primary-foreground/75">{config.dailyDate ? "Daily Jigsaw challenge complete" : "Picture complete"}</p>
             <h1 className="font-serif text-xl font-bold leading-tight sm:text-3xl">Every piece, in place!</h1>
-            <div className="mx-auto aspect-square w-full max-w-[120px] overflow-hidden rounded-xl border-4 border-white/70 shadow-md sm:max-w-[160px]">
-              <ReferenceImage themeId={puzzleThemeId} imageKey={result.imageKey} className="h-full w-full object-cover" />
-            </div>
             <p className="text-xs text-primary-foreground/80">{result.gridSize}×{result.gridSize} · {LEVELS[result.level - 1]?.title} · {formatTime(result.elapsedSeconds)} · {result.moves} moves · {result.tipsUsed} assists</p>
             {config.dailyDate && <p className="text-xs font-semibold text-primary-foreground/90">📅 Today&apos;s shared daily puzzle</p>}
             <p className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pt-1 text-sm font-black sm:text-base" data-testid="result-rewards">
@@ -1196,6 +1195,13 @@ export default function JigsawPage() {
                 ))}
               </div>
             </fieldset>
+          </div>
+          <div className="mt-4 flex flex-col items-center gap-2 text-center">
+            <div className="grid h-10 w-10 place-items-center rounded-full bg-primary/10 text-primary"><Sparkles size={22} /></div>
+            <p className="text-[10px] font-bold uppercase tracking-[.2em] text-muted-foreground">{config.dailyDate ? "Daily Jigsaw challenge complete" : "Picture complete"}</p>
+            <div className="aspect-square w-full max-w-[180px] overflow-hidden rounded-xl border-4 border-background shadow-md">
+              <ReferenceImage themeId={puzzleThemeId} imageKey={result.imageKey} className="h-full w-full object-cover" />
+            </div>
           </div>
           {!config.dailyDate && <Link href="/jigsaw-challenge" className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground transition hover:border-primary"><CalendarDays size={16} /> Try today&apos;s daily challenge</Link>}
         </section>

@@ -11,6 +11,9 @@ import { MobileContentDisclosure } from "@/components/mobile-content-disclosure"
 import { customFetch, useGetProfile } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { appShareUrlForPath } from "@/lib/app-links";
+import { shareOrDownloadShareCard } from "@/lib/share-card";
+import { getLevelFromXp } from "@/lib/levels";
+import { toast } from "sonner";
 import { ACHIEVEMENT_COMPLETION_EVENT } from "@/lib/achievement-events";
 import { createWordSearch, getLineCells, isWordSearchTheme, WORD_SEARCH_LEVELS, WORD_SEARCH_THEMES, wordSearchThemeForIconSet, type WordSearchDifficulty, type WordSearchPuzzle, type WordSearchTheme } from "@/lib/word-search";
 import { recordWordSearchCompletion } from "@/lib/word-search-stats";
@@ -314,15 +317,63 @@ export default function WordSearchPage() {
     const next = game.puzzle.words.find((word) => !game.found.includes(word));
     if (next) { setGame({ ...game, tipsUsed: game.tipsUsed + 1 }); setHintWord(next); setSelected(game.puzzle.placements[next]); sounds.click(); }
   };
+  const shareCardFallback = async (lines: string[]) => {
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      toast.success("Sharing didn't complete. Text copied — paste it into your message.", { duration: 3500 });
+    } catch {
+      // user cancelled or clipboard blocked — silent
+    }
+  };
   const share = async () => {
     const url = appShareUrlForPath("/word-search");
-    try { if (navigator.share) await navigator.share({ title: "Word Search", text: "Can you find all the hidden words?", url }); else { await navigator.clipboard.writeText(url); } } catch { /* Share sheet dismissed. */ }
+    const lines = [
+      "🔎 Can you find all the hidden words?",
+      "🧠 Play Brain Games . Online",
+      `🔗 ${url}`,
+    ];
+    try {
+      const result = await shareOrDownloadShareCard({
+        title: "Word Search",
+        lines,
+        shareText: lines.join("\n"),
+        shareUrl: url,
+        accent: "#8b5cf6",
+        filename: "word-search-invite.png",
+      });
+      if (result === "downloaded") toast.success("Share image downloaded — attach it to your message!", { duration: 3000 });
+    } catch {
+      await shareCardFallback(lines);
+    }
   };
   const shareResult = async () => {
     if (!game) return;
     const url = appShareUrlForPath("/word-search");
-    const text = `I found all ${game.puzzle.words.length} ${WORD_SEARCH_THEMES.find((theme) => theme.id === game.theme)?.label.toLowerCase()} words in ${fmt(elapsed)} on ${WORD_SEARCH_LEVELS[game.difficulty].label}, scoring ${reward?.points ?? 0} points!`;
-    try { if (navigator.share) await navigator.share({ title: "Word Search complete", text, url }); else { await navigator.clipboard.writeText(`${text} ${url}`); } } catch { /* Share sheet dismissed. */ }
+    const themeLabel = WORD_SEARCH_THEMES.find((theme) => theme.id === game.theme)?.label.toLowerCase() ?? "themed";
+    const rank = profile ? getLevelFromXp(profile.xp ?? 0).name : null;
+    const rewardLine = reward && !reward.offline
+      ? `+${reward.points.toLocaleString()} pts · +${reward.xpEarned} XP · +${reward.gemsEarned} 💎`
+      : null;
+    const lines = [
+      `🎉 Found all ${game.puzzle.words.length} ${themeLabel} words in ${fmt(elapsed)}!`,
+      `📐 ${WORD_SEARCH_LEVELS[game.difficulty].label} · ${game.tries} tries · ${game.tipsUsed} tips`,
+      rewardLine,
+      rank ? `🏅 ${rank} · Play Brain Games . Online` : "🧠 Play Brain Games . Online",
+      `🔗 ${url}`,
+    ].filter((line): line is string => Boolean(line));
+    try {
+      const result = await shareOrDownloadShareCard({
+        title: "Word Search complete",
+        lines,
+        shareText: lines.join("\n"),
+        shareUrl: url,
+        accent: "#8b5cf6",
+        filename: "word-search-result.png",
+      });
+      if (result === "downloaded") toast.success("Result image downloaded — attach it to your message!", { duration: 3000 });
+    } catch {
+      await shareCardFallback(lines);
+    }
   };
   const fmt = (seconds: number) => `${Math.floor(seconds / 60).toString().padStart(2, "0")}:${(seconds % 60).toString().padStart(2, "0")}`;
 
