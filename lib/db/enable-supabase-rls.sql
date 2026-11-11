@@ -16,6 +16,8 @@ ALTER TABLE public.profile_merges ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.puzzles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.unlocked_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.word_search_games ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.word_search_challenges ENABLE ROW LEVEL SECURITY;
 
 REVOKE ALL ON TABLE
   public.sessions,
@@ -33,7 +35,9 @@ REVOKE ALL ON TABLE
   public.profile_merges,
   public.profiles,
   public.puzzles,
-  public.unlocked_items
+  public.unlocked_items,
+  public.word_search_games,
+  public.word_search_challenges
 FROM anon, authenticated;
 
 COMMIT;

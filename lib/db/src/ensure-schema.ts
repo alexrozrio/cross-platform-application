@@ -128,6 +128,28 @@ export async function ensureDatabaseSchema(): Promise<void> {
       ON jigsaw_challenges(challenger_id)`,
     `CREATE INDEX IF NOT EXISTS jigsaw_challenges_challenged_id_idx
       ON jigsaw_challenges(challenged_id)`,
+    // Row-Level Security must stay enabled on every public table. These are
+    // idempotent and also cover tables created above on fresh databases.
+    // The API connects as the table owner, so it is unaffected; anon and
+    // authenticated roles get denied once RLS is on with no policies.
+    `ALTER TABLE IF EXISTS sessions ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS users ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS badges ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS challenges ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS daily_challenges ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS games ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS guest_profile_transfer_codes ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS jigsaw_games ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS jigsaw_challenges ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS memory_challenge_completions ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS memory_duels ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS memory_games ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS profile_merges ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS profiles ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS puzzles ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS unlocked_items ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS word_search_games ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS word_search_challenges ENABLE ROW LEVEL SECURITY`,
   ];
 
   for (const statement of statements) {
