@@ -10,6 +10,43 @@ const siteUrl = "https://playbraingames.online";
 const siteName = "Play Brain Games . Online";
 const openGraphImage = `${siteUrl}/opengraph.jpg`;
 
+const SUDOKU_BOOKMARK_GRIDS = [
+  { slug: "baby", size: "3×3", label: "Baby", detail: "a compact 3×3 grid with only a few symbols — a gentle introduction to Sudoku logic" },
+  { slug: "mini", size: "4×4", label: "Mini", detail: "a 4×4 grid with sixteen cells and a small symbol set that is easy to scan" },
+  { slug: "dual", size: "6×6", label: "Dual", detail: "a 6×6 grid with thirty-six cells and more candidates to track than the small boards" },
+  { slug: "classic", size: "9×9", label: "Classic", detail: "the familiar 9×9 grid with eighty-one cells and nine symbols" },
+  { slug: "pro", size: "16×16", label: "Pro", detail: "a demanding 16×16 grid with 256 cells and sixteen symbols for experienced players" },
+];
+
+const SUDOKU_BOOKMARK_LEVELS = [
+  { slug: "easy", label: "Easy", detail: "comes with plenty of starting clues, so you can learn the row, column, and box constraints without much backtracking" },
+  { slug: "medium", label: "Medium", detail: "balances starting clues and empty cells, so you will need candidate notes and a repeatable solving loop" },
+  { slug: "hard", label: "Hard", detail: "removes more starting clues, so expect longer candidate chains and deeper eliminations" },
+  { slug: "expert", label: "Expert", detail: "has the fewest starting clues — plan ahead, keep notes, and be ready to revisit earlier candidates" },
+];
+
+const sudokuBookmarkPages = SUDOKU_BOOKMARK_GRIDS.flatMap((grid) =>
+  SUDOKU_BOOKMARK_LEVELS.map((level) => ({
+    route: `/sudoku/${grid.slug}/${level.slug}`,
+    title: `${level.label} ${grid.size} Sudoku Puzzle – Play Free Online | Play Brain Games . Online`,
+    description: `Play a free ${level.label.toLowerCase()} ${grid.size} Sudoku puzzle online. ${grid.label} grid: ${grid.detail}. Guest play, pencil notes, and daily challenges included.`,
+    heading: `${level.label} ${grid.size} Sudoku`,
+    intro: `This ${grid.size} ${level.label.toLowerCase()} Sudoku puzzle uses ${grid.detail} and ${level.detail}. Every symbol must appear once in each row, column, and marked box.`,
+    sections: [
+      ["How to approach this puzzle", `Start with the groups that have the fewest empty cells. List the missing symbols, then check each empty cell against its row, column, and box. Place a symbol only when one candidate remains, then scan those groups again for the next single.`],
+      ["What to expect at ${level.label.toLowerCase()} difficulty", `${level.detail}. Use pencil notes to record candidates and remove them as nearby placements rule them out.`],
+      ["Play as a guest or save progress", "You can start this puzzle without an account. Optional Google sign-in connects your results, stats, and streaks to a profile across devices."],
+    ],
+    links: [
+      ["/sudoku", "Choose any Sudoku grid and difficulty"],
+      ["/guides", "Read the Sudoku solving guide"],
+      ["/daily-challenge", "Solve today's shared Sudoku"],
+      ["/leaderboard/sudoku/", "View the Sudoku leaderboard"],
+    ],
+    schemaType: "WebApplication",
+  })),
+);
+
 const publicPages = [
   {
     route: "/",
@@ -426,6 +463,109 @@ const publicPages = [
     ],
     schemaType: "WebPage",
   },
+  {
+    route: "/word-search",
+    title: "Word Search Puzzles Online Free | Play Brain Games . Online",
+    description:
+      "Play free Word Search puzzles with four difficulties, themed word lists, daily challenges, and friend duels. Find every hidden word online.",
+    heading: "Word Search Puzzles Online",
+    intro:
+      "Words hide in straight lines inside a letter grid — across, down, and on harder levels diagonally and backwards. Pick a theme and difficulty, then drag from a word's first letter to its last.",
+    sections: [
+      ["Four difficulty levels", "Beginner (6×6, 6 words) and Easy (8×8, 8 words) hide words only left-to-right and top-to-bottom. Medium (12×12, 10 words) adds diagonals, and Hard (14×14, 12 words) also includes backwards words."],
+      ["Themed word lists", "Animals, food, space, ocean, and icon-set themes each have their own word list, so every puzzle feels different even at the same difficulty."],
+      ["How scoring works", "Points reflect the difficulty, your completion time, how many tries it took, and hints used. You get up to two hints per game, and finishing awards XP and gems."],
+      ["Daily and friend challenges", "The daily Word Search challenge gives everyone the same shared puzzle each day. You can also challenge a friend to compare scores on the same words."],
+      ["Play as a guest or save progress", "Start a puzzle without an account. Optional Google sign-in connects your results, stats, and streaks to a profile across devices."],
+    ],
+    links: [
+      ["/word-search-challenge", "Play today's Word Search challenge"],
+      ["/leaderboard/word-search/", "View the Word Search leaderboard"],
+      ["/guides", "Read the puzzle guides"],
+      ["/challenges", "Challenge another player"],
+    ],
+    schemaType: "WebApplication",
+  },
+  {
+    route: "/word-search-challenge",
+    title: "Daily Word Search Challenge | Play Brain Games . Online",
+    description:
+      "Play today's shared Word Search puzzle, earn points for speed and accuracy, and compare your score on the daily leaderboard.",
+    heading: "Daily Word Search Challenge",
+    intro:
+      "Everyone gets the same themed word puzzle each day, refreshed at 00:00 UTC. Find every hidden word and post your score.",
+    sections: [
+      ["One shared puzzle each day", "The daily Word Search challenge uses the same grid, theme, and word list for every player on that date."],
+      ["Score by speed and accuracy", "Points reflect the difficulty, completion time, tries, and hints used, so a clean fast run ranks higher."],
+      ["Compare with other players", "The daily leaderboard shows completion times and points, and you can return tomorrow to build a streak."],
+    ],
+    links: [
+      ["/word-search", "Play Word Search puzzles"],
+      ["/leaderboard/word-search/", "View the Word Search leaderboard"],
+      ["/guides", "Read the Word Search guide"],
+    ],
+    schemaType: "WebApplication",
+  },
+  {
+    route: "/jigsaw-challenges",
+    title: "Jigsaw Friend Challenges | Play Brain Games . Online",
+    description:
+      "Create a Jigsaw picture challenge, share an invite link, and compare completion points with a friend on the same puzzle.",
+    heading: "Jigsaw Friend Challenges",
+    intro:
+      "Pick a picture, board size, and level, then send a friend an invite link. Whoever finishes with more points wins bonus gems.",
+    sections: [
+      ["How friend challenges work", "Create a challenge for a specific friend or share an open invite link. Both players solve the same picture puzzle, then results are compared."],
+      ["What decides the winner", "Points are based on board size, level, completion time, moves, and tips used. The higher score earns 10 bonus gems; a tie rewards both players."],
+      ["Challenge history", "Your pending, active, and completed Jigsaw challenges are listed here so you can accept, decline, or replay them."],
+    ],
+    links: [
+      ["/jigsaw", "Play a Jigsaw puzzle"],
+      ["/jigsaw-challenge", "Try today's daily Jigsaw"],
+      ["/leaderboard/jigsaw/", "View the Jigsaw leaderboard"],
+      ["/challenges", "See all game challenges"],
+    ],
+    schemaType: "CollectionPage",
+  },
+  {
+    route: "/leaderboard/jigsaw",
+    title: "Jigsaw Leaderboard | Play Brain Games . Online",
+    description:
+      "Compare all-time Jigsaw puzzle scores across 2×2, 3×3, 4×4, and 5×5 boards and all three levels.",
+    heading: "Jigsaw Leaderboard",
+    intro:
+      "See the players with the highest combined points across completed Jigsaw picture puzzles of every board size and level.",
+    sections: [
+      ["Scores across every board", "Points from completed 2×2, 3×3, 4×4, and 5×5 Jigsaw puzzles count toward this all-time board."],
+      ["Compare all games", "The all-games leaderboard also includes Sudoku, Memory Match, and Word Search scores from weekly, monthly, and all-time results."],
+    ],
+    links: [
+      ["/leaderboard/", "View the all-games leaderboard"],
+      ["/leaderboard/sudoku/", "View the Sudoku leaderboard"],
+      ["/jigsaw", "Play a Jigsaw puzzle"],
+    ],
+    schemaType: "CollectionPage",
+  },
+  {
+    route: "/leaderboard/word-search",
+    title: "Word Search Leaderboard | Play Brain Games . Online",
+    description:
+      "Compare all-time Word Search scores across Beginner, Easy, Medium, and Hard difficulties and every theme.",
+    heading: "Word Search Leaderboard",
+    intro:
+      "See the players with the highest combined points across completed Word Search games of every difficulty.",
+    sections: [
+      ["Scores across every difficulty", "Points from completed Beginner, Easy, Medium, and Hard Word Search games count toward this all-time board."],
+      ["Compare all games", "The all-games leaderboard also includes Sudoku, Memory Match, Jigsaw, and daily challenge results."],
+    ],
+    links: [
+      ["/leaderboard/", "View the all-games leaderboard"],
+      ["/leaderboard/jigsaw/", "View the Jigsaw leaderboard"],
+      ["/word-search", "Play Word Search"],
+    ],
+    schemaType: "CollectionPage",
+  },
+  ...sudokuBookmarkPages,
 ];
 
 function escapeHtml(value) {
