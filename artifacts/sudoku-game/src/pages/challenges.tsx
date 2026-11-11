@@ -2254,7 +2254,7 @@ export default function Challenges() {
       <div className="grid grid-cols-2 gap-2 p-1 bg-muted/50 rounded-xl border sm:grid-cols-4">
         <button
           onClick={() => setActiveTab("sudoku")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${activeTab === "sudoku" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${activeTab === "sudoku" ? "bg-background shadow-sm text-foreground" : "text-foreground/70 hover:text-foreground"}`}
         >
           <Grid2x2 className="w-4 h-4" />
           Sudoku
@@ -2266,7 +2266,7 @@ export default function Challenges() {
         </button>
         <button
           onClick={() => setActiveTab("memory")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${activeTab === "memory" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${activeTab === "memory" ? "bg-background shadow-sm text-foreground" : "text-foreground/70 hover:text-foreground"}`}
         >
           <Brain className="w-4 h-4" />
           <span className="hidden sm:inline">Memory Match</span>
@@ -2279,17 +2279,17 @@ export default function Challenges() {
         </button>
         <button
           onClick={() => setActiveTab("jigsaw")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${activeTab === "jigsaw" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${activeTab === "jigsaw" ? "bg-background shadow-sm text-foreground" : "text-foreground/70 hover:text-foreground"}`}
         >
           <Puzzle className="w-4 h-4" />
-          <span className="hidden sm:inline">Jigsaw</span>
+          Jigsaw
           {jigsawAlert > 0 && (
             <span className="w-4 h-4 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center">
               {jigsawAlert}
             </span>
           )}
         </button>
-        <button onClick={() => setActiveTab("word-search")} className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all ${activeTab === "word-search" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+        <button onClick={() => setActiveTab("word-search")} className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${activeTab === "word-search" ? "bg-background shadow-sm text-foreground" : "text-foreground/70 hover:text-foreground"}`}>
           <Search className="h-4 w-4" /><span>Word Search</span>{wordSearchAlert > 0 && <span className="flex h-4 w-4 items-center justify-center rounded-full bg-violet-500 text-[10px] font-bold text-white">{wordSearchAlert}</span>}
         </button>
       </div>

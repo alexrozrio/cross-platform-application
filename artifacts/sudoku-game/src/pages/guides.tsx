@@ -1,13 +1,13 @@
 import { Link } from "wouter";
-import { ArrowLeft, BookOpen, Puzzle } from "lucide-react";
+import { ArrowLeft, BookOpen, Puzzle, Search } from "lucide-react";
 import { usePageMeta } from "@/components/page-meta";
 import { MemoryGuide, SudokuGuide } from "@/components/game-guides";
 
 export default function Guides() {
   usePageMeta({
-    title: "Puzzle Guides: Sudoku, Memory Match & Jigsaw | Play Brain Games . Online",
+    title: "Puzzle Guides: Sudoku, Memory, Jigsaw & Word Search | Play Brain Games . Online",
     description:
-      "Learn Sudoku, Memory Match, and Jigsaw with practical strategies, board-size guidance, and tips for daily puzzles and friend challenges.",
+      "Learn Sudoku, Memory Match, Jigsaw, and Word Search with practical strategies, board-size guidance, and tips for daily puzzles and friend challenges.",
     path: "/guides",
     type: "article",
   });
@@ -45,6 +45,9 @@ export default function Guides() {
           <a href="#jigsaw-guide-title" className="rounded-full border border-amber-400/30 bg-amber-500/10 px-3 py-1.5 text-sm font-semibold text-amber-800 dark:text-amber-300">
             Jigsaw guide
           </a>
+          <a href="#word-search-guide-title" className="rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1.5 text-sm font-semibold text-violet-700 dark:text-violet-300">
+            Word Search guide
+          </a>
         </nav>
       </header>
 
@@ -76,6 +79,32 @@ export default function Guides() {
         </div>
       </section>
 
+      <section aria-labelledby="word-search-guide-title" className="space-y-4 rounded-2xl border border-violet-200/70 bg-card p-5 dark:border-violet-900/50 sm:p-6">
+        <div className="flex items-center gap-2 text-violet-700 dark:text-violet-300">
+          <Search className="h-5 w-5" />
+          <h2 id="word-search-guide-title" className="text-xl font-serif font-bold text-foreground">Word Search guide</h2>
+        </div>
+        <p className="text-sm leading-relaxed text-muted-foreground">Words hide in straight lines inside a letter grid. Choose a difficulty and a word theme, then press on a word&apos;s first letter and drag to its last letter to reveal it. Beginner (6×6, 6 words) and Easy (8×8, 8 words) hide words only left-to-right and top-to-bottom; Medium (12×12, 10 words) adds diagonals; Hard (14×14, 12 words) also includes backwards words. Your Game Mode controls which levels are offered: Kids mode has Beginner and Easy, Adult mode has Medium and Hard, and the default 4 All mode has all four.</p>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {[
+            { level: "Beginner / Easy", detail: "Shorter words in straight horizontal and vertical lines — a gentle way to learn the drag mechanic." },
+            { level: "Medium", detail: "A larger 12×12 grid adds diagonal words, so scan corner-to-corner as well as across and down." },
+            { level: "Hard", detail: "A 14×14 grid also hides backwards words; check the word list and use a hint if a word stays elusive." },
+          ].map(({ level, detail }) => (
+            <div key={level} className="rounded-xl border border-violet-200/70 bg-violet-50/60 p-3 dark:border-violet-900/50 dark:bg-violet-950/20">
+              <h3 className="text-sm font-semibold text-foreground">{level}</h3>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{detail}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-sm leading-relaxed text-muted-foreground">The side panel lists every word you need to find — cross them off as you reveal them. You get up to two hints per game, and each wrong selection counts as a try. Points are based on the difficulty, your completion time, tries, and hints used; finishing awards XP by difficulty and gems for every puzzle completed.</p>
+        <p className="text-sm leading-relaxed text-muted-foreground">A simple strategy is to scan for uncommon letter pairs and long words first, then work outward from words you have already found. Try the daily challenge to solve the same word puzzle as other players, or create a friend challenge to compare results.</p>
+        <div className="flex flex-wrap gap-3">
+          <Link href="/word-search" className="rounded-lg bg-violet-700 px-4 py-2 font-semibold text-white transition-colors hover:bg-violet-800">Play Word Search</Link>
+          <Link href="/word-search-challenge" className="rounded-lg border border-border bg-background px-4 py-2 font-semibold text-foreground transition-colors hover:bg-muted">Daily challenge</Link>
+        </div>
+      </section>
+
       <section className="rounded-2xl border border-border bg-card p-5 text-sm leading-relaxed text-muted-foreground sm:p-6">
         <h2 className="text-xl font-serif font-bold text-foreground">
           Keep practicing at your own pace
@@ -95,6 +124,9 @@ export default function Guides() {
           </Link>
           <Link href="/jigsaw" className="rounded-lg border border-border bg-background px-4 py-2 font-semibold text-foreground transition-colors hover:bg-muted">
             Play Jigsaw
+          </Link>
+          <Link href="/word-search" className="rounded-lg border border-border bg-background px-4 py-2 font-semibold text-foreground transition-colors hover:bg-muted">
+            Play Word Search
           </Link>
           <Link href="/about/" className="rounded-lg border border-border bg-background px-4 py-2 font-semibold text-foreground transition-colors hover:bg-muted">
             About the site

@@ -211,6 +211,18 @@ function XpGuide() {
             </div>
             <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">Jigsaw XP is awarded for each completed picture puzzle and increases with the selected level.</p>
           </div>
+          <div className="border-t border-border pt-3">
+            <p className="mb-2 text-xs font-semibold text-foreground">Word Search XP by difficulty</p>
+            <div className="grid grid-cols-4 gap-2 text-center">
+              {[{ level: "Beginner", xp: 1 }, { level: "Easy", xp: 1 }, { level: "Medium", xp: 2 }, { level: "Hard", xp: 3 }].map((item) => (
+                <div key={item.level} className="rounded-lg border border-border bg-background px-2 py-2">
+                  <p className="text-[10px] font-semibold text-muted-foreground">{item.level}</p>
+                  <p className="text-xs font-bold text-violet-600">{item.xp} XP</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">Word Search XP is awarded for each completed puzzle and increases with the selected difficulty.</p>
+          </div>
         </div>
       )}
     </div>
@@ -408,6 +420,39 @@ function PointsGuide() {
             </p>
           </div>
 
+          {/* Word Search base points table */}
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              🔎 Word Search — base points × difficulty
+            </p>
+            <div className="rounded-xl border overflow-hidden text-xs">
+              <div className="grid grid-cols-5 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+                <span>Level</span>
+                <span className="text-center">Base pts</span>
+                <span className="text-center">Par time</span>
+                <span className="text-center">Min tries</span>
+                <span className="text-center">Gems</span>
+              </div>
+              {[
+                { label: "Beginner", base: 120, par: "2:00", tries: 6, gems: 1, cls: "text-green-700" },
+                { label: "Easy", base: 280, par: "4:00", tries: 8, gems: 2, cls: "text-blue-700" },
+                { label: "Medium", base: 650, par: "7:00", tries: 10, gems: 3, cls: "text-yellow-700" },
+                { label: "Hard", base: 1300, par: "12:00", tries: 12, gems: 4, cls: "text-orange-700" },
+              ].map((row, i) => (
+                <div key={row.label} className={`grid grid-cols-5 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}>
+                  <span className={`font-semibold ${row.cls}`}>{row.label}</span>
+                  <span className="text-center font-mono">{row.base.toLocaleString()}</span>
+                  <span className="text-center font-mono">{row.par}</span>
+                  <span className="text-center font-mono">{row.tries}</span>
+                  <span className="text-center font-mono">{row.gems} 💎</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2">
+              score = base × (1 + time bonus up to +50%) × try factor × tip factor &nbsp;·&nbsp; −2.5% per try beyond the word count (floor 45%), −20% per hint (floor 60%), min 10 pts. XP: Beginner/Easy 1, Medium 2, Hard 3.
+            </p>
+          </div>
+
           {/* Game Modes */}
           <div>
             <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
@@ -417,11 +462,12 @@ function PointsGuide() {
               Your Game Mode (set in Profile) controls which grid sizes and difficulties are available to you across all games and challenges.
             </p>
             <div className="rounded-xl border overflow-hidden text-xs">
-              <div className="grid grid-cols-4 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+              <div className="grid grid-cols-5 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
                 <span>Mode</span>
                 <span className="text-center">Sudoku</span>
                 <span className="text-center">Memory Match</span>
                 <span className="text-center">Jigsaw</span>
+                <span className="text-center">Word Search</span>
               </div>
               {[
                 {
@@ -429,6 +475,7 @@ function PointsGuide() {
                   sudoku: "3×3 Baby · 4×4 Mini",
                   memory: "4 pairs · 8 pairs",
                   jigsaw: "2×2 · 3×3",
+                  wordSearch: "Beginner · Easy",
                   cls: "text-green-700",
                 },
                 {
@@ -436,6 +483,7 @@ function PointsGuide() {
                   sudoku: "9×9 Classic · 16×16 Pro",
                   memory: "16 pairs · 32 pairs",
                   jigsaw: "4×4 · 5×5",
+                  wordSearch: "Medium · Hard",
                   cls: "text-blue-700",
                 },
                 {
@@ -443,17 +491,19 @@ function PointsGuide() {
                   sudoku: "All four sizes",
                   memory: "All four sizes",
                   jigsaw: "All four sizes",
+                  wordSearch: "All four levels",
                   cls: "text-violet-700",
                 },
               ].map((row, i) => (
                 <div
                   key={row.mode}
-                  className={`grid grid-cols-4 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}
+                  className={`grid grid-cols-5 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}
                 >
                   <span className={`font-semibold ${row.cls}`}>{row.mode}</span>
                   <span className="text-center text-muted-foreground">{row.sudoku}</span>
                   <span className="text-center text-muted-foreground">{row.memory}</span>
                   <span className="text-center text-muted-foreground">{row.jigsaw}</span>
+                  <span className="text-center text-muted-foreground">{row.wordSearch}</span>
                 </div>
               ))}
             </div>
@@ -905,7 +955,7 @@ function TournamentBoard({
                   : `No games yet this ${type === "weekly" ? "week" : "month"}.`}
               </p>
               <p className="text-sm mt-1">
-                Complete Sudoku, Memory Match, or Jigsaw games to earn points and climb the rankings!
+                Complete Sudoku, Memory Match, Jigsaw, or Word Search games to earn points and climb the rankings!
               </p>
             </div>
           ) : (
@@ -1438,6 +1488,52 @@ function JigsawBoard({ myProfileId }: { myProfileId?: number }) {
   );
 }
 
+function WordSearchScoringGuide() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="overflow-hidden rounded-2xl border border-violet-200/70 dark:border-violet-800/40">
+      <button onClick={() => setOpen((value) => !value)} className="flex w-full items-center justify-between bg-card px-5 py-4 text-left transition-colors hover:bg-muted/40">
+        <div>
+          <p className="text-sm font-semibold">How Word Search points &amp; XP are calculated</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Difficulty, speed, tries, and hints all count.</p>
+        </div>
+        {open ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
+      </button>
+      {open && (
+        <div className="space-y-4 border-t border-border bg-muted px-5 py-4 text-sm">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[{ level: "Beginner", base: 120, par: "2:00", tries: 6, gems: 1 }, { level: "Easy", base: 280, par: "4:00", tries: 8, gems: 2 }, { level: "Medium", base: 650, par: "7:00", tries: 10, gems: 3 }, { level: "Hard", base: 1300, par: "12:00", tries: 12, gems: 4 }].map((item) => (
+              <div key={item.level} className="rounded-xl border border-border bg-background p-3">
+                <p className="font-bold">{item.level}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Base {item.base.toLocaleString()} pts</p>
+                <p className="text-xs text-muted-foreground">Par {item.par}</p>
+                <p className="text-xs text-muted-foreground">{item.gems} 💎 · {item.tries} min tries</p>
+              </div>
+            ))}
+          </div>
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">XP by difficulty</p>
+            <div className="overflow-hidden rounded-xl border border-border text-xs">
+              <div className="grid grid-cols-4 bg-muted-foreground/15 px-3 py-2 text-[10px] font-semibold text-muted-foreground"><span>Difficulty</span><span className="text-center">XP</span><span className="text-center">Gems</span><span className="text-center">Grid</span></div>
+              {[
+                { label: "Beginner", xp: "1 XP", gems: "1 💎", grid: "6×6" },
+                { label: "Easy", xp: "1 XP", gems: "2 💎", grid: "8×8" },
+                { label: "Medium", xp: "2 XP", gems: "3 💎", grid: "12×12" },
+                { label: "Hard", xp: "3 XP", gems: "4 💎", grid: "14×14" },
+              ].map((row, index) => <div key={row.label} className={`grid grid-cols-4 px-3 py-2 ${index % 2 === 0 ? "bg-background" : "bg-muted/20"}`}><span className="font-semibold">{row.label}</span><span className="text-center font-semibold text-amber-600">{row.xp}</span><span className="text-center font-mono">{row.gems}</span><span className="text-center font-mono">{row.grid}</span></div>)}
+            </div>
+          </div>
+          <div className="rounded-lg border border-border bg-background px-4 py-3 text-[11px] text-muted-foreground">
+            <p className="font-semibold text-foreground">Score formula</p>
+            <p className="mt-1 font-mono leading-relaxed">base × (1 + time bonus) × try factor × tip factor</p>
+            <p className="mt-1 leading-relaxed">Finish under par time for up to +50%. Each selection try beyond the word count reduces points by 2.5% (floor 45%), and each hint reduces points by 20% (floor 60%). Minimum score: 10 points.</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 type WordSearchLeaderboardEntry = { rank: number; profileId: number; username: string; avatar: string | null; xp: number; totalPoints: number; gamesPlayed: number };
 
 function WordSearchBoard({ myProfileId }: { myProfileId?: number }) {
@@ -1467,6 +1563,7 @@ function WordSearchBoard({ myProfileId }: { myProfileId?: number }) {
           })}</div>}
       </CardContent>
     </Card>
+    <WordSearchScoringGuide />
   </div>;
 }
 

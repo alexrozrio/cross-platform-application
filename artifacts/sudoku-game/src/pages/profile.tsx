@@ -1367,7 +1367,7 @@ export default function Profile() {
           </Card>
 
           {/* Game tab toggle */}
-          <div className="flex gap-1 overflow-x-auto rounded-xl border bg-muted p-1">
+          <div className="grid grid-cols-2 gap-1 rounded-xl border bg-muted p-1 sm:flex sm:overflow-x-auto">
             <button
               onClick={() => setGameTab("sudoku")}
               className={[

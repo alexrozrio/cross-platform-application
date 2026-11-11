@@ -1100,14 +1100,14 @@ export default function JigsawPage() {
     return (
       <main className="mx-auto min-h-0 w-full max-w-lg px-3 pb-6 pt-3 text-foreground animate-in fade-in duration-500 sm:px-5 sm:pt-5">
         <Confetti />
-        <section className="relative overflow-hidden rounded-2xl bg-primary p-4 text-center text-primary-foreground shadow-lg sm:p-5">
-          <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full border border-white/15" />
-          <div aria-hidden="true" className="pointer-events-none absolute -bottom-16 -left-10 h-40 w-40 rounded-full border border-white/10" />
-          <div className="relative z-10 space-y-2">
-            <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-white/15"><Sparkles size={25} /></div>
+        <section className="relative overflow-hidden rounded-2xl bg-primary p-3 text-center text-primary-foreground shadow-lg sm:p-5">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-14 hidden h-40 w-40 rounded-full border border-white/15 sm:block" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-16 -left-10 hidden h-40 w-40 rounded-full border border-white/10 sm:block" />
+          <div className="relative z-10 space-y-1.5 sm:space-y-2">
+            <div className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-white/15 sm:h-12 sm:w-12"><Sparkles size={22} /></div>
             <p className="text-[10px] font-bold uppercase tracking-[.2em] text-primary-foreground/75">{config.dailyDate ? "Daily Jigsaw challenge complete" : "Picture complete"}</p>
-            <h1 className="font-serif text-2xl font-bold leading-tight sm:text-3xl">Every piece, in place!</h1>
-            <div className="mx-auto aspect-square w-full max-w-[160px] overflow-hidden rounded-xl border-4 border-white/70 shadow-md">
+            <h1 className="font-serif text-xl font-bold leading-tight sm:text-3xl">Every piece, in place!</h1>
+            <div className="mx-auto aspect-square w-full max-w-[120px] overflow-hidden rounded-xl border-4 border-white/70 shadow-md sm:max-w-[160px]">
               <ReferenceImage themeId={puzzleThemeId} imageKey={result.imageKey} className="h-full w-full object-cover" />
             </div>
             <p className="text-xs text-primary-foreground/80">{result.gridSize}×{result.gridSize} · {LEVELS[result.level - 1]?.title} · {formatTime(result.elapsedSeconds)} · {result.moves} moves · {result.tipsUsed} assists</p>
@@ -1123,17 +1123,6 @@ export default function JigsawPage() {
           </div>
         </section>
 
-        {hasLinkedChallenge && <section className="mt-3 rounded-xl border border-primary/25 bg-card p-4 text-center" aria-live="polite">
-          <h2 className="font-bold">Challenge result</h2>
-          {!challengeResult || challengeResult.status !== "completed" ? <p className="mt-1 text-sm text-muted-foreground">You completed the puzzle in {formatTime(result.elapsedSeconds)} and earned {result.points.toLocaleString()} points. Waiting for your opponent to finish…</p> : (() => {
-            const mine = challengeResult.challengerId === profileId ? challengeResult.challengerPoints : challengeResult.challengedPoints;
-            const theirs = challengeResult.challengerId === profileId ? challengeResult.challengedPoints : challengeResult.challengerPoints;
-            const opponent = challengeResult.challengerId === profileId ? challengeResult.challengedUsername : challengeResult.challengerUsername;
-            const outcome = challengeResult.winnerId === null ? "It’s a tie!" : challengeResult.winnerId === profileId ? "You won the challenge!" : "You lost the challenge.";
-            return <><p className="mt-1 text-lg font-black">{outcome}</p><p className="mt-1 text-sm text-muted-foreground">You: {mine ?? 0} points · {opponent ?? "Opponent"}: {theirs ?? 0} points</p><p className="mt-1 text-xs text-muted-foreground">Completed in {formatTime(result.elapsedSeconds)} · {challengeResult.winnerId === null ? "Both players earned 2 bonus gems." : challengeResult.winnerId === profileId ? "You earned 10 bonus gems." : `${opponent ?? "Your opponent"} earned 10 bonus gems.`}</p></>;
-          })()}
-        </section>}
-
         {result.isPersonalBest && (
           <div className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-yellow-300/60 bg-card px-4 py-2.5">
             <span className="text-lg">🏆</span>
@@ -1142,11 +1131,9 @@ export default function JigsawPage() {
         )}
 
         <section className="mt-4 min-w-0 space-y-2 overflow-hidden rounded-2xl border border-border bg-card p-3 shadow-sm sm:p-4">
-          {!hasLinkedChallenge && (
-            <button type="button" onClick={() => startWithResultOptions()} data-testid="button-play-again" className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition hover:opacity-90">
-              <RotateCcw size={16} /> Play again ({result.gridSize}×{result.gridSize})
-            </button>
-          )}
+          <button type="button" onClick={() => startWithResultOptions()} data-testid="button-play-again" className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition hover:opacity-90">
+            <RotateCcw size={16} /> Play again ({result.gridSize}×{result.gridSize})
+          </button>
           <div className="min-w-0 space-y-4 rounded-xl border border-border bg-background p-3 sm:p-4">
             <div>
               <h2 className="text-center text-sm font-bold">Choose your next Jigsaw</h2>
@@ -1212,6 +1199,17 @@ export default function JigsawPage() {
           </div>
           {!config.dailyDate && <Link href="/jigsaw-challenge" className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground transition hover:border-primary"><CalendarDays size={16} /> Try today&apos;s daily challenge</Link>}
         </section>
+
+        {hasLinkedChallenge && <section className="mt-3 rounded-xl border border-primary/25 bg-card p-4 text-center" aria-live="polite">
+          <h2 className="font-bold">Challenge result</h2>
+          {!challengeResult || challengeResult.status !== "completed" ? <p className="mt-1 text-sm text-muted-foreground">You completed the puzzle in {formatTime(result.elapsedSeconds)} and earned {result.points.toLocaleString()} points. Waiting for your opponent to finish…</p> : (() => {
+            const mine = challengeResult.challengerId === profileId ? challengeResult.challengerPoints : challengeResult.challengedPoints;
+            const theirs = challengeResult.challengerId === profileId ? challengeResult.challengedPoints : challengeResult.challengerPoints;
+            const opponent = challengeResult.challengerId === profileId ? challengeResult.challengedUsername : challengeResult.challengerUsername;
+            const outcome = challengeResult.winnerId === null ? "It’s a tie!" : challengeResult.winnerId === profileId ? "You won the challenge!" : "You lost the challenge.";
+            return <><p className="mt-1 text-lg font-black">{outcome}</p><p className="mt-1 text-sm text-muted-foreground">You: {mine ?? 0} points · {opponent ?? "Opponent"}: {theirs ?? 0} points</p><p className="mt-1 text-xs text-muted-foreground">Completed in {formatTime(result.elapsedSeconds)} · {challengeResult.winnerId === null ? "Both players earned 2 bonus gems." : challengeResult.winnerId === profileId ? "You earned 10 bonus gems." : `${opponent ?? "Your opponent"} earned 10 bonus gems.`}</p></>;
+          })()}
+        </section>}
 
         <div className="mt-4 grid grid-cols-3 gap-2">
           {[

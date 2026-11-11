@@ -6,7 +6,7 @@ export default function NotFound() {
   usePageMeta({
     title: "Page Not Found | Play Brain Games . Online",
     description:
-      "The page you requested could not be found. Return to Play Brain Games . Online to play free Sudoku, Memory Match, and Jigsaw games.",
+      "The page you requested could not be found. Return to Play Brain Games . Online to play free Sudoku, Memory Match, Jigsaw, and Word Search games.",
     path: "/",
   });
   return (

@@ -1,11 +1,13 @@
 import React from "react";
 import { useLocation, useSearch } from "wouter";
-import { ArrowLeft, Clock3, Lightbulb, RotateCcw, Search, Share2, Trophy, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeft, BookOpen, Clock3, Keyboard, Lightbulb, RotateCcw, Scroll, Search, Share2, Trophy, Volume2, VolumeX } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useImageTheme } from "@/hooks/use-image-theme";
 import { useSound } from "@/hooks/use-sound";
 import { usePageMeta } from "@/components/page-meta";
 import { Confetti } from "@/components/confetti";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { MobileContentDisclosure } from "@/components/mobile-content-disclosure";
 import { customFetch, useGetProfile } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { appShareUrlForPath } from "@/lib/app-links";
@@ -79,6 +81,7 @@ export default function WordSearchPage() {
   const [rewardLoading, setRewardLoading] = React.useState(false);
   const [rewardError, setRewardError] = React.useState<string | null>(null);
   const [challengeResult, setChallengeResult] = React.useState<WordSearchChallengeResult | null>(null);
+  const [infoModal, setInfoModal] = React.useState<"rules" | "controls" | "backstory" | null>(null);
   const activeGameRef = React.useRef(game);
   activeGameRef.current = game;
   const pendingGameRef = React.useRef<{ savedAt: number; promise: Promise<number | null> } | null>(null);
@@ -258,6 +261,36 @@ export default function WordSearchPage() {
     setDragStart(null);
   }, [dragStart, game, sounds, profileId, elapsed, completeGame]);
 
+  const finished = Boolean(game && game.found.length === game.puzzle.words.length);
+  const size = game?.puzzle.grid.length ?? 10;
+
+  // Track the drag on window (not React synthetic events): touch pointers get
+  // implicit capture on the first cell, so per-element move/up handlers never
+  // see the finger leaving that cell. elementFromPoint hit-tests the real cell
+  // under the pointer regardless of capture.
+  React.useEffect(() => {
+    if (dragStart === null) return;
+    const onMove = (event: PointerEvent) => {
+      const cell = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-cell]");
+      if (cell) setSelected(getLineCells(dragStart, Number(cell.dataset.cell), size));
+    };
+    const onUp = (event: PointerEvent) => {
+      const cell = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-cell]");
+      if (cell) finishSelection(Number(cell.dataset.cell));
+      else setSelected([]);
+      setDragStart(null);
+    };
+    const onCancel = () => { setDragStart(null); setSelected([]); };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onCancel);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onCancel);
+    };
+  }, [dragStart, size, finishSelection]);
+
   React.useEffect(() => {
     const onUp = () => { setDragStart((start) => { if (start !== null) setSelected([]); return null; }); };
     window.addEventListener("pointerup", onUp);
@@ -280,8 +313,6 @@ export default function WordSearchPage() {
     try { if (navigator.share) await navigator.share({ title: "Word Search complete", text, url }); else { await navigator.clipboard.writeText(`${text} ${url}`); } } catch { /* Share sheet dismissed. */ }
   };
   const fmt = (seconds: number) => `${Math.floor(seconds / 60).toString().padStart(2, "0")}:${(seconds % 60).toString().padStart(2, "0")}`;
-  const finished = Boolean(game && game.found.length === game.puzzle.words.length);
-  const size = game?.puzzle.grid.length ?? 10;
 
   React.useEffect(() => {
     if (!finished || !game?.challengeId) { setChallengeResult(null); return; }
@@ -419,14 +450,14 @@ export default function WordSearchPage() {
               </select>
             </div>
             <p className="relative z-10 mb-2.5 text-xs font-semibold uppercase tracking-widest text-violet-700 dark:text-violet-300">Choose Difficulty</p>
-            <div className="relative z-10 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+            <div className="relative z-10 grid grid-cols-2 gap-2.5">
               {availableDifficulties.map((item) => {
                 const meta = { beginner: "🧸", easy: "🌱", medium: "🧭", hard: "🔥" }[item.id];
                 const level = WORD_SEARCH_LEVELS[item.id];
-                return <button key={item.id} onClick={() => startGame(item.id)} className="group flex min-h-[104px] items-center gap-3 rounded-2xl border-2 border-violet-200/80 bg-gradient-to-r from-violet-50 to-fuchsia-50 p-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet-400 hover:shadow-md active:scale-[0.98] dark:border-violet-800/60 dark:from-violet-950/45 dark:to-fuchsia-950/40 sm:flex-col sm:items-start sm:justify-center sm:p-4">
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-violet-500/10 text-2xl group-hover:bg-violet-500/20">{meta}</span>
-                  <span className="min-w-0 flex-1 sm:flex-none"><span className="block font-bold">{level.label}</span><span className="mt-0.5 block text-xs text-muted-foreground">{item.detail}</span></span>
-                  <span className="text-lg font-bold text-violet-600 sm:hidden">→</span>
+                return <button key={item.id} onClick={() => startGame(item.id)} className="group flex min-h-[92px] flex-col items-center justify-center gap-1 rounded-2xl border-2 border-violet-200/80 bg-gradient-to-br from-violet-50 to-fuchsia-50 p-3 text-center shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet-400 hover:shadow-md active:scale-[0.98] dark:border-violet-800/60 dark:from-violet-950/45 dark:to-fuchsia-950/40">
+                  <span className="grid h-9 w-9 place-items-center rounded-xl bg-violet-500/10 text-xl group-hover:bg-violet-500/20">{meta}</span>
+                  <span className="text-sm font-bold leading-tight">{level.label}</span>
+                  <span className="text-[10px] leading-tight text-muted-foreground">{item.detail}</span>
                 </button>;
               })}
             </div>
@@ -435,11 +466,195 @@ export default function WordSearchPage() {
             <button onClick={() => setLocation("/profile?tab=word-search")} className="flex items-center gap-3 rounded-xl border bg-card p-3 text-left transition hover:border-violet-300 hover:bg-muted/50"><Search className="h-5 w-5 shrink-0 text-violet-600"/><span><span className="block text-sm font-semibold">My Stats</span><span className="hidden text-xs text-muted-foreground sm:block">Best times & progress</span></span></button>
             <button onClick={share} className="flex items-center gap-3 rounded-xl border bg-card p-3 text-left transition hover:border-violet-300 hover:bg-muted/50"><Share2 className="h-5 w-5 shrink-0 text-violet-600"/><span><span className="block text-sm font-semibold">Share Game</span><span className="hidden text-xs text-muted-foreground sm:block">Invite someone to play</span></span></button>
           </div>
-          <div className="rounded-xl border border-border bg-card px-4 py-3 text-xs leading-relaxed text-muted-foreground"><strong className="text-foreground">How to play:</strong> Choose a difficulty, then drag from the first letter to the last. Beginner and Easy words go left-to-right or top-to-bottom without overlapping. Medium and Hard also include diagonals and backwards words. Tap Hint if you need a nudge.</div>
+          {/* Info links */}
+          <div className="home-info-links flex items-center justify-center gap-6 rounded-xl border border-border bg-card px-4 py-2.5">
+            <button
+              onClick={() => setInfoModal("rules")}
+              className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <BookOpen className="h-3.5 w-3.5" /> Rules
+            </button>
+            <span className="text-border">·</span>
+            <button
+              onClick={() => setInfoModal("controls")}
+              className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Keyboard className="h-3.5 w-3.5" /> Controls
+            </button>
+            <span className="text-border">·</span>
+            <button
+              onClick={() => setInfoModal("backstory")}
+              className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Scroll className="h-3.5 w-3.5" /> Backstory
+            </button>
+          </div>
+
+          <MobileContentDisclosure
+            id="word-search-guidance"
+            title="More Word Search guidance"
+            className="rounded-2xl border border-violet-400/25 bg-card p-5 sm:p-6"
+          >
+            <section className="space-y-4">
+              <div>
+                <h2 className="font-serif text-xl font-bold text-foreground">
+                  How to play and improve at Word Search
+                </h2>
+                <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+                  Words are hidden inside a letter grid in straight lines —
+                  across, down, and on some levels diagonally, including
+                  backwards. Press on the first letter of a word and drag to
+                  its last letter to reveal it.
+                </p>
+              </div>
+              <div className="grid gap-4 text-sm leading-relaxed text-muted-foreground sm:grid-cols-2">
+                <article>
+                  <h3 className="font-semibold text-foreground">Pick a level that fits</h3>
+                  <p className="mt-1">
+                    Beginner (6×6, 6 words) and Easy (8×8, 8 words) hide words
+                    only left-to-right and top-to-bottom. Medium (12×12) adds
+                    diagonals, and Hard (14×14) also includes backwards words.
+                  </p>
+                </article>
+                <article>
+                  <h3 className="font-semibold text-foreground">Use the word list</h3>
+                  <p className="mt-1">
+                    The side panel lists every word you need to find. Cross off
+                    words as you reveal them, and use a Hint (up to 2 per game)
+                    if you get stuck on a tricky one.
+                  </p>
+                </article>
+                <article>
+                  <h3 className="font-semibold text-foreground">Choose a theme</h3>
+                  <p className="mt-1">
+                    Each theme has its own word list — animals, food, space, and
+                    more — themed to match your icon set. Changing the theme
+                    starts a fresh puzzle at the same level.
+                  </p>
+                </article>
+                <article>
+                  <h3 className="font-semibold text-foreground">Understand your score</h3>
+                  <p className="mt-1">
+                    Points reflect the level, your completion time, how many
+                    tries it took, and hints used. Finishing earns XP and 💎
+                    gems, and daily challenges give everyone the same puzzle.
+                  </p>
+                </article>
+              </div>
+            </section>
+          </MobileContentDisclosure>
+
+          {/* Rules modal */}
+          <Dialog open={infoModal === "rules"} onOpenChange={(open) => !open && setInfoModal(null)}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-violet-600" /> Rules
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">
+                <p>Word Search hides themed words inside a letter grid. Find them all to complete the puzzle.</p>
+                <ul className="list-none space-y-2">
+                  {[
+                    "Choose a difficulty and a word theme, then start the puzzle.",
+                    "Words run in straight lines: across, down, and on Medium/Hard also diagonally — Hard includes backwards words too.",
+                    "Press on a word's first letter and drag to its last letter, then release to reveal it.",
+                    "Found words are coloured in and crossed off the word list.",
+                    "Finish when every word on the list has been found.",
+                  ].map((rule, index) => (
+                    <li key={rule} className="flex gap-2">
+                      <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-violet-500/10 text-xs font-bold text-violet-700 dark:text-violet-300">{index + 1}</span>
+                      <span>{rule}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="pt-1">Points are based on the level, completion time, tries, and hints used. Finishing awards XP and 💎 gems.</p>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Controls modal */}
+          <Dialog open={infoModal === "controls"} onOpenChange={(open) => !open && setInfoModal(null)}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Keyboard className="h-5 w-5 text-violet-600" /> Controls
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 text-sm">
+                <div>
+                  <p className="mb-2 font-semibold text-foreground">Mouse / Touch</p>
+                  <div className="space-y-1.5 text-muted-foreground">
+                    {[
+                      ["Press on a letter", "Start selecting a line of cells"],
+                      ["Drag across letters", "Extend the selection in a straight line"],
+                      ["Release on the last letter", "Submit the selection"],
+                      ["Hint button", "Highlight one unfound word (2 per game)"],
+                      ["Theme selector", "Switch word list and start a new puzzle"],
+                    ].map(([action, result]) => (
+                      <div key={action} className="flex justify-between gap-4">
+                        <span>{action}</span>
+                        <span className="text-right font-medium text-foreground">{result}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="border-t pt-3">
+                  <p className="mb-2 font-semibold text-foreground">Scoring</p>
+                  <div className="space-y-1.5 text-muted-foreground">
+                    {[
+                      ["Level", "Higher levels award more points"],
+                      ["Time", "Faster completion earns a bonus"],
+                      ["Tries", "Fewer wrong selections = better score"],
+                      ["Tips", "Each hint reduces the score"],
+                    ].map(([key, result]) => (
+                      <div key={key} className="flex justify-between gap-4">
+                        <span className="font-medium text-foreground">{key}</span>
+                        <span className="text-right">{result}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Backstory modal */}
+          <Dialog open={infoModal === "backstory"} onOpenChange={(open) => !open && setInfoModal(null)}>
+            <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-md overflow-y-auto overscroll-contain">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Scroll className="h-5 w-5 text-violet-600" /> Backstory
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">
+                <p>
+                  Word search puzzles are a mid-20th-century invention. They are
+                  commonly credited to Norman E. Gibat, who created them for a
+                  puzzle book published in 1968, and they quickly became a
+                  newspaper and magazine staple.
+                </p>
+                <p>
+                  The appeal is simple: a grid of random letters hides a list of
+                  themed words, and the solver scans for patterns — double
+                  letters, uncommon combinations, and the shapes words make
+                  across the grid.
+                </p>
+                <p>
+                  This Word Search keeps that classic format and adds themed
+                  word lists, four difficulty levels, daily challenges, and
+                  head-to-head challenges against friends.
+                </p>
+              </div>
+            </DialogContent>
+          </Dialog>
         </> : <section className="rounded-3xl border border-border bg-card p-3 shadow-sm sm:p-5">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><div><h2 className="font-bold">{WORD_SEARCH_LEVELS[game.difficulty].label} puzzle</h2><div className="mt-1 flex flex-wrap items-center gap-2"><label htmlFor="word-search-game-theme" className="text-xs text-muted-foreground">Word theme</label><select id="word-search-game-theme" value={game.theme} onChange={(event) => startGame(game.difficulty, event.target.value as WordSearchTheme)} className="rounded-lg border border-violet-200 bg-background px-2 py-1 text-xs font-semibold text-foreground outline-none focus:ring-2 focus:ring-violet-400 dark:border-violet-800">{WORD_SEARCH_THEMES.map((theme) => <option key={theme.id} value={theme.id}>{theme.emoji} {theme.label}</option>)}</select><span className="text-[10px] text-muted-foreground">Changing theme starts a new puzzle</span></div></div><div className="flex items-center gap-1 rounded-full bg-muted px-3 py-1.5 text-sm font-semibold"><Clock3 className="h-4 w-4"/>{fmt(elapsed)}</div></div>
           <div className="mx-auto w-full max-w-[560px] rounded-2xl bg-gradient-to-br from-rose-300 via-violet-300 to-cyan-300 p-1.5 shadow-lg shadow-violet-500/15 dark:from-rose-800 dark:via-violet-800 dark:to-cyan-800">
-            <div className="select-none touch-none overflow-hidden rounded-xl border border-white/70 bg-white/70 dark:border-slate-700 dark:bg-slate-950/70" style={{ display: "grid", gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }} onPointerUp={(event) => { const cell = (event.target as HTMLElement).closest<HTMLElement>("[data-cell]"); if (cell) finishSelection(Number(cell.dataset.cell)); }}>
+            <div
+              className="select-none touch-none overflow-hidden rounded-xl border border-white/70 bg-white/70 dark:border-slate-700 dark:bg-slate-950/70"
+              style={{ display: "grid", gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}
+            >
               {game.puzzle.grid.flatMap((row, r) => row.map((letter, c) => {
                 const index = r * size + c;
                 const foundWord = game.found.find((word) => game.puzzle.placements[word]?.includes(index));
@@ -450,7 +665,7 @@ export default function WordSearchPage() {
                     ? "bg-amber-300 text-amber-950 ring-2 ring-inset ring-amber-600 dark:bg-amber-400/80 dark:text-amber-950 dark:ring-amber-200"
                     : "bg-blue-500 text-white ring-2 ring-inset ring-blue-800 shadow-inner dark:bg-blue-400 dark:text-blue-950 dark:ring-blue-100"
                   : "bg-violet-50 text-slate-800 hover:bg-violet-100 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800");
-                return <button key={index} data-cell={index} aria-label={`Row ${r + 1}, column ${c + 1}, ${letter}${foundWord ? `, part of ${foundWord}` : ""}`} onPointerDown={(e) => { e.preventDefault(); setHintWord(null); setDragStart(index); setSelected([index]); sounds.click(); }} onPointerEnter={() => { if (dragStart !== null) setSelected(getLineCells(dragStart, index, size)); }} className={`aspect-square min-w-0 border-[0.5px] border-violet-200/70 text-[clamp(10px,2.4vw,18px)] font-bold transition-colors dark:border-violet-800/60 sm:text-lg ${baseClass}`}>{letter}</button>;
+                return <button key={index} data-cell={index} aria-label={`Row ${r + 1}, column ${c + 1}, ${letter}${foundWord ? `, part of ${foundWord}` : ""}`} onPointerDown={(e) => { e.preventDefault(); setHintWord(null); setDragStart(index); setSelected([index]); sounds.click(); }} className={`aspect-square min-w-0 border-[0.5px] border-violet-200/70 text-[clamp(10px,2.4vw,18px)] font-bold transition-colors dark:border-violet-800/60 sm:text-lg ${baseClass}`}>{letter}</button>;
               }))}
             </div>
           </div>

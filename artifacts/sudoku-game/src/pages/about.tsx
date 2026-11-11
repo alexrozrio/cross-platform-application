@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft, Hash, Type, Palette, Trophy, Flame, BarChart2, Gem, Grid3x3, Brain, Puzzle, Sparkles } from "lucide-react";
+import { ArrowLeft, Hash, Type, Palette, Trophy, Flame, BarChart2, Gem, Grid3x3, Brain, Puzzle, Search, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { usePageMeta } from "@/components/page-meta";
 import { getLegalReturnPath } from "@/lib/legal-navigation";
@@ -25,6 +25,13 @@ const JIGSAW_FEATURES = [
   { icon: Gem, label: "Points, XP, and gems", desc: "Earn points based on grid size, level, time, moves, and tips, with XP and gems for completing puzzles." },
 ];
 
+const WORD_SEARCH_FEATURES = [
+  { icon: Search, label: "Four difficulty levels", desc: "From a quick 6×6 Beginner grid to a 14×14 Hard board with diagonals and backwards words." },
+  { icon: Palette, label: "Themed word lists", desc: "Animals, food, space, ocean, and icon-set themes give every puzzle a fresh word list." },
+  { icon: Flame, label: "Daily and friend challenges", desc: "Solve the same shared daily puzzle or challenge a friend to beat your score." },
+  { icon: Gem, label: "Points, XP, and gems", desc: "Earn points based on difficulty, time, tries, and hints, with XP and gems for completing puzzles." },
+];
+
 const SHARED_FEATURES = [
   { icon: Trophy, label: "Leaderboards & badges", desc: "Weekly and monthly tournaments, all-time scores, and shareable winner badges." },
   { icon: BarChart2, label: "Personal stats", desc: "Track your win rate, average time, and progress across difficulties." },
@@ -33,9 +40,9 @@ const SHARED_FEATURES = [
 
 export default function About() {
   usePageMeta({
-      title: "About Play Brain Games . Online | Sudoku, Memory & Jigsaw",
+      title: "About Play Brain Games . Online | Sudoku, Memory, Jigsaw & Word Search",
     description:
-        "Learn how Play Brain Games combines Sudoku, Memory Match, and Jigsaw puzzles with daily challenges, guest play, synced progress, and player support.",
+        "Learn how Play Brain Games combines Sudoku, Memory Match, Jigsaw, and Word Search puzzles with daily challenges, guest play, synced progress, and player support.",
     path: "/about",
   });
   const [, setLocation] = useLocation();
@@ -53,13 +60,13 @@ export default function About() {
       <div className="bg-card rounded-2xl px-5 py-4 border border-border">
         <h1 className="text-3xl font-serif font-bold tracking-tight">About</h1>
         <p className="text-muted-foreground mt-1">
-          Three classic brain games, reimagined for everyone.
+          Four classic brain games, reimagined for everyone.
         </p>
       </div>
 
       <div className="space-y-4 text-sm text-muted-foreground leading-relaxed bg-card rounded-2xl border border-border px-5 py-4">
         <p>
-          Play Brain Games . Online is a general-audience, family-friendly collection of Sudoku, Memory Match, and Jigsaw puzzles. It is designed for everyone from first-time solvers to seasoned experts, with optional child-friendly modes for younger family members. We believe a great puzzle game should be beautiful, fast, and endlessly replayable.
+          Play Brain Games . Online is a general-audience, family-friendly collection of Sudoku, Memory Match, Jigsaw, and Word Search puzzles. It is designed for everyone from first-time solvers to seasoned experts, with optional child-friendly modes for younger family members. We believe a great puzzle game should be beautiful, fast, and endlessly replayable.
         </p>
         <p>
           In Sudoku, beyond the standard 9×9, we support child-friendly Baby and Mini grids as well as pro-level 16×16 boards that will challenge experienced players. You can play with numbers, letters, or swappable image themes — keeping every session feeling fresh.
@@ -69,6 +76,13 @@ export default function About() {
         </p>
         <p>
           In Jigsaw, rebuild themed pictures on boards from 2×2 to 5×5. Kids mode offers 2×2 and 3×3 boards, Adult mode offers 4×4 and 5×5, and default 4 All mode offers all four. Choose a level, earn points based on time, moves, and tips, or invite a friend to solve the same picture. Wins also award XP by level and gems by board size.
+        </p>
+        <p>
+          In Word Search, find themed words hidden in a letter grid across four
+          levels. Beginner and Easy hide words left-to-right and top-to-bottom;
+          Medium adds diagonals and Hard adds backwards words too. Drag from a
+          word&apos;s first letter to its last to reveal it, use up to two hints
+          per game, and earn points based on difficulty, time, tries, and hints.
         </p>
       </div>
 
@@ -136,6 +150,27 @@ export default function About() {
       </div>
 
       <div className="space-y-3 bg-card rounded-2xl border border-border px-5 py-4">
+        <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+          <Search className="w-4 h-4 text-primary" /> Word Search
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {WORD_SEARCH_FEATURES.map(({ icon: Icon, label, desc }) => (
+            <Card key={label} className="border-border/60">
+              <CardContent className="pt-4 pb-4 flex gap-3 items-start">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3 bg-card rounded-2xl border border-border px-5 py-4">
         <h2 className="text-base font-semibold text-foreground">Across all games</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {SHARED_FEATURES.map(({ icon: Icon, label, desc }) => (
@@ -182,8 +217,9 @@ export default function About() {
         <p>
           The daily Sudoku challenge gives players the same 9×9 medium puzzle
           for that day, so completion time and mistakes can be compared on the
-          same board. Memory Match also offers daily and weekly challenges, and
-          Jigsaw has a shared daily picture puzzle plus friend challenges.
+          same board. Memory Match also offers daily and weekly challenges,
+          Jigsaw has a shared daily picture puzzle plus friend challenges, and
+          Word Search has a shared daily word puzzle plus friend challenges.
           Weekly, monthly, and all-time leaderboards show recorded game results
           for players who choose to take part.
         </p>
