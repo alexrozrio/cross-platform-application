@@ -277,32 +277,48 @@ export default function WordSearchPage() {
   // never see the finger leaving that cell. Listeners mount once and read the
   // latest values through refs so they can never go stale; elementFromPoint
   // hit-tests the real cell under the pointer regardless of capture.
+  // Touch drags also run through Touch Events: some Android WebViews suppress
+  // pointermove/pointerup after a prevented pointerdown, so touch input must
+  // not depend on Pointer Events alone. Pointer handlers ignore touch pointers
+  // to avoid handling the same gesture twice.
   React.useEffect(() => {
-    const cellAt = (event: PointerEvent) =>
-      document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-cell]");
-    const onMove = (event: PointerEvent) => {
+    const cellUnder = (clientX: number, clientY: number) =>
+      document.elementFromPoint(clientX, clientY)?.closest<HTMLElement>("[data-cell]");
+    const updateDrag = (clientX: number, clientY: number) => {
       const start = dragCellRef.current;
       if (start === null) return;
-      const cell = cellAt(event);
+      const cell = cellUnder(clientX, clientY);
       if (cell) setSelected(getLineCells(start, Number(cell.dataset.cell), gridSizeRef.current));
     };
-    const onUp = (event: PointerEvent) => {
+    const endDrag = (clientX: number, clientY: number) => {
       const start = dragCellRef.current;
       if (start === null) return;
       dragCellRef.current = null;
-      const cell = cellAt(event);
+      const cell = cellUnder(clientX, clientY);
       if (cell) finishSelectionRef.current(Number(cell.dataset.cell));
       else setSelected([]);
       setDragStart(null);
     };
-    const onCancel = () => { dragCellRef.current = null; setDragStart(null); setSelected([]); };
-    window.addEventListener("pointermove", onMove, { passive: true });
-    window.addEventListener("pointerup", onUp);
-    window.addEventListener("pointercancel", onCancel);
+    const cancelDrag = () => { dragCellRef.current = null; setDragStart(null); setSelected([]); };
+    const onPointerMove = (event: PointerEvent) => { if (event.pointerType !== "touch") updateDrag(event.clientX, event.clientY); };
+    const onPointerUp = (event: PointerEvent) => { if (event.pointerType !== "touch") endDrag(event.clientX, event.clientY); };
+    const onPointerCancel = (event: PointerEvent) => { if (event.pointerType !== "touch") cancelDrag(); };
+    const onTouchMove = (event: TouchEvent) => { const touch = event.touches[0]; if (touch) updateDrag(touch.clientX, touch.clientY); };
+    const onTouchEnd = (event: TouchEvent) => { const touch = event.changedTouches[0]; if (touch) endDrag(touch.clientX, touch.clientY); };
+    const onTouchCancel = () => cancelDrag();
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerCancel);
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("touchend", onTouchEnd);
+    window.addEventListener("touchcancel", onTouchCancel);
     return () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-      window.removeEventListener("pointercancel", onCancel);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerCancel);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("touchcancel", onTouchCancel);
     };
   }, []);
 
@@ -311,6 +327,15 @@ export default function WordSearchPage() {
     window.addEventListener("pointerup", onUp);
     return () => window.removeEventListener("pointerup", onUp);
   }, []);
+
+  const startDrag = (index: number) => {
+    if (dragCellRef.current !== null) return;
+    setHintWord(null);
+    dragCellRef.current = index;
+    setDragStart(index);
+    setSelected([index]);
+    sounds.click();
+  };
 
   const issueHint = () => {
     if (!game || game.tipsUsed >= MAX_TIPS) return;
@@ -728,7 +753,7 @@ export default function WordSearchPage() {
                     ? "bg-amber-300 text-amber-950 ring-2 ring-inset ring-amber-600 dark:bg-amber-400/80 dark:text-amber-950 dark:ring-amber-200"
                     : "bg-blue-500 text-white ring-2 ring-inset ring-blue-800 shadow-inner dark:bg-blue-400 dark:text-blue-950 dark:ring-blue-100"
                   : "bg-violet-50 text-slate-800 hover:bg-violet-100 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800");
-                return <button key={index} data-cell={index} aria-label={`Row ${r + 1}, column ${c + 1}, ${letter}${foundWord ? `, part of ${foundWord}` : ""}`} onPointerDown={(e) => { e.preventDefault(); setHintWord(null); dragCellRef.current = index; setDragStart(index); setSelected([index]); sounds.click(); }} className={`aspect-square min-w-0 border-[0.5px] border-violet-200/70 text-[clamp(10px,2.4vw,18px)] font-bold transition-colors dark:border-violet-800/60 sm:text-lg ${baseClass}`}>{letter}</button>;
+                return <button key={index} data-cell={index} aria-label={`Row ${r + 1}, column ${c + 1}, ${letter}${foundWord ? `, part of ${foundWord}` : ""}`} onPointerDown={(e) => { if (e.pointerType === "touch") return; e.preventDefault(); startDrag(index); }} onTouchStart={(e) => { if (e.touches.length === 1) startDrag(index); }} className={`aspect-square min-w-0 border-[0.5px] border-violet-200/70 text-[clamp(10px,2.4vw,18px)] font-bold transition-colors dark:border-violet-800/60 sm:text-lg ${baseClass}`}>{letter}</button>;
               }))}
             </div>
           </div>

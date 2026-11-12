@@ -1114,17 +1114,25 @@ export default function Portal() {
                 title="Available"
               />
             </div>
-            <section className="group relative isolate overflow-hidden rounded-2xl border-2 border-violet-400/60 bg-gradient-to-br from-violet-100 via-fuchsia-50 to-pink-100 p-6 text-left shadow-xl shadow-violet-500/20 ring-1 ring-inset ring-white/70 transition hover:border-violet-500/80 dark:from-violet-950/75 dark:via-fuchsia-950/70 dark:to-pink-950/60 dark:ring-white/10">
+            <section className="group relative isolate overflow-hidden rounded-2xl border-2 border-violet-400/60 bg-gradient-to-br from-violet-100 via-fuchsia-50 to-pink-100 text-left shadow-xl shadow-violet-500/20 ring-1 ring-inset ring-white/70 transition hover:border-violet-500/80 dark:from-violet-950/75 dark:via-fuchsia-950/70 dark:to-pink-950/60 dark:ring-white/10">
               <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-400" />
               <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-fuchsia-300/35 blur-2xl dark:bg-fuchsia-400/15" />
               <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-24 w-24 rotate-6 grid-cols-3 overflow-hidden rounded-xl border border-violet-400/15 bg-white/15 opacity-60 dark:bg-white/5">{"WORDSEARCH".slice(0, 9).split("").map((letter, index) => <span key={index} className="flex items-center justify-center border border-violet-400/10 text-sm font-black text-violet-700/25 dark:text-violet-200/20">{letter}</span>)}</div>
-              <div className="relative z-10 flex items-center gap-3"><span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 ring-1 ring-violet-400/20 dark:text-violet-300"><Search className="h-8 w-8" /></span><div><h2 className="font-serif text-xl font-bold">Word Search</h2><p className="text-xs text-muted-foreground">Hidden word puzzle</p></div></div>
-              <p className="relative z-10 mt-4 text-sm leading-relaxed text-muted-foreground">Find themed words hidden across, down, and diagonally. Pick a level to start.</p>
-              <IconSetPreview themeId={themeId} className="mt-2" />
-              <div className="relative z-10 mt-4 grid grid-cols-2 gap-2">
-                {visibleWordSearchLevels.map((level) => <button key={level} onClick={() => launchWordSearch(level)} className="flex min-h-[52px] flex-col items-center justify-center rounded-lg border border-violet-400/20 bg-violet-500/5 px-1 py-2 text-center transition-all hover:border-violet-400/40 hover:bg-violet-500/15"><span className="text-xs font-bold leading-none text-violet-600 dark:text-violet-400">{WORD_SEARCH_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{WORD_SEARCH_LEVELS[level].size}×{WORD_SEARCH_LEVELS[level].size} · {WORD_SEARCH_LEVELS[level].wordCount} words</span></button>)}
+              <button onClick={() => setLocation("/word-search")} className="relative z-10 block w-full space-y-4 p-6 text-left transition-all duration-200 hover:bg-white/20 dark:hover:bg-slate-950/20">
+                <div className="flex items-center gap-3"><span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 ring-1 ring-violet-400/20 dark:text-violet-300"><Search className="h-8 w-8" /></span><div><h2 className="font-serif text-xl font-bold">Word Search</h2><p className="text-xs text-muted-foreground">Hidden word puzzle</p></div></div>
+                <p className="text-sm leading-relaxed text-muted-foreground">Find themed words hidden across, down, and diagonally. Pick a level to start.</p>
+                <IconSetPreview themeId={themeId} />
+              </button>
+              <div className="relative z-10 px-6 pb-5 pt-1">
+                <div className="grid grid-cols-2 gap-2">
+                  {visibleWordSearchLevels.map((level) => <button key={level} onClick={() => launchWordSearch(level)} className="flex min-h-[52px] flex-col items-center justify-center rounded-lg border border-violet-400/20 bg-violet-500/5 px-1 py-2 text-center transition-all hover:border-violet-400/40 hover:bg-violet-500/15"><span className="text-xs font-bold leading-none text-violet-600 dark:text-violet-400">{WORD_SEARCH_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{WORD_SEARCH_LEVELS[level].size}×{WORD_SEARCH_LEVELS[level].size} · {WORD_SEARCH_LEVELS[level].wordCount} words</span></button>)}
+                </div>
+                <button onClick={() => setLocation("/word-search")} className="mt-3 text-xs font-semibold text-violet-800 underline underline-offset-2 dark:text-violet-200">More options and themes</button>
               </div>
-              <button onClick={() => setLocation("/word-search")} className="relative z-10 mt-3 text-xs font-semibold text-violet-800 underline underline-offset-2 dark:text-violet-200">More options and themes</button>
+              <div
+                className="absolute top-3 right-3 w-2 h-2 rounded-full bg-green-400"
+                title="Available"
+              />
             </section>
           </div>
         </div>
