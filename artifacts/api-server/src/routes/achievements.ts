@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and } from "drizzle-orm";
-import { db, gamesTable, puzzlesTable, dailyChallengesTable, memoryGamesTable, jigsawGamesTable, wordSearchGamesTable, profilesTable } from "@workspace/db";
+import { db, gamesTable, puzzlesTable, dailyChallengesTable, memoryGamesTable, jigsawGamesTable, wordSearchGamesTable, minesweeperGamesTable, slidePuzzleGamesTable, quizGamesTable, profilesTable } from "@workspace/db";
 import {
   countAchievementProgress,
   getJigsawAchievementProgress,
@@ -157,6 +157,86 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
   const wordSearchDifficultyCount = new Set(completedWordSearch.map(({ difficulty }) => difficulty)).size;
   const noTipWordSearchCount = completedWordSearch.filter(({ tipsUsed }) => tipsUsed === 0).length;
   const hasFastWordSearch = (difficulty: string, maxTime: number) => completedWordSearch.some((game) => game.difficulty === difficulty && game.elapsedSeconds < maxTime);
+
+  // ── Minesweeper data ──────────────────────────────────────────────────────
+  const completedMinesweeper = await db.select({
+    difficulty: minesweeperGamesTable.difficulty,
+    elapsedSeconds: minesweeperGamesTable.elapsedSeconds,
+    mistakes: minesweeperGamesTable.mistakes,
+    hintsUsed: minesweeperGamesTable.hintsUsed,
+    points: minesweeperGamesTable.points,
+    dailyDate: minesweeperGamesTable.dailyDate,
+  }).from(minesweeperGamesTable).where(and(
+    eq(minesweeperGamesTable.profileId, profileId), eq(minesweeperGamesTable.status, "completed"),
+  ));
+  const minesweeperWins = completedMinesweeper.filter((game) => (game.points ?? 0) > 0);
+  const minesweeperWinCount = minesweeperWins.length;
+  const minesweeperDifficultyCount = new Set(minesweeperWins.map(({ difficulty }) => difficulty)).size;
+  const minesweeperNoMistakeCount = minesweeperWins.filter(({ mistakes }) => mistakes === 0).length;
+  const minesweeperNoHintCount = minesweeperWins.filter(({ hintsUsed }) => hintsUsed === 0).length;
+  const minesweeperDailyCount = new Set(minesweeperWins.map(({ dailyDate }) => dailyDate).filter((date): date is string => !!date)).size;
+  const hasFastMinesweeper = (difficulty: string, maxTime: number) => minesweeperWins.some((game) => game.difficulty === difficulty && game.elapsedSeconds < maxTime);
+
+  // ── Slide Puzzle data ─────────────────────────────────────────────────────
+  const completedSlidePuzzle = await db.select({
+    difficulty: slidePuzzleGamesTable.difficulty,
+    tileStyle: slidePuzzleGamesTable.tileStyle,
+    elapsedSeconds: slidePuzzleGamesTable.elapsedSeconds,
+    hintsUsed: slidePuzzleGamesTable.hintsUsed,
+    points: slidePuzzleGamesTable.points,
+    dailyDate: slidePuzzleGamesTable.dailyDate,
+  }).from(slidePuzzleGamesTable).where(and(
+    eq(slidePuzzleGamesTable.profileId, profileId), eq(slidePuzzleGamesTable.status, "completed"),
+  ));
+  const slidePuzzleWins = completedSlidePuzzle.filter((game) => (game.points ?? 0) > 0);
+  const slidePuzzleWinCount = slidePuzzleWins.length;
+  const slidePuzzleDifficultyCount = new Set(slidePuzzleWins.map(({ difficulty }) => difficulty)).size;
+  const slidePuzzleNoHintCount = slidePuzzleWins.filter(({ hintsUsed }) => hintsUsed === 0).length;
+  const slidePuzzleStyleCount = new Set(slidePuzzleWins.map(({ tileStyle }) => tileStyle)).size;
+  const slidePuzzleDailyCount = new Set(slidePuzzleWins.map(({ dailyDate }) => dailyDate).filter((date): date is string => !!date)).size;
+  const hasFastSlidePuzzle = (difficulty: string, maxTime: number) => slidePuzzleWins.some((game) => game.difficulty === difficulty && game.elapsedSeconds < maxTime);
+
+  // ── Quiz data (each subject has its own achievement set) ─────────────────
+  const completedQuiz = await db.select({
+    subject: quizGamesTable.subject,
+    level: quizGamesTable.level,
+    questions: quizGamesTable.questions,
+    correct: quizGamesTable.correct,
+    elapsedSeconds: quizGamesTable.elapsedSeconds,
+    points: quizGamesTable.points,
+    dailyDate: quizGamesTable.dailyDate,
+  }).from(quizGamesTable).where(and(
+    eq(quizGamesTable.profileId, profileId), eq(quizGamesTable.status, "completed"),
+  ));
+  const quizWinsBySubject = new Map<string, typeof completedQuiz>();
+  for (const game of completedQuiz) {
+    if ((game.points ?? 0) <= 0) continue;
+    const wins = quizWinsBySubject.get(game.subject) ?? [];
+    wins.push(game);
+    quizWinsBySubject.set(game.subject, wins);
+  }
+  const quizAchievements: Record<string, { unlocked: boolean; progress: number; total: number }> = {};
+  for (const subject of ["science", "maths", "gk"] as const) {
+    const wins = quizWinsBySubject.get(subject) ?? [];
+    const winCount = wins.length;
+    const levelCount = new Set(wins.map(({ level }) => level)).size;
+    const perfectCount = wins.filter(({ correct, questions }) => questions > 0 && correct === questions).length;
+    const dailyCount = new Set(wins.map(({ dailyDate }) => dailyDate).filter((date): date is string => !!date)).size;
+    const hasFast = (level: string, maxTime: number) => wins.some((game) => game.level === level && game.elapsedSeconds < maxTime);
+    quizAchievements[`${subject}_first`] = { unlocked: winCount >= 1, progress: Math.min(winCount, 1), total: 1 };
+    quizAchievements[`${subject}_10`] = { unlocked: winCount >= 10, progress: Math.min(winCount, 10), total: 10 };
+    quizAchievements[`${subject}_50`] = { unlocked: winCount >= 50, progress: Math.min(winCount, 50), total: 50 };
+    quizAchievements[`${subject}_100`] = { unlocked: winCount >= 100, progress: Math.min(winCount, 100), total: 100 };
+    quizAchievements[`${subject}_all_levels`] = { unlocked: levelCount === 4, progress: levelCount, total: 4 };
+    quizAchievements[`${subject}_perfect_5`] = { unlocked: perfectCount >= 5, progress: Math.min(perfectCount, 5), total: 5 };
+    quizAchievements[`${subject}_speed_easy`] = { unlocked: hasFast("easy", 90), progress: hasFast("easy", 90) ? 1 : 0, total: 1 };
+    quizAchievements[`${subject}_speed_medium`] = { unlocked: hasFast("medium", 150), progress: hasFast("medium", 150) ? 1 : 0, total: 1 };
+    quizAchievements[`${subject}_speed_hard`] = { unlocked: hasFast("hard", 200), progress: hasFast("hard", 200) ? 1 : 0, total: 1 };
+    quizAchievements[`${subject}_speed_expert`] = { unlocked: hasFast("expert", 250), progress: hasFast("expert", 250) ? 1 : 0, total: 1 };
+    quizAchievements[`${subject}_daily_7`] = { unlocked: dailyCount >= 7, progress: Math.min(dailyCount, 7), total: 7 };
+    quizAchievements[`${subject}_daily_30`] = { unlocked: dailyCount >= 30, progress: Math.min(dailyCount, 30), total: 30 };
+    quizAchievements[`${subject}_daily_100`] = { unlocked: dailyCount >= 100, progress: Math.min(dailyCount, 100), total: 100 };
+  }
   res.json({
     // ── Sudoku: Milestones ───────────────────────────────────────────────────
     first_win:        { unlocked: totalWins >= 1,   progress: Math.min(totalWins, 1),   total: 1   },
@@ -260,6 +340,41 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
     word_search_daily_7: { unlocked: wordSearchDailyCount >= 7, progress: Math.min(wordSearchDailyCount, 7), total: 7 },
     word_search_daily_30: { unlocked: wordSearchDailyCount >= 30, progress: Math.min(wordSearchDailyCount, 30), total: 30 },
     word_search_daily_100: { unlocked: wordSearchDailyCount >= 100, progress: Math.min(wordSearchDailyCount, 100), total: 100 },
+
+    // ── Minesweeper ─────────────────────────────────────────────────────────
+    minesweeper_first: { unlocked: minesweeperWinCount >= 1, progress: Math.min(minesweeperWinCount, 1), total: 1 },
+    minesweeper_10: { unlocked: minesweeperWinCount >= 10, progress: Math.min(minesweeperWinCount, 10), total: 10 },
+    minesweeper_50: { unlocked: minesweeperWinCount >= 50, progress: Math.min(minesweeperWinCount, 50), total: 50 },
+    minesweeper_100: { unlocked: minesweeperWinCount >= 100, progress: Math.min(minesweeperWinCount, 100), total: 100 },
+    minesweeper_all_levels: { unlocked: minesweeperDifficultyCount === 4, progress: minesweeperDifficultyCount, total: 4 },
+    minesweeper_perfect_5: { unlocked: minesweeperNoMistakeCount >= 5, progress: Math.min(minesweeperNoMistakeCount, 5), total: 5 },
+    minesweeper_no_hints_10: { unlocked: minesweeperNoHintCount >= 10, progress: Math.min(minesweeperNoHintCount, 10), total: 10 },
+    minesweeper_speed_beginner: { unlocked: hasFastMinesweeper("beginner", 90), progress: hasFastMinesweeper("beginner", 90) ? 1 : 0, total: 1 },
+    minesweeper_speed_easy: { unlocked: hasFastMinesweeper("easy", 180), progress: hasFastMinesweeper("easy", 180) ? 1 : 0, total: 1 },
+    minesweeper_speed_medium: { unlocked: hasFastMinesweeper("medium", 360), progress: hasFastMinesweeper("medium", 360) ? 1 : 0, total: 1 },
+    minesweeper_speed_hard: { unlocked: hasFastMinesweeper("hard", 600), progress: hasFastMinesweeper("hard", 600) ? 1 : 0, total: 1 },
+    minesweeper_daily_7: { unlocked: minesweeperDailyCount >= 7, progress: Math.min(minesweeperDailyCount, 7), total: 7 },
+    minesweeper_daily_30: { unlocked: minesweeperDailyCount >= 30, progress: Math.min(minesweeperDailyCount, 30), total: 30 },
+    minesweeper_daily_100: { unlocked: minesweeperDailyCount >= 100, progress: Math.min(minesweeperDailyCount, 100), total: 100 },
+
+    // ── Slide Puzzle ────────────────────────────────────────────────────────
+    slide_puzzle_first: { unlocked: slidePuzzleWinCount >= 1, progress: Math.min(slidePuzzleWinCount, 1), total: 1 },
+    slide_puzzle_10: { unlocked: slidePuzzleWinCount >= 10, progress: Math.min(slidePuzzleWinCount, 10), total: 10 },
+    slide_puzzle_50: { unlocked: slidePuzzleWinCount >= 50, progress: Math.min(slidePuzzleWinCount, 50), total: 50 },
+    slide_puzzle_100: { unlocked: slidePuzzleWinCount >= 100, progress: Math.min(slidePuzzleWinCount, 100), total: 100 },
+    slide_puzzle_all_levels: { unlocked: slidePuzzleDifficultyCount === 4, progress: slidePuzzleDifficultyCount, total: 4 },
+    slide_puzzle_styles_3: { unlocked: slidePuzzleStyleCount === 3, progress: slidePuzzleStyleCount, total: 3 },
+    slide_puzzle_no_hints_10: { unlocked: slidePuzzleNoHintCount >= 10, progress: Math.min(slidePuzzleNoHintCount, 10), total: 10 },
+    slide_puzzle_speed_2x2: { unlocked: hasFastSlidePuzzle("2x2", 90), progress: hasFastSlidePuzzle("2x2", 90) ? 1 : 0, total: 1 },
+    slide_puzzle_speed_3x3: { unlocked: hasFastSlidePuzzle("3x3", 300), progress: hasFastSlidePuzzle("3x3", 300) ? 1 : 0, total: 1 },
+    slide_puzzle_speed_4x4: { unlocked: hasFastSlidePuzzle("4x4", 1200), progress: hasFastSlidePuzzle("4x4", 1200) ? 1 : 0, total: 1 },
+    slide_puzzle_speed_5x5: { unlocked: hasFastSlidePuzzle("5x5", 2700), progress: hasFastSlidePuzzle("5x5", 2700) ? 1 : 0, total: 1 },
+    slide_puzzle_daily_7: { unlocked: slidePuzzleDailyCount >= 7, progress: Math.min(slidePuzzleDailyCount, 7), total: 7 },
+    slide_puzzle_daily_30: { unlocked: slidePuzzleDailyCount >= 30, progress: Math.min(slidePuzzleDailyCount, 30), total: 30 },
+    slide_puzzle_daily_100: { unlocked: slidePuzzleDailyCount >= 100, progress: Math.min(slidePuzzleDailyCount, 100), total: 100 },
+
+    // ── Quiz games: Science / Maths / GK each have their own set ────────────
+    ...quizAchievements,
   });
 });
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useSearch } from "wouter";
+import { Link, useSearch, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import {
   useGetLeaderboard,
@@ -21,17 +21,28 @@ import {
   Brain,
   Puzzle,
   Search,
+  Bomb,
+  Grid3x3,
   Timer,
   Repeat2,
   TrendingUp,
   TrendingDown,
   Minus,
+  CircleHelp,
 } from "lucide-react";
 import { LevelBadge } from "@/components/level-badge";
 import { usePageMeta } from "@/components/page-meta";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
 import { showEventModal } from "@/hooks/use-event-modal";
+import { quizGameId, quizSubject, type QuizSubject } from "@/lib/quiz";
 
 type MainTab = "alltime" | "weekly" | "monthly";
 
@@ -222,6 +233,30 @@ function XpGuide() {
               ))}
             </div>
             <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">Word Search XP is awarded for each completed puzzle and increases with the selected difficulty.</p>
+          </div>
+          <div className="border-t border-border pt-3">
+            <p className="mb-2 text-xs font-semibold text-foreground">Minesweeper XP by difficulty</p>
+            <div className="grid grid-cols-4 gap-2 text-center">
+              {[{ level: "Beginner", xp: 1 }, { level: "Easy", xp: 1 }, { level: "Medium", xp: 2 }, { level: "Hard", xp: 3 }].map((item) => (
+                <div key={item.level} className="rounded-lg border border-border bg-background px-2 py-2">
+                  <p className="text-[10px] font-semibold text-muted-foreground">{item.level}</p>
+                  <p className="text-xs font-bold text-emerald-600">{item.xp} XP</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">Minesweeper XP is awarded for each cleared minefield and increases with the selected difficulty. Only wins earn XP.</p>
+          </div>
+          <div className="border-t border-border pt-3">
+            <p className="mb-2 text-xs font-semibold text-foreground">Slide Puzzle XP by board size</p>
+            <div className="grid grid-cols-4 gap-2 text-center">
+              {[{ level: "2×2", xp: 1 }, { level: "3×3", xp: 1 }, { level: "4×4", xp: 2 }, { level: "5×5", xp: 3 }].map((item) => (
+                <div key={item.level} className="rounded-lg border border-border bg-background px-2 py-2">
+                  <p className="text-[10px] font-semibold text-muted-foreground">{item.level}</p>
+                  <p className="text-xs font-bold text-sky-600">{item.xp} XP</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">Slide Puzzle XP is awarded for each solved board and increases with the selected size. Only wins earn XP.</p>
           </div>
         </div>
       )}
@@ -453,6 +488,72 @@ function PointsGuide() {
             </p>
           </div>
 
+          {/* Minesweeper base points table */}
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              💣 Minesweeper — base points × difficulty
+            </p>
+            <div className="rounded-xl border overflow-hidden text-xs">
+              <div className="grid grid-cols-5 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+                <span>Level</span>
+                <span className="text-center">Base pts</span>
+                <span className="text-center">Par time</span>
+                <span className="text-center">Board</span>
+                <span className="text-center">Gems</span>
+              </div>
+              {[
+                { label: "Beginner", base: 150, par: "1:30", board: "6×6 · 5 mines", gems: 1, cls: "text-green-700" },
+                { label: "Easy", base: 350, par: "3:00", board: "8×8 · 12 mines", gems: 2, cls: "text-blue-700" },
+                { label: "Medium", base: 800, par: "6:00", board: "12×12 · 24 mines", gems: 3, cls: "text-yellow-700" },
+                { label: "Hard", base: 1600, par: "10:00", board: "14×14 · 34 mines", gems: 4, cls: "text-orange-700" },
+              ].map((row, i) => (
+                <div key={row.label} className={`grid grid-cols-5 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}>
+                  <span className={`font-semibold ${row.cls}`}>{row.label}</span>
+                  <span className="text-center font-mono">{row.base.toLocaleString()}</span>
+                  <span className="text-center font-mono">{row.par}</span>
+                  <span className="text-center font-mono text-[10px]">{row.board}</span>
+                  <span className="text-center font-mono">{row.gems} 💎</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2">
+              Only wins score. score = base × (1 + time bonus up to +50%) × mistake factor × hint factor &nbsp;·&nbsp; −15% per mine hit (floor 40%), −20% per hint (floor 60%), min 10 pts. Three mine hits ends the game. XP: Beginner/Easy 1, Medium 2, Hard 3.
+            </p>
+          </div>
+
+          {/* Slide Puzzle base points table */}
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              🧩 Slide Puzzle — base points × board size
+            </p>
+            <div className="rounded-xl border overflow-hidden text-xs">
+              <div className="grid grid-cols-5 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+                <span>Board</span>
+                <span className="text-center">Base pts</span>
+                <span className="text-center">Par time</span>
+                <span className="text-center">Par moves</span>
+                <span className="text-center">Gems</span>
+              </div>
+              {[
+                { label: "2×2", base: 120, par: "1:30", moves: 12, gems: 1, cls: "text-green-700" },
+                { label: "3×3", base: 300, par: "5:00", moves: 60, gems: 2, cls: "text-blue-700" },
+                { label: "4×4", base: 700, par: "20:00", moves: 160, gems: 3, cls: "text-yellow-700" },
+                { label: "5×5", base: 1500, par: "45:00", moves: 320, gems: 4, cls: "text-orange-700" },
+              ].map((row, i) => (
+                <div key={row.label} className={`grid grid-cols-5 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}>
+                  <span className={`font-semibold ${row.cls}`}>{row.label}</span>
+                  <span className="text-center font-mono">{row.base.toLocaleString()}</span>
+                  <span className="text-center font-mono">{row.par}</span>
+                  <span className="text-center font-mono">{row.moves}</span>
+                  <span className="text-center font-mono">{row.gems} 💎</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2">
+              Only wins score. score = base × (1 + time bonus up to +50%) × move factor × hint factor &nbsp;·&nbsp; move factor scales 60–100% toward the par move count, −15% per hint (floor 70%), min 10 pts. XP: 2×2/3×3 = 1, 4×4 = 2, 5×5 = 3.
+            </p>
+          </div>
+
           {/* Game Modes */}
           <div>
             <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
@@ -462,12 +563,14 @@ function PointsGuide() {
               Your Game Mode (set in Profile) controls which grid sizes and difficulties are available to you across all games and challenges.
             </p>
             <div className="rounded-xl border overflow-hidden text-xs">
-              <div className="grid grid-cols-5 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+              <div className="grid grid-cols-7 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
                 <span>Mode</span>
                 <span className="text-center">Sudoku</span>
                 <span className="text-center">Memory Match</span>
                 <span className="text-center">Jigsaw</span>
                 <span className="text-center">Word Search</span>
+                <span className="text-center">Minesweeper</span>
+                <span className="text-center">Slide Puzzle</span>
               </div>
               {[
                 {
@@ -476,6 +579,8 @@ function PointsGuide() {
                   memory: "4 pairs · 8 pairs",
                   jigsaw: "2×2 · 3×3",
                   wordSearch: "Beginner · Easy",
+                  minesweeper: "Beginner · Easy",
+                  slidePuzzle: "2×2 · 3×3",
                   cls: "text-green-700",
                 },
                 {
@@ -484,6 +589,8 @@ function PointsGuide() {
                   memory: "16 pairs · 32 pairs",
                   jigsaw: "4×4 · 5×5",
                   wordSearch: "Medium · Hard",
+                  minesweeper: "Medium · Hard",
+                  slidePuzzle: "4×4 · 5×5",
                   cls: "text-blue-700",
                 },
                 {
@@ -492,18 +599,22 @@ function PointsGuide() {
                   memory: "All four sizes",
                   jigsaw: "All four sizes",
                   wordSearch: "All four levels",
+                  minesweeper: "All four levels",
+                  slidePuzzle: "All four sizes",
                   cls: "text-violet-700",
                 },
               ].map((row, i) => (
                 <div
                   key={row.mode}
-                  className={`grid grid-cols-5 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}
+                  className={`grid grid-cols-7 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}
                 >
                   <span className={`font-semibold ${row.cls}`}>{row.mode}</span>
                   <span className="text-center text-muted-foreground">{row.sudoku}</span>
                   <span className="text-center text-muted-foreground">{row.memory}</span>
                   <span className="text-center text-muted-foreground">{row.jigsaw}</span>
                   <span className="text-center text-muted-foreground">{row.wordSearch}</span>
+                  <span className="text-center text-muted-foreground">{row.minesweeper}</span>
+                  <span className="text-center text-muted-foreground">{row.slidePuzzle}</span>
                 </div>
               ))}
             </div>
@@ -618,6 +729,8 @@ interface BreakdownData {
   memory: { gridSize: number; points: number; games: number }[];
   jigsaw: { gridSize: number; points: number; games: number }[];
   wordSearch: { difficulty: string; points: number; games: number }[];
+  minesweeper: { difficulty: string; points: number; games: number }[];
+  slidePuzzle: { difficulty: string; points: number; games: number }[];
 }
 
 const SUDOKU_GRID_NAMES: Record<number, string> = {
@@ -639,6 +752,19 @@ const JIGSAW_GRID_NAMES: Record<number, string> = {
   4: "4×4 Adult",
   5: "5×5 Adult",
 };
+const MINESWEEPER_DIFFICULTY_NAMES: Record<string, string> = {
+  beginner: "6×6 · 5 mines",
+  easy: "8×8 · 12 mines",
+  medium: "12×12 · 24 mines",
+  hard: "14×14 · 34 mines",
+};
+const SLIDE_PUZZLE_DIFFICULTY_NAMES: Record<string, string> = {
+  "2x2": "3 tiles",
+  "3x3": "8 tiles",
+  "4x4": "15 tiles",
+  "5x5": "24 tiles",
+};
+type GameTab = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle";
 
 function BreakdownPanel({
   profileId,
@@ -650,10 +776,10 @@ function BreakdownPanel({
   profileId: number;
   type: "weekly" | "monthly" | "alltime";
   period: string;
-  defaultGame?: "sudoku" | "memory" | "jigsaw" | "word-search";
-  onlyGame?: "sudoku" | "memory" | "jigsaw" | "word-search";
+  defaultGame?: GameTab;
+  onlyGame?: GameTab;
 }) {
-  const [bdTab, setBdTab] = useState<"sudoku" | "memory" | "jigsaw" | "word-search">(onlyGame ?? defaultGame ?? "sudoku");
+  const [bdTab, setBdTab] = useState<GameTab>(onlyGame ?? defaultGame ?? "sudoku");
   const { data, isLoading } = useQuery<BreakdownData>({
     queryKey: ["tournament-breakdown", profileId, type, period],
     queryFn: () =>
@@ -699,6 +825,12 @@ function BreakdownPanel({
           </button>
           <button onClick={() => setBdTab("word-search")} className={`rounded-lg px-3 py-1 text-xs font-semibold transition-colors ${bdTab === "word-search" ? "bg-violet-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
             🔎 Word Search
+          </button>
+          <button onClick={() => setBdTab("minesweeper")} className={`rounded-lg px-3 py-1 text-xs font-semibold transition-colors ${bdTab === "minesweeper" ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+            💣 Minesweeper
+          </button>
+          <button onClick={() => setBdTab("slide-puzzle")} className={`rounded-lg px-3 py-1 text-xs font-semibold transition-colors ${bdTab === "slide-puzzle" ? "bg-sky-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+            🧩 Slide Puzzle
           </button>
         </div>
       )}
@@ -777,6 +909,30 @@ function BreakdownPanel({
           ))}
         </div>
       )}
+      {bdTab === "minesweeper" && (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {(data?.minesweeper ?? ["beginner", "easy", "medium", "hard"].map((difficulty) => ({ difficulty, points: 0, games: 0 }))).map((item) => (
+            <div key={item.difficulty} className={`rounded-xl border p-2.5 text-center transition-colors ${item.games > 0 ? "border-emerald-300 bg-background" : "border-border bg-muted/30 opacity-50"}`}>
+              <p className="text-xs font-bold capitalize text-foreground">{item.difficulty}</p>
+              <p className="mt-0.5 text-lg font-black tabular-nums leading-tight text-emerald-700 dark:text-emerald-300">{item.points > 0 ? item.points.toLocaleString() : "—"}</p>
+              <p className="mt-0.5 text-[10px] text-muted-foreground">{item.games > 0 ? `${item.games} game${item.games !== 1 ? "s" : ""}` : "no games"}</p>
+              <p className="mt-0.5 text-[9px] text-muted-foreground/80">{MINESWEEPER_DIFFICULTY_NAMES[item.difficulty]}</p>
+            </div>
+          ))}
+        </div>
+      )}
+      {bdTab === "slide-puzzle" && (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {(data?.slidePuzzle ?? ["2x2", "3x3", "4x4", "5x5"].map((difficulty) => ({ difficulty, points: 0, games: 0 }))).map((item) => (
+            <div key={item.difficulty} className={`rounded-xl border p-2.5 text-center transition-colors ${item.games > 0 ? "border-sky-300 bg-background" : "border-border bg-muted/30 opacity-50"}`}>
+              <p className="text-xs font-bold text-foreground">{item.difficulty}</p>
+              <p className="mt-0.5 text-lg font-black tabular-nums leading-tight text-sky-700 dark:text-sky-300">{item.points > 0 ? item.points.toLocaleString() : "—"}</p>
+              <p className="mt-0.5 text-[10px] text-muted-foreground">{item.games > 0 ? `${item.games} game${item.games !== 1 ? "s" : ""}` : "no games"}</p>
+              <p className="mt-0.5 text-[9px] text-muted-foreground/80">{SLIDE_PUZZLE_DIFFICULTY_NAMES[item.difficulty]}</p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -789,7 +945,7 @@ function PlayerDetailsPanel({
   myProfileId,
 }: {
   profileId: number;
-  game: "sudoku" | "memory" | "jigsaw" | "word-search";
+  game: GameTab;
   myProfileId?: number;
 }) {
   const isMe = myProfileId === profileId;
@@ -955,7 +1111,7 @@ function TournamentBoard({
                   : `No games yet this ${type === "weekly" ? "week" : "month"}.`}
               </p>
               <p className="text-sm mt-1">
-                Complete Sudoku, Memory Match, Jigsaw, or Word Search games to earn points and climb the rankings!
+                Complete Sudoku, Memory Match, Jigsaw, Word Search, or Minesweeper games to earn points and climb the rankings!
               </p>
             </div>
           ) : (
@@ -1047,10 +1203,18 @@ function TournamentBoard({
                             {(entry as any).wordSearchGamesPlayed > 0 && (
                               <span>🔎 {(entry as any).wordSearchGamesPlayed} word search</span>
                             )}
+                            {(entry as any).minesweeperGamesPlayed > 0 && (
+                              <span>💣 {(entry as any).minesweeperGamesPlayed} minesweeper</span>
+                            )}
+                            {(entry as any).slidePuzzleGamesPlayed > 0 && (
+                              <span>🧩 {(entry as any).slidePuzzleGamesPlayed} slide puzzle</span>
+                            )}
                             {(entry as any).sudokuGamesPlayed === 0 &&
                               (entry as any).memoryGamesPlayed === 0 &&
                               (entry as any).jigsawGamesPlayed === 0 &&
-                              (entry as any).wordSearchGamesPlayed === 0 && (
+                              (entry as any).wordSearchGamesPlayed === 0 &&
+                              (entry as any).minesweeperGamesPlayed === 0 &&
+                              (entry as any).slidePuzzleGamesPlayed === 0 && (
                                 <span>
                                   {entry.gamesPlayed} game
                                   {entry.gamesPlayed !== 1 ? "s" : ""}
@@ -1567,52 +1731,281 @@ function WordSearchBoard({ myProfileId }: { myProfileId?: number }) {
   </div>;
 }
 
+function MinesweeperScoringGuide() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="overflow-hidden rounded-2xl border border-emerald-200/70 dark:border-emerald-800/40">
+      <button onClick={() => setOpen((value) => !value)} className="flex w-full items-center justify-between bg-card px-5 py-4 text-left transition-colors hover:bg-muted/40">
+        <div>
+          <p className="text-sm font-semibold">How Minesweeper points &amp; XP are calculated</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Difficulty, speed, mine hits, and hints all count. Only wins score.</p>
+        </div>
+        {open ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
+      </button>
+      {open && (
+        <div className="space-y-4 border-t border-border bg-muted px-5 py-4 text-sm">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[{ level: "Beginner", base: 150, par: "1:30", board: "6×6 · 5", gems: 1 }, { level: "Easy", base: 350, par: "3:00", board: "8×8 · 12", gems: 2 }, { level: "Medium", base: 800, par: "6:00", board: "12×12 · 24", gems: 3 }, { level: "Hard", base: 1600, par: "10:00", board: "14×14 · 34", gems: 4 }].map((item) => (
+              <div key={item.level} className="rounded-xl border border-border bg-background p-3">
+                <p className="font-bold">{item.level}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Base {item.base.toLocaleString()} pts</p>
+                <p className="text-xs text-muted-foreground">Par {item.par}</p>
+                <p className="text-xs text-muted-foreground">{item.board} mines · {item.gems} 💎</p>
+              </div>
+            ))}
+          </div>
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">XP by difficulty</p>
+            <div className="overflow-hidden rounded-xl border border-border text-xs">
+              <div className="grid grid-cols-4 bg-muted-foreground/15 px-3 py-2 text-[10px] font-semibold text-muted-foreground"><span>Difficulty</span><span className="text-center">XP</span><span className="text-center">Gems</span><span className="text-center">Board</span></div>
+              {[
+                { label: "Beginner", xp: "1 XP", gems: "1 💎", grid: "6×6" },
+                { label: "Easy", xp: "1 XP", gems: "2 💎", grid: "8×8" },
+                { label: "Medium", xp: "2 XP", gems: "3 💎", grid: "12×12" },
+                { label: "Hard", xp: "3 XP", gems: "4 💎", grid: "14×14" },
+              ].map((row, index) => <div key={row.label} className={`grid grid-cols-4 px-3 py-2 ${index % 2 === 0 ? "bg-background" : "bg-muted/20"}`}><span className="font-semibold">{row.label}</span><span className="text-center font-semibold text-amber-600">{row.xp}</span><span className="text-center font-mono">{row.gems}</span><span className="text-center font-mono">{row.grid}</span></div>)}
+            </div>
+          </div>
+          <div className="rounded-lg border border-border bg-background px-4 py-3 text-[11px] text-muted-foreground">
+            <p className="font-semibold text-foreground">Score formula</p>
+            <p className="mt-1 font-mono leading-relaxed">base × (1 + time bonus) × mistake factor × hint factor</p>
+            <p className="mt-1 leading-relaxed">Finish under par time for up to +50%. Each mine hit reduces points by 15% (floor 40%), and each hint reduces points by 20% (floor 60%). Three mine hits ends the game; only wins award points, XP, and gems. Minimum score: 10 points.</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+type MinesweeperLeaderboardEntry = { rank: number; profileId: number; username: string; avatar: string | null; xp: number; totalPoints: number; gamesPlayed: number };
+
+function MinesweeperBoard({ myProfileId }: { myProfileId?: number }) {
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["/api/minesweeper-games/leaderboard"],
+    queryFn: () => customFetch<MinesweeperLeaderboardEntry[]>("/api/minesweeper-games/leaderboard"),
+    refetchInterval: 60_000,
+  });
+  return <div className="space-y-5">
+    <Card className="shadow-md border-emerald-200/60 dark:border-emerald-800/40">
+      <CardHeader className="border-b bg-card pb-4"><CardTitle className="flex items-center gap-2 text-lg"><Bomb className="h-5 w-5 text-emerald-600" /> Minesweeper — All Difficulties</CardTitle></CardHeader>
+      <CardContent className="p-0">
+        {isLoading ? <div className="space-y-4 p-6">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
+          : isError ? <div className="p-10 text-center text-sm text-muted-foreground">Minesweeper leaderboard could not be loaded. Please try again.</div>
+          : !data?.length ? <div className="p-12 text-center text-muted-foreground"><Bomb className="mx-auto mb-3 h-10 w-10 opacity-20" /><p className="font-medium">No completed Minesweeper games yet.</p><p className="mt-1 text-sm">Clear a minefield to claim the top spot.</p></div>
+          : <div className="divide-y">{data.map((entry) => {
+            const isMe = myProfileId !== undefined && entry.profileId === myProfileId;
+            const isExpanded = expandedId === entry.profileId;
+            return <div key={entry.profileId}>
+              <button onClick={() => setExpandedId((current) => current === entry.profileId ? null : entry.profileId)} className={`flex w-full items-center justify-between gap-2 px-3 py-4 text-left transition-colors sm:px-5 ${isMe ? "bg-emerald-50/70 hover:bg-emerald-50 dark:bg-emerald-950/20" : "hover:bg-muted/40"} ${isExpanded ? "bg-muted/30" : ""}`}>
+                <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4"><RankBadge rank={entry.rank} /><div className="min-w-0 flex-1"><div className="flex min-w-0 flex-wrap items-center gap-2"><p title={entry.username} className={`min-w-0 flex-1 truncate font-semibold ${isMe ? "text-emerald-800 dark:text-emerald-300" : ""}`}>{entry.username}</p>{isMe && <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">You</span>}</div><p className="mt-0.5 text-xs text-muted-foreground">{entry.gamesPlayed} game{entry.gamesPlayed !== 1 ? "s" : ""}</p></div></div>
+                <div className="flex shrink-0 items-center gap-2"><div className="text-right"><p className="whitespace-nowrap text-lg font-black tabular-nums text-emerald-700 dark:text-emerald-300 sm:text-xl">{entry.totalPoints.toLocaleString()}</p><p className="mt-0.5 text-xs text-muted-foreground">pts</p></div>{isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}</div>
+              </button>
+              {isExpanded && <PlayerDetailsPanel profileId={entry.profileId} game="minesweeper" myProfileId={myProfileId} />}
+            </div>;
+          })}</div>}
+      </CardContent>
+    </Card>
+    <MinesweeperScoringGuide />
+  </div>;
+}
+
+function SlidePuzzleScoringGuide() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="overflow-hidden rounded-2xl border border-sky-200/70 dark:border-sky-800/40">
+      <button onClick={() => setOpen((value) => !value)} className="flex w-full items-center justify-between bg-card px-5 py-4 text-left transition-colors hover:bg-muted/40">
+        <div>
+          <p className="text-sm font-semibold">How Slide Puzzle points &amp; XP are calculated</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Board size, speed, move efficiency, and hints all count. Only wins score.</p>
+        </div>
+        {open ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
+      </button>
+      {open && (
+        <div className="space-y-4 border-t border-border bg-muted px-5 py-4 text-sm">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[{ level: "2×2", base: 120, par: "1:30", moves: 12, gems: 1 }, { level: "3×3", base: 300, par: "5:00", moves: 60, gems: 2 }, { level: "4×4", base: 700, par: "20:00", moves: 160, gems: 3 }, { level: "5×5", base: 1500, par: "45:00", moves: 320, gems: 4 }].map((item) => (
+              <div key={item.level} className="rounded-xl border border-border bg-background p-3">
+                <p className="font-bold">{item.level}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Base {item.base.toLocaleString()} pts</p>
+                <p className="text-xs text-muted-foreground">Par {item.par} · {item.moves} moves</p>
+                <p className="text-xs text-muted-foreground">{item.gems} 💎</p>
+              </div>
+            ))}
+          </div>
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">XP by board size</p>
+            <div className="overflow-hidden rounded-xl border border-border text-xs">
+              <div className="grid grid-cols-4 bg-muted-foreground/15 px-3 py-2 text-[10px] font-semibold text-muted-foreground"><span>Board</span><span className="text-center">XP</span><span className="text-center">Gems</span><span className="text-center">Tiles</span></div>
+              {[
+                { label: "2×2", xp: "1 XP", gems: "1 💎", tiles: "3" },
+                { label: "3×3", xp: "1 XP", gems: "2 💎", tiles: "8" },
+                { label: "4×4", xp: "2 XP", gems: "3 💎", tiles: "15" },
+                { label: "5×5", xp: "3 XP", gems: "4 💎", tiles: "24" },
+              ].map((row, index) => <div key={row.label} className={`grid grid-cols-4 px-3 py-2 ${index % 2 === 0 ? "bg-background" : "bg-muted/20"}`}><span className="font-semibold">{row.label}</span><span className="text-center font-semibold text-amber-600">{row.xp}</span><span className="text-center font-mono">{row.gems}</span><span className="text-center font-mono">{row.tiles}</span></div>)}
+            </div>
+          </div>
+          <div className="rounded-lg border border-border bg-background px-4 py-3 text-[11px] text-muted-foreground">
+            <p className="font-semibold text-foreground">Score formula</p>
+            <p className="mt-1 font-mono leading-relaxed">base × (1 + time bonus) × move factor × hint factor</p>
+            <p className="mt-1 leading-relaxed">Finish under par time for up to +50%. Move factor scales from 60% to 100% as your move count approaches the par count. Each hint reduces points by 15% (floor 70%). Only wins award points, XP, and gems. Minimum score: 10 points.</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+type SlidePuzzleLeaderboardEntry = { rank: number; profileId: number; username: string; avatar: string | null; xp: number; totalPoints: number; gamesPlayed: number };
+
+type QuizLeaderboardEntry = { rank: number; profileId: number; username: string; avatar: string | null; xp: number; totalPoints: number; gamesPlayed: number };
+
+function QuizBoard({ myProfileId, subjectId }: { myProfileId?: number; subjectId: QuizSubject }) {
+  const subject = quizSubject(subjectId);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["/api/quiz-games/leaderboard", subjectId],
+    queryFn: () => customFetch<QuizLeaderboardEntry[]>(`/api/quiz-games/leaderboard?subject=${subjectId}`),
+    refetchInterval: 60_000,
+  });
+  return <div className="space-y-5">
+    <Card className={`shadow-md ${subject.theme.border}`}>
+      <CardHeader className="border-b bg-card pb-4"><CardTitle className="flex items-center gap-2 text-lg"><CircleHelp className={`h-5 w-5 ${subject.theme.text}`} /> {subject.name} — All Levels</CardTitle></CardHeader>
+      <CardContent className="p-0">
+        {isLoading ? <div className="space-y-4 p-6">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
+          : isError ? <div className="p-10 text-center text-sm text-muted-foreground">Quiz leaderboard could not be loaded. Please try again.</div>
+          : !data?.length ? <div className="p-12 text-center text-muted-foreground"><CircleHelp className="mx-auto mb-3 h-10 w-10 opacity-20" /><p className="font-medium">No completed quizzes yet.</p><p className="mt-1 text-sm">Answer a few questions to claim the top spot.</p></div>
+          : <div className="divide-y">{data.map((entry) => {
+            const isMe = myProfileId !== undefined && entry.profileId === myProfileId;
+            const isExpanded = expandedId === entry.profileId;
+            return <div key={entry.profileId}>
+              <button onClick={() => setExpandedId((current) => current === entry.profileId ? null : entry.profileId)} className={`flex w-full items-center justify-between gap-2 px-3 py-4 text-left transition-colors sm:px-5 ${isMe ? subject.theme.row : "hover:bg-muted/40"} ${isExpanded ? "bg-muted/30" : ""}`}>
+                <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4"><RankBadge rank={entry.rank} /><div className="min-w-0 flex-1"><div className="flex min-w-0 flex-wrap items-center gap-2"><p title={entry.username} className={`min-w-0 flex-1 truncate font-semibold ${isMe ? subject.theme.strong : ""}`}>{entry.username}</p>{isMe && <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white ${subject.theme.btn.split(" ")[0]}`}>You</span>}</div><p className="mt-0.5 text-xs text-muted-foreground">{entry.gamesPlayed} quiz{entry.gamesPlayed !== 1 ? "zes" : ""}</p></div></div>
+                <div className="flex shrink-0 items-center gap-2"><div className="text-right"><p className={`whitespace-nowrap text-lg font-black tabular-nums sm:text-xl ${subject.theme.strong}`}>{entry.totalPoints.toLocaleString()}</p><p className="mt-0.5 text-xs text-muted-foreground">pts</p></div>{isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}</div>
+              </button>
+              {isExpanded && (
+                <div className="border-t bg-muted/10 px-5 py-3">
+                  <Link href={isMe ? `/profile?tab=${quizGameId(subjectId)}` : `/player/${entry.profileId}`} className={`text-xs font-semibold ${subject.theme.text} hover:underline`}>{isMe ? "View your full quiz stats →" : `View ${entry.username}'s profile →`}</Link>
+                </div>
+              )}
+            </div>;
+          })}</div>}
+      </CardContent>
+    </Card>
+  </div>;
+}
+
+function SlidePuzzleBoard({ myProfileId }: { myProfileId?: number }) {
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["/api/slide-puzzle-games/leaderboard"],
+    queryFn: () => customFetch<SlidePuzzleLeaderboardEntry[]>("/api/slide-puzzle-games/leaderboard"),
+    refetchInterval: 60_000,
+  });
+  return <div className="space-y-5">
+    <Card className="shadow-md border-sky-200/60 dark:border-sky-800/40">
+      <CardHeader className="border-b bg-card pb-4"><CardTitle className="flex items-center gap-2 text-lg"><Grid3x3 className="h-5 w-5 text-sky-600" /> Slide Puzzle — All Board Sizes</CardTitle></CardHeader>
+      <CardContent className="p-0">
+        {isLoading ? <div className="space-y-4 p-6">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
+          : isError ? <div className="p-10 text-center text-sm text-muted-foreground">Slide Puzzle leaderboard could not be loaded. Please try again.</div>
+          : !data?.length ? <div className="p-12 text-center text-muted-foreground"><Grid3x3 className="mx-auto mb-3 h-10 w-10 opacity-20" /><p className="font-medium">No completed Slide Puzzles yet.</p><p className="mt-1 text-sm">Solve a board to claim the top spot.</p></div>
+          : <div className="divide-y">{data.map((entry) => {
+            const isMe = myProfileId !== undefined && entry.profileId === myProfileId;
+            const isExpanded = expandedId === entry.profileId;
+            return <div key={entry.profileId}>
+              <button onClick={() => setExpandedId((current) => current === entry.profileId ? null : entry.profileId)} className={`flex w-full items-center justify-between gap-2 px-3 py-4 text-left transition-colors sm:px-5 ${isMe ? "bg-sky-50/70 hover:bg-sky-50 dark:bg-sky-950/20" : "hover:bg-muted/40"} ${isExpanded ? "bg-muted/30" : ""}`}>
+                <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4"><RankBadge rank={entry.rank} /><div className="min-w-0 flex-1"><div className="flex min-w-0 flex-wrap items-center gap-2"><p title={entry.username} className={`min-w-0 flex-1 truncate font-semibold ${isMe ? "text-sky-800 dark:text-sky-300" : ""}`}>{entry.username}</p>{isMe && <span className="rounded-full bg-sky-600 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">You</span>}</div><p className="mt-0.5 text-xs text-muted-foreground">{entry.gamesPlayed} game{entry.gamesPlayed !== 1 ? "s" : ""}</p></div></div>
+                <div className="flex shrink-0 items-center gap-2"><div className="text-right"><p className="whitespace-nowrap text-lg font-black tabular-nums text-sky-700 dark:text-sky-300 sm:text-xl">{entry.totalPoints.toLocaleString()}</p><p className="mt-0.5 text-xs text-muted-foreground">pts</p></div>{isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}</div>
+              </button>
+              {isExpanded && <PlayerDetailsPanel profileId={entry.profileId} game="slide-puzzle" myProfileId={myProfileId} />}
+            </div>;
+          })}</div>}
+      </CardContent>
+    </Card>
+    <SlidePuzzleScoringGuide />
+  </div>;
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 function LeaderboardScopeLinks({
   active,
 }: {
-  active: "all" | "sudoku" | "memory" | "jigsaw" | "word-search";
+  active: "all" | "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "science-quiz" | "maths-quiz" | "gk-quiz";
 }) {
+  const [, setLocation] = useLocation();
   const links = [
     { id: "all", href: "/leaderboard/", label: "All Games", icon: Trophy },
     { id: "sudoku", href: "/leaderboard/sudoku/", label: "Sudoku", icon: Zap },
     { id: "memory", href: "/leaderboard/memory/", label: "Memory Match", icon: Brain },
     { id: "jigsaw", href: "/leaderboard/jigsaw/", label: "Jigsaw", icon: Puzzle },
     { id: "word-search", href: "/leaderboard/word-search/", label: "Word Search", icon: Search },
+    { id: "minesweeper", href: "/leaderboard/minesweeper/", label: "Minesweeper", icon: Bomb },
+    { id: "slide-puzzle", href: "/leaderboard/slide-puzzle/", label: "Slide Puzzle", icon: Grid3x3 },
+    { id: "science-quiz", href: "/leaderboard/science-quiz/", label: "Science Quiz", icon: CircleHelp },
+    { id: "maths-quiz", href: "/leaderboard/maths-quiz/", label: "Maths Quiz", icon: CircleHelp },
+    { id: "gk-quiz", href: "/leaderboard/gk-quiz/", label: "GK Quiz", icon: CircleHelp },
   ] as const;
+  const selected = links.find((link) => link.id === active) ?? links[0];
+  const SelectedIcon = selected.icon;
 
   return (
-    <nav aria-label="Leaderboard category" className="grid grid-cols-2 gap-1 sm:grid-cols-5 sm:gap-2">
-      {links.map(({ id, href, label, icon: Icon }) => (
-        <Link
-          key={id}
-          href={href}
-          aria-current={active === id ? "page" : undefined}
-          className={`flex min-w-0 items-center justify-center gap-1 rounded-lg border px-1.5 py-2 text-center text-xs font-semibold transition-colors sm:gap-1.5 sm:rounded-xl sm:px-2 sm:py-2.5 sm:text-sm ${
-            active === id
-              ? "border-primary bg-primary text-primary-foreground shadow-sm"
-              : "border-border bg-card text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-          }`}
-        >
-          <Icon className="h-4 w-4 shrink-0" />
-          <span className="min-w-0 break-words leading-tight">{label}</span>
-        </Link>
-      ))}
-    </nav>
+    <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
+      <span className="flex shrink-0 items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <Trophy className="h-3.5 w-3.5" /> Leaderboard
+      </span>
+      <Select value={active} onValueChange={(value) => {
+        const target = links.find((link) => link.id === value);
+        if (target) setLocation(target.href);
+      }}>
+        <SelectTrigger className="h-9 flex-1 bg-background" aria-label="Leaderboard game">
+          <SelectValue>
+            <span className="flex items-center gap-2">
+              <SelectedIcon className="h-4 w-4 shrink-0 text-primary" />
+              {selected.label}
+            </span>
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          {links.map(({ id, label, icon: Icon }) => (
+            <SelectItem key={id} value={id}>
+              <span className="flex items-center gap-2">
+                <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                {label}
+              </span>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }
+
+const PLAY_LINKS: Record<
+  "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "science-quiz" | "maths-quiz" | "gk-quiz",
+  { href: string; label: string; ariaLabel: string; icon: typeof Zap; borderClass: string; iconClass: string }
+> = {
+  sudoku: { href: "/sudoku", label: "Play Sudoku", ariaLabel: "Play Sudoku", icon: Zap, borderClass: "border-border", iconClass: "text-primary" },
+  memory: { href: "/memory/", label: "Play Memory", ariaLabel: "Play Memory Match", icon: Brain, borderClass: "border-border", iconClass: "text-primary" },
+  jigsaw: { href: "/jigsaw", label: "Play Jigsaw", ariaLabel: "Play Jigsaw", icon: Puzzle, borderClass: "border-border", iconClass: "text-amber-600" },
+  "word-search": { href: "/word-search", label: "Word Search", ariaLabel: "Play Word Search", icon: Search, borderClass: "border-violet-200 dark:border-violet-800", iconClass: "text-violet-600" },
+  minesweeper: { href: "/minesweeper", label: "Minesweeper", ariaLabel: "Play Minesweeper", icon: Bomb, borderClass: "border-emerald-200 dark:border-emerald-800", iconClass: "text-emerald-600" },
+  "slide-puzzle": { href: "/slide-puzzle", label: "Slide Puzzle", ariaLabel: "Play Slide Puzzle", icon: Grid3x3, borderClass: "border-sky-200 dark:border-sky-800", iconClass: "text-sky-600" },
+  "science-quiz": { href: "/quiz/science", label: "Science Quiz", ariaLabel: "Play Science Quiz", icon: CircleHelp, borderClass: "border-violet-200 dark:border-violet-800", iconClass: "text-violet-600" },
+  "maths-quiz": { href: "/quiz/maths", label: "Maths Quiz", ariaLabel: "Play Maths Quiz", icon: CircleHelp, borderClass: "border-sky-200 dark:border-sky-800", iconClass: "text-sky-600" },
+  "gk-quiz": { href: "/quiz/gk", label: "GK Quiz", ariaLabel: "Play GK Quiz", icon: CircleHelp, borderClass: "border-amber-200 dark:border-amber-800", iconClass: "text-amber-600" },
+};
 
 export default function Leaderboard({
   gamePage: routeGamePage,
 }: {
-  gamePage?: "sudoku" | "memory" | "jigsaw" | "word-search";
+  gamePage?: "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "science-quiz" | "maths-quiz" | "gk-quiz";
 } = {}) {
   const search = useSearch();
   const requestedTab = new URLSearchParams(search).get("tab");
   const gamePage =
     routeGamePage ??
-    (requestedTab === "sudoku" || requestedTab === "memory" || requestedTab === "jigsaw" || requestedTab === "word-search" ? requestedTab : null);
+    (requestedTab === "sudoku" || requestedTab === "memory" || requestedTab === "jigsaw" || requestedTab === "word-search" || requestedTab === "minesweeper" || requestedTab === "slide-puzzle" || requestedTab === "science-quiz" || requestedTab === "maths-quiz" || requestedTab === "gk-quiz" ? requestedTab : null);
   const initialTab: MainTab =
     requestedTab === "monthly" || requestedTab === "alltime"
       ? requestedTab
@@ -1627,7 +2020,17 @@ export default function Leaderboard({
             ? "Jigsaw Leaderboard | Play Brain Games . Online"
           : gamePage === "word-search"
             ? "Word Search Leaderboard | Play Brain Games . Online"
-          : "All Games Leaderboard | Play Brain Games . Online",
+            : gamePage === "minesweeper"
+              ? "Minesweeper Leaderboard | Play Brain Games . Online"
+              : gamePage === "slide-puzzle"
+                ? "Slide Puzzle Leaderboard | Play Brain Games . Online"
+                : gamePage === "science-quiz"
+                  ? "Science Quiz Leaderboard | Play Brain Games . Online"
+                  : gamePage === "maths-quiz"
+                    ? "Maths Quiz Leaderboard | Play Brain Games . Online"
+                    : gamePage === "gk-quiz"
+                      ? "GK Quiz Leaderboard | Play Brain Games . Online"
+                      : "All Games Leaderboard | Play Brain Games . Online",
     description:
       gamePage === "sudoku"
         ? "Compare all-time Sudoku points across every grid size on Play Brain Games . Online."
@@ -1637,7 +2040,17 @@ export default function Leaderboard({
             ? "Compare Jigsaw puzzle points across all board sizes on Play Brain Games . Online."
           : gamePage === "word-search"
             ? "Compare all-time Word Search points across every difficulty on Play Brain Games . Online."
-            : "Compare weekly, monthly, and all-time Sudoku, Memory Match, Jigsaw, and Word Search scores on Play Brain Games . Online.",
+            : gamePage === "minesweeper"
+              ? "Compare all-time Minesweeper points across every board size on Play Brain Games . Online."
+              : gamePage === "slide-puzzle"
+                ? "Compare all-time Slide Puzzle points across every board size on Play Brain Games . Online."
+                : gamePage === "science-quiz"
+                  ? "Compare all-time Science Quiz points across every level on Play Brain Games . Online."
+                  : gamePage === "maths-quiz"
+                    ? "Compare all-time Maths Quiz points across every level on Play Brain Games . Online."
+                    : gamePage === "gk-quiz"
+                      ? "Compare all-time GK Quiz points across every level on Play Brain Games . Online."
+                      : "Compare weekly, monthly, and all-time scores across all games on Play Brain Games . Online.",
     path: gamePage ? `/leaderboard/${gamePage}/` : "/leaderboard/",
   });
   const [tab, setTab] = useState<MainTab>(initialTab);
@@ -1652,7 +2065,17 @@ export default function Leaderboard({
           ? "Jigsaw Leaderboard"
         : gamePage === "word-search"
           ? "Word Search Leaderboard"
-        : "Leaderboard";
+          : gamePage === "minesweeper"
+            ? "Minesweeper Leaderboard"
+            : gamePage === "slide-puzzle"
+              ? "Slide Puzzle Leaderboard"
+              : gamePage === "science-quiz"
+                ? "Science Quiz Leaderboard"
+                : gamePage === "maths-quiz"
+                  ? "Maths Quiz Leaderboard"
+                  : gamePage === "gk-quiz"
+                    ? "GK Quiz Leaderboard"
+                    : "Leaderboard";
   const subtitle =
     gamePage === "sudoku"
       ? "All-time points across every Sudoku grid size."
@@ -1662,7 +2085,17 @@ export default function Leaderboard({
           ? "All-time points across every Jigsaw board size."
         : gamePage === "word-search"
           ? "All-time points across every Word Search difficulty."
-          : "Weekly, monthly, and all-time rankings across all four games.";
+          : gamePage === "minesweeper"
+            ? "All-time points across every Minesweeper board size."
+            : gamePage === "slide-puzzle"
+              ? "All-time points across every Slide Puzzle board size."
+              : gamePage === "science-quiz"
+                ? "All-time points across every Science Quiz level."
+                : gamePage === "maths-quiz"
+                  ? "All-time points across every Maths Quiz level."
+                  : gamePage === "gk-quiz"
+                    ? "All-time points across every GK Quiz level."
+                    : "Weekly, monthly, and all-time rankings across all games.";
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-3 sm:space-y-8 animate-in fade-in duration-500">
@@ -1676,38 +2109,22 @@ export default function Leaderboard({
               {subtitle}
             </p>
           </div>
-          <div className="flex gap-1 shrink-0 sm:gap-1.5">
-            <Link
-              href="/sudoku"
-              aria-label="Play Sudoku"
-              title="Play Sudoku"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card p-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors sm:px-2.5 sm:py-1.5 sm:text-sm"
-            >
-              <Zap className="w-3.5 h-3.5 text-primary" />
-              <span className="hidden sm:inline">Play Sudoku</span>
-            </Link>
-            <Link
-              href="/memory/"
-              aria-label="Play Memory Match"
-              title="Play Memory Match"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card p-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors sm:px-2.5 sm:py-1.5 sm:text-sm"
-            >
-              <Brain className="w-3.5 h-3.5 text-primary" />
-              <span className="hidden sm:inline">Play Memory</span>
-            </Link>
-            <Link
-              href="/jigsaw"
-              aria-label="Play Jigsaw"
-              title="Play Jigsaw"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card p-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted sm:px-2.5 sm:py-1.5 sm:text-sm"
-            >
-              <Puzzle className="h-3.5 w-3.5 text-amber-600" />
-              <span className="hidden sm:inline">Play Jigsaw</span>
-            </Link>
-            <Link href="/word-search" aria-label="Play Word Search" title="Play Word Search" className="inline-flex items-center gap-1.5 rounded-lg border border-violet-200 bg-card p-1.5 text-xs font-medium text-foreground transition-colors hover:bg-violet-50 sm:px-2.5 sm:py-1.5 sm:text-sm dark:border-violet-800 dark:hover:bg-violet-950/30">
-              <Search className="h-3.5 w-3.5 text-violet-600" /><span className="hidden sm:inline">Word Search</span>
-            </Link>
-          </div>
+          {(() => {
+            const playLink = gamePage ? PLAY_LINKS[gamePage] : null;
+            if (!playLink) return null;
+            const PlayIcon = playLink.icon;
+            return (
+              <Link
+                href={playLink.href}
+                aria-label={playLink.ariaLabel}
+                title={playLink.ariaLabel}
+                className={`inline-flex items-center gap-1.5 rounded-lg border bg-card p-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted sm:px-2.5 sm:py-1.5 sm:text-sm ${playLink.borderClass}`}
+              >
+                <PlayIcon className={`h-3.5 w-3.5 ${playLink.iconClass}`} />
+                <span className="hidden sm:inline">{playLink.label}</span>
+              </Link>
+            );
+          })()}
         </div>
       </div>
 
@@ -1721,6 +2138,16 @@ export default function Leaderboard({
         <JigsawBoard myProfileId={myProfileId} />
       ) : gamePage === "word-search" ? (
         <WordSearchBoard myProfileId={myProfileId} />
+      ) : gamePage === "minesweeper" ? (
+        <MinesweeperBoard myProfileId={myProfileId} />
+      ) : gamePage === "slide-puzzle" ? (
+        <SlidePuzzleBoard myProfileId={myProfileId} />
+      ) : gamePage === "science-quiz" ? (
+        <QuizBoard myProfileId={myProfileId} subjectId="science" />
+      ) : gamePage === "maths-quiz" ? (
+        <QuizBoard myProfileId={myProfileId} subjectId="maths" />
+      ) : gamePage === "gk-quiz" ? (
+        <QuizBoard myProfileId={myProfileId} subjectId="gk" />
       ) : (
         <>
           <Tabs

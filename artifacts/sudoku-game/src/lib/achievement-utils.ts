@@ -4,8 +4,14 @@ export interface AchievementMeta {
   title: string;
   description: string;
   group: string;
-  game: 'sudoku' | 'memory' | 'jigsaw' | 'word-search';
+  game: 'sudoku' | 'memory' | 'jigsaw' | 'word-search' | 'minesweeper' | 'slide-puzzle' | 'science-quiz' | 'maths-quiz' | 'gk-quiz';
 }
+
+const QUIZ_SUBJECT_ACHIEVEMENTS = [
+  { subject: 'science', game: 'science-quiz', label: 'Science' },
+  { subject: 'maths', game: 'maths-quiz', label: 'Maths' },
+  { subject: 'gk', game: 'gk-quiz', label: 'GK' },
+] as const;
 
 export const ACHIEVEMENT_META: AchievementMeta[] = [
   // ── Sudoku: Volume ─────────────────────────────────────────────────────────
@@ -117,6 +123,54 @@ export const ACHIEVEMENT_META: AchievementMeta[] = [
   { id: 'word_search_daily_7', game: 'word-search', emoji: '📅', title: 'Daily Finder', description: 'Complete 7 daily Word Search challenges', group: 'Word Search Daily' },
   { id: 'word_search_daily_30', game: 'word-search', emoji: '🗓️', title: 'Daily Decoder', description: 'Complete 30 daily Word Search challenges', group: 'Word Search Daily' },
   { id: 'word_search_daily_100', game: 'word-search', emoji: '🏅', title: 'Daily Word Master', description: 'Complete 100 daily Word Search challenges', group: 'Word Search Daily' },
+
+  // ── Minesweeper ──────────────────────────────────────────────────────────
+  { id: 'minesweeper_first', game: 'minesweeper', emoji: '💣', title: 'First Clear', description: 'Win your first Minesweeper game', group: 'Minesweeper Milestones' },
+  { id: 'minesweeper_10', game: 'minesweeper', emoji: '🧨', title: 'Blast Radius', description: 'Win 10 Minesweeper games', group: 'Minesweeper Milestones' },
+  { id: 'minesweeper_50', game: 'minesweeper', emoji: '🏆', title: 'Mine Veteran', description: 'Win 50 Minesweeper games', group: 'Minesweeper Milestones' },
+  { id: 'minesweeper_100', game: 'minesweeper', emoji: '🌟', title: 'Mine Legend', description: 'Win 100 Minesweeper games', group: 'Minesweeper Milestones' },
+  { id: 'minesweeper_all_levels', game: 'minesweeper', emoji: '🌈', title: 'Field Explorer', description: 'Win a game at all four board sizes', group: 'Minesweeper Skills' },
+  { id: 'minesweeper_perfect_5', game: 'minesweeper', emoji: '✨', title: 'Clean Sweep', description: 'Win 5 Minesweeper games without hitting a mine', group: 'Minesweeper Skills' },
+  { id: 'minesweeper_no_hints_10', game: 'minesweeper', emoji: '🧠', title: 'No Flags Needed', description: 'Win 10 Minesweeper games without using a hint', group: 'Minesweeper Skills' },
+  { id: 'minesweeper_speed_beginner', game: 'minesweeper', emoji: '🐇', title: 'Quick Clear', description: 'Win a Beginner board in under 90 seconds', group: 'Minesweeper Skills' },
+  { id: 'minesweeper_speed_easy', game: 'minesweeper', emoji: '⚡', title: 'Fast Sweep', description: 'Win an Easy board in under 3 minutes', group: 'Minesweeper Skills' },
+  { id: 'minesweeper_speed_medium', game: 'minesweeper', emoji: '🚀', title: 'Rapid Clear', description: 'Win a Medium board in under 6 minutes', group: 'Minesweeper Skills' },
+  { id: 'minesweeper_speed_hard', game: 'minesweeper', emoji: '💨', title: 'Mine Sprint', description: 'Win a Hard board in under 10 minutes', group: 'Minesweeper Skills' },
+  { id: 'minesweeper_daily_7', game: 'minesweeper', emoji: '📅', title: 'Daily Sweeper', description: 'Win 7 daily Minesweeper challenges', group: 'Minesweeper Daily' },
+  { id: 'minesweeper_daily_30', game: 'minesweeper', emoji: '🗓️', title: 'Daily Deminer', description: 'Win 30 daily Minesweeper challenges', group: 'Minesweeper Daily' },
+  { id: 'minesweeper_daily_100', game: 'minesweeper', emoji: '🏅', title: 'Daily Mine Master', description: 'Win 100 daily Minesweeper challenges', group: 'Minesweeper Daily' },
+  // ── Slide Puzzle ──────────────────────────────────────────────────────────
+  { id: 'slide_puzzle_first', game: 'slide-puzzle', emoji: '🧩', title: 'First Slide', description: 'Solve your first Slide Puzzle', group: 'Slide Puzzle Milestones' },
+  { id: 'slide_puzzle_10', game: 'slide-puzzle', emoji: '🔢', title: 'Sliding Regular', description: 'Solve 10 Slide Puzzles', group: 'Slide Puzzle Milestones' },
+  { id: 'slide_puzzle_50', game: 'slide-puzzle', emoji: '🏆', title: 'Slide Veteran', description: 'Solve 50 Slide Puzzles', group: 'Slide Puzzle Milestones' },
+  { id: 'slide_puzzle_100', game: 'slide-puzzle', emoji: '🌟', title: 'Slide Legend', description: 'Solve 100 Slide Puzzles', group: 'Slide Puzzle Milestones' },
+  { id: 'slide_puzzle_all_levels', game: 'slide-puzzle', emoji: '🌈', title: 'Size Explorer', description: 'Solve a puzzle at all four board sizes', group: 'Slide Puzzle Skills' },
+  { id: 'slide_puzzle_styles_3', game: 'slide-puzzle', emoji: '🎨', title: 'Style Master', description: 'Win with numbers, alphabet, and picture tiles', group: 'Slide Puzzle Skills' },
+  { id: 'slide_puzzle_no_hints_10', game: 'slide-puzzle', emoji: '🧠', title: 'No Help Needed', description: 'Solve 10 Slide Puzzles without using a hint', group: 'Slide Puzzle Skills' },
+  { id: 'slide_puzzle_speed_2x2', game: 'slide-puzzle', emoji: '🐇', title: 'Tiny Sprint', description: 'Solve a 2×2 puzzle in under 90 seconds', group: 'Slide Puzzle Skills' },
+  { id: 'slide_puzzle_speed_3x3', game: 'slide-puzzle', emoji: '⚡', title: 'Quick Slide', description: 'Solve a 3×3 puzzle in under 5 minutes', group: 'Slide Puzzle Skills' },
+  { id: 'slide_puzzle_speed_4x4', game: 'slide-puzzle', emoji: '🚀', title: 'Rapid Order', description: 'Solve a 4×4 puzzle in under 20 minutes', group: 'Slide Puzzle Skills' },
+  { id: 'slide_puzzle_speed_5x5', game: 'slide-puzzle', emoji: '💨', title: 'Grand Slide', description: 'Solve a 5×5 puzzle in under 45 minutes', group: 'Slide Puzzle Skills' },
+  { id: 'slide_puzzle_daily_7', game: 'slide-puzzle', emoji: '📅', title: 'Daily Slider', description: 'Solve 7 daily Slide Puzzles', group: 'Slide Puzzle Daily' },
+  { id: 'slide_puzzle_daily_30', game: 'slide-puzzle', emoji: '🗓️', title: 'Daily Solver', description: 'Solve 30 daily Slide Puzzles', group: 'Slide Puzzle Daily' },
+  { id: 'slide_puzzle_daily_100', game: 'slide-puzzle', emoji: '🏅', title: 'Daily Slide Master', description: 'Solve 100 daily Slide Puzzles', group: 'Slide Puzzle Daily' },
+
+  // ── Quiz games: Science / Maths / GK each have their own set ─────────────
+  ...QUIZ_SUBJECT_ACHIEVEMENTS.flatMap(({ subject, game, label }) => [
+    { id: `${subject}_first`, game, emoji: '🧠', title: 'First Answer', description: `Score points in your first ${label} quiz`, group: `${label} Milestones` },
+    { id: `${subject}_10`, game, emoji: '✅', title: 'Quiz Regular', description: `Score points in 10 ${label} quizzes`, group: `${label} Milestones` },
+    { id: `${subject}_50`, game, emoji: '🏆', title: 'Quiz Veteran', description: `Score points in 50 ${label} quizzes`, group: `${label} Milestones` },
+    { id: `${subject}_100`, game, emoji: '🌟', title: 'Quiz Legend', description: `Score points in 100 ${label} quizzes`, group: `${label} Milestones` },
+    { id: `${subject}_all_levels`, game, emoji: '🌈', title: 'Level Explorer', description: `Score points at all four ${label} quiz levels`, group: `${label} Skills` },
+    { id: `${subject}_perfect_5`, game, emoji: '💯', title: 'Perfect Score', description: `Answer every question correctly in 5 ${label} quizzes`, group: `${label} Skills` },
+    { id: `${subject}_speed_easy`, game, emoji: '🐇', title: 'Quick Thinker', description: `Finish an Easy ${label} quiz in under 90 seconds`, group: `${label} Skills` },
+    { id: `${subject}_speed_medium`, game, emoji: '⚡', title: 'Fast Facts', description: `Finish a Medium ${label} quiz in under 2.5 minutes`, group: `${label} Skills` },
+    { id: `${subject}_speed_hard`, game, emoji: '🚀', title: 'Rapid Recall', description: `Finish a Hard ${label} quiz in under 3.5 minutes`, group: `${label} Skills` },
+    { id: `${subject}_speed_expert`, game, emoji: '💨', title: 'Brain Sprint', description: `Finish an Expert ${label} quiz in under 4.5 minutes`, group: `${label} Skills` },
+    { id: `${subject}_daily_7`, game, emoji: '📅', title: 'Daily Scholar', description: `Score points in 7 daily ${label} quizzes`, group: `${label} Daily` },
+    { id: `${subject}_daily_30`, game, emoji: '🗓️', title: 'Daily Thinker', description: `Score points in 30 daily ${label} quizzes`, group: `${label} Daily` },
+    { id: `${subject}_daily_100`, game, emoji: '🏅', title: 'Daily Quiz Master', description: `Score points in 100 daily ${label} quizzes`, group: `${label} Daily` },
+  ] as AchievementMeta[]),
 ];
 
 export interface AchievementStatus {

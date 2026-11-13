@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Swords, Trophy, Clock, Search, Gem, CircleCheck as CheckCircle2, Circle as XCircle, Loader as Loader2, ChevronRight, Crown, Minus, Brain, Grid2x2, Puzzle, Zap, RotateCcw, Share2, Copy, Check, ExternalLink, Link as LinkIcon } from "lucide-react";
+import { Swords, Trophy, Clock, Search, Gem, CircleCheck as CheckCircle2, Circle as XCircle, Loader as Loader2, ChevronRight, Crown, Minus, Brain, Grid3x3, Puzzle, Zap, RotateCcw, Share2, Copy, Check, ExternalLink, Link as LinkIcon, Bomb } from "lucide-react";
 import { toast } from "sonner";
 import { showEventModal } from "@/hooks/use-event-modal";
 import { LevelBadge } from "@/components/level-badge";
@@ -33,6 +33,10 @@ import { shareOrDownloadShareCard } from "@/lib/share-card";
 import { ShareCardPreview } from "@/components/share-card-preview";
 import { challengeInviteUrl } from "@/lib/app-links";
 import { WORD_SEARCH_LEVELS, WORD_SEARCH_THEMES, type WordSearchDifficulty, type WordSearchTheme } from "@/lib/word-search";
+import { MINESWEEPER_LEVELS, type MinesweeperDifficulty } from "@/lib/minesweeper";
+import { SLIDE_PUZZLE_LEVELS, SLIDE_PUZZLE_TILE_STYLES, type SlidePuzzleDifficulty, type SlidePuzzleTileStyle } from "@/lib/slide-puzzle";
+import { QUIZ_LEVELS, QUIZ_SUBJECTS, quizGameId, quizSubjectForGameId, isQuizSubject, type QuizGameId, type QuizLevel, type QuizSubject } from "@/lib/quiz";
+import { IMAGE_THEMES } from "@/lib/themes";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -42,7 +46,8 @@ type MemoryGridSize = 2 | 4 | 6 | 8;
 type JigsawGridSize = 2 | 3 | 4 | 5;
 type JigsawLevel = 1 | 2 | 3;
 type ChallengeStatus = "pending" | "accepted" | "declined" | "completed" | "expired";
-type GameType = "sudoku" | "memory" | "jigsaw" | "word-search";
+type GameType = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | QuizGameId;
+type ChallengeTab = "recent" | GameType;
 
 interface ChallengeDetail {
   id: number;
@@ -118,6 +123,34 @@ interface WordSearchChallengeDetail {
   status: ChallengeStatus; challengerGameId: number | null; challengedGameId: number | null; winnerId: number | null;
   challengerUsername: string; challengedUsername: string; challengerAvatar: string | null; challengedAvatar: string | null;
   challengerXp: number; challengedXp: number; challengerPoints: number | null; challengedPoints: number | null; createdAt: string; gameId?: number;
+}
+
+interface MinesweeperChallengeDetail {
+  id: number; challengerId: number; challengedId: number; difficulty: MinesweeperDifficulty; seed: number;
+  status: ChallengeStatus; challengerGameId: number | null; challengedGameId: number | null; winnerId: number | null;
+  challengerUsername: string; challengedUsername: string; challengerAvatar: string | null; challengedAvatar: string | null;
+  challengerXp: number; challengedXp: number; challengerPoints: number | null; challengedPoints: number | null; createdAt: string; gameId?: number;
+}
+
+interface SlidePuzzleChallengeDetail {
+  id: number; challengerId: number; challengedId: number; difficulty: SlidePuzzleDifficulty;
+  tileStyle: SlidePuzzleTileStyle; themeId: string | null; seed: number;
+  status: ChallengeStatus; challengerGameId: number | null; challengedGameId: number | null; winnerId: number | null;
+  challengerUsername: string; challengedUsername: string; challengerAvatar: string | null; challengedAvatar: string | null;
+  challengerXp: number; challengedXp: number; challengerPoints: number | null; challengedPoints: number | null;
+  challengerElapsedSeconds: number | null; challengedElapsedSeconds: number | null;
+  createdAt: string; gameId?: number;
+}
+
+interface QuizChallengeDetail {
+  id: number; challengerId: number; challengedId: number; subject: QuizSubject; level: QuizLevel; seed: number;
+  status: ChallengeStatus; challengerGameId: number | null; challengedGameId: number | null; winnerId: number | null;
+  challengerUsername: string; challengedUsername: string; challengerAvatar: string | null; challengedAvatar: string | null;
+  challengerXp: number; challengedXp: number; challengerPoints: number | null; challengedPoints: number | null;
+  challengerCorrect: number | null; challengerQuestions: number | null;
+  challengedCorrect: number | null; challengedQuestions: number | null;
+  challengerElapsedSeconds: number | null; challengedElapsedSeconds: number | null;
+  createdAt: string; gameId?: number;
 }
 
 interface ProfileSummary {
@@ -1002,6 +1035,81 @@ function WordSearchChallengeCard({ challenge, myProfileId, onAccept, onDecline, 
   </div></CardContent></Card>;
 }
 
+function MinesweeperChallengeCard({ challenge, myProfileId, onAccept, onDecline, onPlay, onRematch, isResponding }: {
+  challenge: MinesweeperChallengeDetail; myProfileId: number; onAccept: (id: number) => void; onDecline: (id: number) => void;
+  onPlay: (challenge: MinesweeperChallengeDetail) => void; onRematch?: (challenge: MinesweeperChallengeDetail) => void; isResponding: boolean;
+}) {
+  const isChallenger = challenge.challengerId === myProfileId;
+  const opponent = isChallenger ? challenge.challengedUsername : challenge.challengerUsername;
+  const avatar = isChallenger ? challenge.challengedAvatar : challenge.challengerAvatar;
+  const xp = isChallenger ? challenge.challengedXp : challenge.challengerXp;
+  const myPoints = isChallenger ? challenge.challengerPoints : challenge.challengedPoints;
+  const otherPoints = isChallenger ? challenge.challengedPoints : challenge.challengerPoints;
+  const myGameId = isChallenger ? challenge.challengerGameId : challenge.challengedGameId;
+  const isWinner = challenge.winnerId === myProfileId;
+  const isTie = challenge.status === "completed" && challenge.winnerId === null;
+  const level = MINESWEEPER_LEVELS[challenge.difficulty];
+  return <Card className="hover:shadow-md transition-shadow border-emerald-200/70 dark:border-emerald-800/40"><CardContent className="p-4"><div className="flex items-start justify-between gap-3">
+    <div className="flex min-w-0 items-center gap-3"><Avatar src={avatar} name={opponent} size={10}/><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><p className="truncate font-semibold">{opponent}</p><LevelBadge xp={xp} size="xs"/>{challenge.status === "completed" && <span className={`flex items-center gap-1 text-xs font-bold ${isWinner ? "text-yellow-600" : isTie ? "text-slate-500" : "text-red-500"}`}>{isWinner ? <><Crown className="h-3 w-3"/> Won +10 💎</> : isTie ? <><Minus className="h-3 w-3"/> Tie +2 💎</> : <><XCircle className="h-3 w-3"/> Lost</>}</span>}</div>
+      <div className="mt-0.5 flex flex-wrap items-center gap-2"><Badge className="border-emerald-200 bg-emerald-100 text-emerald-700">Minesweeper</Badge><span className="text-xs capitalize text-muted-foreground">{level.label} · {level.size}×{level.size} · {level.mines} mines</span><span className="text-xs text-muted-foreground">{timeAgo(challenge.createdAt)}</span><span className="text-[10px] text-muted-foreground italic">{isChallenger ? "You challenged" : "Challenged you"}</span></div>
+      {(challenge.status === "accepted" || challenge.status === "completed" || myPoints !== null) && <div className="mt-2 flex items-center gap-3 text-xs"><span className="text-muted-foreground">You: <b className="text-foreground">{myPoints?.toLocaleString() ?? "—"}</b></span><span className="text-muted-foreground">Them: <b className="text-foreground">{otherPoints?.toLocaleString() ?? "—"}</b></span></div>}
+    </div></div>
+    <div className="flex shrink-0 flex-col items-end gap-2"><StatusBadge status={challenge.status}/>{challenge.status === "pending" && !isChallenger && <div className="flex gap-2"><Button size="sm" variant="outline" className="h-7 border-red-200 text-xs text-red-600 hover:bg-red-50" onClick={() => onDecline(challenge.id)} disabled={isResponding}>Decline</Button><Button size="sm" className="h-7 text-xs" onClick={() => onAccept(challenge.id)} disabled={isResponding}>Accept</Button></div>}{myGameId && (challenge.status === "accepted" || (challenge.status === "pending" && isChallenger)) && <Button size="sm" variant={challenge.status === "pending" ? "outline" : "default"} className="h-7 gap-1 text-xs" onClick={() => onPlay(challenge)}>{myPoints !== null ? "View" : challenge.status === "pending" ? "Play now" : "Play"}<ChevronRight className="h-3 w-3"/></Button>}{challenge.status === "completed" && onRematch && <Button size="sm" variant="outline" className="h-7 gap-1 text-xs" onClick={() => onRematch(challenge)}><RotateCcw className="h-3 w-3"/> Rematch</Button>}</div>
+  </div></CardContent></Card>;
+}
+
+function SlidePuzzleChallengeCard({ challenge, myProfileId, onAccept, onDecline, onPlay, onRematch, isResponding }: {
+  challenge: SlidePuzzleChallengeDetail; myProfileId: number; onAccept: (id: number) => void; onDecline: (id: number) => void;
+  onPlay: (challenge: SlidePuzzleChallengeDetail) => void; onRematch?: (challenge: SlidePuzzleChallengeDetail) => void; isResponding: boolean;
+}) {
+  const isChallenger = challenge.challengerId === myProfileId;
+  const opponent = isChallenger ? challenge.challengedUsername : challenge.challengerUsername;
+  const avatar = isChallenger ? challenge.challengedAvatar : challenge.challengerAvatar;
+  const xp = isChallenger ? challenge.challengedXp : challenge.challengerXp;
+  const myPoints = isChallenger ? challenge.challengerPoints : challenge.challengedPoints;
+  const otherPoints = isChallenger ? challenge.challengedPoints : challenge.challengerPoints;
+  const myGameId = isChallenger ? challenge.challengerGameId : challenge.challengedGameId;
+  const isWinner = challenge.winnerId === myProfileId;
+  const isTie = challenge.status === "completed" && challenge.winnerId === null;
+  const level = SLIDE_PUZZLE_LEVELS[challenge.difficulty];
+  const styleLabel = SLIDE_PUZZLE_TILE_STYLES.find((style) => style.id === challenge.tileStyle)?.label ?? challenge.tileStyle;
+  return <Card className="hover:shadow-md transition-shadow border-sky-200/70 dark:border-sky-800/40"><CardContent className="p-4"><div className="flex items-start justify-between gap-3">
+    <div className="flex min-w-0 items-center gap-3"><Avatar src={avatar} name={opponent} size={10}/><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><p className="truncate font-semibold">{opponent}</p><LevelBadge xp={xp} size="xs"/>{challenge.status === "completed" && <span className={`flex items-center gap-1 text-xs font-bold ${isWinner ? "text-yellow-600" : isTie ? "text-slate-500" : "text-red-500"}`}>{isWinner ? <><Crown className="h-3 w-3"/> Won +10 💎</> : isTie ? <><Minus className="h-3 w-3"/> Tie +2 💎</> : <><XCircle className="h-3 w-3"/> Lost</>}</span>}</div>
+      <div className="mt-0.5 flex flex-wrap items-center gap-2"><Badge className="border-sky-200 bg-sky-100 text-sky-700">Slide Puzzle</Badge><span className="text-xs capitalize text-muted-foreground">{level.label} · {level.size}×{level.size} · {styleLabel}</span><span className="text-xs text-muted-foreground">{timeAgo(challenge.createdAt)}</span><span className="text-[10px] text-muted-foreground italic">{isChallenger ? "You challenged" : "Challenged you"}</span></div>
+      {(challenge.status === "accepted" || challenge.status === "completed" || myPoints !== null) && <div className="mt-2 flex items-center gap-3 text-xs"><span className="text-muted-foreground">You: <b className="text-foreground">{myPoints?.toLocaleString() ?? "—"}</b></span><span className="text-muted-foreground">Them: <b className="text-foreground">{otherPoints?.toLocaleString() ?? "—"}</b></span></div>}
+    </div></div>
+    <div className="flex shrink-0 flex-col items-end gap-2"><StatusBadge status={challenge.status}/>{challenge.status === "pending" && !isChallenger && <div className="flex gap-2"><Button size="sm" variant="outline" className="h-7 border-red-200 text-xs text-red-600 hover:bg-red-50" onClick={() => onDecline(challenge.id)} disabled={isResponding}>Decline</Button><Button size="sm" className="h-7 text-xs" onClick={() => onAccept(challenge.id)} disabled={isResponding}>Accept</Button></div>}{myGameId && (challenge.status === "accepted" || (challenge.status === "pending" && isChallenger)) && <Button size="sm" variant={challenge.status === "pending" ? "outline" : "default"} className="h-7 gap-1 text-xs" onClick={() => onPlay(challenge)}>{myPoints !== null ? "View" : challenge.status === "pending" ? "Play now" : "Play"}<ChevronRight className="h-3 w-3"/></Button>}{challenge.status === "completed" && onRematch && <Button size="sm" variant="outline" className="h-7 gap-1 text-xs" onClick={() => onRematch(challenge)}><RotateCcw className="h-3 w-3"/> Rematch</Button>}</div>
+  </div></CardContent></Card>;
+}
+
+function QuizChallengeCard({ challenge, myProfileId, onAccept, onDecline, onPlay, onRematch, isResponding }: {
+  challenge: QuizChallengeDetail; myProfileId: number; onAccept: (id: number) => void; onDecline: (id: number) => void;
+  onPlay: (challenge: QuizChallengeDetail) => void; onRematch?: (challenge: QuizChallengeDetail) => void; isResponding: boolean;
+}) {
+  const isChallenger = challenge.challengerId === myProfileId;
+  const opponent = isChallenger ? challenge.challengedUsername : challenge.challengerUsername;
+  const avatar = isChallenger ? challenge.challengedAvatar : challenge.challengerAvatar;
+  const xp = isChallenger ? challenge.challengedXp : challenge.challengerXp;
+  const myPoints = isChallenger ? challenge.challengerPoints : challenge.challengedPoints;
+  const otherPoints = isChallenger ? challenge.challengedPoints : challenge.challengerPoints;
+  const myCorrect = isChallenger ? challenge.challengerCorrect : challenge.challengedCorrect;
+  const myQuestions = isChallenger ? challenge.challengerQuestions : challenge.challengedQuestions;
+  const otherCorrect = isChallenger ? challenge.challengedCorrect : challenge.challengerCorrect;
+  const otherQuestions = isChallenger ? challenge.challengedQuestions : challenge.challengerQuestions;
+  const myGameId = isChallenger ? challenge.challengerGameId : challenge.challengedGameId;
+  const isWinner = challenge.winnerId === myProfileId;
+  const isTie = challenge.status === "completed" && challenge.winnerId === null;
+  const subject = QUIZ_SUBJECTS[challenge.subject] ?? QUIZ_SUBJECTS.science;
+  const level = QUIZ_SUBJECTS[challenge.subject]?.levels[challenge.level] ?? QUIZ_SUBJECTS.science.levels[challenge.level];
+  return <Card className="hover:shadow-md transition-shadow border-violet-200/70 dark:border-violet-800/40"><CardContent className="p-4"><div className="flex items-start justify-between gap-3">
+    <div className="flex min-w-0 items-center gap-3"><Avatar src={avatar} name={opponent} size={10}/><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><p className="truncate font-semibold">{opponent}</p><LevelBadge xp={xp} size="xs"/>{challenge.status === "completed" && <span className={`flex items-center gap-1 text-xs font-bold ${isWinner ? "text-yellow-600" : isTie ? "text-slate-500" : "text-red-500"}`}>{isWinner ? <><Crown className="h-3 w-3"/> Won +10 💎</> : isTie ? <><Minus className="h-3 w-3"/> Tie +2 💎</> : <><XCircle className="h-3 w-3"/> Lost</>}</span>}</div>
+      <div className="mt-0.5 flex flex-wrap items-center gap-2"><Badge className="border-violet-200 bg-violet-100 text-violet-700">{subject.emoji} {subject.name}</Badge><span className="text-xs capitalize text-muted-foreground">{level.label} · {level.detail}</span><span className="text-xs text-muted-foreground">{timeAgo(challenge.createdAt)}</span><span className="text-[10px] text-muted-foreground italic">{isChallenger ? "You challenged" : "Challenged you"}</span></div>
+      {(challenge.status === "accepted" || challenge.status === "completed" || myPoints !== null) && <div className="mt-2 flex items-center gap-3 text-xs"><span className="text-muted-foreground">You: <b className="text-foreground">{myPoints?.toLocaleString() ?? "—"}{myCorrect != null && myQuestions ? ` (${myCorrect}/${myQuestions})` : ""}</b></span><span className="text-muted-foreground">Them: <b className="text-foreground">{otherPoints?.toLocaleString() ?? "—"}{otherCorrect != null && otherQuestions ? ` (${otherCorrect}/${otherQuestions})` : ""}</b></span></div>}
+    </div></div>
+    <div className="flex shrink-0 flex-col items-end gap-2"><StatusBadge status={challenge.status}/>{challenge.status === "pending" && !isChallenger && <div className="flex gap-2"><Button size="sm" variant="outline" className="h-7 border-red-200 text-xs text-red-600 hover:bg-red-50" onClick={() => onDecline(challenge.id)} disabled={isResponding}>Decline</Button><Button size="sm" className="h-7 text-xs" onClick={() => onAccept(challenge.id)} disabled={isResponding}>Accept</Button></div>}{myGameId && (challenge.status === "accepted" || (challenge.status === "pending" && isChallenger)) && <Button size="sm" variant={challenge.status === "pending" ? "outline" : "default"} className="h-7 gap-1 text-xs" onClick={() => onPlay(challenge)}>{myPoints !== null ? "View" : challenge.status === "pending" ? "Play now" : "Play"}<ChevronRight className="h-3 w-3"/></Button>}{challenge.status === "completed" && onRematch && <Button size="sm" variant="outline" className="h-7 gap-1 text-xs" onClick={() => onRematch(challenge)}><RotateCcw className="h-3 w-3"/> Rematch</Button>}</div>
+  </div></CardContent></Card>;
+}
+
 interface RematchData {
   opponent: ProfileSummary;
   gameType: GameType;
@@ -1012,6 +1120,12 @@ interface RematchData {
   jigsawLevel?: JigsawLevel;
   wordSearchDifficulty?: WordSearchDifficulty;
   wordSearchTheme?: WordSearchTheme;
+  minesweeperDifficulty?: MinesweeperDifficulty;
+  slidePuzzleDifficulty?: SlidePuzzleDifficulty;
+  slidePuzzleTileStyle?: SlidePuzzleTileStyle;
+  slidePuzzleThemeId?: string | null;
+  quizSubject?: QuizSubject;
+  quizLevel?: QuizLevel;
 }
 
 type GameMode = 'children' | 'adult' | '4all';
@@ -1105,6 +1219,11 @@ function NewChallengeDialog({
   const jigsawSizes = filteredJigsawSizes(gameMode);
   const diffs = filteredDifficulties(gameMode);
   const wordSearchLevels = (Object.keys(WORD_SEARCH_LEVELS) as WordSearchDifficulty[]).filter((level) => gameMode === "children" ? WORD_SEARCH_LEVELS[level].mode === "baby" : gameMode === "adult" ? WORD_SEARCH_LEVELS[level].mode === "adult" : true);
+  const minesweeperLevels = (Object.keys(MINESWEEPER_LEVELS) as MinesweeperDifficulty[]).filter((level) => gameMode === "children" ? MINESWEEPER_LEVELS[level].mode === "baby" : gameMode === "adult" ? MINESWEEPER_LEVELS[level].mode === "adult" : true);
+  const slidePuzzleLevels = (Object.keys(SLIDE_PUZZLE_LEVELS) as SlidePuzzleDifficulty[]).filter((level) => gameMode === "children" ? SLIDE_PUZZLE_LEVELS[level].mode === "baby" : gameMode === "adult" ? SLIDE_PUZZLE_LEVELS[level].mode === "adult" : true);
+  const quizGameSubject = quizSubjectForGameId(gameType);
+  const quizSubject: QuizSubject = quizGameSubject ?? "science";
+  const quizLevels = QUIZ_LEVELS.filter((level) => gameMode === "children" ? QUIZ_SUBJECTS[quizSubject].levels[level].mode === "baby" : gameMode === "adult" ? QUIZ_SUBJECTS[quizSubject].levels[level].mode === "adult" : true);
   const defaultSudokuSize = sudokuSizes[0]?.value ?? 9;
   const defaultMemorySize = memorySizes[0]?.value ?? 4;
   const defaultJigsawSize = jigsawSizes[0]?.value ?? 2;
@@ -1112,6 +1231,9 @@ function NewChallengeDialog({
   const defaultJigsawLevel: JigsawLevel = 1;
   const defaultJigsawImageKey = 1;
   const defaultWordSearchDifficulty = wordSearchLevels[0] ?? "beginner";
+  const defaultMinesweeperDifficulty = minesweeperLevels[0] ?? "beginner";
+  const defaultSlidePuzzleDifficulty = slidePuzzleLevels[0] ?? "3x3";
+  const defaultQuizLevel: QuizLevel = "easy";
   const [difficulty, setDifficulty] = useState<Difficulty>(defaultDiff);
   const [sudokuGridSize, setSudokuGridSize] = useState<SudokuGridSize>(defaultSudokuSize);
   const [memoryGridSize, setMemoryGridSize] = useState<MemoryGridSize>(defaultMemorySize);
@@ -1120,6 +1242,11 @@ function NewChallengeDialog({
   const [jigsawImageKey, setJigsawImageKey] = useState<number>(defaultJigsawImageKey);
   const [wordSearchDifficulty, setWordSearchDifficulty] = useState<WordSearchDifficulty>(defaultWordSearchDifficulty);
   const [wordSearchTheme, setWordSearchTheme] = useState<WordSearchTheme>("animals");
+  const [minesweeperDifficulty, setMinesweeperDifficulty] = useState<MinesweeperDifficulty>(defaultMinesweeperDifficulty);
+  const [slidePuzzleDifficulty, setSlidePuzzleDifficulty] = useState<SlidePuzzleDifficulty>(defaultSlidePuzzleDifficulty);
+  const [slidePuzzleTileStyle, setSlidePuzzleTileStyle] = useState<SlidePuzzleTileStyle>("numbers");
+  const [slidePuzzleThemeId, setSlidePuzzleThemeId] = useState<string | null>(null);
+  const [quizLevel, setQuizLevel] = useState<QuizLevel>(defaultQuizLevel);
 
   // Reset sizes/difficulty to valid options whenever gameMode or dialog open state changes
   React.useEffect(() => {
@@ -1157,6 +1284,12 @@ function NewChallengeDialog({
       }
       if (initialData.wordSearchDifficulty && wordSearchLevels.includes(initialData.wordSearchDifficulty)) setWordSearchDifficulty(initialData.wordSearchDifficulty);
       if (initialData.wordSearchTheme) setWordSearchTheme(initialData.wordSearchTheme);
+      if (initialData.minesweeperDifficulty && minesweeperLevels.includes(initialData.minesweeperDifficulty)) setMinesweeperDifficulty(initialData.minesweeperDifficulty);
+      if (initialData.slidePuzzleDifficulty && slidePuzzleLevels.includes(initialData.slidePuzzleDifficulty)) setSlidePuzzleDifficulty(initialData.slidePuzzleDifficulty);
+      if (initialData.slidePuzzleTileStyle) setSlidePuzzleTileStyle(initialData.slidePuzzleTileStyle);
+      if (initialData.slidePuzzleThemeId !== undefined) setSlidePuzzleThemeId(initialData.slidePuzzleThemeId);
+      if (initialData.quizSubject) setGameType(quizGameId(initialData.quizSubject));
+      if (initialData.quizLevel) setQuizLevel(initialData.quizLevel);
     }
     if (!open) {
       setSearch("");
@@ -1256,6 +1389,47 @@ function NewChallengeDialog({
     onError: () => toast.error("Failed to send Word Search challenge"),
   });
 
+  const createMinesweeperMutation = useMutation({
+    mutationFn: (data: { challengerId: number; challengedId: number; difficulty: MinesweeperDifficulty }) =>
+      customFetch<MinesweeperChallengeDetail>("/api/minesweeper-challenges", { method: "POST", data }),
+    onSuccess: (challenge) => {
+      queryClient.invalidateQueries({ queryKey: ["minesweeper-challenges"] });
+      toast.success(`Minesweeper challenge sent to ${selected?.username}!`, { description: "Clear the shared minefield while they decide." });
+      onClose();
+      if (challenge.gameId) setLocation(`/minesweeper?start=1&gameId=${challenge.gameId}&challengeId=${challenge.id}&difficulty=${challenge.difficulty}&seed=${challenge.seed}`);
+    },
+    onError: () => toast.error("Failed to send Minesweeper challenge"),
+  });
+
+  const createSlidePuzzleMutation = useMutation({
+    mutationFn: (data: { challengerId: number; challengedId: number; difficulty: SlidePuzzleDifficulty; tileStyle: SlidePuzzleTileStyle; themeId?: string | null }) =>
+      customFetch<SlidePuzzleChallengeDetail>("/api/slide-puzzle-challenges", { method: "POST", data }),
+    onSuccess: (challenge) => {
+      queryClient.invalidateQueries({ queryKey: ["slide-puzzle-challenges"] });
+      toast.success(`Slide Puzzle challenge sent to ${selected?.username}!`, { description: "Solve the shared scramble while they decide." });
+      onClose();
+      if (challenge.gameId) {
+        const theme = challenge.themeId ? `&theme=${encodeURIComponent(challenge.themeId)}` : "";
+        setLocation(`/slide-puzzle?play=1&challengeId=${challenge.id}&gameId=${challenge.gameId}&difficulty=${challenge.difficulty}&style=${challenge.tileStyle}${theme}&seed=${challenge.seed}`);
+      }
+    },
+    onError: () => toast.error("Failed to send Slide Puzzle challenge"),
+  });
+
+  const createQuizMutation = useMutation({
+    mutationFn: (data: { challengerId: number; challengedId: number; subject: QuizSubject; level: QuizLevel }) =>
+      customFetch<QuizChallengeDetail>("/api/quiz-challenges", { method: "POST", data }),
+    onSuccess: (challenge) => {
+      queryClient.invalidateQueries({ queryKey: ["quiz-challenges"] });
+      toast.success(`${QUIZ_SUBJECTS[challenge.subject]?.name ?? "Quiz"} challenge sent to ${selected?.username}!`, { description: "Answer the shared quiz while they decide." });
+      onClose();
+      if (challenge.gameId) {
+        setLocation(`/quiz/${challenge.subject}?play=1&challengeId=${challenge.id}&gameId=${challenge.gameId}&level=${challenge.level}&seed=${challenge.seed}`);
+      }
+    },
+    onError: () => toast.error("Failed to send Quiz challenge"),
+  });
+
   // Open (shareable) challenge mutations — no specific opponent
   const openSudokuMutation = useMutation({
     mutationFn: (data: { challengerId: number; difficulty: Difficulty; gridSize: SudokuGridSize }) =>
@@ -1342,8 +1516,16 @@ function NewChallengeDialog({
         level: jigsawLevel,
         imageKey: jigsawImageKey,
       });
-    } else {
+    } else if (gameType === "word-search") {
       createWordSearchMutation.mutate({ challengerId: myProfileId, challengedId: selected.id, difficulty: wordSearchDifficulty, theme: wordSearchTheme });
+    } else if (gameType === "minesweeper") {
+      createMinesweeperMutation.mutate({ challengerId: myProfileId, challengedId: selected.id, difficulty: minesweeperDifficulty });
+    } else if (gameType === "slide-puzzle") {
+      const validDifficulty = slidePuzzleLevels.includes(slidePuzzleDifficulty) ? slidePuzzleDifficulty : (slidePuzzleLevels[0] ?? "3x3");
+      createSlidePuzzleMutation.mutate({ challengerId: myProfileId, challengedId: selected.id, difficulty: validDifficulty, tileStyle: slidePuzzleTileStyle, themeId: slidePuzzleTileStyle === "icons" ? slidePuzzleThemeId ?? "shapes" : null });
+    } else if (quizGameSubject) {
+      const validLevel = quizLevels.includes(quizLevel) ? quizLevel : (quizLevels[0] ?? "easy");
+      createQuizMutation.mutate({ challengerId: myProfileId, challengedId: selected.id, subject: quizGameSubject, level: validLevel });
     }
   };
 
@@ -1367,7 +1549,7 @@ function NewChallengeDialog({
   };
 
   const isPending =
-    createSudokuMutation.isPending || createMemoryMutation.isPending || createJigsawMutation.isPending || createWordSearchMutation.isPending;
+    createSudokuMutation.isPending || createMemoryMutation.isPending || createJigsawMutation.isPending || createWordSearchMutation.isPending || createMinesweeperMutation.isPending || createSlidePuzzleMutation.isPending || createQuizMutation.isPending;
   const isLinkPending =
     openSudokuMutation.isPending || openMemoryMutation.isPending || openJigsawMutation.isPending;
 
@@ -1410,28 +1592,16 @@ function NewChallengeDialog({
             /* Open challenge — game settings only */
             <div className="space-y-3">
               {/* Game type */}
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  onClick={() => setGameType("sudoku")}
-                  className={`flex items-center gap-2.5 rounded-xl border-2 px-3 py-2.5 transition-all text-sm font-medium ${gameType === "sudoku" ? "border-primary bg-primary/5 text-primary" : "border-border bg-muted/30 text-muted-foreground hover:border-primary/40"}`}
-                >
-                  <Grid2x2 className="w-4 h-4 shrink-0" />
-                  Sudoku
-                </button>
-                <button
-                  onClick={() => setGameType("memory")}
-                  className={`flex items-center gap-2.5 rounded-xl border-2 px-3 py-2.5 transition-all text-sm font-medium ${gameType === "memory" ? "border-violet-500 bg-violet-50 text-violet-700" : "border-border bg-muted/30 text-muted-foreground hover:border-violet-300"}`}
-                >
-                  <Brain className="w-4 h-4 shrink-0" />
-                  Memory
-                </button>
-                <button
-                  onClick={() => setGameType("jigsaw")}
-                  className={`flex items-center gap-2.5 rounded-xl border-2 px-3 py-2.5 transition-all text-sm font-medium ${gameType === "jigsaw" ? "border-amber-500 bg-amber-50 text-amber-700" : "border-border bg-muted/30 text-muted-foreground hover:border-amber-300"}`}
-                >
-                  <Puzzle className="w-4 h-4 shrink-0" />
-                  Jigsaw
-                </button>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Game</label>
+                <Select value={gameType} onValueChange={(v) => setGameType(v as GameType)}>
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sudoku">Sudoku</SelectItem>
+                    <SelectItem value="memory">Memory Match</SelectItem>
+                    <SelectItem value="jigsaw">Jigsaw</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               {gameType === "sudoku" && (
                 <div className="grid grid-cols-2 gap-3">
@@ -1567,31 +1737,20 @@ function NewChallengeDialog({
               </div>
 
               {/* Game type selector */}
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                <button
-                  onClick={() => setGameType("sudoku")}
-                  className={`flex flex-col items-center gap-1.5 rounded-xl border-2 p-3 transition-all text-sm font-medium ${gameType === "sudoku" ? "border-primary bg-primary/5 text-primary" : "border-border bg-muted/30 text-muted-foreground hover:border-primary/40"}`}
-                >
-                  <Grid2x2 className="w-5 h-5" />
-                  Sudoku
-                </button>
-                <button
-                  onClick={() => setGameType("memory")}
-                  className={`flex flex-col items-center gap-1.5 rounded-xl border-2 p-3 transition-all text-sm font-medium ${gameType === "memory" ? "border-violet-500 bg-violet-50 text-violet-700" : "border-border bg-muted/30 text-muted-foreground hover:border-violet-300"}`}
-                >
-                  <Brain className="w-5 h-5" />
-                  Memory
-                </button>
-                <button
-                  onClick={() => setGameType("jigsaw")}
-                  className={`flex flex-col items-center gap-1.5 rounded-xl border-2 p-3 transition-all text-sm font-medium ${gameType === "jigsaw" ? "border-amber-500 bg-amber-50 text-amber-700" : "border-border bg-muted/30 text-muted-foreground hover:border-amber-300"}`}
-                >
-                  <Puzzle className="w-5 h-5" />
-                  Jigsaw
-                </button>
-                <button onClick={() => setGameType("word-search")} className={`flex flex-col items-center gap-1.5 rounded-xl border-2 p-3 transition-all text-sm font-medium ${gameType === "word-search" ? "border-violet-500 bg-violet-50 text-violet-700" : "border-border bg-muted/30 text-muted-foreground hover:border-violet-300"}`}>
-                  <Search className="h-5 w-5" />Word Search
-                </button>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium">Game</label>
+                <Select value={gameType} onValueChange={(value) => setGameType(value as GameType)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sudoku">Sudoku</SelectItem>
+                    <SelectItem value="memory">Memory Match</SelectItem>
+                    <SelectItem value="jigsaw">Jigsaw</SelectItem>
+                    <SelectItem value="word-search">Word Search</SelectItem>
+                    <SelectItem value="minesweeper">Minesweeper</SelectItem>
+                    <SelectItem value="slide-puzzle">Slide Puzzle</SelectItem>
+                    {(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id) => <SelectItem key={id} value={quizGameId(id)}>{QUIZ_SUBJECTS[id].emoji} {QUIZ_SUBJECTS[id].name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Sudoku options */}
@@ -1705,6 +1864,42 @@ function NewChallengeDialog({
                 </div>
               )}
 
+              {gameType === "minesweeper" && (
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Board</label>
+                  <Select value={minesweeperDifficulty} onValueChange={(value) => setMinesweeperDifficulty(value as MinesweeperDifficulty)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>{minesweeperLevels.map((level) => <SelectItem key={level} value={level}>{MINESWEEPER_LEVELS[level].label} · {MINESWEEPER_LEVELS[level].size}×{MINESWEEPER_LEVELS[level].size} · {MINESWEEPER_LEVELS[level].mines} mines</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {gameType === "slide-puzzle" && (
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium">Board</label>
+                    <Select value={slidePuzzleDifficulty} onValueChange={(value) => setSlidePuzzleDifficulty(value as SlidePuzzleDifficulty)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{slidePuzzleLevels.map((level) => <SelectItem key={level} value={level}>{SLIDE_PUZZLE_LEVELS[level].label} · {SLIDE_PUZZLE_LEVELS[level].size}×{SLIDE_PUZZLE_LEVELS[level].size} · {SLIDE_PUZZLE_LEVELS[level].tiles} tiles</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5"><label className="text-sm font-medium">Tile style</label><Select value={slidePuzzleTileStyle} onValueChange={(value) => setSlidePuzzleTileStyle(value as SlidePuzzleTileStyle)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{SLIDE_PUZZLE_TILE_STYLES.map((style) => <SelectItem key={style.id} value={style.id}>{style.label}</SelectItem>)}</SelectContent></Select></div>
+                    {slidePuzzleTileStyle === "icons" && <div className="space-y-1.5"><label className="text-sm font-medium">Picture set</label><Select value={slidePuzzleThemeId ?? "shapes"} onValueChange={(value) => setSlidePuzzleThemeId(value)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{IMAGE_THEMES.map((theme) => <SelectItem key={theme.id} value={theme.id}>{theme.name}</SelectItem>)}</SelectContent></Select></div>}
+                  </div>
+                </div>
+              )}
+
+              {quizGameSubject && (
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Level · {QUIZ_SUBJECTS[quizGameSubject].emoji} {QUIZ_SUBJECTS[quizGameSubject].name}</label>
+                  <Select value={quizLevel} onValueChange={(value) => setQuizLevel(value as QuizLevel)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>{quizLevels.map((level) => <SelectItem key={level} value={level}>{QUIZ_SUBJECTS[quizGameSubject].levels[level].label} · {QUIZ_SUBJECTS[quizGameSubject].levels[level].detail}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              )}
+
               <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 flex items-start gap-2">
                 <Trophy className="w-3.5 h-3.5 mt-0.5 shrink-0 text-amber-600" />
                 <span>
@@ -1754,14 +1949,24 @@ export default function Challenges() {
   usePageMeta({
     title: "Puzzle Challenges & Duels | Play Brain Games . Online",
     description:
-      "Create and join Sudoku, Memory Match, Jigsaw, and Word Search challenges, compare scores, and compete with friends on Play Brain Games . Online.",
+      "Create and join Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, and Slide Puzzle challenges, compare scores, and compete with friends on Play Brain Games . Online.",
     path: "/challenges",
   });
   const queryClient = useQueryClient();
   const searchParams = new URLSearchParams(useSearch());
   const [showNew, setShowNew] = useState(false);
   const [respondingId, setRespondingId] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<GameType>(() => searchParams.get("tab") === "word-search" ? "word-search" : "sudoku");
+  const [activeTab, setActiveTab] = useState<ChallengeTab>(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "quiz") {
+      const subjectParam = searchParams.get("subject");
+      const subject = isQuizSubject(subjectParam) ? subjectParam : "science";
+      return quizGameId(subject);
+    }
+    const quizTabSubject = quizSubjectForGameId(tab);
+    if (quizTabSubject) return quizGameId(quizTabSubject);
+    return tab === "recent" || tab === "sudoku" || tab === "memory" || tab === "jigsaw" || tab === "word-search" || tab === "minesweeper" || tab === "slide-puzzle" ? tab : "recent";
+  });
   const [shareSheetData, setShareSheetData] = useState<{ token: string; label: string } | null>(null);
   const [rematchData, setRematchData] = useState<RematchData | null>(null);
 
@@ -1850,6 +2055,27 @@ export default function Challenges() {
     refetchInterval: 10000,
   });
 
+  const { data: minesweeperChallenges, isLoading: minesweeperLoading } = useQuery<MinesweeperChallengeDetail[]>({
+    queryKey: ["minesweeper-challenges", profileId],
+    queryFn: () => customFetch<MinesweeperChallengeDetail[]>(`/api/minesweeper-challenges/for/${profileId}`),
+    enabled: !!profileId,
+    refetchInterval: 10000,
+  });
+
+  const { data: slidePuzzleChallenges, isLoading: slidePuzzleLoading } = useQuery<SlidePuzzleChallengeDetail[]>({
+    queryKey: ["slide-puzzle-challenges", profileId],
+    queryFn: () => customFetch<SlidePuzzleChallengeDetail[]>(`/api/slide-puzzle-challenges/for/${profileId}`),
+    enabled: !!profileId,
+    refetchInterval: 10000,
+  });
+
+  const { data: quizChallenges, isLoading: quizLoading } = useQuery<QuizChallengeDetail[]>({
+    queryKey: ["quiz-challenges", profileId],
+    queryFn: () => customFetch<QuizChallengeDetail[]>(`/api/quiz-challenges/for/${profileId}`),
+    enabled: !!profileId,
+    refetchInterval: 10000,
+  });
+
   const respondDuelMutation = useMutation({
     mutationFn: ({
       id,
@@ -1918,6 +2144,43 @@ export default function Challenges() {
       setRespondingId(null);
       if (vars.action === "accept" && result.gameId) {
         setLocation(`/word-search?start=1&gameId=${result.gameId}&challengeId=${result.id}&difficulty=${result.difficulty}&theme=${encodeURIComponent(result.theme)}&seed=${result.seed}`);
+      } else if (vars.action === "decline") toast("Challenge declined.");
+    },
+    onError: (error: Error) => { setRespondingId(null); toast.error(error.message || "Failed to respond to challenge"); },
+  });
+
+  const respondMinesweeperMutation = useMutation({
+    mutationFn: ({ id, action }: { id: number; action: "accept" | "decline" }) => customFetch<MinesweeperChallengeDetail & { gameId?: number }>(`/api/minesweeper-challenges/${id}/respond`, { method: "PATCH", data: { profileId, action } }),
+    onSuccess: (result, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["minesweeper-challenges"] });
+      setRespondingId(null);
+      if (vars.action === "accept" && result.gameId) {
+        setLocation(`/minesweeper?start=1&gameId=${result.gameId}&challengeId=${result.id}&difficulty=${result.difficulty}&seed=${result.seed}`);
+      } else if (vars.action === "decline") toast("Challenge declined.");
+    },
+    onError: (error: Error) => { setRespondingId(null); toast.error(error.message || "Failed to respond to challenge"); },
+  });
+
+  const respondSlidePuzzleMutation = useMutation({
+    mutationFn: ({ id, action }: { id: number; action: "accept" | "decline" }) => customFetch<SlidePuzzleChallengeDetail & { gameId?: number }>(`/api/slide-puzzle-challenges/${id}/respond`, { method: "PATCH", data: { profileId, action } }),
+    onSuccess: (result, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["slide-puzzle-challenges"] });
+      setRespondingId(null);
+      if (vars.action === "accept" && result.gameId) {
+        const theme = result.themeId ? `&theme=${encodeURIComponent(result.themeId)}` : "";
+        setLocation(`/slide-puzzle?play=1&challengeId=${result.id}&gameId=${result.gameId}&difficulty=${result.difficulty}&style=${result.tileStyle}${theme}&seed=${result.seed}`);
+      } else if (vars.action === "decline") toast("Challenge declined.");
+    },
+    onError: (error: Error) => { setRespondingId(null); toast.error(error.message || "Failed to respond to challenge"); },
+  });
+
+  const respondQuizMutation = useMutation({
+    mutationFn: ({ id, action }: { id: number; action: "accept" | "decline" }) => customFetch<QuizChallengeDetail & { gameId?: number }>(`/api/quiz-challenges/${id}/respond`, { method: "PATCH", data: { profileId, action } }),
+    onSuccess: (result, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["quiz-challenges"] });
+      setRespondingId(null);
+      if (vars.action === "accept" && result.gameId) {
+        setLocation(`/quiz/${result.subject}?play=1&challengeId=${result.id}&gameId=${result.gameId}&level=${result.level}&seed=${result.seed}`);
       } else if (vars.action === "decline") toast("Challenge declined.");
     },
     onError: (error: Error) => { setRespondingId(null); toast.error(error.message || "Failed to respond to challenge"); },
@@ -2012,6 +2275,93 @@ export default function Challenges() {
     const gameId = challenge.challengerId === profileId ? challenge.challengerGameId : challenge.challengedGameId;
     if (gameId) setLocation(`/word-search?start=1&gameId=${gameId}&challengeId=${challenge.id}&difficulty=${challenge.difficulty}&theme=${encodeURIComponent(challenge.theme)}&seed=${challenge.seed}`);
   }, [profileId, setLocation]);
+
+  const handleMinesweeperAccept = useCallback((id: number) => { setRespondingId(id); respondMinesweeperMutation.mutate({ id, action: "accept" }); }, [respondMinesweeperMutation]);
+  const handleMinesweeperDecline = useCallback((id: number) => { setRespondingId(id); respondMinesweeperMutation.mutate({ id, action: "decline" }); }, [respondMinesweeperMutation]);
+  const handleMinesweeperPlay = useCallback((challenge: MinesweeperChallengeDetail) => {
+    const gameId = challenge.challengerId === profileId ? challenge.challengerGameId : challenge.challengedGameId;
+    if (gameId) setLocation(`/minesweeper?start=1&gameId=${gameId}&challengeId=${challenge.id}&difficulty=${challenge.difficulty}&seed=${challenge.seed}`);
+  }, [profileId, setLocation]);
+
+  const handleMinesweeperRematch = useCallback((challenge: MinesweeperChallengeDetail) => {
+    const isChallenger = challenge.challengerId === profileId;
+    const opponentId = isChallenger ? challenge.challengedId : challenge.challengerId;
+    if (!opponentId) {
+      toast.error("This challenge no longer has an opponent.");
+      return;
+    }
+    setRematchData({
+      opponent: {
+        id: opponentId,
+        username: isChallenger ? challenge.challengedUsername : challenge.challengerUsername,
+        avatar: isChallenger ? challenge.challengedAvatar : challenge.challengerAvatar,
+        gems: 0,
+      },
+      gameType: "minesweeper",
+      minesweeperDifficulty: challenge.difficulty,
+    });
+    setShowNew(true);
+  }, [profileId]);
+
+  const handleSlidePuzzleAccept = useCallback((id: number) => { setRespondingId(id); respondSlidePuzzleMutation.mutate({ id, action: "accept" }); }, [respondSlidePuzzleMutation]);
+  const handleSlidePuzzleDecline = useCallback((id: number) => { setRespondingId(id); respondSlidePuzzleMutation.mutate({ id, action: "decline" }); }, [respondSlidePuzzleMutation]);
+  const handleSlidePuzzlePlay = useCallback((challenge: SlidePuzzleChallengeDetail) => {
+    const gameId = challenge.challengerId === profileId ? challenge.challengerGameId : challenge.challengedGameId;
+    if (gameId) {
+      const theme = challenge.themeId ? `&theme=${encodeURIComponent(challenge.themeId)}` : "";
+      setLocation(`/slide-puzzle?play=1&challengeId=${challenge.id}&gameId=${gameId}&difficulty=${challenge.difficulty}&style=${challenge.tileStyle}${theme}&seed=${challenge.seed}`);
+    }
+  }, [profileId, setLocation]);
+
+  const handleSlidePuzzleRematch = useCallback((challenge: SlidePuzzleChallengeDetail) => {
+    const isChallenger = challenge.challengerId === profileId;
+    const opponentId = isChallenger ? challenge.challengedId : challenge.challengerId;
+    if (!opponentId) {
+      toast.error("This challenge no longer has an opponent.");
+      return;
+    }
+    setRematchData({
+      opponent: {
+        id: opponentId,
+        username: isChallenger ? challenge.challengedUsername : challenge.challengerUsername,
+        avatar: isChallenger ? challenge.challengedAvatar : challenge.challengerAvatar,
+        gems: 0,
+      },
+      gameType: "slide-puzzle",
+      slidePuzzleDifficulty: challenge.difficulty,
+      slidePuzzleTileStyle: challenge.tileStyle,
+      slidePuzzleThemeId: challenge.themeId,
+    });
+    setShowNew(true);
+  }, [profileId]);
+
+  const handleQuizAccept = useCallback((id: number) => { setRespondingId(id); respondQuizMutation.mutate({ id, action: "accept" }); }, [respondQuizMutation]);
+  const handleQuizDecline = useCallback((id: number) => { setRespondingId(id); respondQuizMutation.mutate({ id, action: "decline" }); }, [respondQuizMutation]);
+  const handleQuizPlay = useCallback((challenge: QuizChallengeDetail) => {
+    const gameId = challenge.challengerId === profileId ? challenge.challengerGameId : challenge.challengedGameId;
+    if (gameId) setLocation(`/quiz/${challenge.subject}?play=1&challengeId=${challenge.id}&gameId=${gameId}&level=${challenge.level}&seed=${challenge.seed}`);
+  }, [profileId, setLocation]);
+
+  const handleQuizRematch = useCallback((challenge: QuizChallengeDetail) => {
+    const isChallenger = challenge.challengerId === profileId;
+    const opponentId = isChallenger ? challenge.challengedId : challenge.challengerId;
+    if (!opponentId) {
+      toast.error("This challenge no longer has an opponent.");
+      return;
+    }
+    setRematchData({
+      opponent: {
+        id: opponentId,
+        username: isChallenger ? challenge.challengedUsername : challenge.challengerUsername,
+        avatar: isChallenger ? challenge.challengedAvatar : challenge.challengerAvatar,
+        gems: 0,
+      },
+      gameType: quizGameId(challenge.subject),
+      quizSubject: challenge.subject,
+      quizLevel: challenge.level,
+    });
+    setShowNew(true);
+  }, [profileId]);
 
   const handleSudokuRematch = useCallback(
     (challenge: ChallengeDetail) => {
@@ -2178,6 +2528,18 @@ export default function Challenges() {
   const wordSearchActive = wordSearchChallenges?.filter((challenge) => challenge.status === "accepted") ?? [];
   const wordSearchOutgoing = wordSearchChallenges?.filter((challenge) => challenge.status === "pending" && challenge.challengerId === profileId) ?? [];
   const wordSearchFinished = wordSearchChallenges?.filter((challenge) => challenge.status === "completed" || challenge.status === "declined" || challenge.status === "expired") ?? [];
+  const minesweeperPending = minesweeperChallenges?.filter((challenge) => challenge.status === "pending" && challenge.challengedId === profileId) ?? [];
+  const minesweeperActive = minesweeperChallenges?.filter((challenge) => challenge.status === "accepted") ?? [];
+  const minesweeperOutgoing = minesweeperChallenges?.filter((challenge) => challenge.status === "pending" && challenge.challengerId === profileId) ?? [];
+  const minesweeperFinished = minesweeperChallenges?.filter((challenge) => challenge.status === "completed" || challenge.status === "declined" || challenge.status === "expired") ?? [];
+  const slidePuzzlePending = slidePuzzleChallenges?.filter((challenge) => challenge.status === "pending" && challenge.challengedId === profileId) ?? [];
+  const slidePuzzleActive = slidePuzzleChallenges?.filter((challenge) => challenge.status === "accepted") ?? [];
+  const slidePuzzleOutgoing = slidePuzzleChallenges?.filter((challenge) => challenge.status === "pending" && challenge.challengerId === profileId) ?? [];
+  const slidePuzzleFinished = slidePuzzleChallenges?.filter((challenge) => challenge.status === "completed" || challenge.status === "declined" || challenge.status === "expired") ?? [];
+  const quizPending = quizChallenges?.filter((challenge) => challenge.status === "pending" && challenge.challengedId === profileId) ?? [];
+  const quizActive = quizChallenges?.filter((challenge) => challenge.status === "accepted") ?? [];
+  const quizOutgoing = quizChallenges?.filter((challenge) => challenge.status === "pending" && challenge.challengerId === profileId) ?? [];
+  const quizFinished = quizChallenges?.filter((challenge) => challenge.status === "completed" || challenge.status === "declined" || challenge.status === "expired") ?? [];
 
   // Badge counts for tab labels
   const sudokuAlert =
@@ -2204,8 +2566,68 @@ export default function Challenges() {
       return myPoints == null;
     }).length;
   const wordSearchAlert = wordSearchPending.length + wordSearchActive.filter((challenge) => (challenge.challengerId === profileId ? challenge.challengerPoints : challenge.challengedPoints) == null).length;
+  const minesweeperAlert = minesweeperPending.length + minesweeperActive.filter((challenge) => (challenge.challengerId === profileId ? challenge.challengerPoints : challenge.challengedPoints) == null).length;
+  const slidePuzzleAlert = slidePuzzlePending.length + slidePuzzleActive.filter((challenge) => (challenge.challengerId === profileId ? challenge.challengerPoints : challenge.challengedPoints) == null).length;
+  const quizAlertFor = (subject: QuizSubject) =>
+    quizPending.filter((c) => c.subject === subject).length +
+    quizActive.filter((c) => c.subject === subject && (c.challengerId === profileId ? c.challengerPoints : c.challengedPoints) == null).length;
+  const quizAlert = (Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).reduce((sum, s) => sum + quizAlertFor(s), 0);
+  const totalAlert = sudokuAlert + memoryAlert + jigsawAlert + wordSearchAlert + minesweeperAlert + slidePuzzleAlert + quizAlert;
 
-  const isLoading = activeTab === "sudoku" ? challengesLoading : activeTab === "memory" ? duelsLoading : activeTab === "jigsaw" ? jigsawLoading : wordSearchLoading;
+  // Merged cross-game feed for the "Recent" view, newest first.
+  const recentItems = [
+    ...(challenges ?? []).map((challenge) => ({ game: "sudoku" as const, createdAt: challenge.createdAt, challenge })),
+    ...(duels ?? []).map((duel) => ({ game: "memory" as const, createdAt: duel.createdAt, duel })),
+    ...(jigsawChallenges ?? []).map((challenge) => ({ game: "jigsaw" as const, createdAt: challenge.createdAt, challenge })),
+    ...(wordSearchChallenges ?? []).map((challenge) => ({ game: "word-search" as const, createdAt: challenge.createdAt, challenge })),
+    ...(minesweeperChallenges ?? []).map((challenge) => ({ game: "minesweeper" as const, createdAt: challenge.createdAt, challenge })),
+    ...(slidePuzzleChallenges ?? []).map((challenge) => ({ game: "slide-puzzle" as const, createdAt: challenge.createdAt, challenge })),
+    ...(quizChallenges ?? []).map((challenge) => ({ game: quizGameId(challenge.subject), createdAt: challenge.createdAt, challenge })),
+  ]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 50);
+
+  const renderRecentCard = (item: (typeof recentItems)[number]) => {
+    if (!profileId) return null;
+    const responding = "challenge" in item ? respondingId === item.challenge.id : respondingId === item.duel.id;
+    switch (item.game) {
+      case "sudoku":
+        return <ChallengeCard key={`sudoku-${item.challenge.id}`} challenge={item.challenge} myProfileId={profileId} onAccept={handleAccept} onDecline={handleDecline} onPlay={handlePlay} onRematch={handleSudokuRematch} onShare={handleShare} isResponding={responding} />;
+      case "memory":
+        return <MemoryDuelCard key={`memory-${item.duel.id}`} duel={item.duel} myProfileId={profileId} onAccept={handleDuelAccept} onDecline={handleDuelDecline} onPlay={handleDuelPlay} onRematch={handleMemoryRematch} onShare={handleShare} isResponding={responding} />;
+      case "jigsaw":
+        return <JigsawChallengeCard key={`jigsaw-${item.challenge.id}`} challenge={item.challenge} myProfileId={profileId} onAccept={handleJigsawAccept} onDecline={handleJigsawDecline} onPlay={handleJigsawPlay} onRematch={handleJigsawRematch} onShare={handleShare} isResponding={responding} />;
+      case "word-search":
+        return <WordSearchChallengeCard key={`word-search-${item.challenge.id}`} challenge={item.challenge} myProfileId={profileId} onAccept={handleWordSearchAccept} onDecline={handleWordSearchDecline} onPlay={handleWordSearchPlay} isResponding={responding} />;
+      case "minesweeper":
+        return <MinesweeperChallengeCard key={`minesweeper-${item.challenge.id}`} challenge={item.challenge} myProfileId={profileId} onAccept={handleMinesweeperAccept} onDecline={handleMinesweeperDecline} onPlay={handleMinesweeperPlay} onRematch={handleMinesweeperRematch} isResponding={responding} />;
+      case "slide-puzzle":
+        return <SlidePuzzleChallengeCard key={`slide-puzzle-${item.challenge.id}`} challenge={item.challenge} myProfileId={profileId} onAccept={handleSlidePuzzleAccept} onDecline={handleSlidePuzzleDecline} onPlay={handleSlidePuzzlePlay} onRematch={handleSlidePuzzleRematch} isResponding={responding} />;
+      case "science-quiz":
+      case "maths-quiz":
+      case "gk-quiz":
+        return <QuizChallengeCard key={`quiz-${item.challenge.id}`} challenge={item.challenge} myProfileId={profileId} onAccept={handleQuizAccept} onDecline={handleQuizDecline} onPlay={handleQuizPlay} onRematch={handleQuizRematch} isResponding={responding} />;
+    }
+  };
+
+  // For "Recent", only show the skeleton until at least one game feed has
+  // returned data. A single failing/refetching endpoint must not blank the
+  // whole merged list every poll cycle.
+  const recentHasData =
+    challenges != null || duels != null || jigsawChallenges != null ||
+    wordSearchChallenges != null || minesweeperChallenges != null ||
+    slidePuzzleChallenges != null || quizChallenges != null;
+  const isLoading = activeTab === "recent"
+    ? !recentHasData && (challengesLoading || duelsLoading || jigsawLoading || wordSearchLoading || minesweeperLoading || slidePuzzleLoading || quizLoading)
+    : activeTab === "sudoku" ? challengesLoading : activeTab === "memory" ? duelsLoading : activeTab === "jigsaw" ? jigsawLoading : activeTab === "word-search" ? wordSearchLoading : activeTab === "minesweeper" ? minesweeperLoading : activeTab === "slide-puzzle" ? slidePuzzleLoading : quizLoading;
+
+  const activeQuizSubject = quizSubjectForGameId(activeTab);
+  const quizTabChallenges = activeQuizSubject ? (quizChallenges ?? []).filter((c) => c.subject === activeQuizSubject) : [];
+  const quizTabPending = quizTabChallenges.filter((c) => c.status === "pending" && c.challengedId === profileId);
+  const quizTabActive = quizTabChallenges.filter((c) => c.status === "accepted");
+  const quizTabOutgoing = quizTabChallenges.filter((c) => c.status === "pending" && c.challengerId === profileId);
+  const quizTabFinished = quizTabChallenges.filter((c) => c.status === "completed" || c.status === "declined" || c.status === "expired");
+  const activeQuizSubjectConfig = activeQuizSubject ? QUIZ_SUBJECTS[activeQuizSubject] : null;
 
   return (
     <div className="max-w-2xl mx-auto w-full space-y-6 animate-in fade-in duration-500">
@@ -2250,48 +2672,26 @@ export default function Challenges() {
         </div>
       </div>
 
-      {/* Game type tabs */}
-      <div className="grid grid-cols-2 gap-2 p-1 bg-muted/50 rounded-xl border sm:grid-cols-4">
-        <button
-          onClick={() => setActiveTab("sudoku")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${activeTab === "sudoku" ? "bg-background shadow-sm text-foreground" : "text-foreground/70 hover:text-foreground"}`}
-        >
-          <Grid2x2 className="w-4 h-4" />
-          Sudoku
-          {sudokuAlert > 0 && (
-            <span className="w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
-              {sudokuAlert}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab("memory")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${activeTab === "memory" ? "bg-background shadow-sm text-foreground" : "text-foreground/70 hover:text-foreground"}`}
-        >
-          <Brain className="w-4 h-4" />
-          <span className="hidden sm:inline">Memory Match</span>
-          <span className="sm:hidden">Memory</span>
-          {memoryAlert > 0 && (
-            <span className="w-4 h-4 rounded-full bg-violet-500 text-white text-[10px] font-bold flex items-center justify-center">
-              {memoryAlert}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab("jigsaw")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${activeTab === "jigsaw" ? "bg-background shadow-sm text-foreground" : "text-foreground/70 hover:text-foreground"}`}
-        >
-          <Puzzle className="w-4 h-4" />
-          Jigsaw
-          {jigsawAlert > 0 && (
-            <span className="w-4 h-4 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center">
-              {jigsawAlert}
-            </span>
-          )}
-        </button>
-        <button onClick={() => setActiveTab("word-search")} className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${activeTab === "word-search" ? "bg-background shadow-sm text-foreground" : "text-foreground/70 hover:text-foreground"}`}>
-          <Search className="h-4 w-4" /><span>Word Search</span>{wordSearchAlert > 0 && <span className="flex h-4 w-4 items-center justify-center rounded-full bg-violet-500 text-[10px] font-bold text-white">{wordSearchAlert}</span>}
-        </button>
+      {/* Game selector */}
+      <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
+        <span className="flex shrink-0 items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <Swords className="h-3.5 w-3.5" /> Challenges
+        </span>
+        <Select value={activeTab} onValueChange={(value) => setActiveTab(value as ChallengeTab)}>
+          <SelectTrigger className="h-9 flex-1 bg-background" aria-label="Challenge game">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="recent">Recent{totalAlert > 0 ? ` (${totalAlert})` : ""}</SelectItem>
+            <SelectItem value="sudoku">Sudoku{sudokuAlert > 0 ? ` (${sudokuAlert})` : ""}</SelectItem>
+            <SelectItem value="memory">Memory Match{memoryAlert > 0 ? ` (${memoryAlert})` : ""}</SelectItem>
+            <SelectItem value="jigsaw">Jigsaw{jigsawAlert > 0 ? ` (${jigsawAlert})` : ""}</SelectItem>
+            <SelectItem value="word-search">Word Search{wordSearchAlert > 0 ? ` (${wordSearchAlert})` : ""}</SelectItem>
+            <SelectItem value="minesweeper">Minesweeper{minesweeperAlert > 0 ? ` (${minesweeperAlert})` : ""}</SelectItem>
+            <SelectItem value="slide-puzzle">Slide Puzzle{slidePuzzleAlert > 0 ? ` (${slidePuzzleAlert})` : ""}</SelectItem>
+            {(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id) => <SelectItem key={id} value={quizGameId(id)}>{QUIZ_SUBJECTS[id].emoji} {QUIZ_SUBJECTS[id].shortName}{quizAlertFor(id) > 0 ? ` (${quizAlertFor(id)})` : ""}</SelectItem>)}
+          </SelectContent>
+        </Select>
       </div>
 
       {isLoading ? (
@@ -2299,6 +2699,30 @@ export default function Challenges() {
           {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-24 w-full" />
           ))}
+        </div>
+      ) : activeTab === "recent" ? (
+        <div className="space-y-3">
+          {recentItems.length > 0 ? (
+            <>
+              <h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 w-fit shadow-sm">
+                <Clock className="h-3.5 w-3.5" /> Recent activity ({recentItems.length})
+              </h2>
+              {recentItems.map((item) => renderRecentCard(item))}
+            </>
+          ) : (
+            <Card>
+              <CardContent className="pt-10 pb-10 flex flex-col items-center gap-3 text-center">
+                <Swords className="w-12 h-12 text-muted-foreground/30" />
+                <p className="font-semibold text-lg">No challenges yet</p>
+                <p className="text-sm text-muted-foreground max-w-xs">
+                  Challenge another player in any game — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, or Slide Puzzle. Winner takes 10 gems!
+                </p>
+                <Button className="mt-2 gap-2" onClick={openNewChallenge}>
+                  <Swords className="w-4 h-4" /> Send your first challenge
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
       ) : activeTab === "sudoku" ? (
         <div className="space-y-6">
@@ -2410,6 +2834,30 @@ export default function Challenges() {
           {wordSearchOutgoing.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><Clock className="h-3.5 w-3.5"/>Waiting for them ({wordSearchOutgoing.length})</h2>{wordSearchOutgoing.map((challenge) => <WordSearchChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleWordSearchAccept} onDecline={handleWordSearchDecline} onPlay={handleWordSearchPlay} isResponding={respondingId === challenge.id}/>)}</section>}
           {wordSearchFinished.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><CheckCircle2 className="h-3.5 w-3.5"/>Finished</h2>{wordSearchFinished.map((challenge) => <WordSearchChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleWordSearchAccept} onDecline={handleWordSearchDecline} onPlay={handleWordSearchPlay} isResponding={false}/>)}</section>}
           {(!wordSearchChallenges || wordSearchChallenges.length === 0) && <Card><CardContent className="flex flex-col items-center gap-3 pb-10 pt-10 text-center"><Search className="h-12 w-12 text-muted-foreground/30"/><p className="text-lg font-semibold">No Word Search challenges yet</p><p className="max-w-xs text-sm text-muted-foreground">Challenge a player to find words in the same puzzle and compare points.</p><Button className="mt-2 gap-2 bg-violet-600 hover:bg-violet-700" onClick={openNewChallenge}><Swords className="h-4 w-4"/>Send a Word Search challenge</Button></CardContent></Card>}
+        </div>
+      ) : activeTab === "minesweeper" ? (
+        <div className="space-y-6">
+          {minesweeperPending.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><div className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse"/>Waiting for you ({minesweeperPending.length})</h2>{minesweeperPending.map((challenge) => <MinesweeperChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleMinesweeperAccept} onDecline={handleMinesweeperDecline} onPlay={handleMinesweeperPlay} onRematch={handleMinesweeperRematch} isResponding={respondingId === challenge.id}/>)}</section>}
+          {minesweeperActive.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><div className="h-2 w-2 rounded-full bg-blue-400 animate-pulse"/>In Progress ({minesweeperActive.length})</h2>{minesweeperActive.map((challenge) => <MinesweeperChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleMinesweeperAccept} onDecline={handleMinesweeperDecline} onPlay={handleMinesweeperPlay} onRematch={handleMinesweeperRematch} isResponding={respondingId === challenge.id}/>)}</section>}
+          {minesweeperOutgoing.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><Clock className="h-3.5 w-3.5"/>Waiting for them ({minesweeperOutgoing.length})</h2>{minesweeperOutgoing.map((challenge) => <MinesweeperChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleMinesweeperAccept} onDecline={handleMinesweeperDecline} onPlay={handleMinesweeperPlay} onRematch={handleMinesweeperRematch} isResponding={respondingId === challenge.id}/>)}</section>}
+          {minesweeperFinished.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><CheckCircle2 className="h-3.5 w-3.5"/>Finished</h2>{minesweeperFinished.map((challenge) => <MinesweeperChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleMinesweeperAccept} onDecline={handleMinesweeperDecline} onPlay={handleMinesweeperPlay} onRematch={handleMinesweeperRematch} isResponding={false}/>)}</section>}
+          {(!minesweeperChallenges || minesweeperChallenges.length === 0) && <Card><CardContent className="flex flex-col items-center gap-3 pb-10 pt-10 text-center"><Bomb className="h-12 w-12 text-muted-foreground/30"/><p className="text-lg font-semibold">No Minesweeper challenges yet</p><p className="max-w-xs text-sm text-muted-foreground">Challenge a player to clear the same minefield and compare points.</p><Button className="mt-2 gap-2 bg-emerald-600 hover:bg-emerald-700" onClick={openNewChallenge}><Swords className="h-4 w-4"/>Send a Minesweeper challenge</Button></CardContent></Card>}
+        </div>
+      ) : activeTab === "slide-puzzle" ? (
+        <div className="space-y-6">
+          {slidePuzzlePending.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><div className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse"/>Waiting for you ({slidePuzzlePending.length})</h2>{slidePuzzlePending.map((challenge) => <SlidePuzzleChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleSlidePuzzleAccept} onDecline={handleSlidePuzzleDecline} onPlay={handleSlidePuzzlePlay} onRematch={handleSlidePuzzleRematch} isResponding={respondingId === challenge.id}/>)}</section>}
+          {slidePuzzleActive.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><div className="h-2 w-2 rounded-full bg-blue-400 animate-pulse"/>In Progress ({slidePuzzleActive.length})</h2>{slidePuzzleActive.map((challenge) => <SlidePuzzleChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleSlidePuzzleAccept} onDecline={handleSlidePuzzleDecline} onPlay={handleSlidePuzzlePlay} onRematch={handleSlidePuzzleRematch} isResponding={respondingId === challenge.id}/>)}</section>}
+          {slidePuzzleOutgoing.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><Clock className="h-3.5 w-3.5"/>Waiting for them ({slidePuzzleOutgoing.length})</h2>{slidePuzzleOutgoing.map((challenge) => <SlidePuzzleChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleSlidePuzzleAccept} onDecline={handleSlidePuzzleDecline} onPlay={handleSlidePuzzlePlay} onRematch={handleSlidePuzzleRematch} isResponding={respondingId === challenge.id}/>)}</section>}
+          {slidePuzzleFinished.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><CheckCircle2 className="h-3.5 w-3.5"/>Finished</h2>{slidePuzzleFinished.map((challenge) => <SlidePuzzleChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleSlidePuzzleAccept} onDecline={handleSlidePuzzleDecline} onPlay={handleSlidePuzzlePlay} onRematch={handleSlidePuzzleRematch} isResponding={false}/>)}</section>}
+          {(!slidePuzzleChallenges || slidePuzzleChallenges.length === 0) && <Card><CardContent className="flex flex-col items-center gap-3 pb-10 pt-10 text-center"><Grid3x3 className="h-12 w-12 text-muted-foreground/30"/><p className="text-lg font-semibold">No Slide Puzzle challenges yet</p><p className="max-w-xs text-sm text-muted-foreground">Challenge a player to solve the same scramble and compare points.</p><Button className="mt-2 gap-2 bg-sky-600 hover:bg-sky-700" onClick={openNewChallenge}><Swords className="h-4 w-4"/>Send a Slide Puzzle challenge</Button></CardContent></Card>}
+        </div>
+      ) : activeQuizSubject && activeQuizSubjectConfig ? (
+        <div className="space-y-6">
+          {quizTabPending.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><div className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse"/>Waiting for you ({quizTabPending.length})</h2>{quizTabPending.map((challenge) => <QuizChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleQuizAccept} onDecline={handleQuizDecline} onPlay={handleQuizPlay} onRematch={handleQuizRematch} isResponding={respondingId === challenge.id}/>)}</section>}
+          {quizTabActive.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><div className="h-2 w-2 rounded-full bg-blue-400 animate-pulse"/>In Progress ({quizTabActive.length})</h2>{quizTabActive.map((challenge) => <QuizChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleQuizAccept} onDecline={handleQuizDecline} onPlay={handleQuizPlay} onRematch={handleQuizRematch} isResponding={respondingId === challenge.id}/>)}</section>}
+          {quizTabOutgoing.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><Clock className="h-3.5 w-3.5"/>Waiting for them ({quizTabOutgoing.length})</h2>{quizTabOutgoing.map((challenge) => <QuizChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleQuizAccept} onDecline={handleQuizDecline} onPlay={handleQuizPlay} onRematch={handleQuizRematch} isResponding={respondingId === challenge.id}/>)}</section>}
+          {quizTabFinished.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><CheckCircle2 className="h-3.5 w-3.5"/>Finished</h2>{quizTabFinished.map((challenge) => <QuizChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleQuizAccept} onDecline={handleQuizDecline} onPlay={handleQuizPlay} onRematch={handleQuizRematch} isResponding={false}/>)}</section>}
+          {quizTabChallenges.length === 0 && <Card><CardContent className="flex flex-col items-center gap-3 pb-10 pt-10 text-center"><span className="text-4xl">{activeQuizSubjectConfig.emoji}</span><p className="text-lg font-semibold">No {activeQuizSubjectConfig.shortName} challenges yet</p><p className="max-w-xs text-sm text-muted-foreground">Challenge a player to answer the same {activeQuizSubjectConfig.shortName.toLowerCase()} quiz and compare points.</p><Button className={`mt-2 gap-2 ${activeQuizSubjectConfig.theme.btn}`} onClick={openNewChallenge}><Swords className="h-4 w-4"/>Send a {activeQuizSubjectConfig.shortName} challenge</Button></CardContent></Card>}
         </div>
       ) : activeTab === "jigsaw" ? (
         <div className="space-y-6">

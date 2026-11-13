@@ -13,3 +13,6 @@ export * from "./guest-profile-transfer-codes";
 export * from "./jigsaw";
 export * from "./profile-merges";
 export * from "./word-search-games";
+export * from "./minesweeper-games";
+export * from "./slide-puzzle-games";
+export * from "./quiz-games";

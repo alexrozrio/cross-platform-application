@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and, gte, lt, inArray } from "drizzle-orm";
-import { db, gamesTable, puzzlesTable, profilesTable, memoryGamesTable, jigsawGamesTable, wordSearchGamesTable, badgesTable } from "@workspace/db";
+import { db, gamesTable, puzzlesTable, profilesTable, memoryGamesTable, jigsawGamesTable, wordSearchGamesTable, minesweeperGamesTable, slidePuzzleGamesTable, badgesTable } from "@workspace/db";
 import {
   getWeekPeriod,
   getMonthPeriod,
@@ -111,6 +111,20 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
         .where(range ? and(eq(wordSearchGamesTable.status, "completed"), gte(wordSearchGamesTable.completedAt, range.start), lt(wordSearchGamesTable.completedAt, range.end)) : eq(wordSearchGamesTable.status, "completed"))
     : [];
 
+  const minesweeperRows = gridSize === undefined
+    ? await db.select({ profileId: minesweeperGamesTable.profileId, username: profilesTable.username, avatar: profilesTable.avatar,
+        xp: profilesTable.xp, points: minesweeperGamesTable.points })
+        .from(minesweeperGamesTable).innerJoin(profilesTable, eq(minesweeperGamesTable.profileId, profilesTable.id))
+        .where(range ? and(eq(minesweeperGamesTable.status, "completed"), gte(minesweeperGamesTable.completedAt, range.start), lt(minesweeperGamesTable.completedAt, range.end)) : eq(minesweeperGamesTable.status, "completed"))
+    : [];
+
+  const slidePuzzleRows = gridSize === undefined
+    ? await db.select({ profileId: slidePuzzleGamesTable.profileId, username: profilesTable.username, avatar: profilesTable.avatar,
+        xp: profilesTable.xp, points: slidePuzzleGamesTable.points })
+        .from(slidePuzzleGamesTable).innerJoin(profilesTable, eq(slidePuzzleGamesTable.profileId, profilesTable.id))
+        .where(range ? and(eq(slidePuzzleGamesTable.status, "completed"), gte(slidePuzzleGamesTable.completedAt, range.start), lt(slidePuzzleGamesTable.completedAt, range.end)) : eq(slidePuzzleGamesTable.status, "completed"))
+    : [];
+
   // ── Filter Sudoku by gridSize if requested ────────────────────────────────
   const filteredSudoku = gridSize !== undefined
     ? sudokuRows.filter((r) => r.gridSizeVal === gridSize)
@@ -129,12 +143,14 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
       memoryGamesPlayed: number;
       jigsawGamesPlayed: number;
       wordSearchGamesPlayed: number;
+      minesweeperGamesPlayed: number;
+      slidePuzzleGamesPlayed: number;
     }
   >();
 
   const ensureEntry = (profileId: number, username: string, avatar: string | null, xp: number) => {
     if (!grouped.has(profileId)) {
-      grouped.set(profileId, { username, avatar, xp, totalPoints: 0, gamesPlayed: 0, sudokuGamesPlayed: 0, memoryGamesPlayed: 0, jigsawGamesPlayed: 0, wordSearchGamesPlayed: 0 });
+      grouped.set(profileId, { username, avatar, xp, totalPoints: 0, gamesPlayed: 0, sudokuGamesPlayed: 0, memoryGamesPlayed: 0, jigsawGamesPlayed: 0, wordSearchGamesPlayed: 0, minesweeperGamesPlayed: 0, slidePuzzleGamesPlayed: 0 });
     }
     return grouped.get(profileId)!;
   };
@@ -169,6 +185,22 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
     entry.totalPoints += row.points ?? 0;
     entry.gamesPlayed += 1;
     entry.wordSearchGamesPlayed += 1;
+  }
+
+  for (const row of minesweeperRows) {
+    if (!row.profileId) continue;
+    const entry = ensureEntry(row.profileId, row.username, row.avatar ?? null, row.xp ?? 0);
+    entry.totalPoints += row.points ?? 0;
+    entry.gamesPlayed += 1;
+    entry.minesweeperGamesPlayed += 1;
+  }
+
+  for (const row of slidePuzzleRows) {
+    if (!row.profileId) continue;
+    const entry = ensureEntry(row.profileId, row.username, row.avatar ?? null, row.xp ?? 0);
+    entry.totalPoints += row.points ?? 0;
+    entry.gamesPlayed += 1;
+    entry.slidePuzzleGamesPlayed += 1;
   }
 
   const sorted = Array.from(grouped.entries())
@@ -218,6 +250,8 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
     memoryGamesPlayed: data.memoryGamesPlayed,
     jigsawGamesPlayed: data.jigsawGamesPlayed,
     wordSearchGamesPlayed: data.wordSearchGamesPlayed,
+    minesweeperGamesPlayed: data.minesweeperGamesPlayed,
+    slidePuzzleGamesPlayed: data.slidePuzzleGamesPlayed,
     streak: streakMap.get(profileId) ?? 0,
   }));
 
@@ -319,6 +353,9 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
   const wordSearchRows = await db.select({ difficulty: wordSearchGamesTable.difficulty, points: wordSearchGamesTable.points })
     .from(wordSearchGamesTable).where(range ? and(eq(wordSearchGamesTable.status, "completed"), eq(wordSearchGamesTable.profileId, profileId), gte(wordSearchGamesTable.completedAt, range.start), lt(wordSearchGamesTable.completedAt, range.end)) : and(eq(wordSearchGamesTable.status, "completed"), eq(wordSearchGamesTable.profileId, profileId)));
 
+  const minesweeperRows = await db.select({ difficulty: minesweeperGamesTable.difficulty, points: minesweeperGamesTable.points })
+    .from(minesweeperGamesTable).where(range ? and(eq(minesweeperGamesTable.status, "completed"), eq(minesweeperGamesTable.profileId, profileId), gte(minesweeperGamesTable.completedAt, range.start), lt(minesweeperGamesTable.completedAt, range.end)) : and(eq(minesweeperGamesTable.status, "completed"), eq(minesweeperGamesTable.profileId, profileId)));
+
   // Aggregate sudoku by grid size
   const sudokuByGrid = new Map<number, { points: number; games: number }>();
   for (const row of sudokuRows) {
@@ -356,6 +393,25 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
     wordSearchByDifficulty.set(row.difficulty, current);
   }
 
+  const minesweeperByDifficulty = new Map<string, { points: number; games: number }>();
+  for (const row of minesweeperRows) {
+    const current = minesweeperByDifficulty.get(row.difficulty) ?? { points: 0, games: 0 };
+    current.points += row.points ?? 0;
+    current.games += 1;
+    minesweeperByDifficulty.set(row.difficulty, current);
+  }
+
+  const slidePuzzleRows2 = await db.select({ difficulty: slidePuzzleGamesTable.difficulty, points: slidePuzzleGamesTable.points })
+    .from(slidePuzzleGamesTable).where(range ? and(eq(slidePuzzleGamesTable.status, "completed"), eq(slidePuzzleGamesTable.profileId, profileId), gte(slidePuzzleGamesTable.completedAt, range.start), lt(slidePuzzleGamesTable.completedAt, range.end)) : and(eq(slidePuzzleGamesTable.status, "completed"), eq(slidePuzzleGamesTable.profileId, profileId)));
+
+  const slidePuzzleByDifficulty = new Map<string, { points: number; games: number }>();
+  for (const row of slidePuzzleRows2) {
+    const current = slidePuzzleByDifficulty.get(row.difficulty) ?? { points: 0, games: 0 };
+    current.points += row.points ?? 0;
+    current.games += 1;
+    slidePuzzleByDifficulty.set(row.difficulty, current);
+  }
+
   res.json({
     profileId,
     period,
@@ -378,6 +434,16 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
       difficulty,
       points: wordSearchByDifficulty.get(difficulty)?.points ?? 0,
       games: wordSearchByDifficulty.get(difficulty)?.games ?? 0,
+    })),
+    minesweeper: (["beginner", "easy", "medium", "hard"] as const).map((difficulty) => ({
+      difficulty,
+      points: minesweeperByDifficulty.get(difficulty)?.points ?? 0,
+      games: minesweeperByDifficulty.get(difficulty)?.games ?? 0,
+    })),
+    slidePuzzle: (["2x2", "3x3", "4x4", "5x5"] as const).map((difficulty) => ({
+      difficulty,
+      points: slidePuzzleByDifficulty.get(difficulty)?.points ?? 0,
+      games: slidePuzzleByDifficulty.get(difficulty)?.games ?? 0,
     })),
   });
 });

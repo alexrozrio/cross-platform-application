@@ -13,6 +13,8 @@ import {
   ChevronDown,
   Puzzle,
   Search,
+  Bomb,
+  Grid3x3,
   Copy,
 } from "lucide-react";
 import { customFetch, useGetProfile } from "@workspace/api-client-react";
@@ -21,6 +23,9 @@ import { getLevelFromXp } from "@/lib/levels";
 import { getTheme } from "@/lib/themes";
 import { sudokuGamePath } from "@/lib/sudoku-routes";
 import { WORD_SEARCH_LEVELS, type WordSearchDifficulty } from "@/lib/word-search";
+import { MINESWEEPER_LEVELS, type MinesweeperDifficulty } from "@/lib/minesweeper";
+import { SLIDE_PUZZLE_LEVELS, type SlidePuzzleDifficulty } from "@/lib/slide-puzzle";
+import { QUIZ_LEVELS, QUIZ_SUBJECTS, type QuizLevel, type QuizSubject } from "@/lib/quiz";
 import {
   getLastPlayedDifficulty,
   LAST_GRID_SIZE_KEY,
@@ -131,6 +136,22 @@ export default function Portal() {
   );
   const launchWordSearch = (difficulty: WordSearchDifficulty) =>
     setLocation(`/word-search?start=1&difficulty=${difficulty}&theme=${encodeURIComponent(`icon-${themeId}`)}`);
+  const visibleMinesweeperLevels: MinesweeperDifficulty[] = (["beginner", "easy", "medium", "hard"] as MinesweeperDifficulty[]).filter((level) =>
+    gameMode === "children" ? MINESWEEPER_LEVELS[level].mode === "baby" : gameMode === "adult" ? MINESWEEPER_LEVELS[level].mode === "adult" : true,
+  );
+  const launchMinesweeper = (difficulty: MinesweeperDifficulty) =>
+    setLocation(`/minesweeper?start=1&difficulty=${difficulty}`);
+  const visibleSlidePuzzleLevels: SlidePuzzleDifficulty[] = (["2x2", "3x3", "4x4", "5x5"] as SlidePuzzleDifficulty[]).filter((level) =>
+    gameMode === "children" ? SLIDE_PUZZLE_LEVELS[level].mode === "baby" : gameMode === "adult" ? SLIDE_PUZZLE_LEVELS[level].mode === "adult" : true,
+  );
+  const launchSlidePuzzle = (difficulty: SlidePuzzleDifficulty) =>
+    setLocation(`/slide-puzzle?start=1&difficulty=${difficulty}`);
+  const visibleQuizLevelsFor = (id: QuizSubject) =>
+    QUIZ_LEVELS.filter((level) =>
+      gameMode === "children" ? QUIZ_SUBJECTS[id].levels[level].mode === "baby" : gameMode === "adult" ? QUIZ_SUBJECTS[id].levels[level].mode === "adult" : true,
+    );
+  const launchQuiz = (subject: QuizSubject, level: QuizLevel) =>
+    setLocation(`/quiz/${subject}?start=1&level=${level}`);
 
   const [activeGame, setActiveGame] = useState<ActiveGame | null>(null);
   const [memorySession, setMemorySession] = useState<MemorySession | null>(
@@ -548,6 +569,50 @@ export default function Portal() {
           </div>
         </section>
 
+        {/* Minesweeper quick launch */}
+        <section className="relative isolate overflow-hidden rounded-2xl border-2 border-emerald-400/60 bg-gradient-to-br from-emerald-100 via-teal-50 to-cyan-100 p-4 shadow-xl shadow-emerald-500/20 ring-1 ring-inset ring-white/70 dark:from-emerald-950/75 dark:via-teal-950/70 dark:to-cyan-950/60 dark:ring-white/10">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-400" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-teal-300/35 blur-2xl dark:bg-teal-400/15" />
+          <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-20 w-20 rotate-6 grid-cols-3 overflow-hidden rounded-xl border border-emerald-400/15 bg-white/15 opacity-60 dark:bg-white/5">{["1", "💣", "1", "", "2", "1", "🚩", "", "3"].map((cell, index) => <span key={index} className="flex items-center justify-center border border-emerald-400/10 text-xs font-black text-emerald-700/25 dark:text-emerald-200/20">{cell}</span>)}</div>
+          <div className="relative z-10 flex items-center justify-between gap-3"><div className="flex items-center gap-2.5"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-md"><Bomb className="h-6 w-6" /></div><div><span className="block text-xl font-black leading-tight text-slate-900 dark:text-white">Minesweeper</span><span className="mt-1 inline-flex w-fit rounded-full bg-white/65 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-700 shadow-sm dark:bg-slate-950/30 dark:text-emerald-300">Clear the field</span></div></div><button onClick={() => setLocation("/minesweeper")} className="rounded-full bg-emerald-600 px-3 py-1.5 text-[11px] font-bold text-white shadow-sm transition-colors hover:bg-emerald-700">All options</button></div>
+          <p className="relative z-10 text-[11px] font-medium leading-tight text-foreground/80">Reveal every safe cell — dodge the mines.</p>
+          <IconSetPreview themeId={themeId} className="mt-1" />
+          <div className={`relative z-10 mt-2 grid gap-1.5 ${visibleMinesweeperLevels.length <= 2 ? "grid-cols-2" : "grid-cols-4"}`}>
+            {visibleMinesweeperLevels.map((level) => <button key={level} onClick={() => launchMinesweeper(level)} className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-emerald-400/35 bg-white/75 px-1 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-emerald-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"><span className="font-black text-sm leading-tight text-emerald-700 dark:text-emerald-300">{MINESWEEPER_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{MINESWEEPER_LEVELS[level].size}×{MINESWEEPER_LEVELS[level].size} · {MINESWEEPER_LEVELS[level].mines} mines</span></button>)}
+          </div>
+        </section>
+
+        {/* Slide Puzzle quick launch */}
+        <section className="relative isolate overflow-hidden rounded-2xl border-2 border-sky-400/60 bg-gradient-to-br from-sky-100 via-cyan-50 to-blue-100 p-4 shadow-xl shadow-sky-500/20 ring-1 ring-inset ring-white/70 dark:from-sky-950/75 dark:via-cyan-950/70 dark:to-blue-950/60 dark:ring-white/10">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 via-cyan-500 to-blue-400" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-cyan-300/35 blur-2xl dark:bg-cyan-400/15" />
+          <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-20 w-20 rotate-6 grid-cols-3 overflow-hidden rounded-xl border border-sky-400/15 bg-white/15 opacity-60 dark:bg-white/5">{[1, 2, 3, 4, 0, 5, 7, 8, 6].map((tile, index) => <span key={index} className="flex items-center justify-center border border-sky-400/10 text-xs font-black text-sky-700/25 dark:text-sky-200/20">{tile === 0 ? "·" : tile}</span>)}</div>
+          <div className="relative z-10 flex items-center justify-between gap-3"><div className="flex items-center gap-2.5"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-600 text-white shadow-md"><Grid3x3 className="h-6 w-6" /></div><div><span className="block text-xl font-black leading-tight text-slate-900 dark:text-white">Slide Puzzle</span><span className="mt-1 inline-flex w-fit rounded-full bg-white/65 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-sky-700 shadow-sm dark:bg-slate-950/30 dark:text-sky-300">Slide to order</span></div></div><button onClick={() => setLocation("/slide-puzzle")} className="rounded-full bg-sky-600 px-3 py-1.5 text-[11px] font-bold text-white shadow-sm transition-colors hover:bg-sky-700">All options</button></div>
+          <p className="relative z-10 text-[11px] font-medium leading-tight text-foreground/80">Slide the tiles back into order.</p>
+          <IconSetPreview themeId={themeId} className="mt-1" />
+          <div className={`relative z-10 mt-2 grid gap-1.5 ${visibleSlidePuzzleLevels.length <= 2 ? "grid-cols-2" : "grid-cols-4"}`}>
+            {visibleSlidePuzzleLevels.map((level) => <button key={level} onClick={() => launchSlidePuzzle(level)} className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-sky-400/35 bg-white/75 px-1 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-sky-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"><span className="font-black text-sm leading-tight text-sky-700 dark:text-sky-300">{SLIDE_PUZZLE_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{SLIDE_PUZZLE_LEVELS[level].size}×{SLIDE_PUZZLE_LEVELS[level].size} · {SLIDE_PUZZLE_LEVELS[level].tiles} tiles</span></button>)}
+          </div>
+        </section>
+
+        {/* Quiz quick launches — one card per subject */}
+        {(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id) => {
+          const subject = QUIZ_SUBJECTS[id];
+          const levels = visibleQuizLevelsFor(id);
+          return (
+            <section key={id} className={`relative isolate overflow-hidden rounded-2xl border-2 bg-gradient-to-br ${subject.gradient} ${subject.gradientDark} p-4 shadow-xl ring-1 ring-inset ring-white/70 dark:ring-white/10`}>
+              <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1" style={{ backgroundColor: subject.theme.hex }} />
+              <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full blur-2xl dark:blur-3xl" style={{ backgroundColor: `${subject.theme.hex}59` }} />
+              <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-20 w-20 rotate-6 grid-cols-2 gap-1 overflow-hidden rounded-xl border bg-white/15 p-1.5 opacity-60 dark:bg-white/5" style={{ borderColor: `${subject.theme.hex}26` }}>{["A", "B", "C", "D", "E", "F", "G", "H"].map((letter) => <span key={letter} className="flex items-center justify-center rounded-md border text-xs font-black" style={{ borderColor: `${subject.theme.hex}1a`, color: `${subject.theme.hex}40` }}>{letter}</span>)}</div>
+              <div className="relative z-10 flex items-center justify-between gap-3"><div className="flex items-center gap-2.5"><div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl shadow-md ${subject.theme.soft}`}>{subject.emoji}</div><div><span className="block text-xl font-black leading-tight text-slate-900 dark:text-white">{subject.shortName} Quiz</span><span className="mt-1 inline-flex w-fit rounded-full bg-white/65 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] shadow-sm dark:bg-slate-950/30" style={{ color: subject.theme.hex }}>{subject.tagline}</span></div></div><button onClick={() => setLocation(`/quiz/${id}`)} className={`rounded-full px-3 py-1.5 text-[11px] font-bold text-white shadow-sm transition-colors ${subject.theme.btn}`}>All options</button></div>
+              <p className="relative z-10 text-[11px] font-medium leading-tight text-foreground/80">Timed multiple-choice questions across four levels.</p>
+              <div className={`relative z-10 mt-2 grid gap-1.5 ${levels.length <= 2 ? "grid-cols-2" : "grid-cols-4"}`}>
+                {levels.map((level) => <button key={level} onClick={() => launchQuiz(id, level)} className={`relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 bg-white/75 px-1 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55 ${subject.theme.border} ${subject.theme.hover}`}><span className={`font-black text-sm leading-tight ${subject.theme.strong}`}>{subject.levels[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{subject.levels[level].detail}</span></button>)}
+              </div>
+            </section>
+          );
+        })}
+
         {/* Daily Challenges */}
         <Collapsible
           open={dailyChallengesOpen}
@@ -617,6 +682,20 @@ export default function Portal() {
             <button onClick={() => setLocation("/word-search-challenge")} className="flex w-full items-center gap-3 rounded-xl border border-violet-200 bg-white/60 px-3 py-2.5 text-left transition-all hover:bg-white/90 dark:bg-violet-950/20 dark:hover:bg-violet-950/40">
               <span className="shrink-0 text-lg leading-none">🔎</span><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Word Search</p><p className="text-xs text-muted-foreground">One shared word puzzle each day</p></div><span className="shrink-0 text-sm text-violet-500">→</span>
             </button>
+            <button onClick={() => setLocation("/minesweeper-challenge")} className="flex w-full items-center gap-3 rounded-xl border border-emerald-200 bg-white/60 px-3 py-2.5 text-left transition-all hover:bg-white/90 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/40">
+              <Bomb className="h-5 w-5 shrink-0 text-emerald-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Minesweeper</p><p className="text-xs text-muted-foreground">One shared minefield each day</p></div><span className="shrink-0 text-sm text-emerald-500">→</span>
+            </button>
+            <button onClick={() => setLocation("/slide-puzzle-challenge")} className="flex w-full items-center gap-3 rounded-xl border border-sky-200 bg-white/60 px-3 py-2.5 text-left transition-all hover:bg-white/90 dark:bg-sky-950/20 dark:hover:bg-sky-950/40">
+              <Grid3x3 className="h-5 w-5 shrink-0 text-sky-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Slide Puzzle</p><p className="text-xs text-muted-foreground">One shared scramble each day</p></div><span className="shrink-0 text-sm text-sky-500">→</span>
+            </button>
+            {(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id) => {
+              const subject = QUIZ_SUBJECTS[id];
+              return (
+                <button key={id} onClick={() => setLocation(`/quiz-challenge?subject=${id}`)} className={`flex w-full items-center gap-3 rounded-xl border bg-white/60 px-3 py-2.5 text-left transition-all hover:bg-white/90 dark:hover:brightness-110 ${subject.theme.border}`}>
+                  <span className="shrink-0 text-lg leading-none">{subject.emoji}</span><div className="min-w-0 flex-1"><p className="text-sm font-semibold">{subject.shortName} Quiz</p><p className="text-xs text-muted-foreground">One shared {subject.shortName.toLowerCase()} quiz each day</p></div><span className={`shrink-0 text-sm ${subject.theme.text}`}>→</span>
+                </button>
+              );
+            })}
           </CollapsibleContent>
         </Collapsible>
 
@@ -1134,6 +1213,71 @@ export default function Portal() {
                 title="Available"
               />
             </section>
+            <section className="group relative isolate overflow-hidden rounded-2xl border-2 border-emerald-400/60 bg-gradient-to-br from-emerald-100 via-teal-50 to-cyan-100 text-left shadow-xl shadow-emerald-500/20 ring-1 ring-inset ring-white/70 transition hover:border-emerald-500/80 dark:from-emerald-950/75 dark:via-teal-950/70 dark:to-cyan-950/60 dark:ring-white/10">
+              <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-400" />
+              <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-teal-300/35 blur-2xl dark:bg-teal-400/15" />
+              <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-24 w-24 rotate-6 grid-cols-3 overflow-hidden rounded-xl border border-emerald-400/15 bg-white/15 opacity-60 dark:bg-white/5">{["1", "💣", "1", "", "2", "1", "🚩", "", "3"].map((cell, index) => <span key={index} className="flex items-center justify-center border border-emerald-400/10 text-sm font-black text-emerald-700/25 dark:text-emerald-200/20">{cell}</span>)}</div>
+              <button onClick={() => setLocation("/minesweeper")} className="relative z-10 block w-full space-y-4 p-6 text-left transition-all duration-200 hover:bg-white/20 dark:hover:bg-slate-950/20">
+                <div className="flex items-center gap-3"><span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-emerald-600/10 text-emerald-600 ring-1 ring-emerald-400/20 dark:text-emerald-300"><Bomb className="h-8 w-8" /></span><div><h2 className="font-serif text-xl font-bold">Minesweeper</h2><p className="text-xs text-muted-foreground">Clear the minefield</p></div></div>
+                <p className="text-sm leading-relaxed text-muted-foreground">Reveal every safe cell and dodge the mines. Pick a board size and mine count to start.</p>
+                <IconSetPreview themeId={themeId} />
+              </button>
+              <div className="relative z-10 px-6 pb-5 pt-1">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {visibleMinesweeperLevels.map((level) => <button key={level} onClick={() => launchMinesweeper(level)} className="flex min-h-[52px] flex-col items-center justify-center rounded-lg border border-emerald-400/20 bg-emerald-500/5 px-1 py-2 text-center transition-all hover:border-emerald-400/40 hover:bg-emerald-500/15"><span className="text-xs font-bold leading-none text-emerald-700 dark:text-emerald-300">{MINESWEEPER_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{MINESWEEPER_LEVELS[level].size}×{MINESWEEPER_LEVELS[level].size} · {MINESWEEPER_LEVELS[level].mines} mines</span></button>)}
+                </div>
+                <button onClick={() => setLocation("/minesweeper")} className="mt-3 text-xs font-semibold text-emerald-800 underline underline-offset-2 dark:text-emerald-200">More options and themes</button>
+              </div>
+              <div
+                className="absolute top-3 right-3 w-2 h-2 rounded-full bg-green-400"
+                title="Available"
+              />
+            </section>
+            <section className="group relative isolate overflow-hidden rounded-2xl border-2 border-sky-400/60 bg-gradient-to-br from-sky-100 via-cyan-50 to-blue-100 text-left shadow-xl shadow-sky-500/20 ring-1 ring-inset ring-white/70 transition hover:border-sky-500/80 dark:from-sky-950/75 dark:via-cyan-950/70 dark:to-blue-950/60 dark:ring-white/10">
+              <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 via-cyan-500 to-blue-400" />
+              <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-cyan-300/35 blur-2xl dark:bg-cyan-400/15" />
+              <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-24 w-24 rotate-6 grid-cols-3 overflow-hidden rounded-xl border border-sky-400/15 bg-white/15 opacity-60 dark:bg-white/5">{[1, 2, 3, 4, 0, 5, 7, 8, 6].map((tile, index) => <span key={index} className="flex items-center justify-center border border-sky-400/10 text-sm font-black text-sky-700/25 dark:text-sky-200/20">{tile === 0 ? "·" : tile}</span>)}</div>
+              <button onClick={() => setLocation("/slide-puzzle")} className="relative z-10 block w-full space-y-4 p-6 text-left transition-all duration-200 hover:bg-white/20 dark:hover:bg-slate-950/20">
+                <div className="flex items-center gap-3"><span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-sky-600/10 text-sky-600 ring-1 ring-sky-400/20 dark:text-sky-300"><Grid3x3 className="h-8 w-8" /></span><div><h2 className="font-serif text-xl font-bold">Slide Puzzle</h2><p className="text-xs text-muted-foreground">Slide tiles into order</p></div></div>
+                <p className="text-sm leading-relaxed text-muted-foreground">Slide every tile back into place across four board sizes, with numbers, letters, or pictures. Pick a size to start.</p>
+                <IconSetPreview themeId={themeId} />
+              </button>
+              <div className="relative z-10 px-6 pb-5 pt-1">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {visibleSlidePuzzleLevels.map((level) => <button key={level} onClick={() => launchSlidePuzzle(level)} className="flex min-h-[52px] flex-col items-center justify-center rounded-lg border border-sky-400/20 bg-sky-500/5 px-1 py-2 text-center transition-all hover:border-sky-400/40 hover:bg-sky-500/15"><span className="text-xs font-bold leading-none text-sky-700 dark:text-sky-300">{SLIDE_PUZZLE_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{SLIDE_PUZZLE_LEVELS[level].size}×{SLIDE_PUZZLE_LEVELS[level].size} · {SLIDE_PUZZLE_LEVELS[level].tiles} tiles</span></button>)}
+                </div>
+                <button onClick={() => setLocation("/slide-puzzle")} className="mt-3 text-xs font-semibold text-sky-800 underline underline-offset-2 dark:text-sky-200">More options and tile styles</button>
+              </div>
+              <div
+                className="absolute top-3 right-3 w-2 h-2 rounded-full bg-green-400"
+                title="Available"
+              />
+            </section>
+            {(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id) => {
+              const subject = QUIZ_SUBJECTS[id];
+              const levels = visibleQuizLevelsFor(id);
+              return (
+            <section key={id} className={`group relative isolate overflow-hidden rounded-2xl border-2 bg-gradient-to-br ${subject.gradient} ${subject.gradientDark} text-left shadow-xl ring-1 ring-inset ring-white/70 transition hover:brightness-[1.02] dark:ring-white/10`}>
+              <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1" style={{ backgroundColor: subject.theme.hex }} />
+              <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full blur-2xl dark:blur-3xl" style={{ backgroundColor: `${subject.theme.hex}59` }} />
+              <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-24 w-24 rotate-6 grid-cols-2 gap-1 overflow-hidden rounded-xl border bg-white/15 p-1.5 opacity-60 dark:bg-white/5" style={{ borderColor: `${subject.theme.hex}26` }}>{["A", "B", "C", "D", "E", "F", "G", "H"].map((letter) => <span key={letter} className="flex items-center justify-center rounded-md border text-sm font-black" style={{ borderColor: `${subject.theme.hex}1a`, color: `${subject.theme.hex}40` }}>{letter}</span>)}</div>
+              <button onClick={() => setLocation(`/quiz/${id}`)} className="relative z-10 block w-full space-y-4 p-6 text-left transition-all duration-200 hover:bg-white/20 dark:hover:bg-slate-950/20">
+                <div className="flex items-center gap-3"><span className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-2xl ${subject.theme.soft}`} style={{ boxShadow: `0 0 0 1px ${subject.theme.hex}33` }}>{subject.emoji}</span><div><h2 className="font-serif text-xl font-bold">{subject.shortName} Quiz</h2><p className="text-xs text-muted-foreground">{subject.tagline}</p></div></div>
+                <p className="text-sm leading-relaxed text-muted-foreground">Timed multiple-choice questions across four levels. Pick a level to start.</p>
+              </button>
+              <div className="relative z-10 px-6 pb-5 pt-1">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {levels.map((level) => <button key={level} onClick={() => launchQuiz(id, level)} className={`flex min-h-[52px] flex-col items-center justify-center rounded-lg border bg-white/60 px-1 py-2 text-center transition-all hover:bg-white dark:bg-slate-950/30 dark:hover:bg-slate-950/50 ${subject.theme.border} ${subject.theme.hover}`}><span className={`text-xs font-bold leading-none ${subject.theme.strong}`}>{subject.levels[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{subject.levels[level].detail}</span></button>)}
+                </div>
+                <button onClick={() => setLocation(`/quiz/${id}`)} className="mt-3 text-xs font-semibold underline underline-offset-2" style={{ color: subject.theme.hex }}>More options</button>
+              </div>
+              <div
+                className="absolute top-3 right-3 w-2 h-2 rounded-full bg-green-400"
+                title="Available"
+              />
+            </section>
+              );
+            })}
           </div>
         </div>
 
@@ -1207,6 +1351,20 @@ export default function Portal() {
               <button onClick={() => setLocation("/word-search-challenge")} className="flex items-center gap-3 rounded-xl border border-violet-200 bg-white/60 px-4 py-3 text-left transition-all hover:bg-white/90 dark:bg-violet-950/20 dark:hover:bg-violet-950/40">
                 <span className="shrink-0 text-2xl leading-none">🔎</span><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Word Search</p><p className="text-xs text-muted-foreground">One shared word puzzle each day</p></div><span className="shrink-0 text-violet-500">→</span>
               </button>
+              <button onClick={() => setLocation("/minesweeper-challenge")} className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-white/60 px-4 py-3 text-left transition-all hover:bg-white/90 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/40">
+                <Bomb className="h-6 w-6 shrink-0 text-emerald-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Minesweeper</p><p className="text-xs text-muted-foreground">One shared minefield each day</p></div><span className="shrink-0 text-sm text-emerald-500">→</span>
+              </button>
+              <button onClick={() => setLocation("/slide-puzzle-challenge")} className="flex items-center gap-3 rounded-xl border border-sky-200 bg-white/60 px-4 py-3 text-left transition-all hover:bg-white/90 dark:bg-sky-950/20 dark:hover:bg-sky-950/40">
+                <Grid3x3 className="h-6 w-6 shrink-0 text-sky-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Slide Puzzle</p><p className="text-xs text-muted-foreground">One shared scramble each day</p></div><span className="shrink-0 text-sm text-sky-500">→</span>
+              </button>
+              {(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id) => {
+                const subject = QUIZ_SUBJECTS[id];
+                return (
+                  <button key={id} onClick={() => setLocation(`/quiz-challenge?subject=${id}`)} className={`flex items-center gap-3 rounded-xl border bg-white/60 px-4 py-3 text-left transition-all hover:bg-white/90 dark:hover:brightness-110 ${subject.theme.border}`}>
+                    <span className="shrink-0 text-2xl leading-none">{subject.emoji}</span><div className="min-w-0 flex-1"><p className="text-sm font-semibold">{subject.shortName} Quiz</p><p className="text-xs text-muted-foreground">One shared {subject.shortName.toLowerCase()} quiz each day</p></div><span className={`shrink-0 text-sm ${subject.theme.text}`}>→</span>
+                  </button>
+                );
+              })}
             </div>
           </CollapsibleContent>
         </Collapsible>
@@ -1235,7 +1393,7 @@ export default function Portal() {
                   Play Brain Games . Online
                 </span>
                 <span className="text-[11px] leading-tight text-muted-foreground">
-                  Four classic brain games, endlessly replayable
+                  Six classic brain games, endlessly replayable
                 </span>
               </span>
               <ChevronDown
@@ -1319,6 +1477,19 @@ export default function Portal() {
                   </p>
                 </div>
               </button>
+              <button
+                type="button"
+                onClick={() => setLocation("/minesweeper")}
+                className="w-full rounded-2xl border border-border bg-muted p-4 flex gap-3 items-start text-left hover:bg-muted/70 hover:border-emerald-500/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <Bomb className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-semibold text-sm">Minesweeper</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                    Reveal safe cells and dodge the mines across four board sizes. Kids mode gets the small boards, Adult mode the big ones — hit three mines and it&apos;s over.
+                  </p>
+                </div>
+              </button>
             </div>
           </CollapsibleContent>
         </Collapsible>
@@ -1336,12 +1507,14 @@ export default function Portal() {
             Choose a puzzle, then adjust the challenge
           </h2>
           <p className="mt-2">
-            Play Brain Games . Online brings together four games that reward
+            Play Brain Games . Online brings together six games that reward
             different kinds of attention. Sudoku asks you to compare rows,
             columns, and boxes before placing a symbol. Memory Match asks you to
             remember where cards appeared. Jigsaw asks you to rebuild a picture
             piece by piece. Word Search asks you to spot hidden words inside a
-            letter grid. All four can be started in a browser without
+            letter grid. Minesweeper asks you to clear every safe cell without
+            touching a mine. Slide Puzzle asks you to slide every tile back
+            into order. All six can be started in a browser without
             creating an account.
           </p>
         </div>
@@ -1400,6 +1573,30 @@ export default function Portal() {
             </p>
           </div>
           <div>
+            <h3 className="font-semibold text-foreground">Sweep the minefield safely</h3>
+            <p className="mt-1">
+              In Minesweeper, every revealed number counts the mines touching
+              that cell. Flag the cells you believe are mined, reveal the rest,
+              and clear every safe cell to win — hitting three mines ends the
+              game. Beginner (6×6, 5 mines) and Easy (8×8, 12 mines) suit quick
+              rounds, while Medium (12×12, 24 mines) and Hard (14×14, 34 mines)
+              reward careful deduction. Click a revealed number with enough
+              flags around it to clear its neighbours at once.
+            </p>
+          </div>
+          <div>
+            <h3 className="font-semibold text-foreground">Slide every tile into place</h3>
+            <p className="mt-1">
+              In Slide Puzzle, one gap lets you slide neighbouring tiles one
+              space at a time until the board reads in order. Boards come in
+              2×2, 3×3, 4×4, and 5×5 — the two smaller sizes suit Kids mode,
+              the two larger suit Adult mode. Tiles can show numbers, alphabet
+              letters, or pictures from the icon themes. Work row by row, use
+              the hint only when truly stuck, and finish quickly with few moves
+              for the best score.
+            </p>
+          </div>
+          <div>
             <h3 className="font-semibold text-foreground">Choose symbols and track progress</h3>
             <p className="mt-1">
               Smaller Sudoku boards also support letter or image-symbol play,
@@ -1422,6 +1619,12 @@ export default function Portal() {
           </Link>
           <Link href="/word-search" className="font-semibold text-primary underline-offset-2 hover:underline">
             Word Search setup
+          </Link>
+          <Link href="/minesweeper" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Minesweeper setup
+          </Link>
+          <Link href="/slide-puzzle" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Slide Puzzle setup
           </Link>
           <Link href="/guides/" className="font-semibold text-primary underline-offset-2 hover:underline">
             Read the puzzle guides

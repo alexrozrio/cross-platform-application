@@ -20,7 +20,7 @@ export function AchievementUnlockModal({ achievements, onDismiss, profileId }: A
   // Determine which stats tab to deep-link to based on the game type of new achievements
   const games = new Set(achievements.map((a) => a.game));
   const statsTab = games.size === 1
-    ? games.has("memory") ? "memory" : games.has("jigsaw") ? "jigsaw" : games.has("word-search") ? "word-search" : "sudoku"
+    ? games.has("memory") ? "memory" : games.has("jigsaw") ? "jigsaw" : games.has("word-search") ? "word-search" : games.has("minesweeper") ? "minesweeper" : games.has("slide-puzzle") ? "slide-puzzle" : games.has("science-quiz") ? "science-quiz" : games.has("maths-quiz") ? "maths-quiz" : games.has("gk-quiz") ? "gk-quiz" : "sudoku"
     : "sudoku";
 
   const handleViewAchievements = () => {
@@ -84,7 +84,7 @@ export function AchievementUnlockModal({ achievements, onDismiss, profileId }: A
                 </div>
                 <div className="shrink-0">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30 dark:text-yellow-400 px-2 py-0.5 rounded-full">
-                    {a.game === "jigsaw" ? "Jigsaw" : a.game === "memory" ? "Memory" : a.game === "word-search" ? "Word Search" : "Sudoku"}
+                    {a.game === "jigsaw" ? "Jigsaw" : a.game === "memory" ? "Memory" : a.game === "word-search" ? "Word Search" : a.game === "minesweeper" ? "Minesweeper" : a.game === "slide-puzzle" ? "Slide Puzzle" : a.game === "science-quiz" ? "Science Quiz" : a.game === "maths-quiz" ? "Maths Quiz" : a.game === "gk-quiz" ? "GK Quiz" : "Sudoku"}
                   </span>
                 </div>
               </div>

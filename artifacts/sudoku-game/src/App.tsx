@@ -85,6 +85,12 @@ const TermsOfService = lazy(() => import("@/pages/terms-of-service"));
 const MemoryMatch = lazy(() => import("@/pages/memory"));
 const WordSearch = lazy(() => import("@/pages/word-search"));
 const WordSearchDailyChallengePage = lazy(() => import("@/pages/word-search-challenge"));
+const Minesweeper = lazy(() => import("@/pages/minesweeper"));
+const MinesweeperDailyChallengePage = lazy(() => import("@/pages/minesweeper-challenge"));
+const SlidePuzzle = lazy(() => import("@/pages/slide-puzzle"));
+const SlidePuzzleDailyChallengePage = lazy(() => import("@/pages/slide-puzzle-challenge"));
+const QuizPage = lazy(() => import("@/pages/quiz"));
+const QuizDailyChallengePage = lazy(() => import("@/pages/quiz-challenge"));
 function MemoryBookmarkRoute({ params }: { params: { difficulty: string } }) {
   return <MemoryMatch difficultySlug={params.difficulty} />;
 }
@@ -241,6 +247,24 @@ function Router() {
               <Route path="/leaderboard/word-search">
                 {() => <Leaderboard gamePage="word-search" />}
               </Route>
+              <Route path="/leaderboard/minesweeper">
+                {() => <Leaderboard gamePage="minesweeper" />}
+              </Route>
+              <Route path="/leaderboard/slide-puzzle">
+                {() => <Leaderboard gamePage="slide-puzzle" />}
+              </Route>
+              <Route path="/leaderboard/science-quiz">
+                {() => <Leaderboard gamePage="science-quiz" />}
+              </Route>
+              <Route path="/leaderboard/maths-quiz">
+                {() => <Leaderboard gamePage="maths-quiz" />}
+              </Route>
+              <Route path="/leaderboard/gk-quiz">
+                {() => <Leaderboard gamePage="gk-quiz" />}
+              </Route>
+              <Route path="/leaderboard/quiz">
+                {() => <Leaderboard gamePage="science-quiz" />}
+              </Route>
               <Route path="/leaderboard">
                 {() => <Leaderboard />}
               </Route>
@@ -253,6 +277,15 @@ function Router() {
               </Route>
               <Route path="/word-search" component={WordSearch} />
               <Route path="/word-search-challenge" component={WordSearchDailyChallengePage} />
+              <Route path="/minesweeper" component={Minesweeper} />
+              <Route path="/minesweeper-challenge" component={MinesweeperDailyChallengePage} />
+              <Route path="/slide-puzzle" component={SlidePuzzle} />
+              <Route path="/slide-puzzle-challenge" component={SlidePuzzleDailyChallengePage} />
+              <Route path="/quiz/:subject" component={QuizPage} />
+              <Route path="/quiz">
+                {() => <QuizPage params={{}} />}
+              </Route>
+              <Route path="/quiz-challenge" component={QuizDailyChallengePage} />
               <Route path="/memory-challenge" component={MemoryChallengePage} />
               <Route path="/jigsaw" component={JigsawPage} />
               <Route path="/jigsaw-challenge" component={JigsawDailyChallengePage} />
