@@ -30,6 +30,7 @@ import {
   Minus,
 } from "lucide-react";
 import { LevelBadge } from "@/components/level-badge";
+import { getLevelFromXp } from "@/lib/levels";
 import { usePageMeta } from "@/components/page-meta";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -42,6 +43,10 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { showEventModal } from "@/hooks/use-event-modal";
 import { QUIZ_LEVELS, QUIZ_SUBJECTS, quizGameId, quizSubject, quizSubjectForGameId, type QuizGameId, type QuizSubject } from "@/lib/quiz";
+import { WORD_SEARCH_LEVELS, type WordSearchDifficulty } from "@/lib/word-search";
+import { MINESWEEPER_LEVELS, type MinesweeperDifficulty } from "@/lib/minesweeper";
+import { SLIDE_PUZZLE_LEVELS, type SlidePuzzleDifficulty } from "@/lib/slide-puzzle";
+import { JIGSAW_SIZE_NAMES } from "@/lib/jigsaw-session";
 import { GAME_ICONS, gameIconColor } from "@/lib/game-icons";
 
 type MainTab = "alltime" | "weekly" | "monthly";
@@ -211,9 +216,9 @@ function XpGuide() {
             Applies to all grid sizes — 3×3, 4×4, <span className="font-semibold text-foreground">6×6</span>, 9×9, and 16×16.
           </p>
           <div className="border-t border-border pt-3">
-            <p className="mb-2 text-xs font-semibold text-foreground">Jigsaw XP by level</p>
+            <p className="mb-2 text-xs font-semibold text-foreground">Jigsaw XP by assist level</p>
             <div className="grid grid-cols-3 gap-2 text-center">
-              {[{ level: "Easy", xp: 1 }, { level: "Medium", xp: 2 }, { level: "Hard", xp: 3 }].map((item) => (
+              {[{ level: "Guided", xp: 1 }, { level: "Assisted", xp: 2 }, { level: "Challenging", xp: 3 }].map((item) => (
                 <div key={item.level} className="rounded-lg border border-border bg-background px-2 py-2">
                   <p className="text-[10px] font-semibold text-muted-foreground">{item.level}</p>
                   <p className="text-xs font-bold text-amber-600">{item.xp} XP</p>
@@ -225,7 +230,7 @@ function XpGuide() {
           <div className="border-t border-border pt-3">
             <p className="mb-2 text-xs font-semibold text-foreground">Word Search XP by difficulty</p>
             <div className="grid grid-cols-4 gap-2 text-center">
-              {[{ level: "Beginner", xp: 1 }, { level: "Easy", xp: 1 }, { level: "Medium", xp: 2 }, { level: "Hard", xp: 3 }].map((item) => (
+              {[{ level: "Easy", xp: 1 }, { level: "Medium", xp: 1 }, { level: "Hard", xp: 2 }, { level: "Expert", xp: 3 }].map((item) => (
                 <div key={item.level} className="rounded-lg border border-border bg-background px-2 py-2">
                   <p className="text-[10px] font-semibold text-muted-foreground">{item.level}</p>
                   <p className="text-xs font-bold text-violet-600">{item.xp} XP</p>
@@ -237,7 +242,7 @@ function XpGuide() {
           <div className="border-t border-border pt-3">
             <p className="mb-2 text-xs font-semibold text-foreground">Minesweeper XP by difficulty</p>
             <div className="grid grid-cols-4 gap-2 text-center">
-              {[{ level: "Beginner", xp: 1 }, { level: "Easy", xp: 1 }, { level: "Medium", xp: 2 }, { level: "Hard", xp: 3 }].map((item) => (
+              {[{ level: "Easy", xp: 1 }, { level: "Medium", xp: 1 }, { level: "Hard", xp: 2 }, { level: "Expert", xp: 3 }].map((item) => (
                 <div key={item.level} className="rounded-lg border border-border bg-background px-2 py-2">
                   <p className="text-[10px] font-semibold text-muted-foreground">{item.level}</p>
                   <p className="text-xs font-bold text-emerald-600">{item.xp} XP</p>
@@ -247,9 +252,9 @@ function XpGuide() {
             <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">Minesweeper XP is awarded for each cleared minefield and increases with the selected difficulty. Only wins earn XP.</p>
           </div>
           <div className="border-t border-border pt-3">
-            <p className="mb-2 text-xs font-semibold text-foreground">Slide Puzzle XP by board size</p>
+            <p className="mb-2 text-xs font-semibold text-foreground">Slide Puzzle XP by level</p>
             <div className="grid grid-cols-4 gap-2 text-center">
-              {[{ level: "2×2", xp: 1 }, { level: "3×3", xp: 1 }, { level: "4×4", xp: 2 }, { level: "5×5", xp: 3 }].map((item) => (
+              {[{ level: "Easy", xp: 1 }, { level: "Medium", xp: 1 }, { level: "Hard", xp: 2 }, { level: "Expert", xp: 3 }].map((item) => (
                 <div key={item.level} className="rounded-lg border border-border bg-background px-2 py-2">
                   <p className="text-[10px] font-semibold text-muted-foreground">{item.level}</p>
                   <p className="text-xs font-bold text-sky-600">{item.xp} XP</p>
@@ -289,32 +294,32 @@ function PointsGuide() {
     },
     {
       game: "Memory Match",
-      kids: "4 · 8 pairs",
-      adult: "16 · 32 pairs",
+      kids: "Easy · Medium",
+      adult: "Hard · Expert",
       all: "All four boards",
     },
     {
       game: "Jigsaw",
-      kids: "2×2 · 3×3",
-      adult: "4×4 · 5×5",
+      kids: "Easy · Medium",
+      adult: "Hard · Expert",
       all: "All four sizes",
     },
     {
       game: "Word Search",
-      kids: "Beginner · Easy",
-      adult: "Medium · Hard",
+      kids: "Easy · Medium",
+      adult: "Hard · Expert",
       all: "All four levels",
     },
     {
       game: "Minesweeper",
-      kids: "Beginner · Easy",
-      adult: "Medium · Hard",
+      kids: "Easy · Medium",
+      adult: "Hard · Expert",
       all: "All four levels",
     },
     {
       game: "Slide Puzzle",
-      kids: "2×2 · 3×3",
-      adult: "4×4 · 5×5",
+      kids: "Easy · Medium",
+      adult: "Hard · Expert",
       all: "All four sizes",
     },
     {
@@ -375,7 +380,7 @@ function PointsGuide() {
             <div className="rounded-xl border overflow-x-auto text-xs">
               <div className="min-w-[340px]">
                 <div className="grid grid-cols-5 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
-                  <span>Board</span><span className="text-center">Base</span><span className="text-center">Easy par</span><span className="text-center">Medium</span><span className="text-center">Hard</span>
+                  <span>Board</span><span className="text-center">Base</span><span className="text-center">Guided par</span><span className="text-center">Assisted</span><span className="text-center">Challenging</span>
                 </div>
                 {[
                   { size: 2, base: 100, par: "0:45", gems: 1 },
@@ -384,14 +389,14 @@ function PointsGuide() {
                   { size: 5, base: 1000, par: "4:00", gems: 3 },
                 ].map((row, i) => (
                   <div key={row.size} className={`grid grid-cols-5 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}>
-                    <span className="font-semibold">{row.size}×{row.size}<span className="block text-[9px] font-normal text-muted-foreground">{row.gems} gem{row.gems === 1 ? "" : "s"} on win</span></span>
+                    <span className="font-semibold">{JIGSAW_SIZE_NAMES[row.size as keyof typeof JIGSAW_SIZE_NAMES]} · {row.size}×{row.size}<span className="block text-[9px] font-normal text-muted-foreground">{row.gems} gem{row.gems === 1 ? "" : "s"} on win</span></span>
                     <span className="text-center font-mono">{row.base}</span><span className="text-center font-mono">{row.par}</span><span className="text-center font-mono">×1.5</span><span className="text-center font-mono">×2</span>
                   </div>
                 ))}
               </div>
             </div>
             <p className="text-[10px] text-muted-foreground mt-2">
-              Medium and Hard multiply base points by 1.5× and 2×. Finish under par for up to +50%; each extra move costs 2% and each tip costs 10% (each penalty has a 50% floor). XP per win: Easy 1, Medium 2, Hard 3.
+              Assisted and Challenging multiply base points by 1.5× and 2×. Finish under par for up to +50%; each extra move costs 2% and each tip costs 10% (each penalty has a 50% floor). XP per win: Guided 1, Assisted 2, Challenging 3.
             </p>
           </div>
           {/* Sudoku base points table */}
@@ -461,28 +466,28 @@ function PointsGuide() {
               </div>
               {[
                 {
-                  label: "Beginner",
+                  label: "Easy · 2×4",
                   base: 150,
                   par: "0:25",
                   max: 225,
                   cls: "text-green-700",
                 },
                 {
-                  label: "Easy",
+                  label: "Medium · 4×4",
                   base: 500,
                   par: "1:00",
                   max: 750,
                   cls: "text-blue-700",
                 },
                 {
-                  label: "Medium",
+                  label: "Hard · 8×4",
                   base: 1600,
                   par: "2:00",
                   max: 2400,
                   cls: "text-yellow-700",
                 },
                 {
-                  label: "Hard",
+                  label: "Expert · 8×8",
                   base: 5000,
                   par: "5:00",
                   max: 7500,
@@ -525,10 +530,10 @@ function PointsGuide() {
                 <span className="text-center">Gems</span>
               </div>
               {[
-                { label: "Beginner", base: 120, par: "2:00", tries: 6, gems: 1, cls: "text-green-700" },
-                { label: "Easy", base: 280, par: "4:00", tries: 8, gems: 2, cls: "text-blue-700" },
-                { label: "Medium", base: 650, par: "7:00", tries: 10, gems: 3, cls: "text-yellow-700" },
-                { label: "Hard", base: 1300, par: "12:00", tries: 12, gems: 4, cls: "text-orange-700" },
+                { label: "Easy · 6×6", base: 120, par: "2:00", tries: 6, gems: 1, cls: "text-green-700" },
+                { label: "Medium · 8×8", base: 280, par: "4:00", tries: 8, gems: 2, cls: "text-blue-700" },
+                { label: "Hard · 12×12", base: 650, par: "7:00", tries: 10, gems: 3, cls: "text-yellow-700" },
+                { label: "Expert · 14×14", base: 1300, par: "12:00", tries: 12, gems: 4, cls: "text-orange-700" },
               ].map((row, i) => (
                 <div key={row.label} className={`grid grid-cols-5 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}>
                   <span className={`font-semibold ${row.cls}`}>{row.label}</span>
@@ -540,7 +545,7 @@ function PointsGuide() {
               ))}
             </div>
             <p className="text-[10px] text-muted-foreground mt-2">
-              score = base × (1 + time bonus up to +50%) × try factor × tip factor &nbsp;·&nbsp; −2.5% per try beyond the word count (floor 45%), −20% per hint (floor 60%), min 10 pts. XP: Beginner/Easy 1, Medium 2, Hard 3.
+              score = base × (1 + time bonus up to +50%) × try factor × tip factor &nbsp;·&nbsp; −2.5% per try beyond the word count (floor 45%), −20% per hint (floor 60%), min 10 pts. XP: Easy/Medium 1, Hard 2, Expert 3.
             </p>
           </div>
 
@@ -558,10 +563,10 @@ function PointsGuide() {
                 <span className="text-center">Gems</span>
               </div>
               {[
-                { label: "Beginner", base: 150, par: "1:30", board: "6×6 · 5 mines", gems: 1, cls: "text-green-700" },
-                { label: "Easy", base: 350, par: "3:00", board: "8×8 · 12 mines", gems: 2, cls: "text-blue-700" },
-                { label: "Medium", base: 800, par: "6:00", board: "12×12 · 24 mines", gems: 3, cls: "text-yellow-700" },
-                { label: "Hard", base: 1600, par: "10:00", board: "14×14 · 34 mines", gems: 4, cls: "text-orange-700" },
+                { label: "Easy", base: 150, par: "1:30", board: "6×6 · 5 mines", gems: 1, cls: "text-green-700" },
+                { label: "Medium", base: 350, par: "3:00", board: "8×8 · 12 mines", gems: 2, cls: "text-blue-700" },
+                { label: "Hard", base: 800, par: "6:00", board: "12×12 · 24 mines", gems: 3, cls: "text-yellow-700" },
+                { label: "Expert", base: 1600, par: "10:00", board: "14×14 · 34 mines", gems: 4, cls: "text-orange-700" },
               ].map((row, i) => (
                 <div key={row.label} className={`grid grid-cols-5 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}>
                   <span className={`font-semibold ${row.cls}`}>{row.label}</span>
@@ -573,28 +578,28 @@ function PointsGuide() {
               ))}
             </div>
             <p className="text-[10px] text-muted-foreground mt-2">
-              Only wins score. score = base × (1 + time bonus up to +50%) × mistake factor × hint factor &nbsp;·&nbsp; −15% per mine hit (floor 40%), −20% per hint (floor 60%), min 10 pts. Three mine hits ends the game. XP: Beginner/Easy 1, Medium 2, Hard 3.
+              Only wins score. score = base × (1 + time bonus up to +50%) × mistake factor × hint factor &nbsp;·&nbsp; −15% per mine hit (floor 40%), −20% per hint (floor 60%), min 10 pts. Three mine hits ends the game. XP: Easy/Medium 1, Hard 2, Expert 3.
             </p>
           </div>
 
           {/* Slide Puzzle base points table */}
           <div>
             <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-              🧩 Slide Puzzle — base points × board size
+              🧩 Slide Puzzle — base points × level
             </p>
             <div className="rounded-xl border overflow-hidden text-xs">
               <div className="grid grid-cols-5 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
-                <span>Board</span>
+                <span>Level</span>
                 <span className="text-center">Base pts</span>
                 <span className="text-center">Par time</span>
                 <span className="text-center">Par moves</span>
                 <span className="text-center">Gems</span>
               </div>
               {[
-                { label: "2×2", base: 120, par: "1:30", moves: 12, gems: 1, cls: "text-green-700" },
-                { label: "3×3", base: 300, par: "5:00", moves: 60, gems: 2, cls: "text-blue-700" },
-                { label: "4×4", base: 700, par: "20:00", moves: 160, gems: 3, cls: "text-yellow-700" },
-                { label: "5×5", base: 1500, par: "45:00", moves: 320, gems: 4, cls: "text-orange-700" },
+                { label: "Easy · 2×2", base: 120, par: "1:30", moves: 12, gems: 1, cls: "text-green-700" },
+                { label: "Medium · 3×3", base: 300, par: "5:00", moves: 60, gems: 2, cls: "text-blue-700" },
+                { label: "Hard · 4×4", base: 700, par: "20:00", moves: 160, gems: 3, cls: "text-yellow-700" },
+                { label: "Expert · 5×5", base: 1500, par: "45:00", moves: 320, gems: 4, cls: "text-orange-700" },
               ].map((row, i) => (
                 <div key={row.label} className={`grid grid-cols-5 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}>
                   <span className={`font-semibold ${row.cls}`}>{row.label}</span>
@@ -606,7 +611,7 @@ function PointsGuide() {
               ))}
             </div>
             <p className="text-[10px] text-muted-foreground mt-2">
-              Only wins score. score = base × (1 + time bonus up to +50%) × move factor × hint factor &nbsp;·&nbsp; move factor scales 60–100% toward the par move count, −15% per hint (floor 70%), min 10 pts. XP: 2×2/3×3 = 1, 4×4 = 2, 5×5 = 3.
+              Only wins score. score = base × (1 + time bonus up to +50%) × move factor × hint factor &nbsp;·&nbsp; move factor scales 60–100% toward the par move count, −15% per hint (floor 70%), min 10 pts. XP: Easy/Medium = 1, Hard = 2, Expert = 3.
             </p>
           </div>
 
@@ -796,16 +801,10 @@ const SUDOKU_GRID_NAMES: Record<number, string> = {
   16: "16×16",
 };
 const MEMORY_LEVEL_NAMES: Record<number, string> = {
-  2: "Beginner",
-  4: "Easy",
-  6: "Medium",
-  8: "Hard",
-};
-const JIGSAW_GRID_NAMES: Record<number, string> = {
-  2: "2×2 Baby",
-  3: "3×3 Child",
-  4: "4×4 Adult",
-  5: "5×5 Adult",
+  2: "Easy · 2×4",
+  4: "Medium · 4×4",
+  6: "Hard · 8×4",
+  8: "Expert · 8×8",
 };
 const MINESWEEPER_DIFFICULTY_NAMES: Record<string, string> = {
   beginner: "6×6 · 5 mines",
@@ -953,7 +952,7 @@ function BreakdownPanel({
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {(data?.jigsaw ?? [2, 3, 4, 5].map((gridSize) => ({ gridSize, points: 0, games: 0 }))).map((item) => (
             <div key={item.gridSize} className={`rounded-xl border p-2.5 text-center transition-colors ${item.games > 0 ? "border-amber-300 bg-background" : "border-border bg-muted/30 opacity-50"}`}>
-              <p className="text-xs font-bold text-foreground">{JIGSAW_GRID_NAMES[item.gridSize]}</p>
+              <p className="text-xs font-bold text-foreground">{JIGSAW_SIZE_NAMES[item.gridSize as keyof typeof JIGSAW_SIZE_NAMES] ?? `${item.gridSize}×${item.gridSize}`} · {item.gridSize}×{item.gridSize}</p>
               <p className="mt-0.5 text-lg font-black leading-tight tabular-nums text-amber-700 dark:text-amber-300">{item.points > 0 ? item.points.toLocaleString() : "—"}</p>
               <p className="mt-0.5 text-[10px] text-muted-foreground">{item.games > 0 ? `${item.games} game${item.games !== 1 ? "s" : ""}` : "no games"}</p>
             </div>
@@ -964,9 +963,10 @@ function BreakdownPanel({
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {(data?.wordSearch ?? ["beginner", "easy", "medium", "hard"].map((difficulty) => ({ difficulty, points: 0, games: 0 }))).map((item) => (
             <div key={item.difficulty} className={`rounded-xl border p-2.5 text-center transition-colors ${item.games > 0 ? "border-violet-300 bg-background" : "border-border bg-muted/30 opacity-50"}`}>
-              <p className="text-xs font-bold capitalize text-foreground">{item.difficulty}</p>
+              <p className="text-xs font-bold text-foreground">{WORD_SEARCH_LEVELS[item.difficulty as WordSearchDifficulty]?.label ?? item.difficulty} · {WORD_SEARCH_LEVELS[item.difficulty as WordSearchDifficulty]?.size ?? ""}×{WORD_SEARCH_LEVELS[item.difficulty as WordSearchDifficulty]?.size ?? ""}</p>
               <p className="mt-0.5 text-lg font-black tabular-nums leading-tight text-violet-700 dark:text-violet-300">{item.points > 0 ? item.points.toLocaleString() : "—"}</p>
               <p className="mt-0.5 text-[10px] text-muted-foreground">{item.games > 0 ? `${item.games} game${item.games !== 1 ? "s" : ""}` : "no games"}</p>
+              <p className="mt-0.5 text-[9px] text-muted-foreground/80">{WORD_SEARCH_LEVELS[item.difficulty as WordSearchDifficulty] ? `${WORD_SEARCH_LEVELS[item.difficulty as WordSearchDifficulty].wordCount} words` : ""}</p>
             </div>
           ))}
         </div>
@@ -975,7 +975,7 @@ function BreakdownPanel({
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {(data?.minesweeper ?? ["beginner", "easy", "medium", "hard"].map((difficulty) => ({ difficulty, points: 0, games: 0 }))).map((item) => (
             <div key={item.difficulty} className={`rounded-xl border p-2.5 text-center transition-colors ${item.games > 0 ? "border-emerald-300 bg-background" : "border-border bg-muted/30 opacity-50"}`}>
-              <p className="text-xs font-bold capitalize text-foreground">{item.difficulty}</p>
+              <p className="text-xs font-bold text-foreground">{MINESWEEPER_LEVELS[item.difficulty as MinesweeperDifficulty]?.label ?? item.difficulty}</p>
               <p className="mt-0.5 text-lg font-black tabular-nums leading-tight text-emerald-700 dark:text-emerald-300">{item.points > 0 ? item.points.toLocaleString() : "—"}</p>
               <p className="mt-0.5 text-[10px] text-muted-foreground">{item.games > 0 ? `${item.games} game${item.games !== 1 ? "s" : ""}` : "no games"}</p>
               <p className="mt-0.5 text-[9px] text-muted-foreground/80">{MINESWEEPER_DIFFICULTY_NAMES[item.difficulty]}</p>
@@ -987,7 +987,7 @@ function BreakdownPanel({
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {(data?.slidePuzzle ?? ["2x2", "3x3", "4x4", "5x5"].map((difficulty) => ({ difficulty, points: 0, games: 0 }))).map((item) => (
             <div key={item.difficulty} className={`rounded-xl border p-2.5 text-center transition-colors ${item.games > 0 ? "border-sky-300 bg-background" : "border-border bg-muted/30 opacity-50"}`}>
-              <p className="text-xs font-bold text-foreground">{item.difficulty}</p>
+              <p className="text-xs font-bold text-foreground">{SLIDE_PUZZLE_LEVELS[item.difficulty as SlidePuzzleDifficulty]?.label ?? item.difficulty} · {item.difficulty.replace("x", "×")}</p>
               <p className="mt-0.5 text-lg font-black tabular-nums leading-tight text-sky-700 dark:text-sky-300">{item.points > 0 ? item.points.toLocaleString() : "—"}</p>
               <p className="mt-0.5 text-[10px] text-muted-foreground">{item.games > 0 ? `${item.games} game${item.games !== 1 ? "s" : ""}` : "no games"}</p>
               <p className="mt-0.5 text-[9px] text-muted-foreground/80">{SLIDE_PUZZLE_DIFFICULTY_NAMES[item.difficulty]}</p>
@@ -1341,35 +1341,22 @@ function TournamentBoard({
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground flex-wrap">
-                            {([
-                              ["sudoku", "sudokuGamesPlayed", "sudoku"],
-                              ["memory", "memoryGamesPlayed", "memory"],
-                              ["jigsaw", "jigsawGamesPlayed", "jigsaw"],
-                              ["word-search", "wordSearchGamesPlayed", "word search"],
-                              ["minesweeper", "minesweeperGamesPlayed", "minesweeper"],
-                              ["slide-puzzle", "slidePuzzleGamesPlayed", "slide puzzle"],
-                              ["science-quiz", "scienceQuizGamesPlayed", "science quiz"],
-                              ["maths-quiz", "mathsQuizGamesPlayed", "maths quiz"],
-                              ["gk-quiz", "gkQuizGamesPlayed", "gk quiz"],
-                            ] as const).map(([id, field, label]) =>
-                              (entry as any)[field] > 0 && (() => { const Icon = GAME_ICONS[id]; return <span key={id} className="inline-flex items-center gap-1"><Icon className={`h-3.5 w-3.5 ${gameIconColor(id)}`} />{(entry as any)[field]} {label}</span>; })()
-                            )}
-                            {(entry as any).sudokuGamesPlayed === 0 &&
-                              (entry as any).memoryGamesPlayed === 0 &&
-                              (entry as any).jigsawGamesPlayed === 0 &&
-                              (entry as any).wordSearchGamesPlayed === 0 &&
-                              (entry as any).minesweeperGamesPlayed === 0 &&
-                              (entry as any).slidePuzzleGamesPlayed === 0 &&
-                              (entry as any).scienceQuizGamesPlayed === 0 &&
-                              (entry as any).mathsQuizGamesPlayed === 0 &&
-                              (entry as any).gkQuizGamesPlayed === 0 && (
-                                <span>
-                                  {entry.gamesPlayed} game
-                                  {entry.gamesPlayed !== 1 ? "s" : ""}
+                          {typeof (entry as any).xp === "number" && (() => {
+                            const lvl = getLevelFromXp((entry as any).xp);
+                            return (
+                              <div className="mt-1.5 flex items-center gap-2">
+                                <div className="h-1 w-16 overflow-hidden rounded-full bg-muted sm:w-24">
+                                  <div
+                                    className="h-full rounded-full transition-all"
+                                    style={{ width: `${lvl.progress}%`, backgroundColor: lvl.color }}
+                                  />
+                                </div>
+                                <span className="text-[10px] font-medium text-muted-foreground tabular-nums whitespace-nowrap">
+                                  {lvl.name} · {(entry as any).xp.toLocaleString()} XP
                                 </span>
-                              )}
-                          </div>
+                              </div>
+                            );
+                          })()}
                         </div>
                       </div>
                       <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 ml-1 sm:ml-4">
@@ -1449,28 +1436,28 @@ function MemoryScoringGuide() {
               </div>
               {[
                 {
-                  label: "Beginner",
+                  label: "Easy · 2×4",
                   cls: "text-green-700",
                   base: "150",
                   par: "0:25",
                   xp: "1 XP",
                 },
                 {
-                  label: "Easy",
+                  label: "Medium · 4×4",
                   cls: "text-blue-700",
                   base: "500",
                   par: "1:00",
                   xp: "1 XP",
                 },
                 {
-                  label: "Medium",
+                  label: "Hard · 8×4",
                   cls: "text-yellow-700",
                   base: "1,600",
                   par: "2:00",
                   xp: "2 XP",
                 },
                 {
-                  label: "Hard",
+                  label: "Expert · 8×8",
                   cls: "text-orange-700",
                   base: "5,000",
                   par: "5:00",
@@ -1538,9 +1525,9 @@ function MemoryScoringGuide() {
                 <span className="text-center">Unlocked sizes</span>
               </div>
               {[
-                { mode: "👶 Kids",  sizes: "4 pairs (2×4) · 8 pairs (4×4)",   cls: "text-green-700" },
-                { mode: "🧑 Adult", sizes: "16 pairs (8×4) · 32 pairs (8×8)", cls: "text-blue-700"  },
-                { mode: "🌍 4 All", sizes: "All four sizes",                   cls: "text-violet-700" },
+                { mode: "👶 Kids",  sizes: "Easy (2×4) · Medium (4×4)",   cls: "text-green-700" },
+                { mode: "🧑 Adult", sizes: "Hard (8×4) · Expert (8×8)", cls: "text-blue-700"  },
+                { mode: "🌍 4 All", sizes: "All four boards",             cls: "text-violet-700" },
               ].map((row, i) => (
                 <div
                   key={row.mode}
@@ -1567,10 +1554,10 @@ type MemorySize = 2 | 4 | 6 | 8;
 type MemoryTab = "all" | MemorySize;
 
 const MEMORY_SIZES: { size: MemorySize; label: string; pairs: number }[] = [
-  { size: 2, label: "Beginner", pairs: 4 },
-  { size: 4, label: "Easy", pairs: 8 },
-  { size: 6, label: "Medium", pairs: 16 },
-  { size: 8, label: "Hard", pairs: 32 },
+  { size: 2, label: "Easy", pairs: 4 },
+  { size: 4, label: "Medium", pairs: 8 },
+  { size: 6, label: "Hard", pairs: 16 },
+  { size: 8, label: "Expert", pairs: 32 },
 ];
 
 interface MemoryEntry {
@@ -1706,9 +1693,9 @@ function JigsawScoringGuide() {
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {[{ size: 2, base: 100, par: 45, gems: 1 }, { size: 3, base: 250, par: 90, gems: 2 }, { size: 4, base: 500, par: 150, gems: 3 }, { size: 5, base: 1_000, par: 240, gems: 3 }].map((item) => (
               <div key={item.size} className="rounded-xl border border-border bg-background p-3">
-                <p className="font-bold">{item.size}×{item.size} board</p>
+                <p className="font-bold">{JIGSAW_SIZE_NAMES[item.size as keyof typeof JIGSAW_SIZE_NAMES]} · {item.size}×{item.size}</p>
                 <p className="mt-1 text-xs text-muted-foreground">Base {item.base.toLocaleString()} pts</p>
-                <p className="text-xs text-muted-foreground">Easy par {formatTime(item.par)}</p>
+                <p className="text-xs text-muted-foreground">Guided par {formatTime(item.par)}</p>
                 <p className="text-xs text-muted-foreground">{item.gems} 💎 per win</p>
               </div>
             ))}
@@ -1718,9 +1705,9 @@ function JigsawScoringGuide() {
             <div className="overflow-hidden rounded-xl border border-border text-xs">
               <div className="grid grid-cols-4 bg-muted-foreground/15 px-3 py-2 text-[10px] font-semibold text-muted-foreground"><span>Level</span><span className="text-center">Multiplier</span><span className="text-center">XP</span><span className="text-center">Par time</span></div>
               {[
-                { label: "Easy", multiplier: "×1", xp: "1 XP", par: "Base" },
-                { label: "Medium", multiplier: "×1.5", xp: "2 XP", par: "+35%" },
-                { label: "Hard", multiplier: "×2", xp: "3 XP", par: "+70%" },
+                { label: "Guided", multiplier: "×1", xp: "1 XP", par: "Base" },
+                { label: "Assisted", multiplier: "×1.5", xp: "2 XP", par: "+35%" },
+                { label: "Challenging", multiplier: "×2", xp: "3 XP", par: "+70%" },
               ].map((row, index) => <div key={row.label} className={`grid grid-cols-4 px-3 py-2 ${index % 2 === 0 ? "bg-background" : "bg-muted/20"}`}><span className="font-semibold">{row.label}</span><span className="text-center font-mono">{row.multiplier}</span><span className="text-center font-semibold text-amber-600">{row.xp}</span><span className="text-center font-mono">{row.par}</span></div>)}
             </div>
           </div>
@@ -1815,7 +1802,7 @@ function WordSearchScoringGuide() {
       {open && (
         <div className="space-y-4 border-t border-border bg-muted px-5 py-4 text-sm">
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {[{ level: "Beginner", base: 120, par: "2:00", tries: 6, gems: 1 }, { level: "Easy", base: 280, par: "4:00", tries: 8, gems: 2 }, { level: "Medium", base: 650, par: "7:00", tries: 10, gems: 3 }, { level: "Hard", base: 1300, par: "12:00", tries: 12, gems: 4 }].map((item) => (
+            {[{ level: "Easy · 6×6", base: 120, par: "2:00", tries: 6, gems: 1 }, { level: "Medium · 8×8", base: 280, par: "4:00", tries: 8, gems: 2 }, { level: "Hard · 12×12", base: 650, par: "7:00", tries: 10, gems: 3 }, { level: "Expert · 14×14", base: 1300, par: "12:00", tries: 12, gems: 4 }].map((item) => (
               <div key={item.level} className="rounded-xl border border-border bg-background p-3">
                 <p className="font-bold">{item.level}</p>
                 <p className="mt-1 text-xs text-muted-foreground">Base {item.base.toLocaleString()} pts</p>
@@ -1829,10 +1816,10 @@ function WordSearchScoringGuide() {
             <div className="overflow-hidden rounded-xl border border-border text-xs">
               <div className="grid grid-cols-4 bg-muted-foreground/15 px-3 py-2 text-[10px] font-semibold text-muted-foreground"><span>Difficulty</span><span className="text-center">XP</span><span className="text-center">Gems</span><span className="text-center">Grid</span></div>
               {[
-                { label: "Beginner", xp: "1 XP", gems: "1 💎", grid: "6×6" },
-                { label: "Easy", xp: "1 XP", gems: "2 💎", grid: "8×8" },
-                { label: "Medium", xp: "2 XP", gems: "3 💎", grid: "12×12" },
-                { label: "Hard", xp: "3 XP", gems: "4 💎", grid: "14×14" },
+                { label: "Easy", xp: "1 XP", gems: "1 💎", grid: "6×6" },
+                { label: "Medium", xp: "1 XP", gems: "2 💎", grid: "8×8" },
+                { label: "Hard", xp: "2 XP", gems: "3 💎", grid: "12×12" },
+                { label: "Expert", xp: "3 XP", gems: "4 💎", grid: "14×14" },
               ].map((row, index) => <div key={row.label} className={`grid grid-cols-4 px-3 py-2 ${index % 2 === 0 ? "bg-background" : "bg-muted/20"}`}><span className="font-semibold">{row.label}</span><span className="text-center font-semibold text-amber-600">{row.xp}</span><span className="text-center font-mono">{row.gems}</span><span className="text-center font-mono">{row.grid}</span></div>)}
             </div>
           </div>
@@ -1894,7 +1881,7 @@ function MinesweeperScoringGuide() {
       {open && (
         <div className="space-y-4 border-t border-border bg-muted px-5 py-4 text-sm">
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {[{ level: "Beginner", base: 150, par: "1:30", board: "6×6 · 5", gems: 1 }, { level: "Easy", base: 350, par: "3:00", board: "8×8 · 12", gems: 2 }, { level: "Medium", base: 800, par: "6:00", board: "12×12 · 24", gems: 3 }, { level: "Hard", base: 1600, par: "10:00", board: "14×14 · 34", gems: 4 }].map((item) => (
+            {[{ level: "Easy", base: 150, par: "1:30", board: "6×6 · 5", gems: 1 }, { level: "Medium", base: 350, par: "3:00", board: "8×8 · 12", gems: 2 }, { level: "Hard", base: 800, par: "6:00", board: "12×12 · 24", gems: 3 }, { level: "Expert", base: 1600, par: "10:00", board: "14×14 · 34", gems: 4 }].map((item) => (
               <div key={item.level} className="rounded-xl border border-border bg-background p-3">
                 <p className="font-bold">{item.level}</p>
                 <p className="mt-1 text-xs text-muted-foreground">Base {item.base.toLocaleString()} pts</p>
@@ -1908,10 +1895,10 @@ function MinesweeperScoringGuide() {
             <div className="overflow-hidden rounded-xl border border-border text-xs">
               <div className="grid grid-cols-4 bg-muted-foreground/15 px-3 py-2 text-[10px] font-semibold text-muted-foreground"><span>Difficulty</span><span className="text-center">XP</span><span className="text-center">Gems</span><span className="text-center">Board</span></div>
               {[
-                { label: "Beginner", xp: "1 XP", gems: "1 💎", grid: "6×6" },
-                { label: "Easy", xp: "1 XP", gems: "2 💎", grid: "8×8" },
-                { label: "Medium", xp: "2 XP", gems: "3 💎", grid: "12×12" },
-                { label: "Hard", xp: "3 XP", gems: "4 💎", grid: "14×14" },
+                { label: "Easy", xp: "1 XP", gems: "1 💎", grid: "6×6" },
+                { label: "Medium", xp: "1 XP", gems: "2 💎", grid: "8×8" },
+                { label: "Hard", xp: "2 XP", gems: "3 💎", grid: "12×12" },
+                { label: "Expert", xp: "3 XP", gems: "4 💎", grid: "14×14" },
               ].map((row, index) => <div key={row.label} className={`grid grid-cols-4 px-3 py-2 ${index % 2 === 0 ? "bg-background" : "bg-muted/20"}`}><span className="font-semibold">{row.label}</span><span className="text-center font-semibold text-amber-600">{row.xp}</span><span className="text-center font-mono">{row.gems}</span><span className="text-center font-mono">{row.grid}</span></div>)}
             </div>
           </div>
@@ -1973,7 +1960,7 @@ function SlidePuzzleScoringGuide() {
       {open && (
         <div className="space-y-4 border-t border-border bg-muted px-5 py-4 text-sm">
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {[{ level: "2×2", base: 120, par: "1:30", moves: 12, gems: 1 }, { level: "3×3", base: 300, par: "5:00", moves: 60, gems: 2 }, { level: "4×4", base: 700, par: "20:00", moves: 160, gems: 3 }, { level: "5×5", base: 1500, par: "45:00", moves: 320, gems: 4 }].map((item) => (
+            {[{ level: "Easy · 2×2", base: 120, par: "1:30", moves: 12, gems: 1 }, { level: "Medium · 3×3", base: 300, par: "5:00", moves: 60, gems: 2 }, { level: "Hard · 4×4", base: 700, par: "20:00", moves: 160, gems: 3 }, { level: "Expert · 5×5", base: 1500, par: "45:00", moves: 320, gems: 4 }].map((item) => (
               <div key={item.level} className="rounded-xl border border-border bg-background p-3">
                 <p className="font-bold">{item.level}</p>
                 <p className="mt-1 text-xs text-muted-foreground">Base {item.base.toLocaleString()} pts</p>
@@ -1983,14 +1970,14 @@ function SlidePuzzleScoringGuide() {
             ))}
           </div>
           <div>
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">XP by board size</p>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">XP by level</p>
             <div className="overflow-hidden rounded-xl border border-border text-xs">
-              <div className="grid grid-cols-4 bg-muted-foreground/15 px-3 py-2 text-[10px] font-semibold text-muted-foreground"><span>Board</span><span className="text-center">XP</span><span className="text-center">Gems</span><span className="text-center">Tiles</span></div>
+              <div className="grid grid-cols-4 bg-muted-foreground/15 px-3 py-2 text-[10px] font-semibold text-muted-foreground"><span>Level</span><span className="text-center">XP</span><span className="text-center">Gems</span><span className="text-center">Tiles</span></div>
               {[
-                { label: "2×2", xp: "1 XP", gems: "1 💎", tiles: "3" },
-                { label: "3×3", xp: "1 XP", gems: "2 💎", tiles: "8" },
-                { label: "4×4", xp: "2 XP", gems: "3 💎", tiles: "15" },
-                { label: "5×5", xp: "3 XP", gems: "4 💎", tiles: "24" },
+                { label: "Easy · 2×2", xp: "1 XP", gems: "1 💎", tiles: "3" },
+                { label: "Medium · 3×3", xp: "1 XP", gems: "2 💎", tiles: "8" },
+                { label: "Hard · 4×4", xp: "2 XP", gems: "3 💎", tiles: "15" },
+                { label: "Expert · 5×5", xp: "3 XP", gems: "4 💎", tiles: "24" },
               ].map((row, index) => <div key={row.label} className={`grid grid-cols-4 px-3 py-2 ${index % 2 === 0 ? "bg-background" : "bg-muted/20"}`}><span className="font-semibold">{row.label}</span><span className="text-center font-semibold text-amber-600">{row.xp}</span><span className="text-center font-mono">{row.gems}</span><span className="text-center font-mono">{row.tiles}</span></div>)}
             </div>
           </div>

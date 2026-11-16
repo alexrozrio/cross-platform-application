@@ -179,23 +179,23 @@ const SUDOKU_GRID_LABELS: Record<number, string> = {
 };
 
 const MEMORY_GRID_LABELS: Record<number, string> = {
-  2: "2×4 Beginner",
-  4: "4×4 Easy",
-  6: "8×4 Medium",
-  8: "8×8 Hard",
+  2: "Easy · 2×4",
+  4: "Medium · 4×4",
+  6: "Hard · 8×4",
+  8: "Expert · 8×8",
 };
 
 const JIGSAW_GRID_LABELS: Record<number, string> = {
-  2: "2×2",
-  3: "3×3",
-  4: "4×4",
-  5: "5×5",
+  2: "Easy · 2×2",
+  3: "Medium · 3×3",
+  4: "Hard · 4×4",
+  5: "Expert · 5×5",
 };
 
 const JIGSAW_LEVEL_LABELS: Record<number, string> = {
-  1: "Easy",
-  2: "Medium",
-  3: "Hard",
+  1: "Guided",
+  2: "Assisted",
+  3: "Challenging",
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -1140,23 +1140,23 @@ const SUDOKU_SIZE_OPTIONS: { value: SudokuGridSize; label: string }[] = [
 ];
 
 const MEMORY_SIZE_OPTIONS: { value: MemoryGridSize; label: string }[] = [
-  { value: 2, label: '2×4 Beginner · 4 pairs' },
-  { value: 4, label: '4×4 Easy · 8 pairs' },
-  { value: 6, label: '8×4 Medium · 16 pairs' },
-  { value: 8, label: '8×8 Hard · 32 pairs' },
+  { value: 2, label: 'Easy · 2×4 · 4 pairs' },
+  { value: 4, label: 'Medium · 4×4 · 8 pairs' },
+  { value: 6, label: 'Hard · 8×4 · 16 pairs' },
+  { value: 8, label: 'Expert · 8×8 · 32 pairs' },
 ];
 
 const JIGSAW_SIZE_OPTIONS: { value: JigsawGridSize; label: string }[] = [
-  { value: 2, label: '2×2 Easy' },
-  { value: 3, label: '3×3 Medium' },
-  { value: 4, label: '4×4 Hard' },
-  { value: 5, label: '5×5 Expert' },
+  { value: 2, label: 'Easy · 2×2 · 4 pieces' },
+  { value: 3, label: 'Medium · 3×3 · 9 pieces' },
+  { value: 4, label: 'Hard · 4×4 · 16 pieces' },
+  { value: 5, label: 'Expert · 5×5 · 25 pieces' },
 ];
 
 const JIGSAW_LEVEL_OPTIONS: { value: JigsawLevel; label: string }[] = [
-  { value: 1, label: 'Level 1' },
-  { value: 2, label: 'Level 2' },
-  { value: 3, label: 'Level 3' },
+  { value: 1, label: 'Guided' },
+  { value: 2, label: 'Assisted' },
+  { value: 3, label: 'Challenging' },
 ];
 
 const DIFFICULTY_OPTIONS: { value: Difficulty; label: string }[] = [

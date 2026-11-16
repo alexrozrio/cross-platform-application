@@ -34,7 +34,7 @@ function weekOfYear(): number {
 
 const GRID_SIZES = [2, 4, 6, 8] as const;
 const PAIRS: Record<number, number> = { 2: 4, 4: 8, 6: 16, 8: 32 };
-const GRID_LABELS: Record<number, string> = { 2: 'Beginner · 4 pairs', 4: 'Easy · 8 pairs', 6: 'Medium · 16 pairs', 8: 'Hard · 32 pairs' };
+const GRID_LABELS: Record<number, string> = { 2: 'Easy · 2×4 · 4 pairs', 4: 'Medium · 4×4 · 8 pairs', 6: 'Hard · 8×4 · 16 pairs', 8: 'Expert · 8×8 · 32 pairs' };
 
 function getDailyConfig() {
   const gridSize = GRID_SIZES[dayOfYear() % GRID_SIZES.length];

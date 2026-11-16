@@ -25,10 +25,12 @@ export const SCIENCE_BANK: Record<QuizLevel, QuizQuestion[]> = {
     { id: "sci-e19", text: "Which is the largest ocean on Earth?", options: ["Atlantic", "Indian", "Pacific", "Arctic"], answer: 2 },
     { id: "sci-e20", text: "How many legs does an insect have?", options: ["4", "6", "8", "10"], answer: 1 },
     { id: "sci-e21", text: "Which bird cannot fly but swims well?", options: ["Penguin", "Eagle", "Sparrow", "Raven"], answer: 0 },
-    { id: "sci-e22", text: "What gas do plants release during photosynthesis?", options: ["Oxygen", "Carbon dioxide", "Nitrogen", "Hydrogen"], answer: 0 },
     { id: "sci-e23", text: "At what temperature does water boil?", options: ["50°C", "90°C", "100°C", "120°C"], answer: 2 },
     { id: "sci-e24", text: "Which part of a plant is usually found underground?", options: ["Roots", "Leaves", "Flowers", "Fruits"], answer: 0 },
     { id: "sci-e25", text: "Which gas do plants absorb from the air?", options: ["Oxygen", "Nitrogen", "Carbon dioxide", "Hydrogen"], answer: 2 },
+    { id: "sci-e26", text: "What does a caterpillar turn into?", options: ["Butterfly", "Frog", "Bird", "Fish"], answer: 0 },
+    { id: "sci-e27", text: "What do you call a baby cat?", options: ["Puppy", "Kitten", "Cub", "Calf"], answer: 1 },
+    { id: "sci-e28", text: "Which colour do you get when you mix red and yellow?", options: ["Green", "Orange", "Purple", "Brown"], answer: 1 },
   ],
   medium: [
     { id: "sci-m01", text: "What is the chemical symbol for gold?", options: ["Gd", "Go", "Au", "Ag"], answer: 2 },
@@ -61,6 +63,7 @@ export const SCIENCE_BANK: Record<QuizLevel, QuizQuestion[]> = {
     { id: "sci-m28", text: "Which planet is famous for its prominent rings?", options: ["Saturn", "Jupiter", "Uranus", "Neptune"], answer: 0 },
     { id: "sci-m29", text: "What is the study of earthquakes called?", options: ["Seismology", "Volcanology", "Meteorology", "Geology"], answer: 0 },
     { id: "sci-m30", text: "Which vitamin helps the body absorb calcium?", options: ["Vitamin A", "Vitamin C", "Vitamin D", "Vitamin K"], answer: 2 },
+    { id: "sci-m31", text: "What gas do plants release during photosynthesis?", options: ["Oxygen", "Carbon dioxide", "Nitrogen", "Hydrogen"], answer: 0 },
   ],
   hard: [
     { id: "sci-h01", text: "What is the chemical formula of table salt?", options: ["KCl", "NaCl", "CaCl₂", "NaOH"], answer: 1 },

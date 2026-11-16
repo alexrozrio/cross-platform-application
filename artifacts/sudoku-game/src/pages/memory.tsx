@@ -51,11 +51,11 @@ const MEMORY_COMPLETION_REWARDS: Record<GridSize, { xp: number; gems: number }> 
   8: { xp: 3, gems: 3 },
 };
 
-const GRID_OPTIONS: { size: GridSize; label: string; pairs: number; desc: string }[] = [
-  { size: 2, label: '2×4', pairs: 4,  desc: 'Beginner · 4 pairs' },
-  { size: 4, label: '4×4', pairs: 8,  desc: 'Easy · 8 pairs' },
-  { size: 6, label: '8×4', pairs: 16, desc: 'Medium · 16 pairs' },
-  { size: 8, label: '8×8', pairs: 32, desc: 'Hard · 32 pairs' },
+const GRID_OPTIONS: { size: GridSize; name: string; label: string; pairs: number; desc: string }[] = [
+  { size: 2, name: 'Easy',    label: '2×4', pairs: 4,  desc: '2×4 · 4 pairs' },
+  { size: 4, name: 'Medium',  label: '4×4', pairs: 8,  desc: '4×4 · 8 pairs' },
+  { size: 6, name: 'Hard',    label: '8×4', pairs: 16, desc: '8×4 · 16 pairs' },
+  { size: 8, name: 'Expert',  label: '8×8', pairs: 32, desc: '8×8 · 32 pairs' },
 ];
 
 const MEMORY_DIFFICULTY_SLUGS: Record<GridSize, string> = {
@@ -702,7 +702,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
 
   const handleShare = useCallback(async () => {
     const sizeLabel = GRID_OPTIONS.find(o => o.size === gridSize)?.label ?? `${gridSize}×${gridSize}`;
-    const diffLabel = GRID_OPTIONS.find(o => o.size === gridSize)?.desc.split(' · ')[0] ?? '';
+    const diffLabel = GRID_OPTIONS.find(o => o.size === gridSize)?.name ?? '';
     const rank = profile ? getLevelFromXp(profile.xp ?? 0).name : null;
     const appUrl = appShareUrlForPath(`${memoryBookmarkPath(gridSize)}?start=1`);
     const lines = [
@@ -740,7 +740,6 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
   // ── Setup screen ─────────────────────────────────────────────────────────────
   if (phase === 'setup') {
     const sizeEmoji: Record<number, string> = { 2: '🟢', 4: '🔵', 6: '🟠', 8: '🔴' };
-    const sizeDiff: Record<number, string> = { 2: 'Beginner', 4: 'Easy', 6: 'Medium', 8: 'Hard' };
 
     return (
       <div className="max-w-lg mx-auto w-full animate-in fade-in duration-500 flex flex-col gap-4 sm:gap-6 pb-20 sm:pb-8">
@@ -821,9 +820,9 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
                 ].join(' ')}
               >
                 <span className="text-xl leading-none">{sizeEmoji[opt.size]}</span>
-                <span className="text-2xl font-black text-primary leading-none tabular-nums">{opt.label}</span>
-                <span className="text-xs font-semibold text-foreground/80">{sizeDiff[opt.size]}</span>
-                <span className="text-[10px] text-muted-foreground">{opt.pairs} pairs · {MEMORY_COMPLETION_REWARDS[opt.size].gems} 💎</span>
+                <span className="text-2xl font-black text-primary leading-none tabular-nums">{opt.name}</span>
+                <span className="text-xs font-semibold text-foreground/80">{opt.label} · {opt.pairs} pairs</span>
+                <span className="text-[10px] text-muted-foreground">{MEMORY_COMPLETION_REWARDS[opt.size].gems} 💎</span>
               </button>
             ))}
           </div>
@@ -844,7 +843,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
                     {opt.label}
                   </div>
                   <div>
-                    <p className="font-semibold">{opt.desc}</p>
+                    <p className="font-semibold">{opt.name} · {opt.desc}</p>
                     <p className="text-xs text-muted-foreground">
                       +{MEMORY_COMPLETION_REWARDS[opt.size].xp} XP · {MEMORY_COMPLETION_REWARDS[opt.size].gems} 💎
                     </p>
@@ -951,8 +950,8 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
             <article>
               <h3 className="font-semibold text-foreground">Pick a board that fits your session</h3>
               <p className="mt-1">
-                The 2×4 Beginner board has 4 pairs, 4×4 Easy has 8, 8×4 Medium
-                has 16, and 8×8 Hard has 32. Start smaller while learning the
+                The 2×4 Easy board has 4 pairs, 4×4 Medium has 8, 8×4 Hard
+                has 16, and 8×8 Expert has 32. Start smaller while learning the
                 routine; larger boards ask you to keep more locations in mind.
               </p>
             </article>
@@ -1134,7 +1133,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
 
         <div className="bg-card border border-border rounded-2xl p-3 sm:p-4 space-y-2 sm:space-y-3">
           <Button variant="outline" className="w-full gap-2" onClick={() => startGame(gridSize)}>
-            <RotateCcw className="w-4 h-4" /> Play again ({GRID_OPTIONS.find(o => o.size === gridSize)?.desc})
+            <RotateCcw className="w-4 h-4" /> Play again ({GRID_OPTIONS.find(o => o.size === gridSize)?.name} · {GRID_OPTIONS.find(o => o.size === gridSize)?.desc})
           </Button>
           {completedDuelId && (
             <Button
@@ -1160,7 +1159,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
                       : 'border-border bg-background hover:border-primary/40 hover:bg-muted/50',
                   ].join(' ')}
                 >
-                  <span className="font-black text-base text-primary">{opt.label}</span>
+                  <span className="font-black text-base text-primary">{opt.name}</span>
                   <span className="text-[10px] text-muted-foreground leading-tight">{opt.desc}</span>
                 </button>
               ))}

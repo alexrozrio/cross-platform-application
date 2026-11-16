@@ -17,9 +17,12 @@ import { shareOrDownloadShareCard } from "@/lib/share-card";
 import { ACHIEVEMENT_COMPLETION_EVENT } from "@/lib/achievement-events";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
+  JIGSAW_LEVELS,
   JIGSAW_MAX_PIECE_NUMBER_HINTS,
   JIGSAW_MAX_REFERENCE_PEEKS,
   JIGSAW_SESSION_STORAGE_KEY,
+  JIGSAW_SIZE_NAMES,
+  jigsawSizeLabel,
   parseSavedJigsawSession,
   type SavedJigsawSession,
 } from "@/lib/jigsaw-session";
@@ -49,11 +52,7 @@ type Config = { gridSize: GridSize; level: 1 | 2 | 3; imageKey: number; dailyDat
 
 const SIZES: GridSize[] = [2, 3, 4, 5];
 const REFERENCE_PEEK_DURATION_MS = 5000;
-const LEVELS: { value: 1 | 2 | 3; title: string; copy: string }[] = [
-  { value: 1, title: "Easy", copy: "Reference stays beside your puzzle" },
-  { value: 2, title: "Medium", copy: "5-second preview, up to 3 times" },
-  { value: 3, title: "Hard", copy: "No reference image during play" },
-];
+const LEVELS = JIGSAW_LEVELS;
 
 function formatTime(seconds: number) {
   return `${Math.floor(seconds / 60).toString().padStart(2, "0")}:${(seconds % 60).toString().padStart(2, "0")}`;
@@ -591,7 +590,7 @@ export default function JigsawPage() {
         if (navigator.share) {
           await navigator.share({
             title: "Jigsaw friend challenge",
-            text: `I challenge you to a ${config.gridSize}×${config.gridSize} Jigsaw puzzle.`,
+            text: `I challenge you to a ${jigsawSizeLabel(config.gridSize)} Jigsaw puzzle.`,
             url: inviteUrl,
           });
         } else {
@@ -692,7 +691,7 @@ export default function JigsawPage() {
     const url = appShareUrlForPath(inviteToken ? `/jigsaw-invite/${inviteToken}` : "/jigsaw");
     const rank = profile ? getLevelFromXp(profile.xp ?? 0).name : null;
     const lines = [
-      `🧩 Finished a ${result.gridSize} × ${result.gridSize} picture puzzle on level ${result.level}.`,
+      `🧩 Finished a ${jigsawSizeLabel(result.gridSize)} picture puzzle on level ${result.level}.`,
       `🔄 ${result.moves} moves · 💡 ${result.tipsUsed} assists · ⏱ ${formatTime(result.elapsedSeconds)}`,
       `+${result.points.toLocaleString()} points · +${result.xpEarned} XP · +${result.gemsEarned} gems`,
       rank ? `🏅 ${rank} · Play Brain Games . Online` : "🧠 Play Brain Games . Online",
@@ -774,7 +773,7 @@ export default function JigsawPage() {
                 Resume Jigsaw
               </span>
               <span className="text-xs text-muted-foreground ml-2">
-                {savedSession.gridSize}×{savedSession.gridSize} · {savedSession.moves} moves · {formatTime(savedSession.elapsed)}
+                {jigsawSizeLabel(savedSession.gridSize)} · {savedSession.moves} moves · {formatTime(savedSession.elapsed)}
               </span>
             </div>
             <span className="text-amber-500 text-sm shrink-0">→</span>
@@ -796,8 +795,8 @@ export default function JigsawPage() {
                   data-testid={`select-grid-${size}`}
                   className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-amber-400/35 bg-white/75 px-2 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"
                 >
-                  <span className="font-bold text-base leading-none text-amber-700">{size}×{size}</span>
-                  <span className="mt-1 text-xs leading-none text-muted-foreground">{size * size} pieces</span>
+                  <span className="font-bold text-base leading-none text-amber-700">{JIGSAW_SIZE_NAMES[size]}</span>
+                  <span className="mt-1 text-xs leading-none text-muted-foreground">{size}×{size} · {size * size} pieces</span>
                 </button>
               ))}
             </div>
@@ -862,8 +861,8 @@ export default function JigsawPage() {
                     data-testid={`select-grid-${size}`}
                     className="flex flex-col items-center justify-center rounded-xl border-2 border-amber-400/35 bg-white/75 px-2 py-3 shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"
                   >
-                    <span className="font-bold text-lg leading-none text-amber-700">{size}×{size}</span>
-                    <span className="mt-1 text-xs leading-none text-muted-foreground">{size * size} pieces</span>
+                    <span className="font-bold text-lg leading-none text-amber-700">{JIGSAW_SIZE_NAMES[size]}</span>
+                    <span className="mt-1 text-xs leading-none text-muted-foreground">{size}×{size} · {size * size} pieces</span>
                   </button>
                 ))}
               </div>
@@ -1134,7 +1133,7 @@ export default function JigsawPage() {
           <div aria-hidden="true" className="pointer-events-none absolute -bottom-16 -left-10 hidden h-40 w-40 rounded-full border border-white/10 sm:block" />
           <div className="relative z-10 space-y-1.5 sm:space-y-2">
             <h1 className="font-serif text-xl font-bold leading-tight sm:text-3xl">Every piece, in place!</h1>
-            <p className="text-xs text-primary-foreground/80">{result.gridSize}×{result.gridSize} · {LEVELS[result.level - 1]?.title} · {formatTime(result.elapsedSeconds)} · {result.moves} moves · {result.tipsUsed} assists</p>
+            <p className="text-xs text-primary-foreground/80">{jigsawSizeLabel(result.gridSize)} · {LEVELS[result.level - 1]?.title} · {formatTime(result.elapsedSeconds)} · {result.moves} moves · {result.tipsUsed} assists</p>
             {config.dailyDate && <p className="text-xs font-semibold text-primary-foreground/90">📅 Today&apos;s shared daily puzzle</p>}
             <p className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pt-1 text-sm font-black sm:text-base" data-testid="result-rewards">
               <span data-testid="result-points">+{result.points.toLocaleString()} pts</span>
@@ -1156,7 +1155,7 @@ export default function JigsawPage() {
 
         <section className="mt-4 min-w-0 space-y-2 overflow-hidden rounded-2xl border border-border bg-card p-3 shadow-sm sm:p-4">
           <button type="button" onClick={() => startWithResultOptions()} data-testid="button-play-again" className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition hover:opacity-90">
-            <RotateCcw size={16} /> Play again ({result.gridSize}×{result.gridSize})
+            <RotateCcw size={16} /> Play again ({jigsawSizeLabel(result.gridSize)})
           </button>
           <div className="min-w-0 space-y-4 rounded-xl border border-border bg-background p-3 sm:p-4">
             <div>
@@ -1171,12 +1170,12 @@ export default function JigsawPage() {
                     key={size}
                     type="button"
                     onClick={() => startWithResultOptions({ gridSize: size })}
-                    aria-label={`Start a ${size} by ${size} Jigsaw`}
+                    aria-label={`Start a ${jigsawSizeLabel(size)} Jigsaw`}
                     aria-pressed={result.gridSize === size}
                     data-testid={`result-select-grid-${size}`}
                     className={`min-h-11 rounded-lg border-2 px-2 py-2 text-sm font-bold transition ${result.gridSize === size ? "border-amber-600 bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-200" : "border-border hover:border-amber-400"}`}
                   >
-                    {size}×{size}
+                    {JIGSAW_SIZE_NAMES[size]}
                   </button>
                 ))}
               </div>
@@ -1353,7 +1352,7 @@ export default function JigsawPage() {
                         aria-pressed={config.gridSize === size}
                         className={`rounded-md border px-2 py-2 text-xs font-semibold transition ${config.gridSize === size ? "border-amber-600 bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-200" : "border-border hover:border-amber-400"}`}
                       >
-                        {size}×{size}
+                        {JIGSAW_SIZE_NAMES[size]}
                       </button>
                     ))}
                   </div>

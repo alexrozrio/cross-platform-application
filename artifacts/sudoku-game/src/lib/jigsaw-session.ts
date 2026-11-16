@@ -6,6 +6,24 @@ export const JIGSAW_MAX_PIECE_NUMBER_HINTS = 3;
 export type JigsawGridSize = 2 | 3 | 4 | 5;
 export type JigsawLevel = 1 | 2 | 3;
 
+export const JIGSAW_SIZE_NAMES: Record<JigsawGridSize, string> = {
+  2: "Easy",
+  3: "Medium",
+  4: "Hard",
+  5: "Expert",
+};
+
+export function jigsawSizeLabel(size: number): string {
+  const name = JIGSAW_SIZE_NAMES[size as JigsawGridSize];
+  return name ? `${name} · ${size}×${size}` : `${size}×${size}`;
+}
+
+export const JIGSAW_LEVELS: { value: JigsawLevel; title: string; copy: string }[] = [
+  { value: 1, title: "Guided", copy: "Reference stays beside your puzzle" },
+  { value: 2, title: "Assisted", copy: "5-second preview, up to 3 times" },
+  { value: 3, title: "Challenging", copy: "No reference image during play" },
+];
+
 export interface SavedJigsawSession {
   gridSize: JigsawGridSize;
   level: JigsawLevel;

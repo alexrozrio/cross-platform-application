@@ -35,6 +35,10 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
     : type === "monthly"
       ? getMonthRange(period)
       : undefined;
+  if (range && (isNaN(range.start.getTime()) || isNaN(range.end.getTime()))) {
+    res.status(400).json({ error: "Invalid period" });
+    return;
+  }
 
   // ── Sudoku games ──────────────────────────────────────────────────────────
   const sudokuRows = await db
@@ -306,6 +310,10 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
     : type === "monthly"
       ? getMonthRange(period)
       : undefined;
+  if (range && (isNaN(range.start.getTime()) || isNaN(range.end.getTime()))) {
+    res.status(400).json({ error: "Invalid period" });
+    return;
+  }
 
   // Sudoku breakdown by grid size
   const sudokuRows = await db

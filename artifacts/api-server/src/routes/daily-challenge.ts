@@ -9,31 +9,46 @@ function todayDateString(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-async function getOrCreateTodaysChallenge() {
+let dailyChallengeCache: { date: string; value: Promise<{ challenge: typeof dailyChallengesTable.$inferSelect; puzzle: typeof puzzlesTable.$inferSelect }> } | null = null;
+
+function getOrCreateTodaysChallenge() {
   const today = todayDateString();
-
-  const [existing] = await db
-    .select()
-    .from(dailyChallengesTable)
-    .where(eq(dailyChallengesTable.date, today));
-
-  if (existing) {
-    const [puzzle] = await db.select().from(puzzlesTable).where(eq(puzzlesTable.id, existing.puzzleId));
-    return { challenge: existing, puzzle };
+  if (dailyChallengeCache?.date === today) {
+    return dailyChallengeCache.value;
   }
 
-  const { grid, solution } = generatePuzzle("medium", 9);
-  const [puzzle] = await db
-    .insert(puzzlesTable)
-    .values({ difficulty: "medium", gridSize: 9, grid, solution })
-    .returning();
+  const value = (async () => {
+    const [existing] = await db
+      .select()
+      .from(dailyChallengesTable)
+      .where(eq(dailyChallengesTable.date, today));
 
-  const [challenge] = await db
-    .insert(dailyChallengesTable)
-    .values({ date: today, puzzleId: puzzle.id })
-    .returning();
+    if (existing) {
+      const [puzzle] = await db.select().from(puzzlesTable).where(eq(puzzlesTable.id, existing.puzzleId));
+      return { challenge: existing, puzzle };
+    }
 
-  return { challenge, puzzle };
+    const { grid, solution } = generatePuzzle("medium", 9);
+    const [puzzle] = await db
+      .insert(puzzlesTable)
+      .values({ difficulty: "medium", gridSize: 9, grid, solution })
+      .returning();
+
+    const [challenge] = await db
+      .insert(dailyChallengesTable)
+      .values({ date: today, puzzleId: puzzle.id })
+      .returning();
+
+    return { challenge, puzzle };
+  })();
+
+  dailyChallengeCache = { date: today, value };
+  value.catch(() => {
+    if (dailyChallengeCache?.value === value) {
+      dailyChallengeCache = null;
+    }
+  });
+  return value;
 }
 
 router.get("/daily-challenge", async (req, res): Promise<void> => {

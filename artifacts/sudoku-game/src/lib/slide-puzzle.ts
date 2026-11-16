@@ -12,10 +12,10 @@ export const SLIDE_PUZZLE_LEVELS: Record<SlidePuzzleDifficulty, {
   xp: number;
   gems: number;
 }> = {
-  "2x2": { label: "2×2", size: 2, tiles: 3, mode: "baby", parMoves: 12, parSeconds: 90, basePoints: 120, xp: 1, gems: 1 },
-  "3x3": { label: "3×3", size: 3, tiles: 8, mode: "baby", parMoves: 60, parSeconds: 300, basePoints: 300, xp: 1, gems: 2 },
-  "4x4": { label: "4×4", size: 4, tiles: 15, mode: "adult", parMoves: 160, parSeconds: 1200, basePoints: 700, xp: 2, gems: 3 },
-  "5x5": { label: "5×5", size: 5, tiles: 24, mode: "adult", parMoves: 320, parSeconds: 2700, basePoints: 1500, xp: 3, gems: 4 },
+  "2x2": { label: "Easy", size: 2, tiles: 3, mode: "baby", parMoves: 12, parSeconds: 90, basePoints: 120, xp: 1, gems: 1 },
+  "3x3": { label: "Medium", size: 3, tiles: 8, mode: "baby", parMoves: 60, parSeconds: 300, basePoints: 300, xp: 1, gems: 2 },
+  "4x4": { label: "Hard", size: 4, tiles: 15, mode: "adult", parMoves: 160, parSeconds: 1200, basePoints: 700, xp: 2, gems: 3 },
+  "5x5": { label: "Expert", size: 5, tiles: 24, mode: "adult", parMoves: 320, parSeconds: 2700, basePoints: 1500, xp: 3, gems: 4 },
 };
 
 export const SLIDE_PUZZLE_DIFFICULTIES = Object.keys(SLIDE_PUZZLE_LEVELS) as SlidePuzzleDifficulty[];

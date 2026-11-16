@@ -1,10 +1,10 @@
 export type MinesweeperDifficulty = "beginner" | "easy" | "medium" | "hard";
 
 export const MINESWEEPER_LEVELS: Record<MinesweeperDifficulty, { label: string; size: number; mines: number; mode: "baby" | "adult" }> = {
-  beginner: { label: "Beginner", size: 6, mines: 5, mode: "baby" },
-  easy: { label: "Easy", size: 8, mines: 12, mode: "baby" },
-  medium: { label: "Medium", size: 12, mines: 24, mode: "adult" },
-  hard: { label: "Hard", size: 14, mines: 34, mode: "adult" },
+  beginner: { label: "Easy", size: 6, mines: 5, mode: "baby" },
+  easy: { label: "Medium", size: 8, mines: 12, mode: "baby" },
+  medium: { label: "Hard", size: 12, mines: 24, mode: "adult" },
+  hard: { label: "Expert", size: 14, mines: 34, mode: "adult" },
 };
 
 export const MINESWEEPER_DIFFICULTIES = Object.keys(MINESWEEPER_LEVELS) as MinesweeperDifficulty[];

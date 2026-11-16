@@ -40,6 +40,8 @@ import {
 } from "@/lib/sudoku-preferences";
 import {
   JIGSAW_SESSION_STORAGE_KEY,
+  JIGSAW_SIZE_NAMES,
+  jigsawSizeLabel,
   parseSavedJigsawSession,
   type SavedJigsawSession,
 } from "@/lib/jigsaw-session";
@@ -203,10 +205,10 @@ export default function Portal() {
   );
 
   const ALL_MEMORY_OPTIONS = [
-    { size: 2, label: "2×4", sub: "4 pairs" },
-    { size: 4, label: "4×4", sub: "8 pairs" },
-    { size: 6, label: "8×4", sub: "16 pairs" },
-    { size: 8, label: "8×8", sub: "32 pairs" },
+    { size: 2, label: "Easy", sub: "4 pairs" },
+    { size: 4, label: "Medium", sub: "8 pairs" },
+    { size: 6, label: "Hard", sub: "16 pairs" },
+    { size: 8, label: "Expert", sub: "32 pairs" },
   ];
   const visibleMemoryOptions = ALL_MEMORY_OPTIONS.filter((opt) =>
     gameMode === "children"
@@ -646,7 +648,7 @@ export default function Portal() {
             <span className="flex-1 min-w-0">
               <span className="block text-sm font-semibold text-foreground">Resume Jigsaw</span>
               <span className="text-xs text-muted-foreground">
-                {jigsawSession.gridSize}×{jigsawSession.gridSize} · {jigsawSession.moves} moves · {jigsawSessionTime}
+                {jigsawSizeLabel(jigsawSession.gridSize)} · {jigsawSession.moves} moves · {jigsawSessionTime}
               </span>
             </span>
             <span className="shrink-0 text-sm text-primary">→</span>
@@ -673,7 +675,7 @@ export default function Portal() {
           <div className={`relative z-10 grid gap-1.5 ${jigsawGridCols}`}>
                 {visibleJigsawSizes.map((size) => (
               <button key={size} onClick={() => setLocation(`/jigsaw?gridSize=${size}&level=1&imageKey=1&play=1`)} className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-amber-400/35 bg-white/75 px-2 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55">
-                <span className="font-bold text-base leading-none text-amber-700">{size}×{size}</span>
+                <span className="font-bold text-base leading-none text-amber-700">{JIGSAW_SIZE_NAMES[size]}</span>
                 <span className="mt-1 text-xs leading-none text-muted-foreground">{size * size} pieces</span>
               </button>
             ))}
@@ -689,7 +691,7 @@ export default function Portal() {
           <p className="relative z-10 text-[11px] font-medium leading-tight text-foreground/80">Find hidden words in the letter grid.</p>
           <IconSetPreview themeId={themeId} className="mt-1" />
           <div className={`relative z-10 mt-2 grid gap-1.5 ${visibleWordSearchLevels.length <= 2 ? "grid-cols-2" : "grid-cols-4"}`}>
-            {visibleWordSearchLevels.map((level) => <button key={level} onClick={() => launchWordSearch(level)} className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-violet-400/35 bg-white/75 px-1 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"><span className="font-black text-sm leading-tight text-violet-700 dark:text-violet-300">{WORD_SEARCH_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{WORD_SEARCH_LEVELS[level].size}×{WORD_SEARCH_LEVELS[level].size} · {WORD_SEARCH_LEVELS[level].wordCount} words</span></button>)}
+            {visibleWordSearchLevels.map((level) => <button key={level} onClick={() => launchWordSearch(level)} className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-violet-400/35 bg-white/75 px-1 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"><span className="font-black text-sm leading-tight text-violet-700 dark:text-violet-300">{WORD_SEARCH_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{WORD_SEARCH_LEVELS[level].wordCount} words</span></button>)}
           </div>
         </section>
 
@@ -700,9 +702,8 @@ export default function Portal() {
           <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-20 w-20 rotate-6 grid-cols-3 overflow-hidden rounded-xl border border-emerald-400/15 bg-white/15 opacity-60 dark:bg-white/5">{["1", "💣", "1", "", "2", "1", "🚩", "", "3"].map((cell, index) => <span key={index} className="flex items-center justify-center border border-emerald-400/10 text-xs font-black text-emerald-700/25 dark:text-emerald-200/20">{cell}</span>)}</div>
           <div className="relative z-10 flex items-center justify-between gap-3"><div className="flex items-center gap-2.5"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-md"><Bomb className="h-6 w-6" /></div><div><span className="block text-xl font-black leading-tight text-slate-900 dark:text-white">Minesweeper</span><span className="mt-1 inline-flex w-fit rounded-full bg-white/65 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-700 shadow-sm dark:bg-slate-950/30 dark:text-emerald-300">Clear the field</span></div></div><button onClick={() => setLocation("/minesweeper")} className="rounded-full bg-emerald-600 px-3 py-1.5 text-[11px] font-bold text-white shadow-sm transition-colors hover:bg-emerald-700">All options</button></div>
           <p className="relative z-10 text-[11px] font-medium leading-tight text-foreground/80">Reveal every safe cell — dodge the mines.</p>
-          <IconSetPreview themeId={themeId} className="mt-1" />
           <div className={`relative z-10 mt-2 grid gap-1.5 ${visibleMinesweeperLevels.length <= 2 ? "grid-cols-2" : "grid-cols-4"}`}>
-            {visibleMinesweeperLevels.map((level) => <button key={level} onClick={() => launchMinesweeper(level)} className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-emerald-400/35 bg-white/75 px-1 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-emerald-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"><span className="font-black text-sm leading-tight text-emerald-700 dark:text-emerald-300">{MINESWEEPER_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{MINESWEEPER_LEVELS[level].size}×{MINESWEEPER_LEVELS[level].size} · {MINESWEEPER_LEVELS[level].mines} mines</span></button>)}
+            {visibleMinesweeperLevels.map((level) => <button key={level} onClick={() => launchMinesweeper(level)} className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-emerald-400/35 bg-white/75 px-1 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-emerald-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"><span className="font-black text-sm leading-tight text-emerald-700 dark:text-emerald-300">{MINESWEEPER_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{MINESWEEPER_LEVELS[level].mines} mines</span></button>)}
           </div>
         </section>
 
@@ -715,7 +716,7 @@ export default function Portal() {
           <p className="relative z-10 text-[11px] font-medium leading-tight text-foreground/80">Slide the tiles back into order.</p>
           <IconSetPreview themeId={themeId} className="mt-1" />
           <div className={`relative z-10 mt-2 grid gap-1.5 ${visibleSlidePuzzleLevels.length <= 2 ? "grid-cols-2" : "grid-cols-4"}`}>
-            {visibleSlidePuzzleLevels.map((level) => <button key={level} onClick={() => launchSlidePuzzle(level)} className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-sky-400/35 bg-white/75 px-1 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-sky-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"><span className="font-black text-sm leading-tight text-sky-700 dark:text-sky-300">{SLIDE_PUZZLE_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{SLIDE_PUZZLE_LEVELS[level].size}×{SLIDE_PUZZLE_LEVELS[level].size} · {SLIDE_PUZZLE_LEVELS[level].tiles} tiles</span></button>)}
+            {visibleSlidePuzzleLevels.map((level) => <button key={level} onClick={() => launchSlidePuzzle(level)} className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-sky-400/35 bg-white/75 px-1 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-sky-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"><span className="font-black text-sm leading-tight text-sky-700 dark:text-sky-300">{SLIDE_PUZZLE_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{SLIDE_PUZZLE_LEVELS[level].tiles} tiles</span></button>)}
           </div>
         </section>
 
@@ -731,7 +732,7 @@ export default function Portal() {
               <div className="relative z-10 flex items-center justify-between gap-3"><div className="flex items-center gap-2.5"><div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl shadow-md ${subject.theme.soft}`}>{subject.emoji}</div><div><span className="block text-xl font-black leading-tight text-slate-900 dark:text-white">{subject.shortName} Quiz</span><span className="mt-1 inline-flex w-fit rounded-full bg-white/65 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] shadow-sm dark:bg-slate-950/30" style={{ color: subject.theme.hex }}>{subject.tagline}</span></div></div><button onClick={() => setLocation(`/quiz/${id}`)} className={`rounded-full px-3 py-1.5 text-[11px] font-bold text-white shadow-sm transition-colors ${subject.theme.btn}`}>All options</button></div>
               <p className="relative z-10 text-[11px] font-medium leading-tight text-foreground/80">Timed multiple-choice questions across four levels.</p>
               <div className={`relative z-10 mt-2 grid gap-1.5 ${levels.length <= 2 ? "grid-cols-2" : "grid-cols-4"}`}>
-                {levels.map((level) => <button key={level} onClick={() => launchQuiz(id, level)} className={`relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 bg-white/75 px-1 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55 ${subject.theme.border} ${subject.theme.hover}`}><span className={`font-black text-sm leading-tight ${subject.theme.strong}`}>{subject.levels[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{subject.levels[level].detail}</span></button>)}
+                {levels.map((level) => <button key={level} onClick={() => launchQuiz(id, level)} className={`relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 bg-white/75 px-1 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55 ${subject.theme.border} ${subject.theme.hover}`}><span className={`font-black text-sm leading-tight ${subject.theme.strong}`}>{subject.levels[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{subject.levels[level].detail.replace("questions", "quiz")}</span></button>)}
               </div>
             </section>
           );
@@ -1291,7 +1292,7 @@ export default function Portal() {
                       className="flex flex-col items-center justify-center rounded-lg border border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/15 hover:border-amber-500/40 transition-all py-2 px-1 cursor-pointer min-h-[52px]"
                     >
                       <span className="font-bold text-xs leading-none text-amber-600 dark:text-amber-400">
-                        {size}×{size}
+                        {JIGSAW_SIZE_NAMES[size]}
                       </span>
                       <span className="mt-1 text-[10px] leading-none text-muted-foreground">
                         {size * size} pieces
@@ -1336,7 +1337,7 @@ export default function Portal() {
               </button>
               <div className="relative z-10 px-6 pb-5 pt-1">
                 <div className="grid grid-cols-2 gap-2">
-                  {visibleWordSearchLevels.map((level) => <button key={level} onClick={() => launchWordSearch(level)} className="flex min-h-[52px] flex-col items-center justify-center rounded-lg border border-violet-400/20 bg-violet-500/5 px-1 py-2 text-center transition-all hover:border-violet-400/40 hover:bg-violet-500/15"><span className="text-xs font-bold leading-none text-violet-600 dark:text-violet-400">{WORD_SEARCH_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{WORD_SEARCH_LEVELS[level].size}×{WORD_SEARCH_LEVELS[level].size} · {WORD_SEARCH_LEVELS[level].wordCount} words</span></button>)}
+                  {visibleWordSearchLevels.map((level) => <button key={level} onClick={() => launchWordSearch(level)} className="flex min-h-[52px] flex-col items-center justify-center rounded-lg border border-violet-400/20 bg-violet-500/5 px-1 py-2 text-center transition-all hover:border-violet-400/40 hover:bg-violet-500/15"><span className="text-xs font-bold leading-none text-violet-600 dark:text-violet-400">{WORD_SEARCH_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{WORD_SEARCH_LEVELS[level].wordCount} words</span></button>)}
                 </div>
                 <button onClick={() => setLocation("/word-search")} className="mt-3 text-xs font-semibold text-violet-800 underline underline-offset-2 dark:text-violet-200">More options and themes</button>
               </div>
@@ -1352,11 +1353,10 @@ export default function Portal() {
               <button onClick={() => setLocation("/minesweeper")} className="relative z-10 block w-full space-y-4 p-6 text-left transition-all duration-200 hover:bg-white/20 dark:hover:bg-slate-950/20">
                 <div className="flex items-center gap-3"><span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-emerald-600/10 text-emerald-600 ring-1 ring-emerald-400/20 dark:text-emerald-300"><Bomb className="h-8 w-8" /></span><div><h2 className="font-serif text-xl font-bold">Minesweeper</h2><p className="text-xs text-muted-foreground">Clear the minefield</p></div></div>
                 <p className="text-sm leading-relaxed text-muted-foreground">Reveal every safe cell and dodge the mines. Pick a board size and mine count to start.</p>
-                <IconSetPreview themeId={themeId} />
               </button>
               <div className="relative z-10 px-6 pb-5 pt-1">
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {visibleMinesweeperLevels.map((level) => <button key={level} onClick={() => launchMinesweeper(level)} className="flex min-h-[52px] flex-col items-center justify-center rounded-lg border border-emerald-400/20 bg-emerald-500/5 px-1 py-2 text-center transition-all hover:border-emerald-400/40 hover:bg-emerald-500/15"><span className="text-xs font-bold leading-none text-emerald-700 dark:text-emerald-300">{MINESWEEPER_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{MINESWEEPER_LEVELS[level].size}×{MINESWEEPER_LEVELS[level].size} · {MINESWEEPER_LEVELS[level].mines} mines</span></button>)}
+                  {visibleMinesweeperLevels.map((level) => <button key={level} onClick={() => launchMinesweeper(level)} className="flex min-h-[52px] flex-col items-center justify-center rounded-lg border border-emerald-400/20 bg-emerald-500/5 px-1 py-2 text-center transition-all hover:border-emerald-400/40 hover:bg-emerald-500/15"><span className="text-xs font-bold leading-none text-emerald-700 dark:text-emerald-300">{MINESWEEPER_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{MINESWEEPER_LEVELS[level].mines} mines</span></button>)}
                 </div>
                 <button onClick={() => setLocation("/minesweeper")} className="mt-3 text-xs font-semibold text-emerald-800 underline underline-offset-2 dark:text-emerald-200">More options and themes</button>
               </div>
@@ -1376,7 +1376,7 @@ export default function Portal() {
               </button>
               <div className="relative z-10 px-6 pb-5 pt-1">
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {visibleSlidePuzzleLevels.map((level) => <button key={level} onClick={() => launchSlidePuzzle(level)} className="flex min-h-[52px] flex-col items-center justify-center rounded-lg border border-sky-400/20 bg-sky-500/5 px-1 py-2 text-center transition-all hover:border-sky-400/40 hover:bg-sky-500/15"><span className="text-xs font-bold leading-none text-sky-700 dark:text-sky-300">{SLIDE_PUZZLE_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{SLIDE_PUZZLE_LEVELS[level].size}×{SLIDE_PUZZLE_LEVELS[level].size} · {SLIDE_PUZZLE_LEVELS[level].tiles} tiles</span></button>)}
+                  {visibleSlidePuzzleLevels.map((level) => <button key={level} onClick={() => launchSlidePuzzle(level)} className="flex min-h-[52px] flex-col items-center justify-center rounded-lg border border-sky-400/20 bg-sky-500/5 px-1 py-2 text-center transition-all hover:border-sky-400/40 hover:bg-sky-500/15"><span className="text-xs font-bold leading-none text-sky-700 dark:text-sky-300">{SLIDE_PUZZLE_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{SLIDE_PUZZLE_LEVELS[level].tiles} tiles</span></button>)}
                 </div>
                 <button onClick={() => setLocation("/slide-puzzle")} className="mt-3 text-xs font-semibold text-sky-800 underline underline-offset-2 dark:text-sky-200">More options and tile styles</button>
               </div>
@@ -1399,7 +1399,7 @@ export default function Portal() {
               </button>
               <div className="relative z-10 px-6 pb-5 pt-1">
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {levels.map((level) => <button key={level} onClick={() => launchQuiz(id, level)} className={`flex min-h-[52px] flex-col items-center justify-center rounded-lg border bg-white/60 px-1 py-2 text-center transition-all hover:bg-white dark:bg-slate-950/30 dark:hover:bg-slate-950/50 ${subject.theme.border} ${subject.theme.hover}`}><span className={`text-xs font-bold leading-none ${subject.theme.strong}`}>{subject.levels[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{subject.levels[level].detail}</span></button>)}
+                  {levels.map((level) => <button key={level} onClick={() => launchQuiz(id, level)} className={`flex min-h-[52px] flex-col items-center justify-center rounded-lg border bg-white/60 px-1 py-2 text-center transition-all hover:bg-white dark:bg-slate-950/30 dark:hover:bg-slate-950/50 ${subject.theme.border} ${subject.theme.hover}`}><span className={`text-xs font-bold leading-none ${subject.theme.strong}`}>{subject.levels[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{subject.levels[level].detail.replace("questions", "quiz")}</span></button>)}
                 </div>
                 <button onClick={() => setLocation(`/quiz/${id}`)} className="mt-3 text-xs font-semibold underline underline-offset-2" style={{ color: subject.theme.hex }}>More options</button>
               </div>
@@ -1638,11 +1638,12 @@ export default function Portal() {
           <div>
             <h3 className="font-semibold text-foreground">Rebuild a Jigsaw picture</h3>
             <p className="mt-1">
-              Choose a 2×2 to 5×5 board. Kids mode offers 2×2 and 3×3, Adult
-              offers 4×4 and 5×5, and default 4 All mode offers every size.
+              Choose from Easy (2×2) to Expert (5×5). Kids mode offers the
+              smaller boards, Adult mode the larger ones, and default 4 All
+              mode offers every size.
               Drag pieces into empty spaces or tap two pieces to swap them.
-              Easy keeps the reference visible,
-              Medium gives three short previews, and Hard hides the reference.
+              Guided keeps the reference visible,
+              Assisted gives three short previews, and Challenging hides the reference.
               Tips can reveal piece information; efficient moves and fewer
               assists help protect your score.
             </p>
@@ -1651,10 +1652,10 @@ export default function Portal() {
             <h3 className="font-semibold text-foreground">Hunt words in the grid</h3>
             <p className="mt-1">
               In Word Search, themed words hide in straight lines across,
-              down, and — on Medium and Hard — diagonally, including backwards.
+              down, and — on Hard and Expert — diagonally, including backwards.
               Press on a word&apos;s first letter and drag to its last to
-              reveal it. Four levels range from a quick 6×6 Beginner grid to a
-              14×14 Hard board, each with its own word theme. Fewer tries and
+              reveal it. Four levels range from a quick 6×6 Easy grid to a
+              14×14 Expert board, each with its own word theme. Fewer tries and
               hints keep your score high.
             </p>
           </div>
@@ -1664,8 +1665,8 @@ export default function Portal() {
               In Minesweeper, every revealed number counts the mines touching
               that cell. Flag the cells you believe are mined, reveal the rest,
               and clear every safe cell to win — hitting three mines ends the
-              game. Beginner (6×6, 5 mines) and Easy (8×8, 12 mines) suit quick
-              rounds, while Medium (12×12, 24 mines) and Hard (14×14, 34 mines)
+              game. Easy (6×6, 5 mines) and Medium (8×8, 12 mines) suit quick
+              rounds, while Hard (12×12, 24 mines) and Expert (14×14, 34 mines)
               reward careful deduction. Click a revealed number with enough
               flags around it to clear its neighbours at once.
             </p>

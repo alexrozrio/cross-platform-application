@@ -100,6 +100,9 @@ import { getWordSearchHistory, summarizeWordSearchStats, WORD_SEARCH_STATS_UPDAT
 import { getMinesweeperHistory, summarizeMinesweeperStats, MINESWEEPER_STATS_UPDATED } from "@/lib/minesweeper-stats";
 import { getSlidePuzzleHistory, summarizeSlidePuzzleStats, SLIDE_PUZZLE_STATS_UPDATED } from "@/lib/slide-puzzle-stats";
 import { SLIDE_PUZZLE_LEVELS } from "@/lib/slide-puzzle";
+import { WORD_SEARCH_LEVELS } from "@/lib/word-search";
+import { MINESWEEPER_LEVELS } from "@/lib/minesweeper";
+import { JIGSAW_LEVELS, JIGSAW_SIZE_NAMES } from "@/lib/jigsaw-session";
 import { QUIZ_SUBJECTS, QUIZ_LEVELS, quizGameId, quizSubject, quizSubjectForGameId, type QuizGameId, type QuizSubject } from "@/lib/quiz";
 import { GAME_ICONS, gameIconColor } from "@/lib/game-icons";
 import { getQuizHistory, summarizeQuizStats, QUIZ_STATS_UPDATED } from "@/lib/quiz-stats";
@@ -638,10 +641,10 @@ function BestTimesMemory({
 }) {
   const [open, setOpen] = useState(false);
   const SIZES = [
-    { size: 2, label: "Beginner", pairs: 4 },
-    { size: 4, label: "Easy",     pairs: 8 },
-    { size: 6, label: "Medium",   pairs: 16 },
-    { size: 8, label: "Hard",     pairs: 32 },
+    { size: 2, label: "Easy",    board: "2×4", pairs: 4 },
+    { size: 4, label: "Medium",  board: "4×4", pairs: 8 },
+    { size: 6, label: "Hard",    board: "8×4", pairs: 16 },
+    { size: 8, label: "Expert",  board: "8×8", pairs: 32 },
   ];
   return (
     <div className="rounded-xl border border-purple-200/60 overflow-hidden shadow-sm">
@@ -665,11 +668,11 @@ function BestTimesMemory({
       </button>
       {open && (
         <div className="border-t px-4 py-4 bg-muted/10 space-y-2">
-          {SIZES.map(({ size, label, pairs }) => (
+          {SIZES.map(({ size, label, board, pairs }) => (
             <div key={size} className="flex justify-between items-center p-3 rounded-lg bg-background border border-border">
               <div>
                 <span className="font-medium text-sm">{label}</span>
-                <span className="text-xs text-muted-foreground ml-2">({pairs} pairs)</span>
+                <span className="text-xs text-muted-foreground ml-2">({board} · {pairs} pairs)</span>
               </div>
               <span className="font-mono text-base font-bold text-purple-600">{formatTime(mem.bestTimes?.[String(size)])}</span>
             </div>
@@ -749,11 +752,11 @@ function BestTimesJigsaw({
             </div>
           ) : activeSizes.map((size) => (
             <section key={size} className="space-y-2">
-              <p className="inline-flex rounded-md border border-amber-200 bg-card px-2.5 py-1 text-xs font-bold uppercase tracking-widest text-foreground shadow-sm">{size}×{size} board</p>
+              <p className="inline-flex rounded-md border border-amber-200 bg-card px-2.5 py-1 text-xs font-bold uppercase tracking-widest text-foreground shadow-sm">{JIGSAW_SIZE_NAMES[size as keyof typeof JIGSAW_SIZE_NAMES]} · {size}×{size} board</p>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                 {levels.map((level) => (
                   <div key={level} className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2">
-                    <span className="text-xs font-medium text-muted-foreground">Level {level}</span>
+                    <span className="text-xs font-medium text-muted-foreground">{JIGSAW_LEVELS[level - 1]?.title ?? `Level ${level}`}</span>
                     <span className="font-mono text-sm font-bold text-amber-700 dark:text-amber-300">{formatTime(stats.bestTimes?.[`${size}-${level}`])}</span>
                   </div>
                 ))}
@@ -800,7 +803,7 @@ function WordSearchStatsPanel({ profileId }: { profileId: number | null }) {
       <Card className="overflow-hidden border-violet-200/60 dark:border-violet-800/40">
         <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-base"><Clock className="h-4 w-4 text-violet-600" />Best times by level</CardTitle></CardHeader>
         <CardContent className="space-y-2">
-          {(["beginner", "easy", "medium", "hard"] as const).map((difficulty) => <div key={difficulty} className="flex items-center justify-between rounded-lg border bg-background px-3 py-2.5"><span className="font-medium capitalize">{difficulty}</span><span className="font-mono font-bold text-violet-700 dark:text-violet-300">{stats.bestTimes[difficulty] === undefined ? "—" : format(stats.bestTimes[difficulty]!)}</span></div>)}
+          {(["beginner", "easy", "medium", "hard"] as const).map((difficulty) => <div key={difficulty} className="flex items-center justify-between rounded-lg border bg-background px-3 py-2.5"><span className="font-medium">{WORD_SEARCH_LEVELS[difficulty].label} · {WORD_SEARCH_LEVELS[difficulty].size}×{WORD_SEARCH_LEVELS[difficulty].size}</span><span className="font-mono font-bold text-violet-700 dark:text-violet-300">{stats.bestTimes[difficulty] === undefined ? "—" : format(stats.bestTimes[difficulty]!)}</span></div>)}
         </CardContent>
       </Card>
 
@@ -868,7 +871,7 @@ function MinesweeperStatsPanel({ profileId }: { profileId: number | null }) {
       <Card className="overflow-hidden border-emerald-200/60 dark:border-emerald-800/40">
         <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-base"><Clock className="h-4 w-4 text-emerald-600" />Best times by board</CardTitle></CardHeader>
         <CardContent className="space-y-2">
-          {(["beginner", "easy", "medium", "hard"] as const).map((difficulty) => <div key={difficulty} className="flex items-center justify-between rounded-lg border bg-background px-3 py-2.5"><span className="font-medium capitalize">{difficulty}</span><span className="font-mono font-bold text-emerald-700 dark:text-emerald-300">{stats.bestTimes[difficulty] === undefined ? "—" : format(stats.bestTimes[difficulty]!)}</span></div>)}
+          {(["beginner", "easy", "medium", "hard"] as const).map((difficulty) => <div key={difficulty} className="flex items-center justify-between rounded-lg border bg-background px-3 py-2.5"><span className="font-medium">{MINESWEEPER_LEVELS[difficulty].label} · {MINESWEEPER_LEVELS[difficulty].size}×{MINESWEEPER_LEVELS[difficulty].size} · {MINESWEEPER_LEVELS[difficulty].mines} mines</span><span className="font-mono font-bold text-emerald-700 dark:text-emerald-300">{stats.bestTimes[difficulty] === undefined ? "—" : format(stats.bestTimes[difficulty]!)}</span></div>)}
         </CardContent>
       </Card>
 

@@ -33,10 +33,10 @@ export const WORD_SEARCH_THEMES: WordSearchThemeOption[] = [
 ];
 
 export const WORD_SEARCH_LEVELS: Record<WordSearchDifficulty, { label: string; size: number; wordCount: number; mode: "baby" | "adult" }> = {
-  beginner: { label: "Beginner", size: 6, wordCount: 6, mode: "baby" },
-  easy: { label: "Easy", size: 8, wordCount: 8, mode: "baby" },
-  medium: { label: "Medium", size: 12, wordCount: 10, mode: "adult" },
-  hard: { label: "Hard", size: 14, wordCount: 12, mode: "adult" },
+  beginner: { label: "Easy", size: 6, wordCount: 6, mode: "baby" },
+  easy: { label: "Medium", size: 8, wordCount: 8, mode: "baby" },
+  medium: { label: "Hard", size: 12, wordCount: 10, mode: "adult" },
+  hard: { label: "Expert", size: 14, wordCount: 12, mode: "adult" },
 };
 
 export interface WordSearchPuzzle {
