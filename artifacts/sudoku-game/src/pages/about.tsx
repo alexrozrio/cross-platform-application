@@ -26,21 +26,21 @@ const JIGSAW_FEATURES = [
 ];
 
 const WORD_SEARCH_FEATURES = [
-  { icon: Search, label: "Four difficulty levels", desc: "From a quick 6×6 Beginner grid to a 14×14 Hard board with diagonals and backwards words." },
+  { icon: Search, label: "Four difficulty levels", desc: "From a quick 6×6 Easy grid to a 14×14 Expert board with diagonals and backwards words." },
   { icon: Palette, label: "Themed word lists", desc: "Animals, food, space, ocean, and icon-set themes give every puzzle a fresh word list." },
   { icon: Flame, label: "Daily and friend challenges", desc: "Solve the same shared daily puzzle or challenge a friend to beat your score." },
   { icon: Gem, label: "Points, XP, and gems", desc: "Earn points based on difficulty, time, tries, and hints, with XP and gems for completing puzzles." },
 ];
 
 const MINESWEEPER_FEATURES = [
-  { icon: Bomb, label: "Four board sizes", desc: "From a gentle 6×6 Beginner board with 5 mines up to a 14×14 Hard field with 34." },
+  { icon: Bomb, label: "Four board sizes", desc: "From a gentle 6×6 Easy board with 5 mines up to a 14×14 Expert field with 34." },
   { icon: Search, label: "Numbers and flags", desc: "Each revealed number counts neighbouring mines — flag the suspects and clear every safe cell." },
   { icon: Flame, label: "Daily challenge", desc: "One shared minefield per day — compare your sweep with everyone else." },
   { icon: Gem, label: "Points, XP, and gems", desc: "Earn points for clearing the field cleanly and quickly, with up to three mistakes and two hints." },
 ];
 
 const SLIDE_PUZZLE_FEATURES = [
-  { icon: Grid2x2, label: "Four board sizes", desc: "2×2 and 3×3 warm-ups up to the demanding 4×4 and 5×5 boards." },
+  { icon: Grid2x2, label: "Four board sizes", desc: "Easy and Medium warm-ups up to the demanding Hard and Expert boards." },
   { icon: Type, label: "Three tile styles", desc: "Numbers, alphabet letters, or picture tiles from the icon themes." },
   { icon: Flame, label: "Daily challenge", desc: "Solve the same scrambled board as every other player each day." },
   { icon: Gem, label: "Points, XP, and gems", desc: "Points reward few moves and fast solves against each board's par target." },
@@ -96,24 +96,24 @@ export default function About() {
           In Memory Match, flip cards to find matching pairs across grids from a quick 2×4 warm-up to a demanding 8×8 marathon — with the same number, letter, and image themes carried over from Sudoku.
         </p>
         <p>
-          In Jigsaw, rebuild themed pictures on boards from 2×2 to 5×5. Kids mode offers 2×2 and 3×3 boards, Adult mode offers 4×4 and 5×5, and default 4 All mode offers all four. Choose a level, earn points based on time, moves, and tips, or invite a friend to solve the same picture. Wins also award XP by level and gems by board size.
+          In Jigsaw, rebuild themed pictures on boards from Easy (2×2) to Expert (5×5). Kids mode offers the smaller boards, Adult mode the larger ones, and default 4 All mode offers all four. Choose an assist level, earn points based on time, moves, and tips, or invite a friend to solve the same picture. Wins also award XP by level and gems by board size.
         </p>
         <p>
           In Word Search, find themed words hidden in a letter grid across four
-          levels. Beginner and Easy hide words left-to-right and top-to-bottom;
-          Medium adds diagonals and Hard adds backwards words too. Drag from a
+          levels. Easy and Medium hide words left-to-right and top-to-bottom;
+          Hard adds diagonals and Expert adds backwards words too. Drag from a
           word&apos;s first letter to its last to reveal it, use up to two hints
           per game, and earn points based on difficulty, time, tries, and hints.
         </p>
         <p>
           In Minesweeper, reveal safe cells and read the numbers — each counts
           the mines touching that cell — to deduce where the mines hide. Boards
-          run from a 6×6 Beginner field to a 14×14 Hard one, with up to three
+          run from a 6×6 Easy field to a 14×14 Expert one, with up to three
           mistakes and two hints per game.
         </p>
         <p>
           In Slide Puzzle, slide tiles one space at a time through the single
-          gap until the board reads in order. Choose 2×2 to 5×5 boards and
+          gap until the board reads in order. Choose from Easy (2×2) to Expert (5×5) boards and
           number, alphabet, or picture tiles; points reward fast, efficient
           solves against each board&apos;s par target.
         </p>

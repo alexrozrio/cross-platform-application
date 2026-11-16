@@ -8,7 +8,9 @@
     "check:lockfile": "pnpm install --lockfile-only --frozen-lockfile --ignore-scripts",
     "typecheck:libs": "tsc --build",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:full": "vitest run",
+    "test:changed": "vitest related --run"
   },
   "private": true,
   "packageManager": "pnpm@10.26.1",

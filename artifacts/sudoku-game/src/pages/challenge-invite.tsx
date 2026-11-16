@@ -61,10 +61,10 @@ const DIFF_COLORS: Record<string, string> = {
 };
 
 const MEMORY_LABELS: Record<number, string> = {
-  2: "2×4 Beginner (4 pairs)",
-  4: "4×4 Easy (8 pairs)",
-  6: "8×4 Medium (16 pairs)",
-  8: "8×8 Hard (32 pairs)",
+  2: "Easy · 2×4 (4 pairs)",
+  4: "Medium · 4×4 (8 pairs)",
+  6: "Hard · 8×4 (16 pairs)",
+  8: "Expert · 8×8 (32 pairs)",
 };
 
 const SUDOKU_LABELS: Record<number, string> = {

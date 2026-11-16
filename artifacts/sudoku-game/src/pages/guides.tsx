@@ -226,7 +226,7 @@ export default function Guides() {
         ]}
         cards={[
           { title: "Guest play", detail: "Start any of the nine games immediately. Progress is kept in the browser until you sign in." },
-          { title: "Kids mode", detail: "Shows only the smaller boards and easier levels — 3×3–6×6 Sudoku, short Memory boards, 2×2–3×3 Jigsaw, Beginner–Easy Word Search and Minesweeper, and Easy–Medium quizzes." },
+          { title: "Kids mode", detail: "Shows only the smaller boards and easier levels — 3×3–6×6 Sudoku, short Memory boards, Easy–Medium Jigsaw, Word Search and Minesweeper, and Easy–Medium quizzes." },
           { title: "Adult & 4 All", detail: "Adult mode offers the larger boards and harder levels; the default 4 All mode shows every size and level for every game." },
         ]}
         details="A profile adds saved results, personal bests, game statistics, achievements, avatar themes, and daily streaks. Signing in is always optional — guest play keeps working either way, and the app remembers unfinished rounds so you can pick up where you left off."
@@ -314,12 +314,12 @@ export default function Guides() {
         icon={Brain}
         intro={[
           "Memory Match is a concentration game. Cards begin face-down, and you reveal two at a time to find matching pairs. A successful match stays visible; a mismatch turns face-down again, so remembering each card's position and appearance is the heart of the game.",
-          "Choose a board from 2×4 (4 pairs) up to 8×8 (32 pairs) and a display style — images, numbers, or letters — all using identical matching rules. Your Game Mode controls which board sizes are offered.",
+          "Choose a board from Easy (2×4, 4 pairs) up to Expert (8×8, 32 pairs) and a display style — images, numbers, or letters — all using identical matching rules. Your Game Mode controls which board sizes are offered.",
         ]}
         cards={[
-          { title: "2×4 / 4×4", detail: "4 to 8 pairs — a short warm-up or a first game that teaches the flip-and-remember rhythm." },
-          { title: "8×4", detail: "16 pairs — a longer session where a consistent scan order really pays off." },
-          { title: "8×8", detail: "32 pairs — a marathon board for players who enjoy holding a full layout in memory." },
+          { title: "Easy / Medium", detail: "2×4 and 4×4 boards — 4 to 8 pairs, a short warm-up or a first game that teaches the flip-and-remember rhythm." },
+          { title: "Hard", detail: "The 8×4 board has 16 pairs — a longer session where a consistent scan order really pays off." },
+          { title: "Expert", detail: "The 8×8 board has 32 pairs — a marathon board for players who enjoy holding a full layout in memory." },
         ]}
         details="The score considers board size, completion time, and number of flips — larger boards provide a bigger challenge, while accurate and efficient play improves your result. Completing a board awards XP and gems."
         tips="Build a mental map: when a card is revealed, note its position before flipping the next. Work through the board in a consistent order, and when you remember both locations of a pair, play them together before exploring further. Balance speed with accuracy — extra flips cost more than a moment of thought. Try the daily challenge to match the same shuffled deck as other players."
@@ -336,12 +336,12 @@ export default function Guides() {
         themeKey="jigsaw"
         icon={Puzzle}
         intro={[
-          "Choose an image and a grid from 2×2 to 5×5. Your Game Mode controls which sizes are offered: Kids mode has 2×2 and 3×3, Adult mode has 4×4 and 5×5, and the default 4 All mode has all four sizes. Smaller boards are a good way to learn how the pieces move; larger boards have more pieces to track. Drag a piece into an empty space or tap two pieces to swap them. Each placement or swap uses a move, so look for pieces that clearly belong before moving several around.",
+          "Choose an image and a board from Easy (2×2) to Expert (5×5). Your Game Mode controls which sizes are offered: Kids mode has Easy and Medium, Adult mode has Hard and Expert, and the default 4 All mode has all four sizes. Smaller boards are a good way to learn how the pieces move; larger boards have more pieces to track. Drag a piece into an empty space or tap two pieces to swap them. Each placement or swap uses a move, so look for pieces that clearly belong before moving several around.",
         ]}
         cards={[
-          { title: "Easy", detail: "The full reference picture stays visible beside the board." },
-          { title: "Medium", detail: "Use up to three five-second previews to check the reference." },
-          { title: "Hard", detail: "The reference stays hidden; use piece details and memory to rebuild the image." },
+          { title: "Guided", detail: "The full reference picture stays visible beside the board." },
+          { title: "Assisted", detail: "Use up to three five-second previews to check the reference." },
+          { title: "Challenging", detail: "The reference stays hidden; use piece details and memory to rebuild the image." },
         ]}
         details="Board size and level set the base points; finishing under the target time adds a bonus, while extra moves also lower points. Tips and previews count as assists and reduce the final score. Completing a puzzle awards XP based on level and gems based on board size."
         tips="Place obvious corner and edge pieces first, then use colours and image details to group pieces that belong together. Try the daily challenge to solve the same picture as other players, or create a friend challenge to compare results on a shared puzzle."
@@ -358,12 +358,12 @@ export default function Guides() {
         themeKey="word-search"
         icon={Search}
         intro={[
-          "Words hide in straight lines inside a letter grid. Choose a difficulty and a word theme, then press on a word's first letter and drag to its last letter to reveal it. Beginner (6×6, 6 words) and Easy (8×8, 8 words) hide words only left-to-right and top-to-bottom; Medium (12×12, 10 words) adds diagonals; Hard (14×14, 12 words) also includes backwards words. Your Game Mode controls which levels are offered: Kids mode has Beginner and Easy, Adult mode has Medium and Hard, and the default 4 All mode has all four.",
+          "Words hide in straight lines inside a letter grid. Choose a difficulty and a word theme, then press on a word's first letter and drag to its last letter to reveal it. Easy (6×6, 6 words) and Medium (8×8, 8 words) hide words only left-to-right and top-to-bottom; Hard (12×12, 10 words) adds diagonals; Expert (14×14, 12 words) also includes backwards words. Your Game Mode controls which levels are offered: Kids mode has Easy and Medium, Adult mode has Hard and Expert, and the default 4 All mode has all four.",
         ]}
         cards={[
-          { title: "Beginner / Easy", detail: "Shorter words in straight horizontal and vertical lines — a gentle way to learn the drag mechanic." },
-          { title: "Medium", detail: "A larger 12×12 grid adds diagonal words, so scan corner-to-corner as well as across and down." },
-          { title: "Hard", detail: "A 14×14 grid also hides backwards words; check the word list and use a hint if a word stays elusive." },
+          { title: "Easy / Medium", detail: "Shorter words in straight horizontal and vertical lines — a gentle way to learn the drag mechanic." },
+          { title: "Hard", detail: "A larger 12×12 grid adds diagonal words, so scan corner-to-corner as well as across and down." },
+          { title: "Expert", detail: "A 14×14 grid also hides backwards words; check the word list and use a hint if a word stays elusive." },
         ]}
         details="Points are based on the difficulty, your completion time, tries, and hints used — you get up to two hints per game. Finishing awards XP by difficulty and gems for every puzzle completed."
         tips="The side panel lists every word you need to find — cross them off as you reveal them. Scan for uncommon letter pairs and long words first, then work outward from words you have already found. Try the daily challenge to solve the same word puzzle as other players, or create a friend challenge to compare results."
@@ -380,12 +380,12 @@ export default function Guides() {
         themeKey="minesweeper"
         icon={Bomb}
         intro={[
-          "Every covered cell may hide a mine. Reveal safe cells and read the numbers — each revealed number counts the mines in its eight surrounding cells. A 1 means exactly one neighbour is mined; a 0 means the whole neighbourhood is safe and reveals automatically. Your Game Mode controls which levels are offered, from a 6×6 Beginner board to a 14×14 Hard field.",
+          "Every covered cell may hide a mine. Reveal safe cells and read the numbers — each revealed number counts the mines in its eight surrounding cells. A 1 means exactly one neighbour is mined; a 0 means the whole neighbourhood is safe and reveals automatically. Your Game Mode controls which levels are offered, from a 6×6 Easy board to a 14×14 Expert field.",
         ]}
         cards={[
-          { title: "Beginner / Easy", detail: "Small boards with few mines — learn the number patterns with little pressure." },
-          { title: "Medium", detail: "A 12×12 board with 24 mines needs careful chaining of deductions." },
-          { title: "Hard", detail: "A 14×14 board with 34 mines rewards systematic flagging and corner-first play." },
+          { title: "Easy / Medium", detail: "Small boards with few mines — learn the number patterns with little pressure." },
+          { title: "Hard", detail: "A 12×12 board with 24 mines needs careful chaining of deductions." },
+          { title: "Expert", detail: "A 14×14 board with 34 mines rewards systematic flagging and corner-first play." },
         ]}
         details="Points are based on the board difficulty and your completion time, with penalties for hints and wrong reveals — you can afford up to three mistakes per game. Clearing a minefield awards XP by difficulty and gems; only wins score."
         tips="Two rules solve most positions: when a number equals the count of covered neighbours, every covered neighbour is a mine — flag them all; when the flags already satisfy the count, every other neighbour is safe. Switch to flag mode to mark suspects, click a satisfied number to reveal its neighbours in one go, and look for 1-2-1 patterns along walls. Try the daily challenge to clear the same minefield as other players."
@@ -402,12 +402,12 @@ export default function Guides() {
         themeKey="slide-puzzle"
         icon={Grid2x2}
         intro={[
-          "One empty gap lets you slide neighbouring tiles one space at a time until the board reads in order. Choose a 2×2, 3×3, 4×4, or 5×5 board and a tile style — numbers, alphabet letters, or pictures from the icon themes. Changing the style starts a fresh puzzle.",
+          "One empty gap lets you slide neighbouring tiles one space at a time until the board reads in order. Choose an Easy (2×2), Medium (3×3), Hard (4×4), or Expert (5×5) board and a tile style — numbers, alphabet letters, or pictures from the icon themes. Changing the style starts a fresh puzzle.",
         ]}
         cards={[
-          { title: "2×2 / 3×3", detail: "Few tiles to track — a gentle way to learn the sliding mechanic." },
-          { title: "4×4", detail: "The classic 15-puzzle: plan a few moves ahead and keep the gap near your target row." },
-          { title: "5×5", detail: "24 tiles is a marathon — work systematically row by row and use hints sparingly." },
+          { title: "Easy / Medium", detail: "2×2 and 3×3 boards — few tiles to track, a gentle way to learn the sliding mechanic." },
+          { title: "Hard", detail: "The classic 4×4 15-puzzle: plan a few moves ahead and keep the gap near your target row." },
+          { title: "Expert", detail: "The 5×5 board has 24 tiles — a marathon, so work systematically row by row and use hints sparingly." },
         ]}
         details="Points reward finishing under the board's par time with few moves, so a planned solve beats frantic sliding; hints reduce the score. Solving a board awards XP by size and gems. Only wins score."
         tips="Build the solution row by row from the top-left: place tile 1, complete the first row, then move to the next. Keep the gap beside the tiles you are working on, and bring a finished row back only when you must — up to three hints are available per game. Try the daily challenge to race the same scramble as other players."

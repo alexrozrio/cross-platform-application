@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { appShareUrlForPath } from "@/lib/app-links";
+import { JIGSAW_LEVELS, JIGSAW_SIZE_NAMES } from "@/lib/jigsaw-session";
 import { toast } from "sonner";
 
 type DailyConfig = { date: string; gridSize: 2 | 3 | 4 | 5; level: 1 | 2 | 3; imageKey: number };
@@ -93,8 +94,8 @@ export default function JigsawDailyChallengePage() {
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Today's picture puzzle</p>
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full border border-amber-200 bg-amber-100 px-2 py-0.5 text-sm font-semibold text-amber-800 dark:border-amber-800 dark:bg-amber-900/40 dark:text-amber-200">{config.gridSize}×{config.gridSize}</span>
-                    <span className="text-sm text-muted-foreground">{["Easy", "Medium", "Hard"][config.level - 1]} · Picture #{config.imageKey}</span>
+                    <span className="rounded-full border border-amber-200 bg-amber-100 px-2 py-0.5 text-sm font-semibold text-amber-800 dark:border-amber-800 dark:bg-amber-900/40 dark:text-amber-200">{JIGSAW_SIZE_NAMES[config.gridSize]} · {config.gridSize}×{config.gridSize}</span>
+                    <span className="text-sm text-muted-foreground">{JIGSAW_LEVELS[config.level - 1]?.title} · Picture #{config.imageKey}</span>
                   </div>
                   {completedToday && <div className="mt-1 flex items-center gap-1 text-xs font-medium text-green-600"><Trophy size={13} /> You've completed today's challenge!</div>}
                   {statusQuery.data?.bestPoints != null && <p className="text-xs text-muted-foreground">Your best: {statusQuery.data.bestPoints.toLocaleString()} points</p>}

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { appShareUrlForPath } from "@/lib/app-links";
+import { JIGSAW_LEVELS, JIGSAW_SIZE_NAMES } from "@/lib/jigsaw-session";
 import { toast } from "sonner";
 
 type Challenge = {
@@ -70,7 +71,7 @@ export default function JigsawChallengesPage() {
 
   const share = async (challenge: Challenge) => {
     const url = shareUrl(challenge.shareToken);
-    const text = `Join my ${challenge.gridSize}×${challenge.gridSize} Jigsaw challenge.`;
+    const text = `Join my ${JIGSAW_SIZE_NAMES[challenge.gridSize as keyof typeof JIGSAW_SIZE_NAMES] ?? `${challenge.gridSize}×${challenge.gridSize}`} (${challenge.gridSize}×${challenge.gridSize}) Jigsaw challenge.`;
     try {
       if (navigator.share) await navigator.share({ title: "Jigsaw challenge", text, url });
       else {
@@ -131,7 +132,7 @@ export default function JigsawChallengesPage() {
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0">
                         <p className="font-semibold">{isChallenger ? `You challenged ${opponent}` : `${opponent} challenged you`}</p>
-                        <p className="mt-1 text-xs text-muted-foreground">{challenge.gridSize}×{challenge.gridSize} · Level {challenge.level} · Picture #{challenge.imageKey}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{JIGSAW_SIZE_NAMES[challenge.gridSize as keyof typeof JIGSAW_SIZE_NAMES] ?? `${challenge.gridSize}×${challenge.gridSize}`} · {challenge.gridSize}×{challenge.gridSize} · {JIGSAW_LEVELS[challenge.level - 1]?.title ?? `Level ${challenge.level}`} · Picture #{challenge.imageKey}</p>
                       </div>
                       <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold capitalize">{challenge.status}</span>
                     </div>

@@ -92,7 +92,7 @@ export default function MinesweeperPage() {
 
   usePageMeta({
     title: "Minesweeper Game | Play Brain Games",
-    description: "Clear the minefield in four board sizes from Beginner to Hard. Play free Minesweeper puzzles.",
+    description: "Clear the minefield in four board sizes from Easy to Expert. Play free Minesweeper puzzles.",
     path: "/minesweeper",
   });
 
@@ -511,7 +511,7 @@ export default function MinesweeperPage() {
                 </article>
                 <article>
                   <h3 className="font-semibold text-foreground">Pick a level that fits</h3>
-                  <p className="mt-1">Beginner (6×6, 5 mines) and Easy (8×8, 12 mines) are quick warm-ups. Medium (12×12, 24 mines) and Hard (14×14, 34 mines) demand real deduction — Kids mode unlocks the small boards, Adult mode the big ones.</p>
+                  <p className="mt-1">Easy (6×6, 5 mines) and Medium (8×8, 12 mines) are quick warm-ups. Hard (12×12, 24 mines) and Expert (14×14, 34 mines) demand real deduction — Kids mode unlocks the small boards, Adult mode the big ones.</p>
                 </article>
                 <article>
                   <h3 className="font-semibold text-foreground">Understand your score</h3>

@@ -96,7 +96,7 @@ export default function WordSearchPage() {
 
   usePageMeta({
     title: "Word Search Game | Play Brain Games",
-    description: "Find theme-based hidden words in four levels from Beginner to Hard. Play free Word Search puzzles.",
+    description: "Find theme-based hidden words in four levels from Easy to Expert. Play free Word Search puzzles.",
     path: "/word-search",
   });
 
@@ -528,7 +528,7 @@ export default function WordSearchPage() {
             <div aria-hidden="true" className="pointer-events-none absolute -bottom-8 -left-8 h-24 w-24 rounded-full bg-fuchsia-300/25 blur-2xl dark:bg-fuchsia-400/10" />
             <div className="relative z-10 mb-4 flex items-center gap-3 rounded-xl border border-violet-200/70 bg-white/65 px-3 py-3 dark:border-violet-800/50 dark:bg-slate-950/20">
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-violet-500/15 text-2xl">🔎</span>
-              <div className="min-w-0 flex-1"><h2 className="font-serif text-lg font-bold">Ready for a word hunt?</h2><p className="text-xs leading-relaxed text-muted-foreground">Beginner and Easy use forward horizontal and vertical words. Medium and Hard add diagonals and backwards words.</p></div>
+              <div className="min-w-0 flex-1"><h2 className="font-serif text-lg font-bold">Ready for a word hunt?</h2><p className="text-xs leading-relaxed text-muted-foreground">Easy and Medium use forward horizontal and vertical words. Hard and Expert add diagonals and backwards words.</p></div>
               <div className="hidden grid-cols-3 gap-1 rounded-lg border border-violet-200/70 bg-white/70 p-1 sm:grid dark:border-violet-800/50 dark:bg-slate-950/30">{["W", "O", "R", "D", "S", "E", "A", "R", "C"].map((letter, i) => <span key={i} className="grid h-5 w-5 place-items-center rounded bg-violet-500/10 text-[9px] font-black text-violet-700 dark:text-violet-300">{letter}</span>)}</div>
             </div>
             <div className="relative z-10 mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-violet-200/70 bg-white/65 px-3 py-2.5 dark:border-violet-800/50 dark:bg-slate-950/20">
@@ -599,9 +599,9 @@ export default function WordSearchPage() {
                 <article>
                   <h3 className="font-semibold text-foreground">Pick a level that fits</h3>
                   <p className="mt-1">
-                    Beginner (6×6, 6 words) and Easy (8×8, 8 words) hide words
-                    only left-to-right and top-to-bottom. Medium (12×12) adds
-                    diagonals, and Hard (14×14) also includes backwards words.
+                    Easy (6×6, 6 words) and Medium (8×8, 8 words) hide words
+                    only left-to-right and top-to-bottom. Hard (12×12) adds
+                    diagonals, and Expert (14×14) also includes backwards words.
                   </p>
                 </article>
                 <article>
