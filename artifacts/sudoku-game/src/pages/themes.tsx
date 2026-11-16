@@ -153,9 +153,9 @@ function MobileCarousel({
 export default function Themes() {
   const { themeId, setThemeId } = useImageTheme();
   usePageMeta({
-    title: "Sudoku, Memory Match & Jigsaw Themes | Play Brain Games . Online",
+    title: "Game Themes | Play Brain Games . Online",
     description:
-      "Personalise Sudoku and Memory Match, then use themed image sets for Jigsaw picture puzzles. Preview styles and unlock selected themes with gems.",
+      "Personalise your games with curated colour palettes, system-provided backgrounds, fonts, and image-symbol sets used across Sudoku, Memory Match, Jigsaw, Word Search, Slide Puzzle, and the quizzes. Preview styles and unlock selected themes with gems.",
     path: "/themes",
   });
   const { profileId } = useAuth();

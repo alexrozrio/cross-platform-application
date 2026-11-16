@@ -20,15 +20,14 @@ import {
   ChevronUp,
   Brain,
   Puzzle,
-  Search,
   Bomb,
-  Grid3x3,
+  Grid2x2,
+  WholeWord,
   Timer,
   Repeat2,
   TrendingUp,
   TrendingDown,
   Minus,
-  CircleHelp,
 } from "lucide-react";
 import { LevelBadge } from "@/components/level-badge";
 import { usePageMeta } from "@/components/page-meta";
@@ -42,7 +41,8 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
 import { showEventModal } from "@/hooks/use-event-modal";
-import { quizGameId, quizSubject, type QuizSubject } from "@/lib/quiz";
+import { QUIZ_LEVELS, QUIZ_SUBJECTS, quizGameId, quizSubject, quizSubjectForGameId, type QuizGameId, type QuizSubject } from "@/lib/quiz";
+import { GAME_ICONS, gameIconColor } from "@/lib/game-icons";
 
 type MainTab = "alltime" | "weekly" | "monthly";
 
@@ -258,6 +258,18 @@ function XpGuide() {
             </div>
             <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">Slide Puzzle XP is awarded for each solved board and increases with the selected size. Only wins earn XP.</p>
           </div>
+          <div className="border-t border-border pt-3">
+            <p className="mb-2 text-xs font-semibold text-foreground">Quiz XP by level (Science, Maths & GK)</p>
+            <div className="grid grid-cols-4 gap-2 text-center">
+              {[{ level: "Easy", xp: 1 }, { level: "Medium", xp: 1 }, { level: "Hard", xp: 2 }, { level: "Expert", xp: 3 }].map((item) => (
+                <div key={item.level} className="rounded-lg border border-border bg-background px-2 py-2">
+                  <p className="text-[10px] font-semibold text-muted-foreground">{item.level}</p>
+                  <p className="text-xs font-bold text-amber-600">{item.xp} XP</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">Quiz XP is awarded for each completed quiz round with at least one correct answer and increases with the level. All three subjects award the same XP.</p>
+          </div>
         </div>
       )}
     </div>
@@ -268,6 +280,50 @@ function XpGuide() {
 
 function PointsGuide() {
   const [open, setOpen] = useState(false);
+  const gameModeRows = [
+    {
+      game: "Sudoku",
+      kids: "3×3 · 4×4 · 6×6",
+      adult: "9×9 · 16×16",
+      all: "All five sizes",
+    },
+    {
+      game: "Memory Match",
+      kids: "4 · 8 pairs",
+      adult: "16 · 32 pairs",
+      all: "All four boards",
+    },
+    {
+      game: "Jigsaw",
+      kids: "2×2 · 3×3",
+      adult: "4×4 · 5×5",
+      all: "All four sizes",
+    },
+    {
+      game: "Word Search",
+      kids: "Beginner · Easy",
+      adult: "Medium · Hard",
+      all: "All four levels",
+    },
+    {
+      game: "Minesweeper",
+      kids: "Beginner · Easy",
+      adult: "Medium · Hard",
+      all: "All four levels",
+    },
+    {
+      game: "Slide Puzzle",
+      kids: "2×2 · 3×3",
+      adult: "4×4 · 5×5",
+      all: "All four sizes",
+    },
+    {
+      game: "Quizzes",
+      kids: "Easy · Medium",
+      adult: "Hard · Expert",
+      all: "All four levels",
+    },
+  ] as const;
   return (
     <div className="rounded-2xl border border-border overflow-hidden">
       <button
@@ -554,6 +610,39 @@ function PointsGuide() {
             </p>
           </div>
 
+          {/* Quiz base points table (Science, Maths & GK share the same scoring) */}
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              🧠 Science / Maths / GK Quiz — base points × level
+            </p>
+            <div className="rounded-xl border overflow-hidden text-xs">
+              <div className="grid grid-cols-5 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+                <span>Level</span>
+                <span className="text-center">Questions</span>
+                <span className="text-center">Par time</span>
+                <span className="text-center">Base pts</span>
+                <span className="text-center">XP · Gems</span>
+              </div>
+              {[
+                { label: "Easy", questions: 5, par: "2:00", base: 150, xp: 1, gems: 1, cls: "text-green-700" },
+                { label: "Medium", questions: 8, par: "3:00", base: 300, xp: 1, gems: 2, cls: "text-blue-700" },
+                { label: "Hard", questions: 10, par: "4:00", base: 600, xp: 2, gems: 3, cls: "text-yellow-700" },
+                { label: "Expert", questions: 12, par: "5:00", base: 1200, xp: 3, gems: 4, cls: "text-orange-700" },
+              ].map((row, i) => (
+                <div key={row.label} className={`grid grid-cols-5 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}>
+                  <span className={`font-semibold ${row.cls}`}>{row.label}</span>
+                  <span className="text-center font-mono">{row.questions}</span>
+                  <span className="text-center font-mono">{row.par}</span>
+                  <span className="text-center font-mono">{row.base.toLocaleString()}</span>
+                  <span className="text-center font-mono">{row.xp} XP · {row.gems}💎</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2">
+              All three quiz games (Science 🔬, Maths 🔢, GK 🌍) score identically. score = base × (0.5 + 0.5 × accuracy) × (1 + time bonus up to +50%) &nbsp;·&nbsp; accuracy = correct ÷ questions answered, speed bonus for finishing under par, min 10 pts. No points for a round with zero correct answers. Each quiz has its own leaderboard.
+            </p>
+          </div>
+
           {/* Game Modes */}
           <div>
             <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
@@ -562,61 +651,26 @@ function PointsGuide() {
             <p className="text-xs text-muted-foreground mb-3">
               Your Game Mode (set in Profile) controls which grid sizes and difficulties are available to you across all games and challenges.
             </p>
-            <div className="rounded-xl border overflow-hidden text-xs">
-              <div className="grid grid-cols-7 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
-                <span>Mode</span>
-                <span className="text-center">Sudoku</span>
-                <span className="text-center">Memory Match</span>
-                <span className="text-center">Jigsaw</span>
-                <span className="text-center">Word Search</span>
-                <span className="text-center">Minesweeper</span>
-                <span className="text-center">Slide Puzzle</span>
-              </div>
-              {[
-                {
-                  mode: "👶 Kids",
-                  sudoku: "3×3 Baby · 4×4 Mini",
-                  memory: "4 pairs · 8 pairs",
-                  jigsaw: "2×2 · 3×3",
-                  wordSearch: "Beginner · Easy",
-                  minesweeper: "Beginner · Easy",
-                  slidePuzzle: "2×2 · 3×3",
-                  cls: "text-green-700",
-                },
-                {
-                  mode: "🧑 Adult",
-                  sudoku: "9×9 Classic · 16×16 Pro",
-                  memory: "16 pairs · 32 pairs",
-                  jigsaw: "4×4 · 5×5",
-                  wordSearch: "Medium · Hard",
-                  minesweeper: "Medium · Hard",
-                  slidePuzzle: "4×4 · 5×5",
-                  cls: "text-blue-700",
-                },
-                {
-                  mode: "🌍 4 All",
-                  sudoku: "All four sizes",
-                  memory: "All four sizes",
-                  jigsaw: "All four sizes",
-                  wordSearch: "All four levels",
-                  minesweeper: "All four levels",
-                  slidePuzzle: "All four sizes",
-                  cls: "text-violet-700",
-                },
-              ].map((row, i) => (
-                <div
-                  key={row.mode}
-                  className={`grid grid-cols-7 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}
-                >
-                  <span className={`font-semibold ${row.cls}`}>{row.mode}</span>
-                  <span className="text-center text-muted-foreground">{row.sudoku}</span>
-                  <span className="text-center text-muted-foreground">{row.memory}</span>
-                  <span className="text-center text-muted-foreground">{row.jigsaw}</span>
-                  <span className="text-center text-muted-foreground">{row.wordSearch}</span>
-                  <span className="text-center text-muted-foreground">{row.minesweeper}</span>
-                  <span className="text-center text-muted-foreground">{row.slidePuzzle}</span>
+            <div className="rounded-xl border overflow-x-auto text-xs">
+              <div className="min-w-[420px]">
+                <div className="grid grid-cols-4 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+                  <span>Game</span>
+                  <span className="text-center text-green-700">👶 Kids</span>
+                  <span className="text-center text-blue-700">🧑 Adult</span>
+                  <span className="text-center text-violet-700">🌍 4 All</span>
                 </div>
-              ))}
+                {gameModeRows.map((row, i) => (
+                  <div
+                    key={row.game}
+                    className={`grid grid-cols-4 px-3 py-2 ${i % 2 !== 0 ? "bg-muted/20" : ""}`}
+                  >
+                    <span className="font-semibold text-foreground">{row.game}</span>
+                    <span className="text-center text-muted-foreground">{row.kids}</span>
+                    <span className="text-center text-muted-foreground">{row.adult}</span>
+                    <span className="text-center text-muted-foreground">{row.all}</span>
+                  </div>
+                ))}
+              </div>
             </div>
             <p className="text-[10px] text-muted-foreground mt-2 italic">
               Leaderboard scores from all modes appear together — a Kids-mode player and an Adult-mode player can both rank on the same board.
@@ -649,7 +703,7 @@ function AlltimeBoard({ myProfileId }: { myProfileId?: number }) {
       <Card className="shadow-md border-primary/10">
         <CardHeader className="bg-card pb-4 border-b">
           <CardTitle className="text-lg flex items-center gap-2">
-            <Zap className="w-5 h-5 text-primary" />
+            {(() => { const Icon = GAME_ICONS.sudoku; return <Icon className="w-5 h-5 text-primary" />; })()}
             Sudoku — All Grids Combined
           </CardTitle>
         </CardHeader>
@@ -731,6 +785,7 @@ interface BreakdownData {
   wordSearch: { difficulty: string; points: number; games: number }[];
   minesweeper: { difficulty: string; points: number; games: number }[];
   slidePuzzle: { difficulty: string; points: number; games: number }[];
+  quiz?: { subject: string; level: string; points: number; games: number }[];
 }
 
 const SUDOKU_GRID_NAMES: Record<number, string> = {
@@ -764,7 +819,7 @@ const SLIDE_PUZZLE_DIFFICULTY_NAMES: Record<string, string> = {
   "4x4": "15 tiles",
   "5x5": "24 tiles",
 };
-type GameTab = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle";
+type GameTab = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | QuizGameId;
 
 function BreakdownPanel({
   profileId,
@@ -832,6 +887,13 @@ function BreakdownPanel({
           <button onClick={() => setBdTab("slide-puzzle")} className={`rounded-lg px-3 py-1 text-xs font-semibold transition-colors ${bdTab === "slide-puzzle" ? "bg-sky-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
             🧩 Slide Puzzle
           </button>
+          {(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id) => {
+            const subject = QUIZ_SUBJECTS[id];
+            const tab = quizGameId(id);
+            return <button key={id} onClick={() => setBdTab(tab)} className={`rounded-lg px-3 py-1 text-xs font-semibold transition-colors ${bdTab === tab ? subject.theme.btn : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+              {subject.emoji} {subject.shortName}
+            </button>;
+          })}
         </div>
       )}
       {onlyGame && <div className="mt-2" />}
@@ -929,6 +991,101 @@ function BreakdownPanel({
               <p className="mt-0.5 text-lg font-black tabular-nums leading-tight text-sky-700 dark:text-sky-300">{item.points > 0 ? item.points.toLocaleString() : "—"}</p>
               <p className="mt-0.5 text-[10px] text-muted-foreground">{item.games > 0 ? `${item.games} game${item.games !== 1 ? "s" : ""}` : "no games"}</p>
               <p className="mt-0.5 text-[9px] text-muted-foreground/80">{SLIDE_PUZZLE_DIFFICULTY_NAMES[item.difficulty]}</p>
+            </div>
+          ))}
+        </div>
+      )}
+      {(() => {
+        const subjectId = quizSubjectForGameId(bdTab);
+        if (!subjectId) return null;
+        const subject = QUIZ_SUBJECTS[subjectId];
+        const rows = data?.quiz ?? [];
+        return (
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {QUIZ_LEVELS.map((level) => {
+              const item = rows.find((row) => row.subject === subjectId && row.level === level);
+              const points = item?.points ?? 0;
+              const games = item?.games ?? 0;
+              return (
+                <div key={level} className={`rounded-xl border p-2.5 text-center transition-colors ${games > 0 ? `${subject.theme.border} bg-background` : "border-border bg-muted/30 opacity-50"}`}>
+                  <p className="text-xs font-bold text-foreground">{subject.levels[level].label}</p>
+                  <p className={`mt-0.5 text-lg font-black tabular-nums leading-tight ${subject.theme.strong}`}>{points > 0 ? points.toLocaleString() : "—"}</p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">{games > 0 ? `${games} game${games !== 1 ? "s" : ""}` : "no games"}</p>
+                  <p className="mt-0.5 text-[9px] text-muted-foreground/80">{subject.levels[level].detail}</p>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
+
+// ─── All-games per-player summary (game-level totals, no option breakdown) ──
+
+function GameSummaryPanel({
+  profileId,
+  type,
+  period,
+}: {
+  profileId: number;
+  type: "weekly" | "monthly" | "alltime";
+  period: string;
+}) {
+  const { data, isLoading } = useQuery<BreakdownData>({
+    queryKey: ["tournament-breakdown", profileId, type, period],
+    queryFn: () =>
+      customFetch<BreakdownData>(
+        `/api/tournaments/breakdown?profileId=${profileId}&type=${type}&period=${encodeURIComponent(period)}`,
+      ),
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchInterval: type === "alltime" ? 60_000 : 30_000,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="px-5 pb-4 pt-2 space-y-2">
+        <Skeleton className="h-16 w-full" />
+      </div>
+    );
+  }
+
+  const sum = (items: { points: number; games: number }[] | undefined) =>
+    (items ?? []).reduce((acc, item) => ({ points: acc.points + (item.points ?? 0), games: acc.games + (item.games ?? 0) }), { points: 0, games: 0 });
+
+  const quizFor = (subject: QuizSubject) =>
+    sum((data?.quiz ?? []).filter((row) => row.subject === subject));
+
+  const rows = [
+    { id: "sudoku", label: "Sudoku", icon: GAME_ICONS.sudoku, ...sum(data?.sudoku) },
+    { id: "memory", label: "Memory Match", icon: GAME_ICONS.memory, ...sum(data?.memory) },
+    { id: "jigsaw", label: "Jigsaw", icon: GAME_ICONS.jigsaw, ...sum(data?.jigsaw) },
+    { id: "word-search", label: "Word Search", icon: GAME_ICONS["word-search"], ...sum(data?.wordSearch) },
+    { id: "minesweeper", label: "Minesweeper", icon: GAME_ICONS.minesweeper, ...sum(data?.minesweeper) },
+    { id: "slide-puzzle", label: "Slide Puzzle", icon: GAME_ICONS["slide-puzzle"], ...sum(data?.slidePuzzle) },
+    { id: "science-quiz", label: `${QUIZ_SUBJECTS.science.shortName} Quiz`, icon: GAME_ICONS["science-quiz"], ...quizFor("science") },
+    { id: "maths-quiz", label: `${QUIZ_SUBJECTS.maths.shortName} Quiz`, icon: GAME_ICONS["maths-quiz"], ...quizFor("maths") },
+    { id: "gk-quiz", label: `${QUIZ_SUBJECTS.gk.shortName} Quiz`, icon: GAME_ICONS["gk-quiz"], ...quizFor("gk") },
+  ].filter((row) => row.games > 0);
+
+  return (
+    <div className="border-t bg-muted/20 px-5 pb-4 pt-3">
+      {rows.length === 0 ? (
+        <p className="py-2 text-center text-xs text-muted-foreground">No completed games in this period.</p>
+      ) : (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {rows.map((row) => (
+            <div key={row.id} className="flex items-center justify-between gap-2 rounded-xl border border-border bg-background px-3 py-2.5">
+              <div className="flex min-w-0 items-center gap-2">
+                {(() => { const Icon = row.icon; return <Icon className={`h-4 w-4 shrink-0 ${gameIconColor(row.id)}`} />; })()}
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-semibold text-foreground">{row.label}</p>
+                  <p className="text-[10px] text-muted-foreground">{row.games} game{row.games !== 1 ? "s" : ""}</p>
+                </div>
+              </div>
+              <p className="shrink-0 text-sm font-black tabular-nums text-primary">{row.points.toLocaleString()}</p>
             </div>
           ))}
         </div>
@@ -1111,7 +1268,7 @@ function TournamentBoard({
                   : `No games yet this ${type === "weekly" ? "week" : "month"}.`}
               </p>
               <p className="text-sm mt-1">
-                Complete Sudoku, Memory Match, Jigsaw, Word Search, or Minesweeper games to earn points and climb the rankings!
+                Complete games in any title — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, or the quizzes — to earn points and climb the rankings!
               </p>
             </div>
           ) : (
@@ -1185,36 +1342,28 @@ function TournamentBoard({
                             )}
                           </div>
                           <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground flex-wrap">
-                            {(entry as any).sudokuGamesPlayed > 0 && (
-                              <span>
-                                🔢 {(entry as any).sudokuGamesPlayed} sudoku
-                              </span>
-                            )}
-                            {(entry as any).memoryGamesPlayed > 0 && (
-                              <span>
-                                🃏 {(entry as any).memoryGamesPlayed} memory
-                              </span>
-                            )}
-                            {(entry as any).jigsawGamesPlayed > 0 && (
-                              <span>
-                                🧩 {(entry as any).jigsawGamesPlayed} jigsaw
-                              </span>
-                            )}
-                            {(entry as any).wordSearchGamesPlayed > 0 && (
-                              <span>🔎 {(entry as any).wordSearchGamesPlayed} word search</span>
-                            )}
-                            {(entry as any).minesweeperGamesPlayed > 0 && (
-                              <span>💣 {(entry as any).minesweeperGamesPlayed} minesweeper</span>
-                            )}
-                            {(entry as any).slidePuzzleGamesPlayed > 0 && (
-                              <span>🧩 {(entry as any).slidePuzzleGamesPlayed} slide puzzle</span>
+                            {([
+                              ["sudoku", "sudokuGamesPlayed", "sudoku"],
+                              ["memory", "memoryGamesPlayed", "memory"],
+                              ["jigsaw", "jigsawGamesPlayed", "jigsaw"],
+                              ["word-search", "wordSearchGamesPlayed", "word search"],
+                              ["minesweeper", "minesweeperGamesPlayed", "minesweeper"],
+                              ["slide-puzzle", "slidePuzzleGamesPlayed", "slide puzzle"],
+                              ["science-quiz", "scienceQuizGamesPlayed", "science quiz"],
+                              ["maths-quiz", "mathsQuizGamesPlayed", "maths quiz"],
+                              ["gk-quiz", "gkQuizGamesPlayed", "gk quiz"],
+                            ] as const).map(([id, field, label]) =>
+                              (entry as any)[field] > 0 && (() => { const Icon = GAME_ICONS[id]; return <span key={id} className="inline-flex items-center gap-1"><Icon className={`h-3.5 w-3.5 ${gameIconColor(id)}`} />{(entry as any)[field]} {label}</span>; })()
                             )}
                             {(entry as any).sudokuGamesPlayed === 0 &&
                               (entry as any).memoryGamesPlayed === 0 &&
                               (entry as any).jigsawGamesPlayed === 0 &&
                               (entry as any).wordSearchGamesPlayed === 0 &&
                               (entry as any).minesweeperGamesPlayed === 0 &&
-                              (entry as any).slidePuzzleGamesPlayed === 0 && (
+                              (entry as any).slidePuzzleGamesPlayed === 0 &&
+                              (entry as any).scienceQuizGamesPlayed === 0 &&
+                              (entry as any).mathsQuizGamesPlayed === 0 &&
+                              (entry as any).gkQuizGamesPlayed === 0 && (
                                 <span>
                                   {entry.gamesPlayed} game
                                   {entry.gamesPlayed !== 1 ? "s" : ""}
@@ -1241,7 +1390,7 @@ function TournamentBoard({
                     </button>
 
                     {isExpanded && data.period && (
-                      <BreakdownPanel
+                      <GameSummaryPanel
                         profileId={entry.profileId}
                         type={type}
                         period={data.period}
@@ -1709,11 +1858,11 @@ function WordSearchBoard({ myProfileId }: { myProfileId?: number }) {
   });
   return <div className="space-y-5">
     <Card className="shadow-md border-violet-200/60 dark:border-violet-800/40">
-      <CardHeader className="border-b bg-card pb-4"><CardTitle className="flex items-center gap-2 text-lg"><Search className="h-5 w-5 text-violet-600" /> Word Search — All Difficulties</CardTitle></CardHeader>
+      <CardHeader className="border-b bg-card pb-4"><CardTitle className="flex items-center gap-2 text-lg">{(() => { const Icon = GAME_ICONS["word-search"]; return <Icon className="h-5 w-5 text-violet-600" />; })()} Word Search — All Difficulties</CardTitle></CardHeader>
       <CardContent className="p-0">
         {isLoading ? <div className="space-y-4 p-6">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
           : isError ? <div className="p-10 text-center text-sm text-muted-foreground">Word Search leaderboard could not be loaded. Please try again.</div>
-          : !data?.length ? <div className="p-12 text-center text-muted-foreground"><Search className="mx-auto mb-3 h-10 w-10 opacity-20" /><p className="font-medium">No completed Word Search games yet.</p><p className="mt-1 text-sm">Complete a puzzle to claim the top spot.</p></div>
+          : !data?.length ? <div className="p-12 text-center text-muted-foreground"><WholeWord className="mx-auto mb-3 h-10 w-10 opacity-20" /><p className="font-medium">No completed Word Search games yet.</p><p className="mt-1 text-sm">Complete a puzzle to claim the top spot.</p></div>
           : <div className="divide-y">{data.map((entry) => {
             const isMe = myProfileId !== undefined && entry.profileId === myProfileId;
             const isExpanded = expandedId === entry.profileId;
@@ -1870,11 +2019,11 @@ function QuizBoard({ myProfileId, subjectId }: { myProfileId?: number; subjectId
   });
   return <div className="space-y-5">
     <Card className={`shadow-md ${subject.theme.border}`}>
-      <CardHeader className="border-b bg-card pb-4"><CardTitle className="flex items-center gap-2 text-lg"><CircleHelp className={`h-5 w-5 ${subject.theme.text}`} /> {subject.name} — All Levels</CardTitle></CardHeader>
+      <CardHeader className="border-b bg-card pb-4"><CardTitle className="flex items-center gap-2 text-lg">{(() => { const Icon = GAME_ICONS[quizGameId(subjectId)]; return <Icon className={`h-5 w-5 ${subject.theme.text}`} />; })()} {subject.name} — All Levels</CardTitle></CardHeader>
       <CardContent className="p-0">
         {isLoading ? <div className="space-y-4 p-6">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
           : isError ? <div className="p-10 text-center text-sm text-muted-foreground">Quiz leaderboard could not be loaded. Please try again.</div>
-          : !data?.length ? <div className="p-12 text-center text-muted-foreground"><CircleHelp className="mx-auto mb-3 h-10 w-10 opacity-20" /><p className="font-medium">No completed quizzes yet.</p><p className="mt-1 text-sm">Answer a few questions to claim the top spot.</p></div>
+          : !data?.length ? <div className="p-12 text-center text-muted-foreground">{(() => { const Icon = GAME_ICONS[quizGameId(subjectId)]; return <Icon className="mx-auto mb-3 h-10 w-10 opacity-20" />; })()}<p className="font-medium">No completed quizzes yet.</p><p className="mt-1 text-sm">Answer a few questions to claim the top spot.</p></div>
           : <div className="divide-y">{data.map((entry) => {
             const isMe = myProfileId !== undefined && entry.profileId === myProfileId;
             const isExpanded = expandedId === entry.profileId;
@@ -1883,16 +2032,63 @@ function QuizBoard({ myProfileId, subjectId }: { myProfileId?: number; subjectId
                 <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4"><RankBadge rank={entry.rank} /><div className="min-w-0 flex-1"><div className="flex min-w-0 flex-wrap items-center gap-2"><p title={entry.username} className={`min-w-0 flex-1 truncate font-semibold ${isMe ? subject.theme.strong : ""}`}>{entry.username}</p>{isMe && <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white ${subject.theme.btn.split(" ")[0]}`}>You</span>}</div><p className="mt-0.5 text-xs text-muted-foreground">{entry.gamesPlayed} quiz{entry.gamesPlayed !== 1 ? "zes" : ""}</p></div></div>
                 <div className="flex shrink-0 items-center gap-2"><div className="text-right"><p className={`whitespace-nowrap text-lg font-black tabular-nums sm:text-xl ${subject.theme.strong}`}>{entry.totalPoints.toLocaleString()}</p><p className="mt-0.5 text-xs text-muted-foreground">pts</p></div>{isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}</div>
               </button>
-              {isExpanded && (
-                <div className="border-t bg-muted/10 px-5 py-3">
-                  <Link href={isMe ? `/profile?tab=${quizGameId(subjectId)}` : `/player/${entry.profileId}`} className={`text-xs font-semibold ${subject.theme.text} hover:underline`}>{isMe ? "View your full quiz stats →" : `View ${entry.username}'s profile →`}</Link>
-                </div>
-              )}
+              {isExpanded && <PlayerDetailsPanel profileId={entry.profileId} game={quizGameId(subjectId)} myProfileId={myProfileId} />}
             </div>;
           })}</div>}
       </CardContent>
     </Card>
+    <QuizScoringGuide subject={subject} />
   </div>;
+}
+
+function QuizScoringGuide({ subject }: { subject: ReturnType<typeof quizSubject> }) {
+  const [open, setOpen] = useState(false);
+  const levels = QUIZ_LEVELS.map((level) => ({ level, config: subject.levels[level] }));
+  return (
+    <div className={`overflow-hidden rounded-2xl border ${subject.theme.border}`}>
+      <button onClick={() => setOpen((value) => !value)} className="flex w-full items-center justify-between bg-card px-5 py-4 text-left transition-colors hover:bg-muted/40">
+        <div>
+          <p className="text-sm font-semibold">How {subject.name} points &amp; XP are calculated</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Accuracy, speed, and level all count. Rounds with no correct answers score zero.</p>
+        </div>
+        {open ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
+      </button>
+      {open && (
+        <div className="space-y-4 border-t border-border bg-muted px-5 py-4 text-sm">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {levels.map(({ level, config }) => (
+              <div key={level} className="rounded-xl border border-border bg-background p-3">
+                <p className="font-bold">{config.label}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{config.questions} questions</p>
+                <p className="text-xs text-muted-foreground">Base {config.basePoints.toLocaleString()} pts</p>
+                <p className="text-xs text-muted-foreground">Par {Math.round(config.parSeconds / 60)}:{String(config.parSeconds % 60).padStart(2, "0")}</p>
+                <p className="text-xs text-muted-foreground">{config.xp} XP · {config.gems} 💎</p>
+              </div>
+            ))}
+          </div>
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">XP &amp; gems by level</p>
+            <div className="overflow-hidden rounded-xl border border-border text-xs">
+              <div className="grid grid-cols-4 bg-muted-foreground/15 px-3 py-2 text-[10px] font-semibold text-muted-foreground"><span>Level</span><span className="text-center">XP</span><span className="text-center">Gems</span><span className="text-center">Questions</span></div>
+              {levels.map(({ level, config }, index) => (
+                <div key={level} className={`grid grid-cols-4 px-3 py-2 ${index % 2 === 0 ? "bg-background" : "bg-muted/20"}`}>
+                  <span className="font-semibold">{config.label}</span>
+                  <span className="text-center font-semibold text-amber-600">{config.xp} XP</span>
+                  <span className="text-center font-mono">{config.gems} 💎</span>
+                  <span className="text-center font-mono">{config.questions}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className={`rounded-lg border ${subject.theme.border} ${subject.theme.soft} px-4 py-3 text-[11px] text-muted-foreground`}>
+            <p className="font-semibold text-foreground">Score formula</p>
+            <p className="mt-1 font-mono leading-relaxed">base × (0.5 + 0.5 × accuracy) × (1 + time bonus)</p>
+            <p className="mt-1 leading-relaxed">Accuracy is the share of questions answered correctly. Finishing under par time adds up to +50%. Minimum score: 10 points. Points, XP, and gems are only awarded when at least one answer is correct. Daily challenges use the same formula with today's fixed question set.</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function SlidePuzzleBoard({ myProfileId }: { myProfileId?: number }) {
@@ -1904,11 +2100,11 @@ function SlidePuzzleBoard({ myProfileId }: { myProfileId?: number }) {
   });
   return <div className="space-y-5">
     <Card className="shadow-md border-sky-200/60 dark:border-sky-800/40">
-      <CardHeader className="border-b bg-card pb-4"><CardTitle className="flex items-center gap-2 text-lg"><Grid3x3 className="h-5 w-5 text-sky-600" /> Slide Puzzle — All Board Sizes</CardTitle></CardHeader>
+      <CardHeader className="border-b bg-card pb-4"><CardTitle className="flex items-center gap-2 text-lg">{(() => { const Icon = GAME_ICONS["slide-puzzle"]; return <Icon className="h-5 w-5 text-sky-600" />; })()} Slide Puzzle — All Board Sizes</CardTitle></CardHeader>
       <CardContent className="p-0">
         {isLoading ? <div className="space-y-4 p-6">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
           : isError ? <div className="p-10 text-center text-sm text-muted-foreground">Slide Puzzle leaderboard could not be loaded. Please try again.</div>
-          : !data?.length ? <div className="p-12 text-center text-muted-foreground"><Grid3x3 className="mx-auto mb-3 h-10 w-10 opacity-20" /><p className="font-medium">No completed Slide Puzzles yet.</p><p className="mt-1 text-sm">Solve a board to claim the top spot.</p></div>
+          : !data?.length ? <div className="p-12 text-center text-muted-foreground"><Grid2x2 className="mx-auto mb-3 h-10 w-10 opacity-20" /><p className="font-medium">No completed Slide Puzzles yet.</p><p className="mt-1 text-sm">Solve a board to claim the top spot.</p></div>
           : <div className="divide-y">{data.map((entry) => {
             const isMe = myProfileId !== undefined && entry.profileId === myProfileId;
             const isExpanded = expandedId === entry.profileId;
@@ -1936,15 +2132,15 @@ function LeaderboardScopeLinks({
   const [, setLocation] = useLocation();
   const links = [
     { id: "all", href: "/leaderboard/", label: "All Games", icon: Trophy },
-    { id: "sudoku", href: "/leaderboard/sudoku/", label: "Sudoku", icon: Zap },
-    { id: "memory", href: "/leaderboard/memory/", label: "Memory Match", icon: Brain },
-    { id: "jigsaw", href: "/leaderboard/jigsaw/", label: "Jigsaw", icon: Puzzle },
-    { id: "word-search", href: "/leaderboard/word-search/", label: "Word Search", icon: Search },
-    { id: "minesweeper", href: "/leaderboard/minesweeper/", label: "Minesweeper", icon: Bomb },
-    { id: "slide-puzzle", href: "/leaderboard/slide-puzzle/", label: "Slide Puzzle", icon: Grid3x3 },
-    { id: "science-quiz", href: "/leaderboard/science-quiz/", label: "Science Quiz", icon: CircleHelp },
-    { id: "maths-quiz", href: "/leaderboard/maths-quiz/", label: "Maths Quiz", icon: CircleHelp },
-    { id: "gk-quiz", href: "/leaderboard/gk-quiz/", label: "GK Quiz", icon: CircleHelp },
+    { id: "sudoku", href: "/leaderboard/sudoku/", label: "Sudoku", icon: GAME_ICONS.sudoku },
+    { id: "memory", href: "/leaderboard/memory/", label: "Memory Match", icon: GAME_ICONS.memory },
+    { id: "jigsaw", href: "/leaderboard/jigsaw/", label: "Jigsaw", icon: GAME_ICONS.jigsaw },
+    { id: "word-search", href: "/leaderboard/word-search/", label: "Word Search", icon: GAME_ICONS["word-search"] },
+    { id: "minesweeper", href: "/leaderboard/minesweeper/", label: "Minesweeper", icon: GAME_ICONS.minesweeper },
+    { id: "slide-puzzle", href: "/leaderboard/slide-puzzle/", label: "Slide Puzzle", icon: GAME_ICONS["slide-puzzle"] },
+    { id: "science-quiz", href: "/leaderboard/science-quiz/", label: "Science Quiz", icon: GAME_ICONS["science-quiz"] },
+    { id: "maths-quiz", href: "/leaderboard/maths-quiz/", label: "Maths Quiz", icon: GAME_ICONS["maths-quiz"] },
+    { id: "gk-quiz", href: "/leaderboard/gk-quiz/", label: "GK Quiz", icon: GAME_ICONS["gk-quiz"] },
   ] as const;
   const selected = links.find((link) => link.id === active) ?? links[0];
   const SelectedIcon = selected.icon;
@@ -1961,7 +2157,7 @@ function LeaderboardScopeLinks({
         <SelectTrigger className="h-9 flex-1 bg-background" aria-label="Leaderboard game">
           <SelectValue>
             <span className="flex items-center gap-2">
-              <SelectedIcon className="h-4 w-4 shrink-0 text-primary" />
+              <SelectedIcon className={`h-4 w-4 shrink-0 ${gameIconColor(active)}`} />
               {selected.label}
             </span>
           </SelectValue>
@@ -1970,7 +2166,7 @@ function LeaderboardScopeLinks({
           {links.map(({ id, label, icon: Icon }) => (
             <SelectItem key={id} value={id}>
               <span className="flex items-center gap-2">
-                <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <Icon className={`h-4 w-4 shrink-0 ${gameIconColor(id)}`} />
                 {label}
               </span>
             </SelectItem>
@@ -1985,15 +2181,15 @@ const PLAY_LINKS: Record<
   "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "science-quiz" | "maths-quiz" | "gk-quiz",
   { href: string; label: string; ariaLabel: string; icon: typeof Zap; borderClass: string; iconClass: string }
 > = {
-  sudoku: { href: "/sudoku", label: "Play Sudoku", ariaLabel: "Play Sudoku", icon: Zap, borderClass: "border-border", iconClass: "text-primary" },
-  memory: { href: "/memory/", label: "Play Memory", ariaLabel: "Play Memory Match", icon: Brain, borderClass: "border-border", iconClass: "text-primary" },
-  jigsaw: { href: "/jigsaw", label: "Play Jigsaw", ariaLabel: "Play Jigsaw", icon: Puzzle, borderClass: "border-border", iconClass: "text-amber-600" },
-  "word-search": { href: "/word-search", label: "Word Search", ariaLabel: "Play Word Search", icon: Search, borderClass: "border-violet-200 dark:border-violet-800", iconClass: "text-violet-600" },
-  minesweeper: { href: "/minesweeper", label: "Minesweeper", ariaLabel: "Play Minesweeper", icon: Bomb, borderClass: "border-emerald-200 dark:border-emerald-800", iconClass: "text-emerald-600" },
-  "slide-puzzle": { href: "/slide-puzzle", label: "Slide Puzzle", ariaLabel: "Play Slide Puzzle", icon: Grid3x3, borderClass: "border-sky-200 dark:border-sky-800", iconClass: "text-sky-600" },
-  "science-quiz": { href: "/quiz/science", label: "Science Quiz", ariaLabel: "Play Science Quiz", icon: CircleHelp, borderClass: "border-violet-200 dark:border-violet-800", iconClass: "text-violet-600" },
-  "maths-quiz": { href: "/quiz/maths", label: "Maths Quiz", ariaLabel: "Play Maths Quiz", icon: CircleHelp, borderClass: "border-sky-200 dark:border-sky-800", iconClass: "text-sky-600" },
-  "gk-quiz": { href: "/quiz/gk", label: "GK Quiz", ariaLabel: "Play GK Quiz", icon: CircleHelp, borderClass: "border-amber-200 dark:border-amber-800", iconClass: "text-amber-600" },
+  sudoku: { href: "/sudoku", label: "Play Sudoku", ariaLabel: "Play Sudoku", icon: GAME_ICONS.sudoku, borderClass: "border-border", iconClass: "text-primary" },
+  memory: { href: "/memory/", label: "Play Memory", ariaLabel: "Play Memory Match", icon: GAME_ICONS.memory, borderClass: "border-border", iconClass: "text-primary" },
+  jigsaw: { href: "/jigsaw", label: "Play Jigsaw", ariaLabel: "Play Jigsaw", icon: GAME_ICONS.jigsaw, borderClass: "border-border", iconClass: "text-amber-600" },
+  "word-search": { href: "/word-search", label: "Word Search", ariaLabel: "Play Word Search", icon: GAME_ICONS["word-search"], borderClass: "border-violet-200 dark:border-violet-800", iconClass: "text-violet-600" },
+  minesweeper: { href: "/minesweeper", label: "Minesweeper", ariaLabel: "Play Minesweeper", icon: GAME_ICONS.minesweeper, borderClass: "border-emerald-200 dark:border-emerald-800", iconClass: "text-emerald-600" },
+  "slide-puzzle": { href: "/slide-puzzle", label: "Slide Puzzle", ariaLabel: "Play Slide Puzzle", icon: GAME_ICONS["slide-puzzle"], borderClass: "border-sky-200 dark:border-sky-800", iconClass: "text-sky-600" },
+  "science-quiz": { href: "/quiz/science", label: "Science Quiz", ariaLabel: "Play Science Quiz", icon: GAME_ICONS["science-quiz"], borderClass: "border-violet-200 dark:border-violet-800", iconClass: "text-violet-600" },
+  "maths-quiz": { href: "/quiz/maths", label: "Maths Quiz", ariaLabel: "Play Maths Quiz", icon: GAME_ICONS["maths-quiz"], borderClass: "border-sky-200 dark:border-sky-800", iconClass: "text-sky-600" },
+  "gk-quiz": { href: "/quiz/gk", label: "GK Quiz", ariaLabel: "Play GK Quiz", icon: GAME_ICONS["gk-quiz"], borderClass: "border-amber-200 dark:border-amber-800", iconClass: "text-amber-600" },
 };
 
 export default function Leaderboard({

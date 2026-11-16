@@ -1,6 +1,8 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Grid3X3, Brain } from "lucide-react";
+import { RefreshCw } from "lucide-react";
+import { GAME_ICONS, gameIconColor } from "@/lib/game-icons";
+import { OfflineGameFallback, OFFLINE_GAME_IDS } from "@/components/offline-games";
 
 const OFFLINE_PUZZLE =
   "530070000" +
@@ -26,8 +28,20 @@ const OFFLINE_SOLUTION =
 interface State {
   hasError: boolean;
   error: Error | null;
-  recoveryGame: "sudoku" | "memory" | null;
+  recoveryGame: string | null;
 }
+
+const OFFLINE_CHOICES = [
+  { id: "sudoku", label: "Sudoku" },
+  { id: "memory", label: "Memory Match" },
+  { id: "jigsaw", label: "Jigsaw" },
+  { id: "word-search", label: "Word Search" },
+  { id: "minesweeper", label: "Minesweeper" },
+  { id: "slide-puzzle", label: "Slide Puzzle" },
+  { id: "science-quiz", label: "Science Quiz" },
+  { id: "maths-quiz", label: "Maths Quiz" },
+  { id: "gk-quiz", label: "GK Quiz" },
+] as const;
 
 function OfflineSudokuFallback() {
   const [grid, setGrid] = React.useState(() => OFFLINE_PUZZLE.split(""));
@@ -257,6 +271,9 @@ export class ErrorBoundary extends React.Component<
 
     if (this.state.recoveryGame === "sudoku") return <OfflineSudokuFallback />;
     if (this.state.recoveryGame === "memory") return <OfflineMemoryFallback />;
+    if (this.state.recoveryGame && (OFFLINE_GAME_IDS as readonly string[]).includes(this.state.recoveryGame)) {
+      return <OfflineGameFallback game={this.state.recoveryGame} />;
+    }
 
     // A grid click should never strand a player on the generic error page.
     // Keep the fallback deliberately independent from Game so it can render
@@ -269,7 +286,7 @@ export class ErrorBoundary extends React.Component<
       <div className="min-h-[70vh] flex items-center justify-center px-4 py-8">
         <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 max-w-md w-full text-center space-y-5 shadow-lg">
           <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-            <Grid3X3 className="w-7 h-7 text-primary" />
+            {React.createElement(GAME_ICONS.sudoku, { className: "w-7 h-7 text-primary" })}
           </div>
           <div className="space-y-1">
             <h2 className="text-lg font-bold">Choose a game to keep playing</h2>
@@ -277,20 +294,20 @@ export class ErrorBoundary extends React.Component<
               Play Brain Games remains playable offline. Online profiles and rewards may be unavailable.
             </p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Button
-              className="w-full gap-2"
-              onClick={() => this.setState({ recoveryGame: "sudoku" })}
-            >
-              <Grid3X3 className="w-4 h-4" /> Play Sudoku
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full gap-2"
-              onClick={() => this.setState({ recoveryGame: "memory" })}
-            >
-              <Brain className="w-4 h-4" /> Play Memory Match
-            </Button>
+          <div className="grid gap-3 grid-cols-2 sm:grid-cols-3">
+            {OFFLINE_CHOICES.map(({ id, label }) => {
+              const Icon = GAME_ICONS[id];
+              return (
+                <Button
+                  key={id}
+                  variant="outline"
+                  className="w-full gap-2"
+                  onClick={() => this.setState({ recoveryGame: id })}
+                >
+                  {Icon && <Icon className={`w-4 h-4 ${gameIconColor(id)}`} />} {label}
+                </Button>
+              );
+            })}
           </div>
           <Button
             variant="ghost"

@@ -37,6 +37,7 @@ import { MINESWEEPER_LEVELS, type MinesweeperDifficulty } from "@/lib/minesweepe
 import { SLIDE_PUZZLE_LEVELS, SLIDE_PUZZLE_TILE_STYLES, type SlidePuzzleDifficulty, type SlidePuzzleTileStyle } from "@/lib/slide-puzzle";
 import { QUIZ_LEVELS, QUIZ_SUBJECTS, quizGameId, quizSubjectForGameId, isQuizSubject, type QuizGameId, type QuizLevel, type QuizSubject } from "@/lib/quiz";
 import { IMAGE_THEMES } from "@/lib/themes";
+import { GAME_ICONS, gameIconColor } from "@/lib/game-icons";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1742,13 +1743,23 @@ function NewChallengeDialog({
                 <Select value={gameType} onValueChange={(value) => setGameType(value as GameType)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="sudoku">Sudoku</SelectItem>
-                    <SelectItem value="memory">Memory Match</SelectItem>
-                    <SelectItem value="jigsaw">Jigsaw</SelectItem>
-                    <SelectItem value="word-search">Word Search</SelectItem>
-                    <SelectItem value="minesweeper">Minesweeper</SelectItem>
-                    <SelectItem value="slide-puzzle">Slide Puzzle</SelectItem>
-                    {(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id) => <SelectItem key={id} value={quizGameId(id)}>{QUIZ_SUBJECTS[id].emoji} {QUIZ_SUBJECTS[id].name}</SelectItem>)}
+                    {([
+                      ["sudoku", "Sudoku"],
+                      ["memory", "Memory Match"],
+                      ["jigsaw", "Jigsaw"],
+                      ["word-search", "Word Search"],
+                      ["minesweeper", "Minesweeper"],
+                      ["slide-puzzle", "Slide Puzzle"],
+                    ] as const).map(([id, label]) => {
+                      const Icon = GAME_ICONS[id];
+                      return <SelectItem key={id} value={id}><span className="flex items-center gap-2"><Icon className={`h-4 w-4 shrink-0 ${gameIconColor(id)}`} />{label}</span></SelectItem>;
+                    })}
+                    {(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id) => {
+                      const gameId = quizGameId(id);
+                      const Icon = GAME_ICONS[gameId];
+                      const subject = QUIZ_SUBJECTS[id];
+                      return <SelectItem key={gameId} value={gameId}><span className="flex items-center gap-2"><Icon className={`h-4 w-4 shrink-0 ${gameIconColor(gameId)}`} />{subject.name}</span></SelectItem>;
+                    })}
                   </SelectContent>
                 </Select>
               </div>
@@ -1947,9 +1958,9 @@ export default function Challenges() {
   const rematchChallengeId = Number(queryParams.get("rematchChallengeId") ?? "");
   const rematchDuelId = Number(queryParams.get("rematchDuelId") ?? "");
   usePageMeta({
-    title: "Puzzle Challenges & Duels | Play Brain Games . Online",
+    title: "Game Challenges & Duels | Play Brain Games . Online",
     description:
-      "Create and join Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, and Slide Puzzle challenges, compare scores, and compete with friends on Play Brain Games . Online.",
+      "Create and join challenges for any of the nine games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and the Science, Maths & GK quizzes — compare scores, and compete with friends.",
     path: "/challenges",
   });
   const queryClient = useQueryClient();
@@ -2682,14 +2693,25 @@ export default function Challenges() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="recent">Recent{totalAlert > 0 ? ` (${totalAlert})` : ""}</SelectItem>
-            <SelectItem value="sudoku">Sudoku{sudokuAlert > 0 ? ` (${sudokuAlert})` : ""}</SelectItem>
-            <SelectItem value="memory">Memory Match{memoryAlert > 0 ? ` (${memoryAlert})` : ""}</SelectItem>
-            <SelectItem value="jigsaw">Jigsaw{jigsawAlert > 0 ? ` (${jigsawAlert})` : ""}</SelectItem>
-            <SelectItem value="word-search">Word Search{wordSearchAlert > 0 ? ` (${wordSearchAlert})` : ""}</SelectItem>
-            <SelectItem value="minesweeper">Minesweeper{minesweeperAlert > 0 ? ` (${minesweeperAlert})` : ""}</SelectItem>
-            <SelectItem value="slide-puzzle">Slide Puzzle{slidePuzzleAlert > 0 ? ` (${slidePuzzleAlert})` : ""}</SelectItem>
-            {(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id) => <SelectItem key={id} value={quizGameId(id)}>{QUIZ_SUBJECTS[id].emoji} {QUIZ_SUBJECTS[id].shortName}{quizAlertFor(id) > 0 ? ` (${quizAlertFor(id)})` : ""}</SelectItem>)}
+            <SelectItem value="recent"><span className="flex items-center gap-2"><Clock className="h-4 w-4 shrink-0 text-muted-foreground" />Recent{totalAlert > 0 ? ` (${totalAlert})` : ""}</span></SelectItem>
+            {([
+              ["sudoku", "Sudoku", sudokuAlert],
+              ["memory", "Memory Match", memoryAlert],
+              ["jigsaw", "Jigsaw", jigsawAlert],
+              ["word-search", "Word Search", wordSearchAlert],
+              ["minesweeper", "Minesweeper", minesweeperAlert],
+              ["slide-puzzle", "Slide Puzzle", slidePuzzleAlert],
+            ] as const).map(([id, label, alert]) => {
+              const Icon = GAME_ICONS[id];
+              return <SelectItem key={id} value={id}><span className="flex items-center gap-2"><Icon className={`h-4 w-4 shrink-0 ${gameIconColor(id)}`} />{label}{alert > 0 ? ` (${alert})` : ""}</span></SelectItem>;
+            })}
+            {(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id) => {
+              const gameId = quizGameId(id);
+              const Icon = GAME_ICONS[gameId];
+              const subject = QUIZ_SUBJECTS[id];
+              const alert = quizAlertFor(id);
+              return <SelectItem key={gameId} value={gameId}><span className="flex items-center gap-2"><Icon className={`h-4 w-4 shrink-0 ${gameIconColor(gameId)}`} />{subject.shortName}{alert > 0 ? ` (${alert})` : ""}</span></SelectItem>;
+            })}
           </SelectContent>
         </Select>
       </div>
@@ -2715,7 +2737,7 @@ export default function Challenges() {
                 <Swords className="w-12 h-12 text-muted-foreground/30" />
                 <p className="font-semibold text-lg">No challenges yet</p>
                 <p className="text-sm text-muted-foreground max-w-xs">
-                  Challenge another player in any game — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, or Slide Puzzle. Winner takes 10 gems!
+                  Challenge another player in any game — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, or the Science, Maths & GK quizzes. Winner takes 10 gems!
                 </p>
                 <Button className="mt-2 gap-2" onClick={openNewChallenge}>
                   <Swords className="w-4 h-4" /> Send your first challenge
@@ -3087,7 +3109,7 @@ export default function Challenges() {
         </h2>
         <p className="mt-2">
           No account is needed to start a challenge. Choose the Challenge button,
-            select Sudoku, Memory Match, Jigsaw, or Word Search to challenge another player on the same puzzle.
+            select any game — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, or a quiz — to challenge another player on the same puzzle or questions.
         </p>
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           <div>

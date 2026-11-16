@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft, Hash, Type, Palette, Trophy, Flame, BarChart2, Gem, Grid3x3, Brain, Puzzle, Search, Sparkles } from "lucide-react";
+import { ArrowLeft, Hash, Type, Palette, Trophy, Flame, BarChart2, Gem, Grid3x3, Brain, Puzzle, Search, Sparkles, Bomb, Grid2x2, FlaskConical, Timer, Swords } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { usePageMeta } from "@/components/page-meta";
 import { getLegalReturnPath } from "@/lib/legal-navigation";
@@ -32,6 +32,27 @@ const WORD_SEARCH_FEATURES = [
   { icon: Gem, label: "Points, XP, and gems", desc: "Earn points based on difficulty, time, tries, and hints, with XP and gems for completing puzzles." },
 ];
 
+const MINESWEEPER_FEATURES = [
+  { icon: Bomb, label: "Four board sizes", desc: "From a gentle 6×6 Beginner board with 5 mines up to a 14×14 Hard field with 34." },
+  { icon: Search, label: "Numbers and flags", desc: "Each revealed number counts neighbouring mines — flag the suspects and clear every safe cell." },
+  { icon: Flame, label: "Daily challenge", desc: "One shared minefield per day — compare your sweep with everyone else." },
+  { icon: Gem, label: "Points, XP, and gems", desc: "Earn points for clearing the field cleanly and quickly, with up to three mistakes and two hints." },
+];
+
+const SLIDE_PUZZLE_FEATURES = [
+  { icon: Grid2x2, label: "Four board sizes", desc: "2×2 and 3×3 warm-ups up to the demanding 4×4 and 5×5 boards." },
+  { icon: Type, label: "Three tile styles", desc: "Numbers, alphabet letters, or picture tiles from the icon themes." },
+  { icon: Flame, label: "Daily challenge", desc: "Solve the same scrambled board as every other player each day." },
+  { icon: Gem, label: "Points, XP, and gems", desc: "Points reward few moves and fast solves against each board's par target." },
+];
+
+const QUIZ_FEATURES = [
+  { icon: FlaskConical, label: "Science, Maths & GK", desc: "Three separate quiz games covering planets and elements, numbers and shapes, and world facts." },
+  { icon: Timer, label: "Four timed levels", desc: "Easy (5 questions) through Expert (12 questions) — answer fast and accurately for bonus points." },
+  { icon: Flame, label: "Daily challenge", desc: "Each subject has a shared daily quiz with identical questions for every player." },
+  { icon: Swords, label: "Friend challenges", desc: "Challenge another player head-to-head on the same quiz questions." },
+];
+
 const SHARED_FEATURES = [
   { icon: Trophy, label: "Leaderboards & badges", desc: "Weekly and monthly tournaments, all-time scores, and shareable winner badges." },
   { icon: BarChart2, label: "Personal stats", desc: "Track your win rate, average time, and progress across difficulties." },
@@ -40,9 +61,9 @@ const SHARED_FEATURES = [
 
 export default function About() {
   usePageMeta({
-      title: "About Play Brain Games . Online | Sudoku, Memory, Jigsaw & Word Search",
+      title: "About Play Brain Games . Online | Nine Free Games",
     description:
-        "Learn how Play Brain Games combines Sudoku, Memory Match, Jigsaw, and Word Search puzzles with daily challenges, guest play, synced progress, and player support.",
+        "Learn how Play Brain Games combines Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and Science, Maths & GK quizzes with daily challenges, guest play, synced progress, and player support.",
     path: "/about",
   });
   const [, setLocation] = useLocation();
@@ -60,13 +81,13 @@ export default function About() {
       <div className="bg-card rounded-2xl px-5 py-4 border border-border">
         <h1 className="text-3xl font-serif font-bold tracking-tight">About</h1>
         <p className="text-muted-foreground mt-1">
-          Four classic brain games, reimagined for everyone.
+          Nine brain games, reimagined for everyone.
         </p>
       </div>
 
       <div className="space-y-4 text-sm text-muted-foreground leading-relaxed bg-card rounded-2xl border border-border px-5 py-4">
         <p>
-          Play Brain Games . Online is a general-audience, family-friendly collection of Sudoku, Memory Match, Jigsaw, and Word Search puzzles. It is designed for everyone from first-time solvers to seasoned experts, with optional child-friendly modes for younger family members. We believe a great puzzle game should be beautiful, fast, and endlessly replayable.
+          Play Brain Games . Online is a general-audience, family-friendly collection of Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and Science, Maths & GK quiz games. It is designed for everyone from first-time players to seasoned experts, with optional child-friendly modes for younger family members. We believe a great puzzle game should be beautiful, fast, and endlessly replayable.
         </p>
         <p>
           In Sudoku, beyond the standard 9×9, we support child-friendly Baby and Mini grids as well as pro-level 16×16 boards that will challenge experienced players. You can play with numbers, letters, or swappable image themes — keeping every session feeling fresh.
@@ -83,6 +104,25 @@ export default function About() {
           Medium adds diagonals and Hard adds backwards words too. Drag from a
           word&apos;s first letter to its last to reveal it, use up to two hints
           per game, and earn points based on difficulty, time, tries, and hints.
+        </p>
+        <p>
+          In Minesweeper, reveal safe cells and read the numbers — each counts
+          the mines touching that cell — to deduce where the mines hide. Boards
+          run from a 6×6 Beginner field to a 14×14 Hard one, with up to three
+          mistakes and two hints per game.
+        </p>
+        <p>
+          In Slide Puzzle, slide tiles one space at a time through the single
+          gap until the board reads in order. Choose 2×2 to 5×5 boards and
+          number, alphabet, or picture tiles; points reward fast, efficient
+          solves against each board&apos;s par target.
+        </p>
+        <p>
+          The Science, Maths, and GK quizzes are timed multiple-choice games
+          with four levels — Easy asks 5 questions, Expert asks 12 — covering
+          planets and elements, numbers and shapes, and world facts. Each has
+          its own daily challenge, leaderboard, achievements, and friend
+          duels.
         </p>
       </div>
 
@@ -171,6 +211,69 @@ export default function About() {
       </div>
 
       <div className="space-y-3 bg-card rounded-2xl border border-border px-5 py-4">
+        <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+          <Bomb className="w-4 h-4 text-primary" /> Minesweeper
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {MINESWEEPER_FEATURES.map(({ icon: Icon, label, desc }) => (
+            <Card key={label} className="border-border/60">
+              <CardContent className="pt-4 pb-4 flex gap-3 items-start">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3 bg-card rounded-2xl border border-border px-5 py-4">
+        <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+          <Grid2x2 className="w-4 h-4 text-primary" /> Slide Puzzle
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {SLIDE_PUZZLE_FEATURES.map(({ icon: Icon, label, desc }) => (
+            <Card key={label} className="border-border/60">
+              <CardContent className="pt-4 pb-4 flex gap-3 items-start">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3 bg-card rounded-2xl border border-border px-5 py-4">
+        <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+          <FlaskConical className="w-4 h-4 text-primary" /> Science, Maths &amp; GK Quizzes
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {QUIZ_FEATURES.map(({ icon: Icon, label, desc }) => (
+            <Card key={label} className="border-border/60">
+              <CardContent className="pt-4 pb-4 flex gap-3 items-start">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3 bg-card rounded-2xl border border-border px-5 py-4">
         <h2 className="text-base font-semibold text-foreground">Across all games</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {SHARED_FEATURES.map(({ icon: Icon, label, desc }) => (
@@ -217,11 +320,13 @@ export default function About() {
         <p>
           The daily Sudoku challenge gives players the same 9×9 medium puzzle
           for that day, so completion time and mistakes can be compared on the
-          same board. Memory Match also offers daily and weekly challenges,
-          Jigsaw has a shared daily picture puzzle plus friend challenges, and
-          Word Search has a shared daily word puzzle plus friend challenges.
-          Weekly, monthly, and all-time leaderboards show recorded game results
-          for players who choose to take part.
+          same board. Every other game has a shared daily challenge too —
+          Memory Match offers daily and weekly challenges, Jigsaw and Word
+          Search share a daily puzzle plus friend challenges, Minesweeper and
+          Slide Puzzle each have a daily board, and the Science, Maths &amp; GK
+          quizzes each post a shared daily quiz. Weekly, monthly, and all-time
+          leaderboards show recorded game results for players who choose to
+          take part.
         </p>
         <p>
           These features are optional. You can use the game pages for a quiet

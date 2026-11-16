@@ -101,6 +101,7 @@ import { getMinesweeperHistory, summarizeMinesweeperStats, MINESWEEPER_STATS_UPD
 import { getSlidePuzzleHistory, summarizeSlidePuzzleStats, SLIDE_PUZZLE_STATS_UPDATED } from "@/lib/slide-puzzle-stats";
 import { SLIDE_PUZZLE_LEVELS } from "@/lib/slide-puzzle";
 import { QUIZ_SUBJECTS, QUIZ_LEVELS, quizGameId, quizSubject, quizSubjectForGameId, type QuizGameId, type QuizSubject } from "@/lib/quiz";
+import { GAME_ICONS, gameIconColor } from "@/lib/game-icons";
 import { getQuizHistory, summarizeQuizStats, QUIZ_STATS_UPDATED } from "@/lib/quiz-stats";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -1054,9 +1055,9 @@ function QuizDailyCalendar({ profileId, subject }: { profileId: number; subject:
 export default function Profile() {
   const [, setLocation] = useLocation();
   usePageMeta({
-    title: "Your Puzzle Profile & Stats | Play Brain Games . Online",
+    title: "Your Game Profile & Stats | Play Brain Games . Online",
     description:
-      "Review your Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, and Slide Puzzle progress, personal bests, achievements, and game preferences.",
+      "Review your progress, personal bests, achievements, and game preferences across all nine games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and the quizzes.",
     path: "/profile",
   });
   const search = useSearch();
@@ -1617,15 +1618,20 @@ export default function Profile() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="sudoku">Sudoku</SelectItem>
-                <SelectItem value="memory">Memory Match</SelectItem>
-                <SelectItem value="jigsaw">Jigsaw</SelectItem>
-                <SelectItem value="word-search">Word Search</SelectItem>
-                <SelectItem value="minesweeper">Minesweeper</SelectItem>
-                <SelectItem value="slide-puzzle">Slide Puzzle</SelectItem>
-                <SelectItem value="science-quiz">Science Quiz</SelectItem>
-                <SelectItem value="maths-quiz">Maths Quiz</SelectItem>
-                <SelectItem value="gk-quiz">GK Quiz</SelectItem>
+                {([
+                  ["sudoku", "Sudoku"],
+                  ["memory", "Memory Match"],
+                  ["jigsaw", "Jigsaw"],
+                  ["word-search", "Word Search"],
+                  ["minesweeper", "Minesweeper"],
+                  ["slide-puzzle", "Slide Puzzle"],
+                  ["science-quiz", "Science Quiz"],
+                  ["maths-quiz", "Maths Quiz"],
+                  ["gk-quiz", "GK Quiz"],
+                ] as const).map(([id, label]) => {
+                  const Icon = GAME_ICONS[id];
+                  return <SelectItem key={id} value={id}><span className="flex items-center gap-2"><Icon className={`h-4 w-4 shrink-0 ${gameIconColor(id)}`} />{label}</span></SelectItem>;
+                })}
               </SelectContent>
             </Select>
           </div>

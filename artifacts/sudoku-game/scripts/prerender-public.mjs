@@ -50,28 +50,33 @@ const sudokuBookmarkPages = SUDOKU_BOOKMARK_GRIDS.flatMap((grid) =>
 const publicPages = [
   {
     route: "/",
-    title: "Free Sudoku, Memory Match & Jigsaw Games Online | Play Brain Games . Online",
+    title: "Free Puzzle & Quiz Games Online | Sudoku, Memory, Word Search & More",
     description:
-      "Play browser-based Sudoku, Memory Match, and Jigsaw with flexible boards, daily challenges, guest play, and optional synced progress.",
-    heading: "Free Sudoku, Memory Match & Jigsaw Games Online",
+      "Play nine free browser games: Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and Science, Maths & GK quizzes — with daily challenges, leaderboards, and guest play.",
+    heading: "Free Puzzle & Quiz Games Online",
     intro:
-      "Choose Sudoku for logic, Memory Match for recall, or Jigsaw to rebuild a picture. All three games can be started as a guest, with board choices for short sessions and larger challenges.",
+      "Nine games, one place: logic puzzles, word and picture games, minefields, sliding tiles, and timed quizzes. Every game can be started as a guest, with daily challenges and leaderboards to compare scores.",
     sections: [
-      ["Choose a Sudoku grid you can reason through", "Baby 3×3, Mini 4×4, and Dual 6×6 boards keep the symbol set compact. Classic 9×9 is the familiar standard, while Pro 16×16 is a longer challenge. Easy, medium, hard, and expert settings change puzzle difficulty independently of board size."],
-      ["Use constraints instead of guessing", "A legal placement must fit the row, column, and marked box. Start with a group that has few empty cells, list its missing symbols, and check which candidates remain in each cell. When more than one candidate fits, use notes and revisit the cell after a nearby placement."],
-      ["Build a location map in Memory Match", "Turn over two cards at a time. If they match, they stay visible; if not, remember both positions before they turn face-down again. Scanning in a consistent order helps you connect a symbol to a location when you see it later."],
-      ["Choose a Memory Match board", "The 2×4 Beginner board has 4 pairs, 4×4 Easy has 8, 8×4 Medium has 16, and 8×8 Hard has 32. A small board is useful for learning the routine; larger boards ask you to remember more locations. Completion time and flips contribute to the result."],
-      ["Build a picture in Jigsaw", "Kids mode offers 2×2 and 3×3 boards, Adult mode offers 4×4 and 5×5, and default 4 All mode offers every size. Choose one of three levels. Points use a size-based base, level multiplier, time bonus, move efficiency, and tips used. Wins award XP by level and gems by board size."],
-      ["Change the display without changing the rules", "Sudoku and Memory Match can use numbers, letters, or curated image symbols where those modes are available. Jigsaw uses themed pictures. Themes change the appearance of the board, while each game's rules stay the same."],
-      ["Play as a guest or keep progress in a profile", "You can start a game without an account. Optional Google sign-in connects game statistics, achievements, and streaks to a profile so progress can sync across devices."],
-      ["Use daily challenges for a shared benchmark", "The daily Sudoku challenge gives players the same 9×9 medium puzzle for that date. Memory Match has daily and weekly challenges, and Jigsaw gives everyone the same picture puzzle each day."],
+      ["Sudoku for logic", "Baby 3×3 through Pro 16×16 grids in easy, medium, hard, and expert. Each symbol must fit its row, column, and marked box — use candidate notes and a repeatable solving loop."],
+      ["Memory Match for recall", "2×4 to 8×8 boards with number, letter, or image cards. Turn over two cards at a time and build a location map as you play."],
+      ["Jigsaw for pictures", "Rebuild themed pictures on 2×2 to 5×5 boards across Kids, Adult, and All modes, with three levels and points based on size, level, time, moves, and tips."],
+      ["Word Search for words", "Themed word lists hide in letter grids — Beginner and Easy go across and down, Medium adds diagonals, and Hard includes backwards words."],
+      ["Minesweeper for nerves of steel", "Clear the minefield on 6×6 to 14×14 boards from Beginner to Hard. Numbers show adjacent mines; you get up to three mistakes and two hints."],
+      ["Slide Puzzle for tile sliding", "Arrange numbered, alphabet, or picture tiles in order on 2×2 to 5×5 boards. Points reward fast, efficient solves with few hints."],
+      ["Science, Maths & GK quizzes", "Timed multiple-choice quizzes with four levels — Easy (5 questions) up to Expert (12 questions). Answer quickly and accurately to maximise points, XP, and gems."],
+      ["Daily challenges for everyone", "Every game has a shared daily challenge that refreshes each day, so you can compare your score with other players on the same puzzle."],
+      ["Play as a guest or keep progress in a profile", "You can start any game without an account. Optional Google sign-in connects game statistics, achievements, and streaks to a profile so progress can sync across devices."],
     ],
     links: [
       ["/sudoku", "Play Sudoku online"],
       ["/memory", "Play Memory Match online"],
       ["/jigsaw", "Play Jigsaw online"],
-      ["/jigsaw-challenge", "Try today's Jigsaw puzzle"],
-      ["/leaderboard/jigsaw/", "View the Jigsaw leaderboard"],
+      ["/word-search", "Play Word Search online"],
+      ["/minesweeper", "Play Minesweeper online"],
+      ["/slide-puzzle", "Play Slide Puzzle online"],
+      ["/quiz/science", "Play the Science Quiz"],
+      ["/quiz/maths", "Play the Maths Quiz"],
+      ["/quiz/gk", "Play the GK Quiz"],
       ["/themes", "Browse game themes"],
       ["/guides", "Read the puzzle guides"],
       ["/about", "Learn how the games work"],
@@ -119,12 +124,12 @@ const publicPages = [
   },
   {
     route: "/themes",
-    title: "Sudoku, Memory Match & Jigsaw Themes | Play Brain Games . Online",
+    title: "Game Themes | Play Brain Games . Online",
     description:
-      "Personalise Sudoku and Memory Match, and use themed image sets for Jigsaw picture puzzles. Preview styles and unlock selected themes with gems.",
-    heading: "Sudoku, Memory Match & Jigsaw Themes",
+      "Personalise your games with curated colour palettes, system-provided backgrounds, fonts, and image-symbol sets. Preview styles and unlock selected themes with gems.",
+    heading: "Game Themes",
     intro:
-      "Choose a curated colour palette, switch on a system-provided background, and explore font and image-symbol options. Jigsaw uses themed images for its picture puzzles.",
+      "Choose a curated colour palette, switch on a system-provided background, and explore font and image-symbol options used across the games.",
     sections: [
       [
         "Curated colour palettes",
@@ -153,12 +158,12 @@ const publicPages = [
   },
   {
     route: "/guides",
-    title: "Puzzle Guides: Sudoku, Memory Match & Jigsaw | Play Brain Games . Online",
+    title: "Game Guides: Sudoku, Memory Match, Word Search & More | Play Brain Games . Online",
     description:
-      "Learn Sudoku, Memory Match, and Jigsaw with practical strategies, board-size guidance, and tips for daily puzzles and friend challenges.",
-    heading: "Puzzle Guides: Sudoku, Memory Match & Jigsaw",
+      "Learn Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and the quizzes with practical strategies, board-size guidance, and tips for daily puzzles and friend challenges.",
+    heading: "Game Guides",
     intro:
-      "Use these practical guides to learn the rules, work through a sample move, and choose a board that fits your experience. The examples use the same row, column, box, and card-position ideas you can apply while playing.",
+      "Use these practical guides to learn the rules, work through a sample move, and choose a board that fits your experience — covering every game on Play Brain Games . Online.",
     sections: [
       [
         "Sudoku rules: row, column, and box",
@@ -197,6 +202,22 @@ const publicPages = [
         "Rebuild themed pictures on 2×2 to 5×5 grids: Kids mode has 2×2 and 3×3, Adult mode has 4×4 and 5×5, and default 4 All mode has all four. Choose one of three levels, then solve the shared daily puzzle or challenge a friend. Points depend on grid size, level, time, moves, and tips; completions also award XP and gems.",
       ],
       [
+        "Word Search strategy",
+        "Words run in straight lines — across, down, and on higher levels diagonally or backwards. Scan for rare letters first, then extend the line in both directions. Each game allows up to two hints.",
+      ],
+      [
+        "Minesweeper reading patterns",
+        "A revealed number counts the mines in its eight neighbours. When a number equals the count of covered neighbours, every covered neighbour is a mine — flag them all. When the flags already satisfy the count, every other neighbour is safe to reveal.",
+      ],
+      [
+        "Slide Puzzle technique",
+        "Work row by row from the top-left: place tile 1, then complete the first row, then the next. Keep the blank space near the tiles you're working on, and use the hint button when a row looks stuck.",
+      ],
+      [
+        "Quiz strategy",
+        "In the Science, Maths & GK quizzes, points combine accuracy with speed. Eliminate obviously wrong options quickly, guess rather than skip when unsure, and finish under the par time for the speed bonus.",
+      ],
+      [
         "Play as a guest or save progress",
         "You can start a puzzle without creating an account. Guest play is useful for a quick session; signing in is optional and lets the site associate completed results, rewards, and personal progress with your profile across devices.",
       ],
@@ -205,6 +226,10 @@ const publicPages = [
       ["/sudoku", "Start a Sudoku puzzle"],
       ["/memory", "Start a Memory Match game"],
       ["/jigsaw", "Play a Jigsaw picture puzzle"],
+      ["/word-search", "Play Word Search"],
+      ["/minesweeper", "Play Minesweeper"],
+      ["/slide-puzzle", "Play Slide Puzzle"],
+      ["/quiz/science", "Play the quizzes"],
       ["/daily-challenge", "Try the daily challenge"],
     ],
     schemaType: "Article",
@@ -253,7 +278,7 @@ const publicPages = [
       ["/themes", "Browse card themes"],
       ["/memory-challenge", "Try a memory challenge"],
       ["/leaderboard/memory/", "View the Memory Match leaderboard"],
-      ["/about", "Learn about all three games"],
+      ["/about", "Learn about Play Brain Games"],
     ],
     schemaType: "WebApplication",
   },
@@ -301,21 +326,26 @@ const publicPages = [
     route: "/leaderboard",
     title: "All Games Leaderboard | Play Brain Games . Online",
     description:
-      "Compare Sudoku, Memory Match, and Jigsaw scores across weekly, monthly, and all-time leaderboards.",
+      "Compare scores across all nine games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and Science, Maths & GK quizzes — on weekly, monthly, and all-time boards.",
     heading: "All Games Leaderboard",
     intro:
-      "Compare combined Sudoku, Memory Match, and Jigsaw points across weekly tournaments, monthly tournaments, and all-time rankings.",
+      "Compare combined points across every game — puzzles, word games, quizzes, and more — on weekly tournaments, monthly tournaments, and all-time rankings.",
     sections: [
       ["Weekly and monthly tournaments", "Follow changing tournament standings and compete for a place near the top."],
-      ["All-time combined scores", "Completed Sudoku, Memory Match, and Jigsaw games contribute points to the all-games ranking."],
-      ["Game-specific leaderboards", "Open separate all-time boards to compare Sudoku grids, Memory Match levels, or Jigsaw puzzles."],
+      ["All-time combined scores", "Completed games from every title — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and the Science, Maths & GK quizzes — contribute points to the all-games ranking."],
+      ["Game-specific leaderboards", "Open separate all-time boards to compare scores for any individual game."],
     ],
     links: [
       ["/leaderboard/sudoku/", "View all-time Sudoku scores"],
       ["/leaderboard/memory/", "View all-time Memory Match scores"],
       ["/leaderboard/jigsaw/", "View all-time Jigsaw scores"],
+      ["/leaderboard/word-search/", "View all-time Word Search scores"],
+      ["/leaderboard/minesweeper/", "View all-time Minesweeper scores"],
+      ["/leaderboard/slide-puzzle/", "View all-time Slide Puzzle scores"],
+      ["/leaderboard/science-quiz/", "View Science Quiz scores"],
+      ["/leaderboard/maths-quiz/", "View Maths Quiz scores"],
+      ["/leaderboard/gk-quiz/", "View GK Quiz scores"],
       ["/sudoku/", "Play Sudoku for leaderboard points"],
-      ["/memory/", "Play Memory Match for leaderboard points"],
       ["/challenges", "Challenge another player"],
     ],
     schemaType: "CollectionPage",
@@ -361,16 +391,17 @@ const publicPages = [
   },
   {
     route: "/challenges",
-    title: "Puzzle Challenges & Duels | Play Brain Games . Online",
+    title: "Game Challenges & Duels | Play Brain Games . Online",
     description:
-      "Create and join Sudoku, Memory Match, and Jigsaw challenges, compare scores, and compete with friends.",
-    heading: "Puzzle Challenges & Duels",
+      "Create and join challenges for any of the nine games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and the quizzes — compare scores, and compete with friends.",
+    heading: "Game Challenges & Duels",
     intro:
-      "Create a Sudoku duel, Memory Match competition, or Jigsaw picture challenge. Share an invitation link, compare results, and replay finished challenges.",
+      "Create a head-to-head challenge in any game. Share an invitation link, complete the same round, and compare results.",
     sections: [
-      ["What challenges are", "Challenges let two players compete on the same Sudoku puzzle, Memory Match board, or Jigsaw picture. Each player completes a round, then the higher score wins."],
+      ["What challenges are", "Challenges let two players compete on the same puzzle, board, or quiz. Each player completes a round, then the higher score wins bonus gems."],
+      ["Every game supported", "Duels are available for Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and the Science, Maths & GK quizzes."],
       ["How invitations work", "Create a challenge and share the invitation link with a friend. They can open the link and accept the duel without signing in."],
-      ["How scoring works", "Scores reward speed and difficulty while accounting for mistakes, hints, or extra card flips. The winner earns gems; ties reward both players."],
+      ["How scoring works", "Scores reward speed and difficulty while accounting for mistakes, hints, or extra moves. The winner earns gems; ties reward both players."],
     ],
     links: [
       ["/sudoku", "Practice Sudoku first"],
@@ -381,23 +412,27 @@ const publicPages = [
   },
   {
     route: "/about",
-    title: "About Play Brain Games . Online | Three Puzzle Games",
+    title: "About Play Brain Games . Online | Nine Free Games",
     description:
-      "Learn about Sudoku, Memory Match, and Jigsaw, including board choices, daily and friend challenges, guest play, and saved progress.",
+      "Learn about Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and Science, Maths & GK quizzes — board choices, daily challenges, guest play, and saved progress.",
     heading: "About Play Brain Games . Online",
     intro:
-      "Play Brain Games . Online brings together three puzzle formats with adjustable boards, practical guides, daily challenges, and guest play.",
+      "Play Brain Games . Online brings together nine puzzle and quiz formats with adjustable boards, practical guides, daily challenges, and guest play.",
     sections: [
-      ["Three games, three kinds of play", "Sudoku is a logic puzzle; Memory Match is a recall game; Jigsaw asks you to rebuild a picture by placing its pieces."],
-      ["Board choices for different experience levels", "Sudoku ranges from small grids to 16×16 Pro; Memory Match has 2×4 through 8×8 boards; Jigsaw offers 2×2 and 3×3 in Kids mode, 4×4 and 5×5 in Adult mode, or all four in default 4 All mode."],
+      ["Nine games, many kinds of play", "Sudoku is a logic puzzle; Memory Match is a recall game; Jigsaw rebuilds a picture; Word Search hides themed words; Minesweeper tests deduction under pressure; Slide Puzzle orders shuffled tiles; and the Science, Maths & GK quizzes test knowledge against the clock."],
+      ["Board and level choices for every experience", "Sudoku ranges from 3×3 to 16×16 grids; Memory Match has 2×4 through 8×8 boards; Jigsaw offers 2×2 to 5×5 pictures; Word Search scales from 6×6 to 14×14; Minesweeper runs 6×6 to 14×14; Slide Puzzle goes 2×2 to 5×5; and each quiz has Easy through Expert levels."],
       ["Progress is optional", "Start as a guest without signing in. Google sign-in connects profile statistics, achievements, and streaks so progress can sync across devices. The games remain available without a profile."],
-      ["Daily practice and shared results", "The daily Sudoku challenge shares one 9×9 medium puzzle, Memory Match offers daily and weekly challenges, and Jigsaw shares a daily picture puzzle and friend challenges. Leaderboards cover all three games."],
+      ["Daily practice and shared results", "Every game has a daily challenge that refreshes each day, plus head-to-head challenges against friends. Leaderboards cover all nine games across weekly, monthly, and all-time boards."],
       ["Privacy and account control", "The Privacy Policy describes how account and game-progress information is used. The account deletion page explains how to request removal of an account and associated server data."],
     ],
     links: [
       ["/sudoku", "Play Sudoku"],
       ["/memory", "Play Memory Match"],
       ["/jigsaw", "Play Jigsaw"],
+      ["/word-search", "Play Word Search"],
+      ["/minesweeper", "Play Minesweeper"],
+      ["/slide-puzzle", "Play Slide Puzzle"],
+      ["/quiz/science", "Play the quizzes"],
       ["/guides", "Read the puzzle guides"],
       ["/account-deletion", "Account deletion"],
       ["/privacy", "Read the privacy policy"],
@@ -562,6 +597,284 @@ const publicPages = [
       ["/leaderboard/", "View the all-games leaderboard"],
       ["/leaderboard/jigsaw/", "View the Jigsaw leaderboard"],
       ["/word-search", "Play Word Search"],
+    ],
+    schemaType: "CollectionPage",
+  },
+  {
+    route: "/minesweeper",
+    title: "Minesweeper Online Free | Clear the Minefield",
+    description:
+      "Play free Minesweeper online with Beginner, Easy, Medium, and Hard boards. Read the numbers, flag the mines, and clear the field before three mistakes.",
+    heading: "Minesweeper Online Free",
+    intro:
+      "A mine hides under every covered cell. Reveal safe squares and use the numbers — each shows how many mines touch that cell — to work out where the mines are before you hit one.",
+    sections: [
+      ["Four board sizes", "Beginner is a gentle 6×6 board with 5 mines, Easy is 8×8 with 12, Medium is 12×12 with 24, and Hard is 14×14 with 34 mines for experienced players."],
+      ["How the numbers work", "Each revealed number counts the mines in the eight surrounding cells. A 1 means exactly one neighbour is a mine; a 0 means the whole neighbourhood is safe and reveals automatically."],
+      ["Flag suspicious mines", "Switch to flag mode to mark cells you believe contain mines. Flags help you keep track, but the real skill is reading the number patterns."],
+      ["Mistakes and hints", "You can afford up to three wrong reveals per game, and two hints that highlight a safe cell. Finishing with fewer mistakes and hints scores higher."],
+      ["Daily challenge and leaderboards", "The daily Minesweeper challenge gives everyone the same minefield each day. Completed games earn points, XP, and gems, and feed the Minesweeper leaderboard."],
+      ["Play as a guest or save progress", "Start a game without an account. Optional Google sign-in connects your results, stats, and streaks to a profile across devices."],
+    ],
+    links: [
+      ["/minesweeper-challenge", "Play today's Minesweeper challenge"],
+      ["/leaderboard/minesweeper/", "View the Minesweeper leaderboard"],
+      ["/guides", "Read the puzzle guides"],
+      ["/challenges", "Challenge another player"],
+    ],
+    schemaType: "WebApplication",
+  },
+  {
+    route: "/minesweeper-challenge",
+    title: "Daily Minesweeper Challenge | Play Brain Games . Online",
+    description:
+      "Play today's shared Minesweeper minefield, clear it with as few mistakes as possible, and compare your score on the daily leaderboard.",
+    heading: "Daily Minesweeper Challenge",
+    intro:
+      "Everyone gets the same minefield each day, refreshed at 00:00 UTC. Clear every safe cell and post your score.",
+    sections: [
+      ["One shared minefield each day", "The daily Minesweeper challenge uses the same board and mine placement for every player on that date."],
+      ["Score by mistakes and time", "Points reflect how cleanly and quickly you clear the field — fewer mistakes and hints mean a higher score."],
+      ["Compare with other players", "The daily leaderboard shows completion times and points so you can benchmark your sweep."],
+    ],
+    links: [
+      ["/minesweeper", "Play Minesweeper puzzles"],
+      ["/leaderboard/minesweeper/", "View the Minesweeper leaderboard"],
+      ["/guides", "Read the puzzle guides"],
+    ],
+    schemaType: "WebApplication",
+  },
+  {
+    route: "/slide-puzzle",
+    title: "Slide Puzzle Online Free | 15-Puzzle & More",
+    description:
+      "Play free Slide Puzzles online with 2×2 to 5×5 boards and number, alphabet, or picture tiles. Slide tiles into order and beat the par time.",
+    heading: "Slide Puzzle Online Free",
+    intro:
+      "One empty space, a grid of tiles, and one goal: slide the tiles until they sit in order. Choose your board size and tile style, then race the par time.",
+    sections: [
+      ["Four board sizes", "2×2 (3 tiles) is a warm-up, 3×3 (8 tiles) is the classic, 4×4 (15 tiles) is the famous 15-puzzle, and 5×5 (24 tiles) is a serious challenge."],
+      ["Tile styles", "Play with numbers, letters of the alphabet, or picture tiles that use your selected image theme. Changing the style starts a fresh puzzle."],
+      ["How scoring works", "Points reward a low move count and fast completion relative to the board's par moves and par time. Up to three hints are available per game."],
+      ["Daily challenge and leaderboards", "The daily Slide Puzzle challenge gives everyone the same scrambled board each day. Completed games earn points, XP, and gems and feed the Slide Puzzle leaderboard."],
+      ["Play as a guest or save progress", "Start a puzzle without an account. Optional Google sign-in connects your results, stats, and streaks to a profile across devices."],
+    ],
+    links: [
+      ["/slide-puzzle-challenge", "Play today's Slide Puzzle challenge"],
+      ["/leaderboard/slide-puzzle/", "View the Slide Puzzle leaderboard"],
+      ["/themes", "Browse picture themes"],
+      ["/challenges", "Challenge another player"],
+    ],
+    schemaType: "WebApplication",
+  },
+  {
+    route: "/slide-puzzle-challenge",
+    title: "Daily Slide Puzzle Challenge | Play Brain Games . Online",
+    description:
+      "Solve today's shared Slide Puzzle board, finish in as few moves and as little time as possible, and compare your score.",
+    heading: "Daily Slide Puzzle Challenge",
+    intro:
+      "Everyone gets the same scrambled board each day, refreshed at 00:00 UTC. Slide the tiles into order and post your score.",
+    sections: [
+      ["One shared board each day", "The daily Slide Puzzle challenge uses the same board size, scramble, and tile style for every player on that date."],
+      ["Score by moves and time", "Points reward efficient solves — fewer moves and a faster finish than the par target score higher."],
+      ["Compare with other players", "The daily leaderboard shows completion times and points so you can benchmark your sliding."],
+    ],
+    links: [
+      ["/slide-puzzle", "Play Slide Puzzles"],
+      ["/leaderboard/slide-puzzle/", "View the Slide Puzzle leaderboard"],
+      ["/guides", "Read the puzzle guides"],
+    ],
+    schemaType: "WebApplication",
+  },
+  {
+    route: "/quiz/science",
+    title: "Science Quiz Online Free | Timed Trivia Questions",
+    description:
+      "Play the free Science Quiz with four levels — Easy (5 questions) to Expert (12 questions). Timed multiple-choice trivia on planets, elements, biology, and physics.",
+    heading: "Science Quiz Online Free",
+    intro:
+      "Test your science knowledge with timed multiple-choice questions across four levels. Answer quickly and accurately to maximise points, XP, and gems.",
+    sections: [
+      ["Four levels of difficulty", "Easy asks 5 questions in 2 minutes, Medium 8 in 3 minutes, Hard 10 in 4 minutes, and Expert 12 in 5 minutes. Higher levels have bigger point bases."],
+      ["How scoring works", "Points combine a level base with your accuracy and a speed bonus for finishing under the par time. Every correct answer counts; skipped questions score nothing."],
+      ["What you'll be asked", "Questions cover chemistry, biology, physics, astronomy, and earth science — from everyday facts to expert-level detail."],
+      ["Daily challenge and leaderboards", "The daily Science Quiz gives everyone the same questions each day. Completed games feed the Science Quiz leaderboard."],
+      ["Play as a guest or save progress", "Start a quiz without an account. Optional Google sign-in connects your results, stats, and streaks to a profile across devices."],
+    ],
+    links: [
+      ["/quiz-challenge", "Play today's quiz challenges"],
+      ["/leaderboard/science-quiz/", "View the Science Quiz leaderboard"],
+      ["/quiz/maths", "Try the Maths Quiz"],
+      ["/quiz/gk", "Try the GK Quiz"],
+      ["/challenges", "Challenge another player"],
+    ],
+    schemaType: "WebApplication",
+  },
+  {
+    route: "/quiz/maths",
+    title: "Maths Quiz Online Free | Timed Mental Maths",
+    description:
+      "Play the free Maths Quiz with four levels — Easy (5 questions) to Expert (12 questions). Timed arithmetic, algebra, geometry, and number-pattern questions.",
+    heading: "Maths Quiz Online Free",
+    intro:
+      "Sharpen your mental maths with timed multiple-choice questions across four levels. Fast, accurate answers earn the most points.",
+    sections: [
+      ["Four levels of difficulty", "Easy asks 5 questions in 2 minutes, Medium 8 in 3 minutes, Hard 10 in 4 minutes, and Expert 12 in 5 minutes. Higher levels have bigger point bases."],
+      ["How scoring works", "Points combine a level base with your accuracy and a speed bonus for finishing under the par time."],
+      ["What you'll be asked", "Questions range from basic arithmetic and times tables through percentages, algebra, and geometry to quadratics, logarithms, and probability."],
+      ["Daily challenge and leaderboards", "The daily Maths Quiz gives everyone the same questions each day. Completed games feed the Maths Quiz leaderboard."],
+      ["Play as a guest or save progress", "Start a quiz without an account. Optional Google sign-in connects your results, stats, and streaks to a profile across devices."],
+    ],
+    links: [
+      ["/quiz-challenge", "Play today's quiz challenges"],
+      ["/leaderboard/maths-quiz/", "View the Maths Quiz leaderboard"],
+      ["/quiz/science", "Try the Science Quiz"],
+      ["/quiz/gk", "Try the GK Quiz"],
+      ["/challenges", "Challenge another player"],
+    ],
+    schemaType: "WebApplication",
+  },
+  {
+    route: "/quiz/gk",
+    title: "GK Quiz Online Free | General Knowledge Trivia",
+    description:
+      "Play the free General Knowledge Quiz with four levels — Easy (5 questions) to Expert (12 questions). Timed trivia on countries, history, sports, and world facts.",
+    heading: "GK Quiz Online Free",
+    intro:
+      "How much do you know about the world? Take the timed General Knowledge Quiz across four levels and test yourself against the clock.",
+    sections: [
+      ["Four levels of difficulty", "Easy asks 5 questions in 2 minutes, Medium 8 in 3 minutes, Hard 10 in 4 minutes, and Expert 12 in 5 minutes. Higher levels have bigger point bases."],
+      ["How scoring works", "Points combine a level base with your accuracy and a speed bonus for finishing under the par time."],
+      ["What you'll be asked", "Questions cover capitals, currencies, history, sports, science, and world records — from common facts to expert-level trivia."],
+      ["Daily challenge and leaderboards", "The daily GK Quiz gives everyone the same questions each day. Completed games feed the GK Quiz leaderboard."],
+      ["Play as a guest or save progress", "Start a quiz without an account. Optional Google sign-in connects your results, stats, and streaks to a profile across devices."],
+    ],
+    links: [
+      ["/quiz-challenge", "Play today's quiz challenges"],
+      ["/leaderboard/gk-quiz/", "View the GK Quiz leaderboard"],
+      ["/quiz/science", "Try the Science Quiz"],
+      ["/quiz/maths", "Try the Maths Quiz"],
+      ["/challenges", "Challenge another player"],
+    ],
+    schemaType: "WebApplication",
+  },
+  {
+    route: "/quiz-challenge",
+    title: "Daily Quiz Challenges | Science, Maths & GK | Play Brain Games . Online",
+    description:
+      "Play today's shared Science, Maths, and GK quizzes. Everyone gets the same questions and level each day — compare your score on the leaderboard.",
+    heading: "Daily Quiz Challenges",
+    intro:
+      "Three daily quizzes — Science, Maths, and GK — each give every player the same questions and difficulty level each day, refreshed at 00:00 UTC.",
+    sections: [
+      ["One shared quiz per subject", "Each day picks a fixed level and question set per subject, so every player answers identical questions."],
+      ["Score by accuracy and speed", "Points combine the level base with your accuracy and a speed bonus, so a fast, clean run ranks highest."],
+      ["Compare with other players", "Each subject has its own daily leaderboard and all-time board, plus head-to-head quiz challenges against friends."],
+    ],
+    links: [
+      ["/quiz/science", "Play the Science Quiz"],
+      ["/quiz/maths", "Play the Maths Quiz"],
+      ["/quiz/gk", "Play the GK Quiz"],
+      ["/leaderboard", "View the leaderboards"],
+    ],
+    schemaType: "WebApplication",
+  },
+  {
+    route: "/leaderboard/minesweeper",
+    title: "Minesweeper Leaderboard | Play Brain Games . Online",
+    description:
+      "Compare all-time Minesweeper scores across Beginner, Easy, Medium, and Hard boards.",
+    heading: "Minesweeper Leaderboard",
+    intro:
+      "See the players with the highest combined points across completed Minesweeper games of every board size.",
+    sections: [
+      ["Scores across every board", "Points from completed Beginner, Easy, Medium, and Hard games count toward this all-time board."],
+      ["Compare all games", "The all-games leaderboard also includes every other game's scores from weekly, monthly, and all-time results."],
+    ],
+    links: [
+      ["/leaderboard/", "View the all-games leaderboard"],
+      ["/minesweeper", "Play Minesweeper"],
+      ["/minesweeper-challenge", "Try today's challenge"],
+    ],
+    schemaType: "CollectionPage",
+  },
+  {
+    route: "/leaderboard/slide-puzzle",
+    title: "Slide Puzzle Leaderboard | Play Brain Games . Online",
+    description:
+      "Compare all-time Slide Puzzle scores across 2×2, 3×3, 4×4, and 5×5 boards.",
+    heading: "Slide Puzzle Leaderboard",
+    intro:
+      "See the players with the highest combined points across completed Slide Puzzle games of every board size.",
+    sections: [
+      ["Scores across every board", "Points from completed 2×2, 3×3, 4×4, and 5×5 games count toward this all-time board."],
+      ["Compare all games", "The all-games leaderboard also includes every other game's scores from weekly, monthly, and all-time results."],
+    ],
+    links: [
+      ["/leaderboard/", "View the all-games leaderboard"],
+      ["/slide-puzzle", "Play Slide Puzzle"],
+      ["/slide-puzzle-challenge", "Try today's challenge"],
+    ],
+    schemaType: "CollectionPage",
+  },
+  {
+    route: "/leaderboard/science-quiz",
+    title: "Science Quiz Leaderboard | Play Brain Games . Online",
+    description:
+      "Compare all-time Science Quiz scores across Easy, Medium, Hard, and Expert levels.",
+    heading: "Science Quiz Leaderboard",
+    intro:
+      "See the players with the highest combined points across completed Science Quiz games of every level.",
+    sections: [
+      ["Scores across every level", "Points from completed Easy, Medium, Hard, and Expert quizzes count toward this all-time board."],
+      ["Compare all games", "The all-games leaderboard also includes every other game's scores from weekly, monthly, and all-time results."],
+    ],
+    links: [
+      ["/leaderboard/", "View the all-games leaderboard"],
+      ["/quiz/science", "Play the Science Quiz"],
+      ["/quiz/maths", "Try the Maths Quiz"],
+      ["/quiz/gk", "Try the GK Quiz"],
+    ],
+    schemaType: "CollectionPage",
+  },
+  {
+    route: "/leaderboard/maths-quiz",
+    title: "Maths Quiz Leaderboard | Play Brain Games . Online",
+    description:
+      "Compare all-time Maths Quiz scores across Easy, Medium, Hard, and Expert levels.",
+    heading: "Maths Quiz Leaderboard",
+    intro:
+      "See the players with the highest combined points across completed Maths Quiz games of every level.",
+    sections: [
+      ["Scores across every level", "Points from completed Easy, Medium, Hard, and Expert quizzes count toward this all-time board."],
+      ["Compare all games", "The all-games leaderboard also includes every other game's scores from weekly, monthly, and all-time results."],
+    ],
+    links: [
+      ["/leaderboard/", "View the all-games leaderboard"],
+      ["/quiz/maths", "Play the Maths Quiz"],
+      ["/quiz/science", "Try the Science Quiz"],
+      ["/quiz/gk", "Try the GK Quiz"],
+    ],
+    schemaType: "CollectionPage",
+  },
+  {
+    route: "/leaderboard/gk-quiz",
+    title: "GK Quiz Leaderboard | Play Brain Games . Online",
+    description:
+      "Compare all-time GK Quiz scores across Easy, Medium, Hard, and Expert levels.",
+    heading: "GK Quiz Leaderboard",
+    intro:
+      "See the players with the highest combined points across completed GK Quiz games of every level.",
+    sections: [
+      ["Scores across every level", "Points from completed Easy, Medium, Hard, and Expert quizzes count toward this all-time board."],
+      ["Compare all games", "The all-games leaderboard also includes every other game's scores from weekly, monthly, and all-time results."],
+    ],
+    links: [
+      ["/leaderboard/", "View the all-games leaderboard"],
+      ["/quiz/gk", "Play the GK Quiz"],
+      ["/quiz/science", "Try the Science Quiz"],
+      ["/quiz/maths", "Try the Maths Quiz"],
     ],
     schemaType: "CollectionPage",
   },

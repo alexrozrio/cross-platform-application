@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and, gte, lt, inArray } from "drizzle-orm";
-import { db, gamesTable, puzzlesTable, profilesTable, memoryGamesTable, jigsawGamesTable, wordSearchGamesTable, minesweeperGamesTable, slidePuzzleGamesTable, badgesTable } from "@workspace/db";
+import { db, gamesTable, puzzlesTable, profilesTable, memoryGamesTable, jigsawGamesTable, wordSearchGamesTable, minesweeperGamesTable, slidePuzzleGamesTable, quizGamesTable, badgesTable } from "@workspace/db";
 import {
   getWeekPeriod,
   getMonthPeriod,
@@ -125,6 +125,13 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
         .where(range ? and(eq(slidePuzzleGamesTable.status, "completed"), gte(slidePuzzleGamesTable.completedAt, range.start), lt(slidePuzzleGamesTable.completedAt, range.end)) : eq(slidePuzzleGamesTable.status, "completed"))
     : [];
 
+  const quizRows = gridSize === undefined
+    ? await db.select({ profileId: quizGamesTable.profileId, username: profilesTable.username, avatar: profilesTable.avatar,
+        xp: profilesTable.xp, points: quizGamesTable.points, subject: quizGamesTable.subject })
+        .from(quizGamesTable).innerJoin(profilesTable, eq(quizGamesTable.profileId, profilesTable.id))
+        .where(range ? and(eq(quizGamesTable.status, "completed"), gte(quizGamesTable.completedAt, range.start), lt(quizGamesTable.completedAt, range.end)) : eq(quizGamesTable.status, "completed"))
+    : [];
+
   // ── Filter Sudoku by gridSize if requested ────────────────────────────────
   const filteredSudoku = gridSize !== undefined
     ? sudokuRows.filter((r) => r.gridSizeVal === gridSize)
@@ -145,12 +152,15 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
       wordSearchGamesPlayed: number;
       minesweeperGamesPlayed: number;
       slidePuzzleGamesPlayed: number;
+      scienceQuizGamesPlayed: number;
+      mathsQuizGamesPlayed: number;
+      gkQuizGamesPlayed: number;
     }
   >();
 
   const ensureEntry = (profileId: number, username: string, avatar: string | null, xp: number) => {
     if (!grouped.has(profileId)) {
-      grouped.set(profileId, { username, avatar, xp, totalPoints: 0, gamesPlayed: 0, sudokuGamesPlayed: 0, memoryGamesPlayed: 0, jigsawGamesPlayed: 0, wordSearchGamesPlayed: 0, minesweeperGamesPlayed: 0, slidePuzzleGamesPlayed: 0 });
+      grouped.set(profileId, { username, avatar, xp, totalPoints: 0, gamesPlayed: 0, sudokuGamesPlayed: 0, memoryGamesPlayed: 0, jigsawGamesPlayed: 0, wordSearchGamesPlayed: 0, minesweeperGamesPlayed: 0, slidePuzzleGamesPlayed: 0, scienceQuizGamesPlayed: 0, mathsQuizGamesPlayed: 0, gkQuizGamesPlayed: 0 });
     }
     return grouped.get(profileId)!;
   };
@@ -201,6 +211,16 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
     entry.totalPoints += row.points ?? 0;
     entry.gamesPlayed += 1;
     entry.slidePuzzleGamesPlayed += 1;
+  }
+
+  for (const row of quizRows) {
+    if (!row.profileId) continue;
+    const entry = ensureEntry(row.profileId, row.username, row.avatar ?? null, row.xp ?? 0);
+    entry.totalPoints += row.points ?? 0;
+    entry.gamesPlayed += 1;
+    if (row.subject === "science") entry.scienceQuizGamesPlayed += 1;
+    else if (row.subject === "maths") entry.mathsQuizGamesPlayed += 1;
+    else entry.gkQuizGamesPlayed += 1;
   }
 
   const sorted = Array.from(grouped.entries())
@@ -412,6 +432,18 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
     slidePuzzleByDifficulty.set(row.difficulty, current);
   }
 
+  const quizRows = await db.select({ subject: quizGamesTable.subject, level: quizGamesTable.level, points: quizGamesTable.points })
+    .from(quizGamesTable).where(range ? and(eq(quizGamesTable.status, "completed"), eq(quizGamesTable.profileId, profileId), gte(quizGamesTable.completedAt, range.start), lt(quizGamesTable.completedAt, range.end)) : and(eq(quizGamesTable.status, "completed"), eq(quizGamesTable.profileId, profileId)));
+
+  const quizBySubjectLevel = new Map<string, { points: number; games: number }>();
+  for (const row of quizRows) {
+    const key = `${row.subject}:${row.level}`;
+    const current = quizBySubjectLevel.get(key) ?? { points: 0, games: 0 };
+    current.points += row.points ?? 0;
+    current.games += 1;
+    quizBySubjectLevel.set(key, current);
+  }
+
   res.json({
     profileId,
     period,
@@ -445,6 +477,14 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
       points: slidePuzzleByDifficulty.get(difficulty)?.points ?? 0,
       games: slidePuzzleByDifficulty.get(difficulty)?.games ?? 0,
     })),
+    quiz: (["science", "maths", "gk"] as const).flatMap((subject) =>
+      (["easy", "medium", "hard", "expert"] as const).map((level) => ({
+        subject,
+        level,
+        points: quizBySubjectLevel.get(`${subject}:${level}`)?.points ?? 0,
+        games: quizBySubjectLevel.get(`${subject}:${level}`)?.games ?? 0,
+      })),
+    ),
   });
 });
 

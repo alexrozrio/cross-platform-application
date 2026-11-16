@@ -1,6 +1,6 @@
 import React from "react";
-import { Link, useLocation, useSearch } from "wouter";
-import { ArrowLeft, Check, Clock3, Flame, Home, Lightbulb, Play, Share2, Swords, Timer, Trophy, Users, X } from "lucide-react";
+import { useLocation, useSearch } from "wouter";
+import { ArrowLeft, Check, Clock3, Flame, Home, LayoutGrid, Lightbulb, RotateCcw, Share2, Swords, Target, Timer, Trophy, Users, Volume2, VolumeX, X } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useSound } from "@/hooks/use-sound";
 import { usePageMeta } from "@/components/page-meta";
@@ -299,6 +299,13 @@ export default function QuizPage({ params }: { params: { subject?: string } }) {
     }
   };
 
+  const exitToGameHome = () => {
+    if (advanceTimerRef.current) { window.clearTimeout(advanceTimerRef.current); advanceTimerRef.current = null; }
+    setGame(null);
+    setPicked(null);
+    setLocation(`/quiz/${subjectId}`);
+  };
+
   const shareResult = async () => {
     if (!game) return;
     const url = appShareUrlForPath(`/quiz/${subjectId}`);
@@ -352,56 +359,77 @@ export default function QuizPage({ params }: { params: { subject?: string } }) {
     const dailyConfig = dailyQuizConfig(subject, new Date().toISOString().slice(0, 10));
     const dailyHref = `/quiz-challenge?subject=${subjectId}`;
     return (
-      <main className="mx-auto w-full max-w-lg space-y-6 px-4 pb-12 pt-5">
-        <div className="space-y-2 rounded-2xl border bg-card px-5 py-4">
-          <Link href="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft size={16} /> Home</Link>
-          <h1 className="flex items-center gap-2 font-serif text-3xl font-bold">{subject.emoji} {subject.name}</h1>
-          <p className="text-sm text-muted-foreground">Timed multiple-choice questions. Pick a level and beat the clock.</p>
+      <main className="mx-auto w-full max-w-lg space-y-4 px-3 py-5 sm:px-6 sm:py-8">
+        {/* Header banner */}
+        <div className={`relative isolate flex items-center justify-between gap-3 overflow-hidden rounded-2xl border-2 ${subject.theme.border} bg-gradient-to-br ${subject.gradient} ${subject.gradientDark} px-4 py-3 shadow-lg`}>
+          <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full blur-2xl" style={{ backgroundColor: `${subject.theme.hex}4d` }} />
+          <Button variant="ghost" size="sm" className="relative z-10 shrink-0 px-1" onClick={() => setLocation("/")}><ArrowLeft className="mr-1 h-4 w-4" /> Home</Button>
+          <div className="relative z-10 min-w-0 flex-1 text-right">
+            <h1 className="font-serif text-xl font-bold leading-tight tracking-tight sm:text-2xl">{subject.emoji} {subject.shortName} Quiz</h1>
+            <p className="hidden text-xs text-muted-foreground sm:block">{subject.tagline}</p>
+          </div>
+          <Button variant="ghost" size="icon" className="relative z-10 shrink-0" aria-label={sounds.enabled ? "Mute sounds" : "Enable sounds"} onClick={sounds.toggle}>{sounds.enabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}</Button>
         </div>
 
-        <Card className={`border ${subject.theme.border} bg-gradient-to-br ${subject.gradient} ${subject.gradientDark} shadow-md`}><CardContent className="space-y-4 pb-5 pt-6">
-          <div className="flex items-center justify-between gap-3">
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">Daily challenge</p>
-              <p className="font-semibold">{subject.levels[dailyConfig.level].label} · {dailyConfig.questions} questions</p>
-              <p className="text-xs text-muted-foreground">Same quiz for everyone, refreshed at 00:00 UTC</p>
-            </div>
-            <Button asChild className={`shrink-0 gap-2 ${subject.theme.btn}`}><Link href={dailyHref}><Flame size={16} /> Daily</Link></Button>
-          </div>
-        </CardContent></Card>
+        {hasSavedGame && (
+          <button onClick={() => setLocation(`/quiz/${subjectId}?resume=1`)} className={`flex w-full items-center gap-3 rounded-xl border-2 ${subject.theme.border} bg-card px-4 py-3 text-left transition hover:bg-muted/50`}>
+            <Clock3 className={`h-4 w-4 shrink-0 ${subject.theme.text}`} />
+            <span className="min-w-0 flex-1"><span className={`block text-sm font-semibold ${subject.theme.strong}`}>Resume {subject.shortName} Quiz</span><span className="block text-xs text-muted-foreground">Pick up where you left off</span></span>
+            <span className={`text-lg ${subject.theme.text}`}>→</span>
+          </button>
+        )}
 
-        <section className="space-y-3">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Choose a level</h2>
-          <div className="grid gap-3">
+        {/* Hero + level select */}
+        <div className={`relative isolate overflow-hidden rounded-2xl border-2 ${subject.theme.border} bg-gradient-to-br ${subject.gradient} ${subject.gradientDark} p-4 shadow-xl sm:p-5`}>
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-8 -right-8 h-24 w-24 rounded-full blur-2xl" style={{ backgroundColor: `${subject.theme.hex}33` }} />
+          <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-20 w-20 rotate-6 grid-cols-2 gap-1 overflow-hidden rounded-xl border bg-white/15 p-1.5 opacity-60 dark:bg-white/5" style={{ borderColor: `${subject.theme.hex}26` }}>{["A", "B", "C", "D", "E", "F", "G", "H"].map((letter) => <span key={letter} className="flex items-center justify-center rounded-md border text-xs font-black" style={{ borderColor: `${subject.theme.hex}1a`, color: `${subject.theme.hex}40` }}>{letter}</span>)}</div>
+          <div className="relative z-10 mb-4 flex items-center gap-3 rounded-xl border bg-white/65 px-3 py-3 dark:bg-slate-950/30" style={{ borderColor: `${subject.theme.hex}33` }}>
+            <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl text-2xl ${subject.theme.soft}`}>{subject.emoji}</span>
+            <div className="min-w-0 flex-1"><h2 className="font-serif text-lg font-bold">Ready to quiz?</h2><p className="text-xs leading-relaxed text-muted-foreground">Timed multiple-choice questions — answer before the clock runs out. Pick a level to start.</p></div>
+          </div>
+          <p className="relative z-10 mb-2.5 text-xs font-semibold uppercase tracking-widest" style={{ color: subject.theme.hex }}>Choose Level</p>
+          <div className="relative z-10 grid grid-cols-2 gap-2.5">
             {levels.map((level) => {
               const cfg = subject.levels[level];
+              const icons: Record<QuizLevel, string> = { easy: "🌱", medium: "🧭", hard: "🔥", expert: "⚡" };
               return (
-                <button key={level} type="button" onClick={() => startGame(level)} className={`group flex items-center gap-4 rounded-2xl border bg-card px-5 py-4 text-left shadow-sm transition ${subject.theme.hover}`}>
-                  <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${subject.theme.soft}`}><Play size={20} /></span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-semibold">{cfg.label} <span className="text-xs font-normal text-muted-foreground">· {cfg.detail}</span></span>
-                    <span className="block text-xs text-muted-foreground">{cfg.parSeconds}s par · {cfg.basePoints} pts max · +{cfg.xp} XP · +{cfg.gems} 💎</span>
-                  </span>
+                <button key={level} type="button" onClick={() => startGame(level)} className={`group flex min-h-[92px] flex-col items-center justify-center gap-1 rounded-2xl border-2 bg-white/80 p-3 text-center shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] dark:bg-slate-950/40 ${subject.theme.border} ${subject.theme.hover}`}>
+                  <span className={`grid h-9 w-9 place-items-center rounded-xl text-xl ${subject.theme.soft}`}>{icons[level]}</span>
+                  <span className="text-sm font-bold leading-tight">{cfg.label}</span>
+                  <span className="text-[10px] leading-tight text-muted-foreground">{cfg.detail} · {cfg.parSeconds}s</span>
                 </button>
               );
             })}
-            {levels.length === 0 && <p className="text-sm text-muted-foreground">No levels available for your game mode.</p>}
+            {levels.length === 0 && <p className="col-span-2 text-sm text-muted-foreground">No levels available for your game mode.</p>}
           </div>
-        </section>
+        </div>
 
-        <section className="grid grid-cols-2 gap-3">
-          <Button asChild variant="outline" className="gap-2"><Link href={`/quiz/${subjectId}?resume=1`}><Clock3 size={16} /> {hasSavedGame ? "Resume" : "Saved game"}</Link></Button>
-          <Button asChild variant="outline" className="gap-2"><Link href={`/leaderboard/${quizGameId(subjectId)}`}><Trophy size={16} /> Leaderboard</Link></Button>
-          <Button asChild variant="outline" className="gap-2"><Link href={`/profile?tab=${quizGameId(subjectId)}`}><Users size={16} /> My Stats</Link></Button>
-          <Button asChild variant="outline" className="gap-2"><Link href={`/challenges?tab=${quizGameId(subjectId)}`}><Swords size={16} /> Challenges</Link></Button>
-        </section>
+        {/* Daily challenge */}
+        <button onClick={() => setLocation(dailyHref)} className={`flex w-full items-center gap-3 rounded-xl border-2 ${subject.theme.border} bg-card px-4 py-3 text-left transition hover:bg-muted/50`}>
+          <Flame className={`h-5 w-5 shrink-0 ${subject.theme.text}`} />
+          <span className="min-w-0 flex-1"><span className="block text-sm font-semibold">Daily {subject.shortName} Quiz</span><span className="block text-xs text-muted-foreground">{subject.levels[dailyConfig.level].label} · {dailyConfig.questions} questions — one shared quiz each day</span></span>
+          <span className={subject.theme.text}>→</span>
+        </button>
+
+        {/* Options */}
+        <div className="grid grid-cols-2 gap-3">
+          <button onClick={() => setLocation(`/profile?tab=${quizGameId(subjectId)}`)} className="flex items-center gap-3 rounded-xl border bg-card p-3 text-left transition hover:bg-muted/50"><Users className={`h-5 w-5 shrink-0 ${subject.theme.text}`} /><span><span className="block text-sm font-semibold">My Stats</span><span className="hidden text-xs text-muted-foreground sm:block">Best scores & progress</span></span></button>
+          <button onClick={() => setLocation(`/leaderboard/${quizGameId(subjectId)}`)} className="flex items-center gap-3 rounded-xl border bg-card p-3 text-left transition hover:bg-muted/50"><Trophy className={`h-5 w-5 shrink-0 ${subject.theme.text}`} /><span><span className="block text-sm font-semibold">Leaderboard</span><span className="hidden text-xs text-muted-foreground sm:block">Top quizzer</span></span></button>
+        </div>
+        <button onClick={() => setLocation(`/challenges?tab=${quizGameId(subjectId)}`)} className="flex w-full items-center gap-3 rounded-xl border-2 border-dashed bg-card/60 px-4 py-3 text-left transition hover:bg-muted/50">
+          <Swords className={`h-5 w-5 shrink-0 ${subject.theme.text}`} />
+          <span className="min-w-0 flex-1"><span className="block text-sm font-semibold">Challenges</span><span className="block text-xs text-muted-foreground">Challenge a friend to beat your score</span></span>
+          <span className={subject.theme.text}>→</span>
+        </button>
 
         {stats.totalGames > 0 && (
-          <Card><CardContent className="grid grid-cols-3 gap-3 py-4 text-center">
-            <div><p className="text-2xl font-bold">{stats.totalGames}</p><p className="text-xs text-muted-foreground">Played</p></div>
-            <div><p className="text-2xl font-bold">{stats.bestAccuracy}%</p><p className="text-xs text-muted-foreground">Best accuracy</p></div>
-            <div><p className="text-2xl font-bold">🔥{stats.currentStreak}</p><p className="text-xs text-muted-foreground">Day streak</p></div>
-          </CardContent></Card>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: "Played", value: String(stats.totalGames) },
+              { label: "Best accuracy", value: `${stats.bestAccuracy}%` },
+              { label: "Day streak", value: `🔥${stats.currentStreak}` },
+            ].map(({ label, value }) => <div key={label} className="space-y-1 rounded-xl border bg-card p-3 text-center"><p className="text-base font-black tabular-nums sm:text-lg">{value}</p><p className="text-[11px] text-muted-foreground">{label}</p></div>)}
+          </div>
         )}
       </main>
     );
@@ -414,13 +442,13 @@ export default function QuizPage({ params }: { params: { subject?: string } }) {
     const answered = game.answers.filter((a) => a !== undefined && a !== -1).length;
     return (
       <main className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-lg flex-col px-4 pb-8 pt-4">
-        <div className="mb-4 flex items-center gap-2">
-          <Link href={`/quiz/${subjectId}`} className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Back to quiz home"><ArrowLeft size={20} /></Link>
+        <div className={`mb-4 flex items-center gap-2 rounded-xl border ${subject.theme.border} bg-gradient-to-br ${subject.gradient} ${subject.gradientDark} px-3 py-2 shadow-sm`}>
+          <Button variant="ghost" size="sm" className="shrink-0 px-1" onClick={exitToGameHome} aria-label="Back to quiz home"><ArrowLeft className="h-4 w-4" /></Button>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">{subject.emoji} {subject.name} · {cfg.label}</p>
             <p className="text-xs text-muted-foreground">Question {game.index + 1} of {game.questions.length} · {game.correct} correct</p>
           </div>
-          <span className="flex items-center gap-1 rounded-full border bg-card px-3 py-1.5 text-sm font-mono font-bold"><Timer size={14} className={subject.theme.text} />{fmt(elapsed)}</span>
+          <span className="flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm font-mono font-bold"><Timer size={14} className={subject.theme.text} />{fmt(elapsed)}</span>
         </div>
 
         <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-muted"><div className={`h-full rounded-full transition-all ${subject.theme.fill}`} style={{ width: `${((game.index + (picked !== null ? 1 : 0)) / game.questions.length) * 100}%` }} /></div>
@@ -464,38 +492,97 @@ export default function QuizPage({ params }: { params: { subject?: string } }) {
   // ---------- Result screen ----------
   const accuracy = game.questions.length ? Math.round((game.correct / game.questions.length) * 100) : 0;
   return (
-    <main className="mx-auto w-full max-w-lg space-y-6 px-4 pb-12 pt-5">
+    <main className="mx-auto w-full max-w-lg space-y-4 px-3 py-5 sm:px-6 sm:py-8">
       {showConfetti && <Confetti />}
-      <Card className={`border ${subject.theme.border} bg-gradient-to-br ${subject.gradient} ${subject.gradientDark} shadow-md`}><CardContent className="space-y-5 pb-6 pt-8 text-center">
-        <p className="text-5xl">{subject.emoji}</p>
-        <div>
-          <h1 className="font-serif text-3xl font-bold">Quiz Complete!</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{subject.name} · {subject.levels[game.level].label}</p>
+      {/* Hero */}
+      <section className="relative isolate overflow-hidden rounded-2xl p-5 text-center text-white shadow-xl sm:p-6" style={{ background: `linear-gradient(135deg, ${subject.theme.hex}, ${subject.theme.hex}dd 55%, ${subject.theme.hex}bb)` }}>
+        <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full border border-white/20" />
+        <div aria-hidden="true" className="pointer-events-none absolute -bottom-16 -left-10 h-40 w-40 rounded-full border border-white/15" />
+        <div className="relative z-10 space-y-2">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-white/20 text-3xl">{subject.emoji}</div>
+          <p className="text-[10px] font-bold uppercase tracking-[.2em] text-white/75">{game.dailyDate ? `Daily ${subject.shortName} Quiz` : subject.name} complete</p>
+          <h1 className="font-serif text-2xl font-bold sm:text-3xl">{game.correct}/{game.questions.length} correct · {accuracy}%</h1>
+          <p className="text-sm text-white/85">{subject.levels[game.level].label} · finished in {fmt(elapsed)}</p>
+          {game.dailyDate && <p className="text-sm font-semibold text-white/90">📅 Today&apos;s shared daily quiz</p>}
+          {game.challengeId && <p className="pt-1 text-sm font-bold text-white">⚔️ Challenge score submitted</p>}
+          <Button variant="secondary" className="mt-2 gap-2" onClick={() => void shareResult()}><Share2 className="h-4 w-4" /> Share your result</Button>
         </div>
-        <div className="mx-auto grid max-w-xs grid-cols-3 gap-3">
-          <div className="rounded-xl border bg-white/70 px-2 py-3 dark:bg-slate-950/30"><p className={`text-2xl font-bold ${subject.theme.strong}`}>{game.correct}<span className="text-base text-muted-foreground">/{game.questions.length}</span></p><p className="text-xs text-muted-foreground">Correct</p></div>
-          <div className="rounded-xl border bg-white/70 px-2 py-3 dark:bg-slate-950/30"><p className="text-2xl font-bold">{accuracy}%</p><p className="text-xs text-muted-foreground">Accuracy</p></div>
-          <div className="rounded-xl border bg-white/70 px-2 py-3 dark:bg-slate-950/30"><p className="text-2xl font-bold font-mono">{fmt(elapsed)}</p><p className="text-xs text-muted-foreground">Time</p></div>
-        </div>
-        {rewardLoading ? <p className="text-sm text-muted-foreground">Calculating rewards…</p> : reward ? (
-          <div className="rounded-xl border bg-white/70 px-4 py-3 dark:bg-slate-950/30">
-            <p className="text-sm font-semibold">{reward.offline ? "Saved locally — rewards unavailable offline" : `+${reward.points.toLocaleString()} pts · +${reward.xpEarned} XP · +${reward.gemsEarned} 💎`}</p>
-          </div>
-        ) : null}
-        {game.challengeId && challengeResult && (
-          <div className="rounded-xl border bg-white/70 px-4 py-3 text-sm dark:bg-slate-950/30">
-            {challengeResult.status === "completed" ? (
-              <p className="font-semibold">{challengeResult.winnerId === null ? "It's a tie!" : challengeResult.winnerId === profileId ? "You won the challenge!" : `${challengeResult.winnerId === challengeResult.challengerId ? challengeResult.challengerUsername : challengeResult.challengedUsername} wins!`}</p>
-            ) : <p className="text-muted-foreground">Waiting for your opponent to finish…</p>}
+      </section>
+
+      {/* Actions */}
+      <section className="space-y-2 rounded-2xl border border-border bg-card p-3 shadow-sm sm:p-4">
+        {game.challengeId
+          ? <Button className="w-full gap-2" onClick={() => setLocation(`/challenges?tab=${quizGameId(subjectId)}`)}><Trophy className="h-4 w-4" /> Return to {subject.shortName} challenge</Button>
+          : <Button className="w-full gap-2" onClick={() => startGame(game.level, game.dailyDate, undefined, undefined, game.challengeId)}><RotateCcw className="h-4 w-4" /> Play again · {subject.levels[game.level].label}</Button>}
+        {!game.dailyDate && !game.challengeId && (
+          <div className="grid grid-cols-2 gap-2">
+            {levels.map((level) => {
+              const cfg = subject.levels[level];
+              const active = level === game.level;
+              return (
+                <button key={level} type="button" onClick={() => startGame(level)} className={`min-h-14 rounded-xl border-2 px-3 py-2 text-left transition ${active ? `${subject.theme.border} ${subject.theme.tint}` : "border-border hover:bg-muted/50"}`}>
+                  <span className="block text-sm font-bold">{cfg.label}{active ? " · Current" : ""}</span>
+                  <span className="block text-xs text-muted-foreground">{cfg.detail} · {cfg.parSeconds}s</span>
+                </button>
+              );
+            })}
           </div>
         )}
-        <div className="grid grid-cols-2 gap-2">
-          <Button onClick={() => startGame(game.level, game.dailyDate, undefined, undefined, game.challengeId)} className={`gap-2 ${subject.theme.btn}`}><Play size={16} /> Play again</Button>
-          <Button variant="outline" onClick={shareResult} className="gap-2"><Share2 size={16} /> Share</Button>
-          <Button asChild variant="outline" className="gap-2"><Link href={`/quiz/${subjectId}`}><Home size={16} /> Game home</Link></Button>
-          <Button asChild variant="outline" className="gap-2"><Link href="/"><Trophy size={16} /> Portal</Link></Button>
+        <div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-4">
+          <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setGame(null)}><LayoutGrid className="h-4 w-4" /> Game home</Button>
+          <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setLocation(`/leaderboard/${quizGameId(subjectId)}`)}><Trophy className="h-4 w-4" /> Leaderboard</Button>
+          <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setLocation(`/profile?tab=${quizGameId(subjectId)}`)}><Users className="h-4 w-4" /> My stats</Button>
+          <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setLocation("/")}><Home className="h-4 w-4" /> Portal</Button>
         </div>
-      </CardContent></Card>
+      </section>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          { icon: Check, label: "Correct", value: `${game.correct}/${game.questions.length}` },
+          { icon: Target, label: "Accuracy", value: `${accuracy}%` },
+          { icon: Timer, label: "Time", value: fmt(elapsed) },
+          { icon: Trophy, label: "Level", value: subject.levels[game.level].label },
+        ].map(({ icon: Icon, label, value }) => (
+          <div key={label} className="space-y-1 rounded-xl border bg-card p-3 text-center sm:p-4"><Icon className={`mx-auto h-4 w-4 ${subject.theme.text}`} /><p className="text-base font-black tabular-nums sm:text-lg">{value}</p><p className="text-[11px] text-muted-foreground">{label}</p></div>
+        ))}
+      </div>
+
+      {/* Rewards */}
+      {rewardLoading ? (
+        <section className="rounded-2xl border-2 border-amber-200/70 bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 p-4 shadow-sm dark:border-amber-800/50 dark:from-amber-950/30 dark:via-yellow-950/20 dark:to-orange-950/30">
+          <div className="py-2 text-center text-sm font-semibold text-muted-foreground">Calculating your score and rewards…</div>
+        </section>
+      ) : reward?.offline ? (
+        <section className="rounded-2xl border-2 border-amber-200/70 bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 p-4 shadow-sm dark:border-amber-800/50 dark:from-amber-950/30 dark:via-yellow-950/20 dark:to-orange-950/30">
+          <div className="py-2 text-center"><p className="font-semibold text-amber-900 dark:text-amber-200">Rewards could not be saved</p><p className="mt-1 text-xs text-muted-foreground">The game server could not save this result.</p></div>
+        </section>
+      ) : reward ? (
+        <section className="rounded-2xl border-2 border-amber-200/70 bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 p-4 shadow-sm dark:border-amber-800/50 dark:from-amber-950/30 dark:via-yellow-950/20 dark:to-orange-950/30">
+          <div className="grid grid-cols-3 items-center gap-2 text-center">
+            <div><p className="text-2xl font-black text-amber-800 dark:text-amber-200">{reward.points.toLocaleString()}</p><p className="text-xs font-semibold text-muted-foreground">Points</p></div>
+            <div className="border-x border-amber-300/70 px-2 dark:border-amber-700/60"><p className="text-2xl font-black text-yellow-700 dark:text-yellow-300">+{reward.xpEarned}</p><p className="text-xs font-semibold text-muted-foreground">XP</p></div>
+            <div><p className="text-2xl font-black text-cyan-700 dark:text-cyan-300">+{reward.gemsEarned} 💎</p><p className="text-xs font-semibold text-muted-foreground">Gems</p></div>
+          </div>
+          <p className="mt-2 text-[11px] text-muted-foreground">Score reflects level, correct answers, and completion time.</p>
+        </section>
+      ) : null}
+
+      {/* Challenge result */}
+      {game.challengeId && (
+        <section className="rounded-xl border border-emerald-200 bg-card p-4 text-center dark:border-emerald-800" aria-live="polite">
+          <h2 className="font-bold">Challenge result</h2>
+          {!challengeResult || challengeResult.status !== "completed" ? (
+            <p className="mt-1 text-sm text-muted-foreground">You finished in {fmt(elapsed)} and earned {reward?.points?.toLocaleString() ?? "…"} points. Waiting for your opponent to finish…</p>
+          ) : (() => {
+            const mine = challengeResult.challengerId === profileId ? challengeResult.challengerPoints : challengeResult.challengedPoints;
+            const theirs = challengeResult.challengerId === profileId ? challengeResult.challengedPoints : challengeResult.challengerPoints;
+            const opponent = challengeResult.challengerId === profileId ? challengeResult.challengedUsername : challengeResult.challengerUsername;
+            const outcome = challengeResult.winnerId === null ? "It's a tie!" : challengeResult.winnerId === profileId ? "You won the challenge!" : "You lost the challenge.";
+            return <><p className="mt-1 text-lg font-black">{outcome}</p><p className="mt-1 text-sm text-muted-foreground">You: {mine ?? 0} points · {opponent}: {theirs ?? 0} points</p><p className="mt-1 text-xs text-muted-foreground">Completed in {fmt(elapsed)}</p></>;
+          })()}
+        </section>
+      )}
     </main>
   );
 }

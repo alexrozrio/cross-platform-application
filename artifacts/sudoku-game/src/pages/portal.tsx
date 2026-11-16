@@ -11,11 +11,17 @@ import {
   RotateCcw,
   Flame,
   ChevronDown,
+  ChevronRight,
   Puzzle,
   Search,
   Bomb,
   Grid3x3,
   Copy,
+  List,
+  LayoutGrid,
+  LayoutDashboard,
+  X,
+  type LucideIcon,
 } from "lucide-react";
 import { customFetch, useGetProfile } from "@workspace/api-client-react";
 import { generateOfflinePuzzle } from "@/lib/sudoku-generator";
@@ -25,7 +31,8 @@ import { sudokuGamePath } from "@/lib/sudoku-routes";
 import { WORD_SEARCH_LEVELS, type WordSearchDifficulty } from "@/lib/word-search";
 import { MINESWEEPER_LEVELS, type MinesweeperDifficulty } from "@/lib/minesweeper";
 import { SLIDE_PUZZLE_LEVELS, type SlidePuzzleDifficulty } from "@/lib/slide-puzzle";
-import { QUIZ_LEVELS, QUIZ_SUBJECTS, type QuizLevel, type QuizSubject } from "@/lib/quiz";
+import { QUIZ_LEVELS, QUIZ_SUBJECTS, quizGameId, type QuizLevel, type QuizSubject } from "@/lib/quiz";
+import { GAME_ICONS, gameIconColor } from "@/lib/game-icons";
 import {
   getLastPlayedDifficulty,
   LAST_GRID_SIZE_KEY,
@@ -55,6 +62,86 @@ interface MemorySession {
   savedAt: number;
   cards: { matched: boolean }[];
 }
+
+type PortalGameView = "box" | "grid" | "list";
+
+interface PortalGameEntry {
+  id: string;
+  name: string;
+  href: string;
+  icon: LucideIcon;
+  /** Icon color class. */
+  color: string;
+  /** Soft background for the list-view icon chip. */
+  chip: string;
+  /** Colorful gradient for the grid-view tile. */
+  gradient: string;
+  tagline: string;
+  desc: string;
+  keywords?: string;
+}
+
+const PORTAL_GAMES: PortalGameEntry[] = [
+  {
+    id: "sudoku", name: "Sudoku", href: "/sudoku",
+    icon: GAME_ICONS.sudoku, color: gameIconColor("sudoku"), chip: "bg-primary/10",
+    gradient: "from-cyan-100 via-sky-50 to-indigo-100 dark:from-cyan-950/80 dark:via-sky-950/75 dark:to-indigo-950/80",
+    tagline: "Numbers · letters · icons",
+    desc: "Fill the grid so every row, column, and box contains each symbol exactly once. 5 grid sizes, 4 difficulty levels.",
+    keywords: "number puzzle grid",
+  },
+  {
+    id: "memory", name: "Memory Match", href: "/memory/",
+    icon: GAME_ICONS.memory, color: gameIconColor("memory"), chip: "bg-violet-100 dark:bg-violet-950/60",
+    gradient: "from-fuchsia-100 via-violet-50 to-amber-100 dark:from-fuchsia-950/75 dark:via-violet-950/80 dark:to-amber-950/60",
+    tagline: "Card matching",
+    desc: "Flip cards to find matching pairs. Beat the clock and minimise your flips to maximise your score.",
+    keywords: "pairs cards concentration",
+  },
+  {
+    id: "jigsaw", name: "Jigsaw Puzzle", href: "/jigsaw",
+    icon: GAME_ICONS.jigsaw, color: gameIconColor("jigsaw"), chip: "bg-amber-100 dark:bg-amber-950/60",
+    gradient: "from-amber-50 via-orange-50 to-yellow-50 dark:from-amber-950/70 dark:via-orange-950/65 dark:to-yellow-950/70",
+    tagline: "Picture puzzle",
+    desc: "Rebuild a picture piece by piece on 2×2 to 5×5 boards. Choose a level, use tips and previews, and earn points, XP, and gems.",
+    keywords: "pieces picture",
+  },
+  {
+    id: "word-search", name: "Word Search", href: "/word-search",
+    icon: GAME_ICONS["word-search"], color: gameIconColor("word-search"), chip: "bg-fuchsia-100 dark:bg-fuchsia-950/60",
+    gradient: "from-violet-100 via-fuchsia-50 to-pink-100 dark:from-violet-950/75 dark:via-fuchsia-950/70 dark:to-pink-950/60",
+    tagline: "Hidden words",
+    desc: "Find theme-based words hidden in a letter grid. Choose one of four levels and resume your puzzle later.",
+    keywords: "letters find words",
+  },
+  {
+    id: "minesweeper", name: "Minesweeper", href: "/minesweeper",
+    icon: GAME_ICONS.minesweeper, color: gameIconColor("minesweeper"), chip: "bg-emerald-100 dark:bg-emerald-950/60",
+    gradient: "from-emerald-100 via-teal-50 to-cyan-100 dark:from-emerald-950/75 dark:via-teal-950/70 dark:to-cyan-950/60",
+    tagline: "Clear the field",
+    desc: "Reveal safe cells and dodge the mines across four board sizes. Kids mode gets the small boards, Adult mode the big ones — hit three mines and it's over.",
+    keywords: "mines flags grid",
+  },
+  {
+    id: "slide-puzzle", name: "Slide Puzzle", href: "/slide-puzzle",
+    icon: GAME_ICONS["slide-puzzle"], color: gameIconColor("slide-puzzle"), chip: "bg-sky-100 dark:bg-sky-950/60",
+    gradient: "from-sky-100 via-cyan-50 to-blue-100 dark:from-sky-950/75 dark:via-cyan-950/70 dark:to-blue-950/60",
+    tagline: "Slide to order",
+    desc: "Slide tiles into order on boards from 2×2 to 5×5 — numbers, letters, or pictures. Finish under par with few moves for bonus points.",
+    keywords: "tiles 15 puzzle",
+  },
+  ...(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id): PortalGameEntry => {
+    const subject = QUIZ_SUBJECTS[id];
+    return {
+      id: quizGameId(id), name: `${subject.shortName} Quiz`, href: `/quiz/${id}`,
+      icon: GAME_ICONS[quizGameId(id)], color: gameIconColor(quizGameId(id)), chip: subject.theme.soft,
+      gradient: `${subject.gradient} ${subject.gradientDark}`,
+      tagline: subject.tagline,
+      desc: `Timed ${subject.name.toLowerCase()} questions — four levels from 5 to 12 questions. Answer fast and accurately to maximise points, XP, and gems.`,
+      keywords: `${subject.name} trivia questions`,
+    };
+  }),
+];
 
 function IconSetPreview({ themeId, className = "" }: { themeId: string; className?: string }) {
   return (
@@ -86,13 +173,13 @@ export default function Portal() {
     applicationCategory: "GameApplication",
     operatingSystem: "Web",
     description:
-      "Play Sudoku, Memory Match, and Jigsaw puzzles with flexible board sizes, daily challenges, guest play, and optional synced progress.",
+      "Play nine free games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and Science, Maths & GK quizzes — with daily challenges, leaderboards, guest play, and optional synced progress.",
     url: new URL("/", window.location.origin).toString(),
   };
   usePageMeta({
-    title: "Free Sudoku, Memory Match & Jigsaw Games Online",
+    title: "Free Puzzle & Quiz Games Online | Play Brain Games . Online",
     description:
-      "Play free browser-based Sudoku, Memory Match, and Jigsaw puzzles. Choose a board, join daily challenges, and play as a guest or sync progress.",
+      "Play free browser-based Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and Science, Maths & GK quizzes. Choose a game, join daily challenges, and play as a guest or sync progress.",
     path: "/",
     structuredData: landingPageSchema,
   });
@@ -160,6 +247,40 @@ export default function Portal() {
   const [jigsawSession, setJigsawSession] = useState<SavedJigsawSession | null>(null);
   const [dailyChallengesOpen, setDailyChallengesOpen] = useState(false);
   const [aboutGamesOpen, setAboutGamesOpen] = useState(false);
+  const [gameView, setGameViewState] = useState<PortalGameView>("box");
+  const [gameSearch, setGameSearch] = useState("");
+  const gameViewStorageKey = `brain-games-portal-view-${profileId ?? "guest"}`;
+  const gameViewLoaded = React.useRef(false);
+
+  // Restore this user's last selected view once auth resolves.
+  useEffect(() => {
+    if (!isReady || gameViewLoaded.current) return;
+    gameViewLoaded.current = true;
+    try {
+      const saved = localStorage.getItem(gameViewStorageKey);
+      if (saved === "list" || saved === "grid" || saved === "box") setGameViewState(saved);
+    } catch { /* ignore */ }
+  }, [isReady, profileId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const setGameView = (view: PortalGameView) => {
+    setGameViewState(view);
+    try { localStorage.setItem(gameViewStorageKey, view); } catch { /* ignore */ }
+  };
+
+  // Search always starts empty each time the home screen is opened.
+  useEffect(() => {
+    setGameSearch("");
+  }, []);
+
+  const gameQuery = gameSearch.trim().toLowerCase();
+  const filteredGames = gameQuery
+    ? PORTAL_GAMES.filter(
+        (game) =>
+          game.name.toLowerCase().includes(gameQuery) ||
+          game.keywords?.toLowerCase().includes(gameQuery),
+      )
+    : PORTAL_GAMES;
+  const matchesGame = (id: string) => filteredGames.some((game) => game.id === id);
   const canResumeJigsaw = Boolean(
     jigsawSession &&
       (gameMode === "children"
@@ -296,8 +417,11 @@ export default function Portal() {
           MOBILE QUICK LAUNCH — shown only on mobile (top of screen)
           ═══════════════════════════════════════════════════════════ */}
       <div className="md:hidden space-y-3 mb-6">
+        <GameViewToolbar view={gameView} onViewChange={setGameView} search={gameSearch} onSearchChange={setGameSearch} />
+        {gameView === "box" ? (
+        <>
         {/* Sudoku quick launch — featured game */}
-        <div className="relative isolate overflow-hidden rounded-2xl border-2 border-primary/55 bg-gradient-to-br from-cyan-100 via-sky-50 to-indigo-100 p-4 space-y-3 shadow-xl shadow-primary/20 ring-1 ring-inset ring-white/70 dark:from-cyan-950/80 dark:via-sky-950/75 dark:to-indigo-950/80 dark:ring-white/10">
+        <div className={`relative isolate overflow-hidden rounded-2xl border-2 border-primary/55 bg-gradient-to-br from-cyan-100 via-sky-50 to-indigo-100 p-4 space-y-3 shadow-xl shadow-primary/20 ring-1 ring-inset ring-white/70 dark:from-cyan-950/80 dark:via-sky-950/75 dark:to-indigo-950/80 dark:ring-white/10 ${matchesGame("sudoku") ? "" : "hidden"}`}>
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-400 via-primary to-indigo-500"
@@ -409,7 +533,7 @@ export default function Portal() {
           })()}
 
         {/* Memory Match quick launch — featured game */}
-        <div className="relative isolate overflow-hidden rounded-2xl border-2 border-violet-400/60 bg-gradient-to-br from-fuchsia-100 via-violet-50 to-amber-100 p-4 space-y-3 shadow-xl shadow-violet-500/20 ring-1 ring-inset ring-white/70 dark:from-fuchsia-950/75 dark:via-violet-950/80 dark:to-amber-950/60 dark:ring-white/10">
+        <div className={`relative isolate overflow-hidden rounded-2xl border-2 border-violet-400/60 bg-gradient-to-br from-fuchsia-100 via-violet-50 to-amber-100 p-4 space-y-3 shadow-xl shadow-violet-500/20 ring-1 ring-inset ring-white/70 dark:from-fuchsia-950/75 dark:via-violet-950/80 dark:to-amber-950/60 dark:ring-white/10 ${matchesGame("memory") ? "" : "hidden"}`}>
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-400"
@@ -530,7 +654,7 @@ export default function Portal() {
         )}
 
         {/* Jigsaw Puzzle quick launch */}
-        <div className="relative isolate overflow-hidden rounded-2xl border-2 border-amber-300/60 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 p-4 space-y-3 shadow-xl shadow-amber-500/15 ring-1 ring-inset ring-white/70 dark:from-amber-950/70 dark:via-orange-950/65 dark:to-yellow-950/70 dark:ring-white/10">
+        <div className={`relative isolate overflow-hidden rounded-2xl border-2 border-amber-300/60 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 p-4 space-y-3 shadow-xl shadow-amber-500/15 ring-1 ring-inset ring-white/70 dark:from-amber-950/70 dark:via-orange-950/65 dark:to-yellow-950/70 dark:ring-white/10 ${matchesGame("jigsaw") ? "" : "hidden"}`}>
           <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-400" />
           <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -left-8 h-28 w-28 rounded-full bg-amber-300/35 blur-2xl dark:bg-amber-400/15" />
           {/* Puzzle piece backdrop */}
@@ -557,7 +681,7 @@ export default function Portal() {
         </div>
 
         {/* Word Search quick launch */}
-        <section className="relative isolate overflow-hidden rounded-2xl border-2 border-violet-400/60 bg-gradient-to-br from-violet-100 via-fuchsia-50 to-pink-100 p-4 shadow-xl shadow-violet-500/20 ring-1 ring-inset ring-white/70 dark:from-violet-950/75 dark:via-fuchsia-950/70 dark:to-pink-950/60 dark:ring-white/10">
+        <section className={`relative isolate overflow-hidden rounded-2xl border-2 border-violet-400/60 bg-gradient-to-br from-violet-100 via-fuchsia-50 to-pink-100 p-4 shadow-xl shadow-violet-500/20 ring-1 ring-inset ring-white/70 dark:from-violet-950/75 dark:via-fuchsia-950/70 dark:to-pink-950/60 dark:ring-white/10 ${matchesGame("word-search") ? "" : "hidden"}`}>
           <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-400" />
           <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-fuchsia-300/35 blur-2xl dark:bg-fuchsia-400/15" />
           <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-20 w-20 rotate-6 grid-cols-3 overflow-hidden rounded-xl border border-violet-400/15 bg-white/15 opacity-60 dark:bg-white/5">{"WORDSEARCH".slice(0, 9).split("").map((letter, index) => <span key={index} className="flex items-center justify-center border border-violet-400/10 text-xs font-black text-violet-700/25 dark:text-violet-200/20">{letter}</span>)}</div>
@@ -570,7 +694,7 @@ export default function Portal() {
         </section>
 
         {/* Minesweeper quick launch */}
-        <section className="relative isolate overflow-hidden rounded-2xl border-2 border-emerald-400/60 bg-gradient-to-br from-emerald-100 via-teal-50 to-cyan-100 p-4 shadow-xl shadow-emerald-500/20 ring-1 ring-inset ring-white/70 dark:from-emerald-950/75 dark:via-teal-950/70 dark:to-cyan-950/60 dark:ring-white/10">
+        <section className={`relative isolate overflow-hidden rounded-2xl border-2 border-emerald-400/60 bg-gradient-to-br from-emerald-100 via-teal-50 to-cyan-100 p-4 shadow-xl shadow-emerald-500/20 ring-1 ring-inset ring-white/70 dark:from-emerald-950/75 dark:via-teal-950/70 dark:to-cyan-950/60 dark:ring-white/10 ${matchesGame("minesweeper") ? "" : "hidden"}`}>
           <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-400" />
           <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-teal-300/35 blur-2xl dark:bg-teal-400/15" />
           <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-20 w-20 rotate-6 grid-cols-3 overflow-hidden rounded-xl border border-emerald-400/15 bg-white/15 opacity-60 dark:bg-white/5">{["1", "💣", "1", "", "2", "1", "🚩", "", "3"].map((cell, index) => <span key={index} className="flex items-center justify-center border border-emerald-400/10 text-xs font-black text-emerald-700/25 dark:text-emerald-200/20">{cell}</span>)}</div>
@@ -583,7 +707,7 @@ export default function Portal() {
         </section>
 
         {/* Slide Puzzle quick launch */}
-        <section className="relative isolate overflow-hidden rounded-2xl border-2 border-sky-400/60 bg-gradient-to-br from-sky-100 via-cyan-50 to-blue-100 p-4 shadow-xl shadow-sky-500/20 ring-1 ring-inset ring-white/70 dark:from-sky-950/75 dark:via-cyan-950/70 dark:to-blue-950/60 dark:ring-white/10">
+        <section className={`relative isolate overflow-hidden rounded-2xl border-2 border-sky-400/60 bg-gradient-to-br from-sky-100 via-cyan-50 to-blue-100 p-4 shadow-xl shadow-sky-500/20 ring-1 ring-inset ring-white/70 dark:from-sky-950/75 dark:via-cyan-950/70 dark:to-blue-950/60 dark:ring-white/10 ${matchesGame("slide-puzzle") ? "" : "hidden"}`}>
           <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 via-cyan-500 to-blue-400" />
           <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-cyan-300/35 blur-2xl dark:bg-cyan-400/15" />
           <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-20 w-20 rotate-6 grid-cols-3 overflow-hidden rounded-xl border border-sky-400/15 bg-white/15 opacity-60 dark:bg-white/5">{[1, 2, 3, 4, 0, 5, 7, 8, 6].map((tile, index) => <span key={index} className="flex items-center justify-center border border-sky-400/10 text-xs font-black text-sky-700/25 dark:text-sky-200/20">{tile === 0 ? "·" : tile}</span>)}</div>
@@ -600,7 +724,7 @@ export default function Portal() {
           const subject = QUIZ_SUBJECTS[id];
           const levels = visibleQuizLevelsFor(id);
           return (
-            <section key={id} className={`relative isolate overflow-hidden rounded-2xl border-2 bg-gradient-to-br ${subject.gradient} ${subject.gradientDark} p-4 shadow-xl ring-1 ring-inset ring-white/70 dark:ring-white/10`}>
+            <section key={id} className={`relative isolate overflow-hidden rounded-2xl border-2 bg-gradient-to-br ${subject.gradient} ${subject.gradientDark} p-4 shadow-xl ring-1 ring-inset ring-white/70 dark:ring-white/10 ${matchesGame(quizGameId(id)) ? "" : "hidden"}`}>
               <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1" style={{ backgroundColor: subject.theme.hex }} />
               <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full blur-2xl dark:blur-3xl" style={{ backgroundColor: `${subject.theme.hex}59` }} />
               <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-20 w-20 rotate-6 grid-cols-2 gap-1 overflow-hidden rounded-xl border bg-white/15 p-1.5 opacity-60 dark:bg-white/5" style={{ borderColor: `${subject.theme.hex}26` }}>{["A", "B", "C", "D", "E", "F", "G", "H"].map((letter) => <span key={letter} className="flex items-center justify-center rounded-md border text-xs font-black" style={{ borderColor: `${subject.theme.hex}1a`, color: `${subject.theme.hex}40` }}>{letter}</span>)}</div>
@@ -612,6 +736,10 @@ export default function Portal() {
             </section>
           );
         })}
+        </>
+        ) : (
+          <PortalGameEntries view={gameView} games={filteredGames} onOpen={(href) => setLocation(href)} />
+        )}
 
         {/* Daily Challenges */}
         <Collapsible
@@ -853,12 +981,16 @@ export default function Portal() {
 
         {/* Game cards */}
         <div className="bg-card rounded-2xl border border-border p-5">
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
-            Available Games
-          </p>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Available Games
+            </p>
+            <GameViewToolbar view={gameView} onViewChange={setGameView} search={gameSearch} onSearchChange={setGameSearch} />
+          </div>
+          {gameView === "box" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Sudoku Card */}
-            <div className="group relative isolate overflow-hidden rounded-2xl border-2 border-primary/55 bg-gradient-to-br from-cyan-100 via-sky-50 to-indigo-100 shadow-xl shadow-primary/20 ring-1 ring-inset ring-white/70 dark:from-cyan-950/80 dark:via-sky-950/75 dark:to-indigo-950/80 dark:ring-white/10">
+            <div className={`group relative isolate overflow-hidden rounded-2xl border-2 border-primary/55 bg-gradient-to-br from-cyan-100 via-sky-50 to-indigo-100 shadow-xl shadow-primary/20 ring-1 ring-inset ring-white/70 dark:from-cyan-950/80 dark:via-sky-950/75 dark:to-indigo-950/80 dark:ring-white/10 ${matchesGame("sudoku") ? "" : "hidden"}`}>
               <div
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-400 via-primary to-indigo-500"
@@ -1000,7 +1132,7 @@ export default function Portal() {
             {/* Memory Match Card */}
             {(() => {
               return (
-                <div className="group relative isolate overflow-hidden rounded-2xl border-2 border-violet-400/60 bg-gradient-to-br from-fuchsia-100 via-violet-50 to-amber-100 shadow-xl shadow-violet-500/20 ring-1 ring-inset ring-white/70 dark:from-fuchsia-950/75 dark:via-violet-950/80 dark:to-amber-950/60 dark:ring-white/10">
+                <div className={`group relative isolate overflow-hidden rounded-2xl border-2 border-violet-400/60 bg-gradient-to-br from-fuchsia-100 via-violet-50 to-amber-100 shadow-xl shadow-violet-500/20 ring-1 ring-inset ring-white/70 dark:from-fuchsia-950/75 dark:via-violet-950/80 dark:to-amber-950/60 dark:ring-white/10 ${matchesGame("memory") ? "" : "hidden"}`}>
                   <div
                     aria-hidden="true"
                     className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-400"
@@ -1117,7 +1249,7 @@ export default function Portal() {
             })()}
 
             {/* Jigsaw Puzzle Card */}
-            <div className="group relative isolate overflow-hidden rounded-2xl border-2 border-amber-500/60 bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-100 shadow-xl shadow-amber-500/20 ring-1 ring-inset ring-white/70 dark:from-orange-950/75 dark:via-amber-950/80 dark:to-yellow-950/60 dark:ring-white/10">
+            <div className={`group relative isolate overflow-hidden rounded-2xl border-2 border-amber-500/60 bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-100 shadow-xl shadow-amber-500/20 ring-1 ring-inset ring-white/70 dark:from-orange-950/75 dark:via-amber-950/80 dark:to-yellow-950/60 dark:ring-white/10 ${matchesGame("jigsaw") ? "" : "hidden"}`}>
               <div
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400"
@@ -1193,7 +1325,7 @@ export default function Portal() {
                 title="Available"
               />
             </div>
-            <section className="group relative isolate overflow-hidden rounded-2xl border-2 border-violet-400/60 bg-gradient-to-br from-violet-100 via-fuchsia-50 to-pink-100 text-left shadow-xl shadow-violet-500/20 ring-1 ring-inset ring-white/70 transition hover:border-violet-500/80 dark:from-violet-950/75 dark:via-fuchsia-950/70 dark:to-pink-950/60 dark:ring-white/10">
+            <section className={`group relative isolate overflow-hidden rounded-2xl border-2 border-violet-400/60 bg-gradient-to-br from-violet-100 via-fuchsia-50 to-pink-100 text-left shadow-xl shadow-violet-500/20 ring-1 ring-inset ring-white/70 transition hover:border-violet-500/80 dark:from-violet-950/75 dark:via-fuchsia-950/70 dark:to-pink-950/60 dark:ring-white/10 ${matchesGame("word-search") ? "" : "hidden"}`}>
               <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-400" />
               <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-fuchsia-300/35 blur-2xl dark:bg-fuchsia-400/15" />
               <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-24 w-24 rotate-6 grid-cols-3 overflow-hidden rounded-xl border border-violet-400/15 bg-white/15 opacity-60 dark:bg-white/5">{"WORDSEARCH".slice(0, 9).split("").map((letter, index) => <span key={index} className="flex items-center justify-center border border-violet-400/10 text-sm font-black text-violet-700/25 dark:text-violet-200/20">{letter}</span>)}</div>
@@ -1213,7 +1345,7 @@ export default function Portal() {
                 title="Available"
               />
             </section>
-            <section className="group relative isolate overflow-hidden rounded-2xl border-2 border-emerald-400/60 bg-gradient-to-br from-emerald-100 via-teal-50 to-cyan-100 text-left shadow-xl shadow-emerald-500/20 ring-1 ring-inset ring-white/70 transition hover:border-emerald-500/80 dark:from-emerald-950/75 dark:via-teal-950/70 dark:to-cyan-950/60 dark:ring-white/10">
+            <section className={`group relative isolate overflow-hidden rounded-2xl border-2 border-emerald-400/60 bg-gradient-to-br from-emerald-100 via-teal-50 to-cyan-100 text-left shadow-xl shadow-emerald-500/20 ring-1 ring-inset ring-white/70 transition hover:border-emerald-500/80 dark:from-emerald-950/75 dark:via-teal-950/70 dark:to-cyan-950/60 dark:ring-white/10 ${matchesGame("minesweeper") ? "" : "hidden"}`}>
               <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-400" />
               <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-teal-300/35 blur-2xl dark:bg-teal-400/15" />
               <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-24 w-24 rotate-6 grid-cols-3 overflow-hidden rounded-xl border border-emerald-400/15 bg-white/15 opacity-60 dark:bg-white/5">{["1", "💣", "1", "", "2", "1", "🚩", "", "3"].map((cell, index) => <span key={index} className="flex items-center justify-center border border-emerald-400/10 text-sm font-black text-emerald-700/25 dark:text-emerald-200/20">{cell}</span>)}</div>
@@ -1233,7 +1365,7 @@ export default function Portal() {
                 title="Available"
               />
             </section>
-            <section className="group relative isolate overflow-hidden rounded-2xl border-2 border-sky-400/60 bg-gradient-to-br from-sky-100 via-cyan-50 to-blue-100 text-left shadow-xl shadow-sky-500/20 ring-1 ring-inset ring-white/70 transition hover:border-sky-500/80 dark:from-sky-950/75 dark:via-cyan-950/70 dark:to-blue-950/60 dark:ring-white/10">
+            <section className={`group relative isolate overflow-hidden rounded-2xl border-2 border-sky-400/60 bg-gradient-to-br from-sky-100 via-cyan-50 to-blue-100 text-left shadow-xl shadow-sky-500/20 ring-1 ring-inset ring-white/70 transition hover:border-sky-500/80 dark:from-sky-950/75 dark:via-cyan-950/70 dark:to-blue-950/60 dark:ring-white/10 ${matchesGame("slide-puzzle") ? "" : "hidden"}`}>
               <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 via-cyan-500 to-blue-400" />
               <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-cyan-300/35 blur-2xl dark:bg-cyan-400/15" />
               <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-24 w-24 rotate-6 grid-cols-3 overflow-hidden rounded-xl border border-sky-400/15 bg-white/15 opacity-60 dark:bg-white/5">{[1, 2, 3, 4, 0, 5, 7, 8, 6].map((tile, index) => <span key={index} className="flex items-center justify-center border border-sky-400/10 text-sm font-black text-sky-700/25 dark:text-sky-200/20">{tile === 0 ? "·" : tile}</span>)}</div>
@@ -1257,7 +1389,7 @@ export default function Portal() {
               const subject = QUIZ_SUBJECTS[id];
               const levels = visibleQuizLevelsFor(id);
               return (
-            <section key={id} className={`group relative isolate overflow-hidden rounded-2xl border-2 bg-gradient-to-br ${subject.gradient} ${subject.gradientDark} text-left shadow-xl ring-1 ring-inset ring-white/70 transition hover:brightness-[1.02] dark:ring-white/10`}>
+            <section key={id} className={`group relative isolate overflow-hidden rounded-2xl border-2 bg-gradient-to-br ${subject.gradient} ${subject.gradientDark} text-left shadow-xl ring-1 ring-inset ring-white/70 transition hover:brightness-[1.02] dark:ring-white/10 ${matchesGame(quizGameId(id)) ? "" : "hidden"}`}>
               <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1" style={{ backgroundColor: subject.theme.hex }} />
               <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full blur-2xl dark:blur-3xl" style={{ backgroundColor: `${subject.theme.hex}59` }} />
               <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-24 w-24 rotate-6 grid-cols-2 gap-1 overflow-hidden rounded-xl border bg-white/15 p-1.5 opacity-60 dark:bg-white/5" style={{ borderColor: `${subject.theme.hex}26` }}>{["A", "B", "C", "D", "E", "F", "G", "H"].map((letter) => <span key={letter} className="flex items-center justify-center rounded-md border text-sm font-black" style={{ borderColor: `${subject.theme.hex}1a`, color: `${subject.theme.hex}40` }}>{letter}</span>)}</div>
@@ -1279,6 +1411,9 @@ export default function Portal() {
               );
             })}
           </div>
+          ) : (
+            <PortalGameEntries view={gameView} games={filteredGames} onOpen={(href) => setLocation(href)} />
+          )}
         </div>
 
         {/* Daily Challenges (desktop) */}
@@ -1393,7 +1528,7 @@ export default function Portal() {
                   Play Brain Games . Online
                 </span>
                 <span className="text-[11px] leading-tight text-muted-foreground">
-                  Six classic brain games, endlessly replayable
+                  Nine puzzle &amp; quiz games, endlessly replayable
                 </span>
               </span>
               <ChevronDown
@@ -1421,75 +1556,25 @@ export default function Portal() {
                   to sync progress across devices
                 </p>
               )}
-              <button
-                type="button"
-                onClick={() => setLocation("/sudoku")}
-                className="w-full rounded-2xl border border-border bg-muted p-4 flex gap-3 items-start text-left hover:bg-muted/70 hover:border-primary/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <Grid3X3 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                <div>
-                  <p className="font-semibold text-sm">Sudoku</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                    Fill the grid so every row, column, and box contains each
-                    symbol exactly once. 5 grid sizes, 4 difficulty levels.
-                  </p>
-                </div>
-              </button>
-              <button
-                type="button"
-                onClick={() => setLocation("/memory/")}
-                className="w-full rounded-2xl border border-border bg-muted p-4 flex gap-3 items-start text-left hover:bg-muted/70 hover:border-primary/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <span className="text-lg mt-0.5 shrink-0">🃏</span>
-                <div>
-                  <p className="font-semibold text-sm">Memory Match</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                    Flip cards to find matching pairs. Beat the clock and
-                    minimise your flips to maximise your score.
-                  </p>
-                </div>
-              </button>
-              <button
-                type="button"
-                onClick={() => setLocation("/jigsaw")}
-                className="w-full rounded-2xl border border-border bg-muted p-4 flex gap-3 items-start text-left hover:bg-muted/70 hover:border-amber-500/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <Puzzle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
-                <div>
-                  <p className="font-semibold text-sm">Jigsaw Puzzle</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                    Kids mode has 2×2 and 3×3; Adult mode has 4×4 and 5×5;
-                    default 4 All mode has all four. Choose a level, use tips
-                    and previews, and earn points, XP, and gems.
-                  </p>
-                </div>
-              </button>
-              <button
-                type="button"
-                onClick={() => setLocation("/word-search")}
-                className="w-full rounded-2xl border border-border bg-muted p-4 flex gap-3 items-start text-left hover:bg-muted/70 hover:border-violet-500/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <span className="text-lg mt-0.5 shrink-0" aria-hidden>🔎</span>
-                <div>
-                  <p className="font-semibold text-sm">Word Search</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                    Find theme-based words hidden in a letter grid. Choose one of four levels and resume your puzzle later.
-                  </p>
-                </div>
-              </button>
-              <button
-                type="button"
-                onClick={() => setLocation("/minesweeper")}
-                className="w-full rounded-2xl border border-border bg-muted p-4 flex gap-3 items-start text-left hover:bg-muted/70 hover:border-emerald-500/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <Bomb className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
-                <div>
-                  <p className="font-semibold text-sm">Minesweeper</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                    Reveal safe cells and dodge the mines across four board sizes. Kids mode gets the small boards, Adult mode the big ones — hit three mines and it&apos;s over.
-                  </p>
-                </div>
-              </button>
+              {PORTAL_GAMES.map((game) => {
+                const GameIcon = game.icon;
+                return (
+                  <button
+                    key={game.id}
+                    type="button"
+                    onClick={() => setLocation(game.href)}
+                    className="w-full rounded-2xl border border-border bg-muted p-4 flex gap-3 items-start text-left hover:bg-muted/70 hover:border-primary/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <GameIcon className={`w-5 h-5 mt-0.5 shrink-0 ${game.color}`} />
+                    <div>
+                      <p className="font-semibold text-sm">{game.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                        {game.desc}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </CollapsibleContent>
         </Collapsible>
@@ -1507,15 +1592,16 @@ export default function Portal() {
             Choose a puzzle, then adjust the challenge
           </h2>
           <p className="mt-2">
-            Play Brain Games . Online brings together six games that reward
+            Play Brain Games . Online brings together nine games that reward
             different kinds of attention. Sudoku asks you to compare rows,
             columns, and boxes before placing a symbol. Memory Match asks you to
             remember where cards appeared. Jigsaw asks you to rebuild a picture
             piece by piece. Word Search asks you to spot hidden words inside a
             letter grid. Minesweeper asks you to clear every safe cell without
             touching a mine. Slide Puzzle asks you to slide every tile back
-            into order. All six can be started in a browser without
-            creating an account.
+            into order. The Science, Maths, and GK quizzes ask you to answer
+            timed multiple-choice questions before the clock runs out. All
+            nine can be started in a browser without creating an account.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -1597,6 +1683,18 @@ export default function Portal() {
             </p>
           </div>
           <div>
+            <h3 className="font-semibold text-foreground">Test yourself in the quizzes</h3>
+            <p className="mt-1">
+              Science Quiz covers planets, elements, and living things; Maths
+              Quiz covers arithmetic, algebra, and shapes; GK Quiz covers
+              countries, history, and world facts. Each has four timed levels —
+              Easy asks 5 questions in 2 minutes, Medium 8 in 3, Hard 10 in 4,
+              and Expert 12 in 5. Points reward accuracy plus a speed bonus for
+              finishing under the par time, and every subject has its own daily
+              quiz, leaderboard, achievements, and friend challenges.
+            </p>
+          </div>
+          <div>
             <h3 className="font-semibold text-foreground">Choose symbols and track progress</h3>
             <p className="mt-1">
               Smaller Sudoku boards also support letter or image-symbol play,
@@ -1626,6 +1724,15 @@ export default function Portal() {
           <Link href="/slide-puzzle" className="font-semibold text-primary underline-offset-2 hover:underline">
             Slide Puzzle setup
           </Link>
+          <Link href="/quiz/science" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Science Quiz
+          </Link>
+          <Link href="/quiz/maths" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Maths Quiz
+          </Link>
+          <Link href="/quiz/gk" className="font-semibold text-primary underline-offset-2 hover:underline">
+            GK Quiz
+          </Link>
           <Link href="/guides/" className="font-semibold text-primary underline-offset-2 hover:underline">
             Read the puzzle guides
           </Link>
@@ -1635,9 +1742,151 @@ export default function Portal() {
           <Link href="/jigsaw-challenge" className="font-semibold text-primary underline-offset-2 hover:underline">
             Try today’s Jigsaw challenge
           </Link>
+          <Link href="/quiz-challenge" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Try today’s quiz challenges
+          </Link>
+          <Link href="/memory-challenge" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Try today’s Memory challenge
+          </Link>
+          <Link href="/word-search-challenge" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Try today’s Word Search challenge
+          </Link>
+          <Link href="/minesweeper-challenge" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Try today’s Minesweeper challenge
+          </Link>
+          <Link href="/slide-puzzle-challenge" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Try today’s Slide Puzzle challenge
+          </Link>
         </div>
       </section>
       </MobileContentDisclosure>
+    </div>
+  );
+}
+
+function GameViewToolbar({
+  view,
+  onViewChange,
+  search,
+  onSearchChange,
+}: {
+  view: PortalGameView;
+  onViewChange: (view: PortalGameView) => void;
+  search: string;
+  onSearchChange: (value: string) => void;
+}) {
+  const views: { id: PortalGameView; label: string; icon: LucideIcon }[] = [
+    { id: "list", label: "List view", icon: List },
+    { id: "grid", label: "Grid view", icon: LayoutGrid },
+    { id: "box", label: "Card view", icon: LayoutDashboard },
+  ];
+  return (
+    <div className="flex items-center gap-2">
+      <div className="relative min-w-0 flex-1">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <input
+          type="search"
+          value={search}
+          onChange={(event) => onSearchChange(event.target.value)}
+          placeholder="Search games…"
+          aria-label="Search games"
+          className="h-10 w-full rounded-xl border border-border bg-background pl-9 pr-9 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/60 focus:ring-2 focus:ring-primary/15"
+        />
+        {search && (
+          <button
+            type="button"
+            onClick={() => onSearchChange("")}
+            aria-label="Clear search"
+            className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+      <div className="flex shrink-0 items-center rounded-xl border border-border bg-card p-1" role="group" aria-label="Game view">
+        {views.map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => onViewChange(id)}
+            aria-label={label}
+            aria-pressed={view === id}
+            className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${view === id ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
+          >
+            <Icon className="h-4 w-4" />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PortalGameEntries({
+  view,
+  games,
+  onOpen,
+}: {
+  view: PortalGameView;
+  games: PortalGameEntry[];
+  onOpen: (href: string) => void;
+}) {
+  if (games.length === 0) {
+    return (
+      <div className="rounded-2xl border border-dashed border-border bg-card/60 px-4 py-10 text-center">
+        <p className="text-sm font-semibold text-foreground">No games match your search</p>
+        <p className="mt-1 text-xs text-muted-foreground">Try a different name or clear the search box.</p>
+      </div>
+    );
+  }
+
+  if (view === "list") {
+    return (
+      <div className="space-y-2">
+        {games.map((game) => {
+          const Icon = game.icon;
+          return (
+            <button
+              key={game.id}
+              type="button"
+              onClick={() => onOpen(game.href)}
+              className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5 text-left transition-all hover:border-primary/40 hover:bg-muted/50 active:scale-[0.99]"
+            >
+              <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${game.chip}`}>
+                <Icon className={`h-5 w-5 ${game.color}`} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-bold text-foreground">{game.name}</span>
+                <span className="block truncate text-xs text-muted-foreground">{game.tagline}</span>
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+      {games.map((game) => {
+        const Icon = game.icon;
+        return (
+          <button
+            key={game.id}
+            type="button"
+            onClick={() => onOpen(game.href)}
+            className={`group relative isolate flex min-h-[120px] flex-col justify-between overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 ${game.gradient}`}
+          >
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/75 shadow-sm ring-1 ring-black/5 dark:bg-slate-950/50 dark:ring-white/10">
+              <Icon className={`h-6 w-6 ${game.color}`} />
+            </span>
+            <span className="relative z-10">
+              <span className="block text-sm font-black leading-tight text-slate-900 dark:text-white">{game.name}</span>
+              <span className="mt-0.5 block text-[11px] font-medium text-slate-700/80 dark:text-slate-300/80">{game.tagline}</span>
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
