@@ -77,6 +77,7 @@ import {
   ChevronDown,
   ChevronUp,
   Brain,
+  Box,
   Layers,
   Puzzle,
   BarChart2,
@@ -100,6 +101,8 @@ import { getWordSearchHistory, summarizeWordSearchStats, WORD_SEARCH_STATS_UPDAT
 import { getMinesweeperHistory, summarizeMinesweeperStats, MINESWEEPER_STATS_UPDATED } from "@/lib/minesweeper-stats";
 import { getSlidePuzzleHistory, summarizeSlidePuzzleStats, SLIDE_PUZZLE_STATS_UPDATED } from "@/lib/slide-puzzle-stats";
 import { SLIDE_PUZZLE_LEVELS } from "@/lib/slide-puzzle";
+import { RUBIKS_LEVELS } from "@/lib/rubiks";
+import { getRubiksHistory, summarizeRubiksStats, RUBIKS_STATS_UPDATED } from "@/lib/rubiks-stats";
 import { WORD_SEARCH_LEVELS } from "@/lib/word-search";
 import { MINESWEEPER_LEVELS } from "@/lib/minesweeper";
 import { JIGSAW_LEVELS, JIGSAW_SIZE_NAMES } from "@/lib/jigsaw-session";
@@ -706,7 +709,7 @@ interface TournamentStreakData {
   totalTop3Finishes: number;
 }
 
-type GameTab = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | QuizGameId;
+type GameTab = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "rubiks" | QuizGameId;
 
 const profileSchema = z.object({
   username: z.string().min(2, "At least 2 characters").max(30),
@@ -909,6 +912,43 @@ function MinesweeperDailyCalendar({ profileId }: { profileId: number }) {
   </Card>;
 }
 
+function RubiksStatsPanel({ profileId }: { profileId: number | null }) {
+  const [history, setHistory] = useState(() => getRubiksHistory(profileId));
+  useEffect(() => {
+    const refresh = (event?: Event) => {
+      const changedProfileId = (event as CustomEvent<number | null> | undefined)?.detail;
+      if (changedProfileId === undefined || changedProfileId === (profileId ?? null)) setHistory(getRubiksHistory(profileId));
+    };
+    window.addEventListener(RUBIKS_STATS_UPDATED, refresh);
+    return () => window.removeEventListener(RUBIKS_STATS_UPDATED, refresh);
+  }, [profileId]);
+
+  const stats = summarizeRubiksStats(history);
+  const times = Object.values(stats.bestTimes).filter((v): v is number => v !== undefined);
+  const fastest = times.length ? Math.min(...times) : null;
+  const totalTime = history.reduce((sum, g) => sum + g.elapsedSeconds, 0);
+  const format = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+  return (
+    <div className="space-y-4 animate-in fade-in duration-300">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <Card className="border-rose-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-rose-100 p-2.5 text-rose-700"><Box className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Puzzles solved</p><p className="text-2xl font-bold">{stats.totalGames}</p></CardContent></Card>
+        <Card className="border-rose-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-blue-100 p-2.5 text-blue-700"><Clock className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Average time</p><p className="text-2xl font-bold">{stats.totalGames ? format(Math.round(totalTime / stats.totalGames)) : "—"}</p></CardContent></Card>
+        <Card className="border-rose-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-amber-100 p-2.5 text-amber-700"><Trophy className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Fastest time</p><p className="text-2xl font-bold">{fastest === null ? "—" : format(fastest)}</p></CardContent></Card>
+        <Card className="border-rose-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-rose-100 p-2.5 text-rose-700"><TrendingUp className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Total time</p><p className="text-2xl font-bold">{stats.totalGames ? format(totalTime) : "—"}</p></CardContent></Card>
+        <Card className="border-rose-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-orange-100 p-2.5 text-orange-700"><Flame className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Current day streak</p><p className="text-2xl font-bold">{stats.currentStreak}</p></CardContent></Card>
+        <Card className="border-rose-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-amber-100 p-2.5 text-amber-700"><Trophy className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Best day streak</p><p className="text-2xl font-bold">{stats.bestStreak}</p></CardContent></Card>
+      </div>
+
+      <Card className="overflow-hidden border-rose-200/60 dark:border-rose-800/40">
+        <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-base"><Clock className="h-4 w-4 text-rose-600" />Best times by puzzle</CardTitle></CardHeader>
+        <CardContent className="space-y-2">
+          {RUBIKS_LEVELS.map((level) => <div key={level.puzzle} className="flex items-center justify-between rounded-lg border bg-background px-3 py-2.5"><span className="font-medium">{level.name} · {level.puzzle === "pyraminx" ? "Pyramid" : level.puzzle}</span><span className="font-mono font-bold text-rose-700 dark:text-rose-300">{stats.bestTimes[level.puzzle] === undefined ? "—" : format(stats.bestTimes[level.puzzle]!)}</span></div>)}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 function SlidePuzzleStatsPanel({ profileId }: { profileId: number | null }) {
   const [history, setHistory] = useState(() => getSlidePuzzleHistory(profileId));
   useEffect(() => {
@@ -1076,7 +1116,7 @@ export default function Profile() {
 
   // Stats tab
   const tabGameId: GameTab | null =
-    tabParam === "memory" || tabParam === "jigsaw" || tabParam === "word-search" || tabParam === "minesweeper" || tabParam === "slide-puzzle" || tabParam === "sudoku" || tabParam === "science-quiz" || tabParam === "maths-quiz" || tabParam === "gk-quiz"
+    tabParam === "memory" || tabParam === "jigsaw" || tabParam === "word-search" || tabParam === "minesweeper" || tabParam === "slide-puzzle" || tabParam === "rubiks" || tabParam === "sudoku" || tabParam === "science-quiz" || tabParam === "maths-quiz" || tabParam === "gk-quiz"
       ? tabParam as GameTab
       : null;
   const [gameTab, setGameTab] = useState<GameTab>(tabGameId ?? "sudoku");
@@ -1091,6 +1131,7 @@ export default function Profile() {
     else if (tabParam === "word-search") setGameTab("word-search");
     else if (tabParam === "minesweeper") setGameTab("minesweeper");
     else if (tabParam === "slide-puzzle") setGameTab("slide-puzzle");
+    else if (tabParam === "rubiks") setGameTab("rubiks");
     else if (tabParam === "sudoku") setGameTab("sudoku");
     else if (quizSubjectForGameId(tabParam)) setGameTab(tabParam as GameTab);
   }, [tabParam]);
@@ -1628,6 +1669,7 @@ export default function Profile() {
                   ["word-search", "Word Search"],
                   ["minesweeper", "Minesweeper"],
                   ["slide-puzzle", "Slide Puzzle"],
+                  ["rubiks", "Rubik's Cube"],
                   ["science-quiz", "Science Quiz"],
                   ["maths-quiz", "Maths Quiz"],
                   ["gk-quiz", "GK Quiz"],
@@ -1802,6 +1844,9 @@ export default function Profile() {
           )}
           {!statsLoading && gameTab === "slide-puzzle" && (
             <SlidePuzzleStatsPanel profileId={profileId} />
+          )}
+          {!statsLoading && gameTab === "rubiks" && (
+            <RubiksStatsPanel profileId={profileId} />
           )}
           {!statsLoading && quizSubjectForGameId(gameTab) && (
             <QuizStatsPanel profileId={profileId} subjectId={quizSubjectForGameId(gameTab)!} />

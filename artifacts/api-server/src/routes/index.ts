@@ -23,6 +23,7 @@ import profileMergeRouter from "./profile-merge";
 import wordSearchGamesRouter from "./word-search-games";
 import minesweeperGamesRouter from "./minesweeper-games";
 import slidePuzzleGamesRouter from "./slide-puzzle-games";
+import rubiksGamesRouter from "./rubiks-games";
 import quizGamesRouter from "./quiz-games";
 
 const router: IRouter = Router();
@@ -48,6 +49,7 @@ router.use(jigsawChallengesRouter);
 router.use(wordSearchGamesRouter);
 router.use(minesweeperGamesRouter);
 router.use(slidePuzzleGamesRouter);
+router.use(rubiksGamesRouter);
 router.use(quizGamesRouter);
 router.use(testEmailRouter);
 router.use(inviteRouter);

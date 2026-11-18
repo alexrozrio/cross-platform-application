@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Swords, Trophy, Clock, Search, Gem, CircleCheck as CheckCircle2, Circle as XCircle, Loader as Loader2, ChevronRight, Crown, Minus, Brain, Grid3x3, Puzzle, Zap, RotateCcw, Share2, Copy, Check, ExternalLink, Link as LinkIcon, Bomb } from "lucide-react";
+import { Swords, Trophy, Clock, Search, Gem, CircleCheck as CheckCircle2, Circle as XCircle, Loader as Loader2, ChevronRight, Crown, Minus, Brain, Grid3x3, Puzzle, Zap, RotateCcw, Share2, Copy, Check, ExternalLink, Link as LinkIcon, Bomb, Box } from "lucide-react";
 import { toast } from "sonner";
 import { showEventModal } from "@/hooks/use-event-modal";
 import { LevelBadge } from "@/components/level-badge";
@@ -35,6 +35,7 @@ import { challengeInviteUrl } from "@/lib/app-links";
 import { WORD_SEARCH_LEVELS, WORD_SEARCH_THEMES, type WordSearchDifficulty, type WordSearchTheme } from "@/lib/word-search";
 import { MINESWEEPER_LEVELS, type MinesweeperDifficulty } from "@/lib/minesweeper";
 import { SLIDE_PUZZLE_LEVELS, SLIDE_PUZZLE_TILE_STYLES, type SlidePuzzleDifficulty, type SlidePuzzleTileStyle } from "@/lib/slide-puzzle";
+import { RUBIKS_LEVELS, isRubiksPuzzle, levelForPuzzle, type RubiksPuzzle } from "@/lib/rubiks";
 import { QUIZ_LEVELS, QUIZ_SUBJECTS, quizGameId, quizSubjectForGameId, isQuizSubject, type QuizGameId, type QuizLevel, type QuizSubject } from "@/lib/quiz";
 import { IMAGE_THEMES } from "@/lib/themes";
 import { GAME_ICONS, gameIconColor } from "@/lib/game-icons";
@@ -47,7 +48,7 @@ type MemoryGridSize = 2 | 4 | 6 | 8;
 type JigsawGridSize = 2 | 3 | 4 | 5;
 type JigsawLevel = 1 | 2 | 3;
 type ChallengeStatus = "pending" | "accepted" | "declined" | "completed" | "expired";
-type GameType = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | QuizGameId;
+type GameType = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "rubiks" | QuizGameId;
 type ChallengeTab = "recent" | GameType;
 
 interface ChallengeDetail {
@@ -136,6 +137,15 @@ interface MinesweeperChallengeDetail {
 interface SlidePuzzleChallengeDetail {
   id: number; challengerId: number; challengedId: number; difficulty: SlidePuzzleDifficulty;
   tileStyle: SlidePuzzleTileStyle; themeId: string | null; seed: number;
+  status: ChallengeStatus; challengerGameId: number | null; challengedGameId: number | null; winnerId: number | null;
+  challengerUsername: string; challengedUsername: string; challengerAvatar: string | null; challengedAvatar: string | null;
+  challengerXp: number; challengedXp: number; challengerPoints: number | null; challengedPoints: number | null;
+  challengerElapsedSeconds: number | null; challengedElapsedSeconds: number | null;
+  createdAt: string; gameId?: number;
+}
+
+interface RubiksChallengeDetail {
+  id: number; challengerId: number; challengedId: number; puzzle: RubiksPuzzle; scrambleSeed: number;
   status: ChallengeStatus; challengerGameId: number | null; challengedGameId: number | null; winnerId: number | null;
   challengerUsername: string; challengedUsername: string; challengerAvatar: string | null; challengedAvatar: string | null;
   challengerXp: number; challengedXp: number; challengerPoints: number | null; challengedPoints: number | null;
@@ -1083,6 +1093,30 @@ function SlidePuzzleChallengeCard({ challenge, myProfileId, onAccept, onDecline,
   </div></CardContent></Card>;
 }
 
+function RubiksChallengeCard({ challenge, myProfileId, onAccept, onDecline, onPlay, onRematch, isResponding }: {
+  challenge: RubiksChallengeDetail; myProfileId: number; onAccept: (id: number) => void; onDecline: (id: number) => void;
+  onPlay: (challenge: RubiksChallengeDetail) => void; onRematch?: (challenge: RubiksChallengeDetail) => void; isResponding: boolean;
+}) {
+  const isChallenger = challenge.challengerId === myProfileId;
+  const opponent = isChallenger ? challenge.challengedUsername : challenge.challengerUsername;
+  const avatar = isChallenger ? challenge.challengedAvatar : challenge.challengerAvatar;
+  const xp = isChallenger ? challenge.challengedXp : challenge.challengerXp;
+  const myPoints = isChallenger ? challenge.challengerPoints : challenge.challengedPoints;
+  const otherPoints = isChallenger ? challenge.challengedPoints : challenge.challengerPoints;
+  const myGameId = isChallenger ? challenge.challengerGameId : challenge.challengedGameId;
+  const isWinner = challenge.winnerId === myProfileId;
+  const isTie = challenge.status === "completed" && challenge.winnerId === null;
+  const level = levelForPuzzle(challenge.puzzle);
+  const puzzleLabel = RUBIKS_LEVELS.find((l) => l.puzzle === challenge.puzzle)?.name ?? challenge.puzzle;
+  return <Card className="hover:shadow-md transition-shadow border-rose-200/70 dark:border-rose-800/40"><CardContent className="p-4"><div className="flex items-start justify-between gap-3">
+    <div className="flex min-w-0 items-center gap-3"><Avatar src={avatar} name={opponent} size={10}/><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><p className="truncate font-semibold">{opponent}</p><LevelBadge xp={xp} size="xs"/>{challenge.status === "completed" && <span className={`flex items-center gap-1 text-xs font-bold ${isWinner ? "text-yellow-600" : isTie ? "text-slate-500" : "text-red-500"}`}>{isWinner ? <><Crown className="h-3 w-3"/> Won +10 💎</> : isTie ? <><Minus className="h-3 w-3"/> Tie +2 💎</> : <><XCircle className="h-3 w-3"/> Lost</>}</span>}</div>
+      <div className="mt-0.5 flex flex-wrap items-center gap-2"><Badge className="border-rose-200 bg-rose-100 text-rose-700">Rubik's Cube</Badge><span className="text-xs capitalize text-muted-foreground">{level} · {puzzleLabel}</span><span className="text-xs text-muted-foreground">{timeAgo(challenge.createdAt)}</span><span className="text-[10px] text-muted-foreground italic">{isChallenger ? "You challenged" : "Challenged you"}</span></div>
+      {(challenge.status === "accepted" || challenge.status === "completed" || myPoints !== null) && <div className="mt-2 flex items-center gap-3 text-xs"><span className="text-muted-foreground">You: <b className="text-foreground">{myPoints?.toLocaleString() ?? "—"}</b></span><span className="text-muted-foreground">Them: <b className="text-foreground">{otherPoints?.toLocaleString() ?? "—"}</b></span></div>}
+    </div></div>
+    <div className="flex shrink-0 flex-col items-end gap-2"><StatusBadge status={challenge.status}/>{challenge.status === "pending" && !isChallenger && <div className="flex gap-2"><Button size="sm" variant="outline" className="h-7 border-red-200 text-xs text-red-600 hover:bg-red-50" onClick={() => onDecline(challenge.id)} disabled={isResponding}>Decline</Button><Button size="sm" className="h-7 text-xs" onClick={() => onAccept(challenge.id)} disabled={isResponding}>Accept</Button></div>}{myGameId && (challenge.status === "accepted" || (challenge.status === "pending" && isChallenger)) && <Button size="sm" variant={challenge.status === "pending" ? "outline" : "default"} className="h-7 gap-1 text-xs" onClick={() => onPlay(challenge)}>{myPoints !== null ? "View" : challenge.status === "pending" ? "Play now" : "Play"}<ChevronRight className="h-3 w-3"/></Button>}{challenge.status === "completed" && onRematch && <Button size="sm" variant="outline" className="h-7 gap-1 text-xs" onClick={() => onRematch(challenge)}><RotateCcw className="h-3 w-3"/> Rematch</Button>}</div>
+  </div></CardContent></Card>;
+}
+
 function QuizChallengeCard({ challenge, myProfileId, onAccept, onDecline, onPlay, onRematch, isResponding }: {
   challenge: QuizChallengeDetail; myProfileId: number; onAccept: (id: number) => void; onDecline: (id: number) => void;
   onPlay: (challenge: QuizChallengeDetail) => void; onRematch?: (challenge: QuizChallengeDetail) => void; isResponding: boolean;
@@ -1127,6 +1161,7 @@ interface RematchData {
   slidePuzzleThemeId?: string | null;
   quizSubject?: QuizSubject;
   quizLevel?: QuizLevel;
+  rubiksPuzzle?: RubiksPuzzle;
 }
 
 type GameMode = 'children' | 'adult' | '4all';
@@ -1248,6 +1283,7 @@ function NewChallengeDialog({
   const [slidePuzzleTileStyle, setSlidePuzzleTileStyle] = useState<SlidePuzzleTileStyle>("numbers");
   const [slidePuzzleThemeId, setSlidePuzzleThemeId] = useState<string | null>(null);
   const [quizLevel, setQuizLevel] = useState<QuizLevel>(defaultQuizLevel);
+  const [rubiksPuzzle, setRubiksPuzzle] = useState<RubiksPuzzle>("3x3");
 
   // Reset sizes/difficulty to valid options whenever gameMode or dialog open state changes
   React.useEffect(() => {
@@ -1291,6 +1327,7 @@ function NewChallengeDialog({
       if (initialData.slidePuzzleThemeId !== undefined) setSlidePuzzleThemeId(initialData.slidePuzzleThemeId);
       if (initialData.quizSubject) setGameType(quizGameId(initialData.quizSubject));
       if (initialData.quizLevel) setQuizLevel(initialData.quizLevel);
+      if (initialData.rubiksPuzzle && isRubiksPuzzle(initialData.rubiksPuzzle)) setRubiksPuzzle(initialData.rubiksPuzzle);
     }
     if (!open) {
       setSearch("");
@@ -1417,6 +1454,18 @@ function NewChallengeDialog({
     onError: () => toast.error("Failed to send Slide Puzzle challenge"),
   });
 
+  const createRubiksMutation = useMutation({
+    mutationFn: (data: { challengerId: number; challengedId: number; puzzle: RubiksPuzzle }) =>
+      customFetch<RubiksChallengeDetail>("/api/rubiks-challenges", { method: "POST", data }),
+    onSuccess: (challenge) => {
+      queryClient.invalidateQueries({ queryKey: ["rubiks-challenges"] });
+      toast.success(`Rubik's Cube challenge sent to ${selected?.username}!`, { description: "Solve the shared scramble while they decide." });
+      onClose();
+      setLocation(`/rubiks?challengeId=${challenge.id}`);
+    },
+    onError: () => toast.error("Failed to send Rubik's Cube challenge"),
+  });
+
   const createQuizMutation = useMutation({
     mutationFn: (data: { challengerId: number; challengedId: number; subject: QuizSubject; level: QuizLevel }) =>
       customFetch<QuizChallengeDetail>("/api/quiz-challenges", { method: "POST", data }),
@@ -1524,6 +1573,8 @@ function NewChallengeDialog({
     } else if (gameType === "slide-puzzle") {
       const validDifficulty = slidePuzzleLevels.includes(slidePuzzleDifficulty) ? slidePuzzleDifficulty : (slidePuzzleLevels[0] ?? "3x3");
       createSlidePuzzleMutation.mutate({ challengerId: myProfileId, challengedId: selected.id, difficulty: validDifficulty, tileStyle: slidePuzzleTileStyle, themeId: slidePuzzleTileStyle === "icons" ? slidePuzzleThemeId ?? "shapes" : null });
+    } else if (gameType === "rubiks") {
+      createRubiksMutation.mutate({ challengerId: myProfileId, challengedId: selected.id, puzzle: rubiksPuzzle });
     } else if (quizGameSubject) {
       const validLevel = quizLevels.includes(quizLevel) ? quizLevel : (quizLevels[0] ?? "easy");
       createQuizMutation.mutate({ challengerId: myProfileId, challengedId: selected.id, subject: quizGameSubject, level: validLevel });
@@ -1750,6 +1801,7 @@ function NewChallengeDialog({
                       ["word-search", "Word Search"],
                       ["minesweeper", "Minesweeper"],
                       ["slide-puzzle", "Slide Puzzle"],
+                      ["rubiks", "Rubik's Cube"],
                     ] as const).map(([id, label]) => {
                       const Icon = GAME_ICONS[id];
                       return <SelectItem key={id} value={id}><span className="flex items-center gap-2"><Icon className={`h-4 w-4 shrink-0 ${gameIconColor(id)}`} />{label}</span></SelectItem>;
@@ -1901,6 +1953,16 @@ function NewChallengeDialog({
                 </div>
               )}
 
+              {gameType === "rubiks" && (
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Puzzle</label>
+                  <Select value={rubiksPuzzle} onValueChange={(value) => setRubiksPuzzle(value as RubiksPuzzle)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>{RUBIKS_LEVELS.map((level) => <SelectItem key={level.puzzle} value={level.puzzle}>{level.name} · {level.puzzle === "pyraminx" ? "Pyramid" : level.puzzle}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              )}
+
               {quizGameSubject && (
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium">Level · {QUIZ_SUBJECTS[quizGameSubject].emoji} {QUIZ_SUBJECTS[quizGameSubject].name}</label>
@@ -1976,7 +2038,7 @@ export default function Challenges() {
     }
     const quizTabSubject = quizSubjectForGameId(tab);
     if (quizTabSubject) return quizGameId(quizTabSubject);
-    return tab === "recent" || tab === "sudoku" || tab === "memory" || tab === "jigsaw" || tab === "word-search" || tab === "minesweeper" || tab === "slide-puzzle" ? tab : "recent";
+    return tab === "recent" || tab === "sudoku" || tab === "memory" || tab === "jigsaw" || tab === "word-search" || tab === "minesweeper" || tab === "slide-puzzle" || tab === "rubiks" ? tab : "recent";
   });
   const [shareSheetData, setShareSheetData] = useState<{ token: string; label: string } | null>(null);
   const [rematchData, setRematchData] = useState<RematchData | null>(null);
@@ -2076,6 +2138,13 @@ export default function Challenges() {
   const { data: slidePuzzleChallenges, isLoading: slidePuzzleLoading } = useQuery<SlidePuzzleChallengeDetail[]>({
     queryKey: ["slide-puzzle-challenges", profileId],
     queryFn: () => customFetch<SlidePuzzleChallengeDetail[]>(`/api/slide-puzzle-challenges/for/${profileId}`),
+    enabled: !!profileId,
+    refetchInterval: 10000,
+  });
+
+  const { data: rubiksChallenges, isLoading: rubiksLoading } = useQuery<RubiksChallengeDetail[]>({
+    queryKey: ["rubiks-challenges", profileId],
+    queryFn: () => customFetch<RubiksChallengeDetail[]>(`/api/rubiks-challenges/for/${profileId}`),
     enabled: !!profileId,
     refetchInterval: 10000,
   });
@@ -2180,6 +2249,18 @@ export default function Challenges() {
       if (vars.action === "accept" && result.gameId) {
         const theme = result.themeId ? `&theme=${encodeURIComponent(result.themeId)}` : "";
         setLocation(`/slide-puzzle?play=1&challengeId=${result.id}&gameId=${result.gameId}&difficulty=${result.difficulty}&style=${result.tileStyle}${theme}&seed=${result.seed}`);
+      } else if (vars.action === "decline") toast("Challenge declined.");
+    },
+    onError: (error: Error) => { setRespondingId(null); toast.error(error.message || "Failed to respond to challenge"); },
+  });
+
+  const respondRubiksMutation = useMutation({
+    mutationFn: ({ id, action }: { id: number; action: "accept" | "decline" }) => customFetch<RubiksChallengeDetail & { gameId?: number }>(`/api/rubiks-challenges/${id}/respond`, { method: "PATCH", data: { profileId, action } }),
+    onSuccess: (result, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["rubiks-challenges"] });
+      setRespondingId(null);
+      if (vars.action === "accept") {
+        setLocation(`/rubiks?challengeId=${result.id}`);
       } else if (vars.action === "decline") toast("Challenge declined.");
     },
     onError: (error: Error) => { setRespondingId(null); toast.error(error.message || "Failed to respond to challenge"); },
@@ -2342,6 +2423,32 @@ export default function Challenges() {
       slidePuzzleDifficulty: challenge.difficulty,
       slidePuzzleTileStyle: challenge.tileStyle,
       slidePuzzleThemeId: challenge.themeId,
+    });
+    setShowNew(true);
+  }, [profileId]);
+
+  const handleRubiksAccept = useCallback((id: number) => { setRespondingId(id); respondRubiksMutation.mutate({ id, action: "accept" }); }, [respondRubiksMutation]);
+  const handleRubiksDecline = useCallback((id: number) => { setRespondingId(id); respondRubiksMutation.mutate({ id, action: "decline" }); }, [respondRubiksMutation]);
+  const handleRubiksPlay = useCallback((challenge: RubiksChallengeDetail) => {
+    setLocation(`/rubiks?challengeId=${challenge.id}`);
+  }, [setLocation]);
+
+  const handleRubiksRematch = useCallback((challenge: RubiksChallengeDetail) => {
+    const isChallenger = challenge.challengerId === profileId;
+    const opponentId = isChallenger ? challenge.challengedId : challenge.challengerId;
+    if (!opponentId) {
+      toast.error("This challenge no longer has an opponent.");
+      return;
+    }
+    setRematchData({
+      opponent: {
+        id: opponentId,
+        username: isChallenger ? challenge.challengedUsername : challenge.challengerUsername,
+        avatar: isChallenger ? challenge.challengedAvatar : challenge.challengerAvatar,
+        gems: 0,
+      },
+      gameType: "rubiks",
+      rubiksPuzzle: challenge.puzzle,
     });
     setShowNew(true);
   }, [profileId]);
@@ -2547,6 +2654,10 @@ export default function Challenges() {
   const slidePuzzleActive = slidePuzzleChallenges?.filter((challenge) => challenge.status === "accepted") ?? [];
   const slidePuzzleOutgoing = slidePuzzleChallenges?.filter((challenge) => challenge.status === "pending" && challenge.challengerId === profileId) ?? [];
   const slidePuzzleFinished = slidePuzzleChallenges?.filter((challenge) => challenge.status === "completed" || challenge.status === "declined" || challenge.status === "expired") ?? [];
+  const rubiksPending = rubiksChallenges?.filter((challenge) => challenge.status === "pending" && challenge.challengedId === profileId) ?? [];
+  const rubiksActive = rubiksChallenges?.filter((challenge) => challenge.status === "accepted") ?? [];
+  const rubiksOutgoing = rubiksChallenges?.filter((challenge) => challenge.status === "pending" && challenge.challengerId === profileId) ?? [];
+  const rubiksFinished = rubiksChallenges?.filter((challenge) => challenge.status === "completed" || challenge.status === "declined" || challenge.status === "expired") ?? [];
   const quizPending = quizChallenges?.filter((challenge) => challenge.status === "pending" && challenge.challengedId === profileId) ?? [];
   const quizActive = quizChallenges?.filter((challenge) => challenge.status === "accepted") ?? [];
   const quizOutgoing = quizChallenges?.filter((challenge) => challenge.status === "pending" && challenge.challengerId === profileId) ?? [];
@@ -2579,11 +2690,12 @@ export default function Challenges() {
   const wordSearchAlert = wordSearchPending.length + wordSearchActive.filter((challenge) => (challenge.challengerId === profileId ? challenge.challengerPoints : challenge.challengedPoints) == null).length;
   const minesweeperAlert = minesweeperPending.length + minesweeperActive.filter((challenge) => (challenge.challengerId === profileId ? challenge.challengerPoints : challenge.challengedPoints) == null).length;
   const slidePuzzleAlert = slidePuzzlePending.length + slidePuzzleActive.filter((challenge) => (challenge.challengerId === profileId ? challenge.challengerPoints : challenge.challengedPoints) == null).length;
+  const rubiksAlert = rubiksPending.length + rubiksActive.filter((challenge) => (challenge.challengerId === profileId ? challenge.challengerPoints : challenge.challengedPoints) == null).length;
   const quizAlertFor = (subject: QuizSubject) =>
     quizPending.filter((c) => c.subject === subject).length +
     quizActive.filter((c) => c.subject === subject && (c.challengerId === profileId ? c.challengerPoints : c.challengedPoints) == null).length;
   const quizAlert = (Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).reduce((sum, s) => sum + quizAlertFor(s), 0);
-  const totalAlert = sudokuAlert + memoryAlert + jigsawAlert + wordSearchAlert + minesweeperAlert + slidePuzzleAlert + quizAlert;
+  const totalAlert = sudokuAlert + memoryAlert + jigsawAlert + wordSearchAlert + minesweeperAlert + slidePuzzleAlert + rubiksAlert + quizAlert;
 
   // Merged cross-game feed for the "Recent" view, newest first.
   const recentItems = [
@@ -2593,6 +2705,7 @@ export default function Challenges() {
     ...(wordSearchChallenges ?? []).map((challenge) => ({ game: "word-search" as const, createdAt: challenge.createdAt, challenge })),
     ...(minesweeperChallenges ?? []).map((challenge) => ({ game: "minesweeper" as const, createdAt: challenge.createdAt, challenge })),
     ...(slidePuzzleChallenges ?? []).map((challenge) => ({ game: "slide-puzzle" as const, createdAt: challenge.createdAt, challenge })),
+    ...(rubiksChallenges ?? []).map((challenge) => ({ game: "rubiks" as const, createdAt: challenge.createdAt, challenge })),
     ...(quizChallenges ?? []).map((challenge) => ({ game: quizGameId(challenge.subject), createdAt: challenge.createdAt, challenge })),
   ]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -2614,6 +2727,8 @@ export default function Challenges() {
         return <MinesweeperChallengeCard key={`minesweeper-${item.challenge.id}`} challenge={item.challenge} myProfileId={profileId} onAccept={handleMinesweeperAccept} onDecline={handleMinesweeperDecline} onPlay={handleMinesweeperPlay} onRematch={handleMinesweeperRematch} isResponding={responding} />;
       case "slide-puzzle":
         return <SlidePuzzleChallengeCard key={`slide-puzzle-${item.challenge.id}`} challenge={item.challenge} myProfileId={profileId} onAccept={handleSlidePuzzleAccept} onDecline={handleSlidePuzzleDecline} onPlay={handleSlidePuzzlePlay} onRematch={handleSlidePuzzleRematch} isResponding={responding} />;
+      case "rubiks":
+        return <RubiksChallengeCard key={`rubiks-${item.challenge.id}`} challenge={item.challenge} myProfileId={profileId} onAccept={handleRubiksAccept} onDecline={handleRubiksDecline} onPlay={handleRubiksPlay} onRematch={handleRubiksRematch} isResponding={responding} />;
       case "science-quiz":
       case "maths-quiz":
       case "gk-quiz":
@@ -2627,10 +2742,10 @@ export default function Challenges() {
   const recentHasData =
     challenges != null || duels != null || jigsawChallenges != null ||
     wordSearchChallenges != null || minesweeperChallenges != null ||
-    slidePuzzleChallenges != null || quizChallenges != null;
+    slidePuzzleChallenges != null || rubiksChallenges != null || quizChallenges != null;
   const isLoading = activeTab === "recent"
-    ? !recentHasData && (challengesLoading || duelsLoading || jigsawLoading || wordSearchLoading || minesweeperLoading || slidePuzzleLoading || quizLoading)
-    : activeTab === "sudoku" ? challengesLoading : activeTab === "memory" ? duelsLoading : activeTab === "jigsaw" ? jigsawLoading : activeTab === "word-search" ? wordSearchLoading : activeTab === "minesweeper" ? minesweeperLoading : activeTab === "slide-puzzle" ? slidePuzzleLoading : quizLoading;
+    ? !recentHasData && (challengesLoading || duelsLoading || jigsawLoading || wordSearchLoading || minesweeperLoading || slidePuzzleLoading || rubiksLoading || quizLoading)
+    : activeTab === "sudoku" ? challengesLoading : activeTab === "memory" ? duelsLoading : activeTab === "jigsaw" ? jigsawLoading : activeTab === "word-search" ? wordSearchLoading : activeTab === "minesweeper" ? minesweeperLoading : activeTab === "slide-puzzle" ? slidePuzzleLoading : activeTab === "rubiks" ? rubiksLoading : quizLoading;
 
   const activeQuizSubject = quizSubjectForGameId(activeTab);
   const quizTabChallenges = activeQuizSubject ? (quizChallenges ?? []).filter((c) => c.subject === activeQuizSubject) : [];
@@ -2701,6 +2816,7 @@ export default function Challenges() {
               ["word-search", "Word Search", wordSearchAlert],
               ["minesweeper", "Minesweeper", minesweeperAlert],
               ["slide-puzzle", "Slide Puzzle", slidePuzzleAlert],
+              ["rubiks", "Rubik's Cube", rubiksAlert],
             ] as const).map(([id, label, alert]) => {
               const Icon = GAME_ICONS[id];
               return <SelectItem key={id} value={id}><span className="flex items-center gap-2"><Icon className={`h-4 w-4 shrink-0 ${gameIconColor(id)}`} />{label}{alert > 0 ? ` (${alert})` : ""}</span></SelectItem>;
@@ -2872,6 +2988,14 @@ export default function Challenges() {
           {slidePuzzleOutgoing.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><Clock className="h-3.5 w-3.5"/>Waiting for them ({slidePuzzleOutgoing.length})</h2>{slidePuzzleOutgoing.map((challenge) => <SlidePuzzleChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleSlidePuzzleAccept} onDecline={handleSlidePuzzleDecline} onPlay={handleSlidePuzzlePlay} onRematch={handleSlidePuzzleRematch} isResponding={respondingId === challenge.id}/>)}</section>}
           {slidePuzzleFinished.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><CheckCircle2 className="h-3.5 w-3.5"/>Finished</h2>{slidePuzzleFinished.map((challenge) => <SlidePuzzleChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleSlidePuzzleAccept} onDecline={handleSlidePuzzleDecline} onPlay={handleSlidePuzzlePlay} onRematch={handleSlidePuzzleRematch} isResponding={false}/>)}</section>}
           {(!slidePuzzleChallenges || slidePuzzleChallenges.length === 0) && <Card><CardContent className="flex flex-col items-center gap-3 pb-10 pt-10 text-center"><Grid3x3 className="h-12 w-12 text-muted-foreground/30"/><p className="text-lg font-semibold">No Slide Puzzle challenges yet</p><p className="max-w-xs text-sm text-muted-foreground">Challenge a player to solve the same scramble and compare points.</p><Button className="mt-2 gap-2 bg-sky-600 hover:bg-sky-700" onClick={openNewChallenge}><Swords className="h-4 w-4"/>Send a Slide Puzzle challenge</Button></CardContent></Card>}
+        </div>
+      ) : activeTab === "rubiks" ? (
+        <div className="space-y-6">
+          {rubiksPending.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><div className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse"/>Waiting for you ({rubiksPending.length})</h2>{rubiksPending.map((challenge) => <RubiksChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleRubiksAccept} onDecline={handleRubiksDecline} onPlay={handleRubiksPlay} onRematch={handleRubiksRematch} isResponding={respondingId === challenge.id}/>)}</section>}
+          {rubiksActive.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><div className="h-2 w-2 rounded-full bg-blue-400 animate-pulse"/>In Progress ({rubiksActive.length})</h2>{rubiksActive.map((challenge) => <RubiksChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleRubiksAccept} onDecline={handleRubiksDecline} onPlay={handleRubiksPlay} onRematch={handleRubiksRematch} isResponding={respondingId === challenge.id}/>)}</section>}
+          {rubiksOutgoing.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><Clock className="h-3.5 w-3.5"/>Waiting for them ({rubiksOutgoing.length})</h2>{rubiksOutgoing.map((challenge) => <RubiksChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleRubiksAccept} onDecline={handleRubiksDecline} onPlay={handleRubiksPlay} onRematch={handleRubiksRematch} isResponding={respondingId === challenge.id}/>)}</section>}
+          {rubiksFinished.length > 0 && <section className="space-y-3"><h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 w-fit shadow-sm"><CheckCircle2 className="h-3.5 w-3.5"/>Finished</h2>{rubiksFinished.map((challenge) => <RubiksChallengeCard key={challenge.id} challenge={challenge} myProfileId={profileId!} onAccept={handleRubiksAccept} onDecline={handleRubiksDecline} onPlay={handleRubiksPlay} onRematch={handleRubiksRematch} isResponding={false}/>)}</section>}
+          {(!rubiksChallenges || rubiksChallenges.length === 0) && <Card><CardContent className="flex flex-col items-center gap-3 pb-10 pt-10 text-center"><Box className="h-12 w-12 text-muted-foreground/30"/><p className="text-lg font-semibold">No Rubik's Cube challenges yet</p><p className="max-w-xs text-sm text-muted-foreground">Challenge a player to solve the same scramble and compare points.</p><Button className="mt-2 gap-2 bg-rose-600 hover:bg-rose-700" onClick={openNewChallenge}><Swords className="h-4 w-4"/>Send a Rubik's Cube challenge</Button></CardContent></Card>}
         </div>
       ) : activeQuizSubject && activeQuizSubjectConfig ? (
         <div className="space-y-6">

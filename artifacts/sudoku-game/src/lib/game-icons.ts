@@ -1,5 +1,6 @@
 import {
   Bomb,
+  Box,
   Brain,
   Calculator,
   CircleHelp,
@@ -23,6 +24,7 @@ export const GAME_ICONS: Record<string, LucideIcon> = {
   "word-search": WholeWord,
   minesweeper: Bomb,
   "slide-puzzle": Grid2x2,
+  rubiks: Box,
   "science-quiz": FlaskConical,
   "maths-quiz": Calculator,
   "gk-quiz": Globe,
@@ -40,6 +42,7 @@ export const GAME_ICON_COLORS: Record<string, string> = {
   "word-search": "text-violet-600",
   minesweeper: "text-emerald-600",
   "slide-puzzle": "text-sky-600",
+  rubiks: "text-rose-600",
   "science-quiz": "text-violet-600",
   "maths-quiz": "text-sky-600",
   "gk-quiz": "text-amber-600",

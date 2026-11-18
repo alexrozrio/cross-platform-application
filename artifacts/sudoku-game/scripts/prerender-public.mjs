@@ -819,6 +819,46 @@ const publicPages = [
     schemaType: "CollectionPage",
   },
   {
+    route: "/rubiks",
+    title: "Play Rubik's Cube Online Free | 2x2, 3x3, Pyraminx & 4x4",
+    description:
+      "Solve the Rubik's Cube, Pocket Cube (2x2), Pyraminx, and Rubik's Revenge (4x4) online. Timed solves, move counts, daily challenges, and duels.",
+    heading: "Rubik's Cube Online Free",
+    intro:
+      "Twist the layers, restore the colours, and beat the clock. Choose your puzzle, scramble, and start solving - points reward fast, efficient solves.",
+    sections: [
+      ["Four puzzles", "The Pocket Cube (2x2) is a quick warm-up, the classic Rubik's Cube (3x3) is the original, the Pyraminx is a tetrahedral twist, and the Rubik's Revenge (4x4) doubles the layers."],
+      ["How scoring works", "Points scale with puzzle size and reward finishing under the par time with few moves. Every solve earns XP and gems."],
+      ["Daily challenge and duels", "A new puzzle drops daily at 00:00 UTC for everyone to race, and you can challenge friends to solve the same scramble from the Challenges page."],
+      ["Play as a guest or save progress", "Start solving without an account. Optional Google sign-in connects your results, stats, and streaks to a profile across devices."],
+    ],
+    links: [
+      ["/leaderboard/rubiks/", "View the Rubik's Cube leaderboard"],
+      ["/challenges", "Challenge another player"],
+      ["/guides", "Read the puzzle guides"],
+    ],
+    schemaType: "WebApplication",
+  },
+  {
+    route: "/leaderboard/rubiks",
+    title: "Rubik's Cube Leaderboard | Play Brain Games . Online",
+    description:
+      "Compare all-time Rubik's Cube points across 2x2, 3x3, Pyraminx, and 4x4 puzzles.",
+    heading: "Rubik's Cube Leaderboard",
+    intro:
+      "See the players with the highest combined points across completed Rubik's Cube games of every puzzle type.",
+    sections: [
+      ["Scores across every puzzle", "Points from completed 2x2, 3x3, Pyraminx, and 4x4 solves count toward this all-time board."],
+      ["Compare all games", "The all-games leaderboard also includes every other game's scores from weekly, monthly, and all-time results."],
+    ],
+    links: [
+      ["/leaderboard/", "View the all-games leaderboard"],
+      ["/rubiks", "Play Rubik's Cube"],
+      ["/challenges", "Challenge another player"],
+    ],
+    schemaType: "CollectionPage",
+  },
+  {
     route: "/leaderboard/science-quiz",
     title: "Science Quiz Leaderboard | Play Brain Games . Online",
     description:

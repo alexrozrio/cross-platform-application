@@ -19,6 +19,7 @@ import {
   ChevronDown,
   ChevronUp,
   Brain,
+  Box,
   Puzzle,
   Bomb,
   Grid2x2,
@@ -818,7 +819,7 @@ const SLIDE_PUZZLE_DIFFICULTY_NAMES: Record<string, string> = {
   "4x4": "15 tiles",
   "5x5": "24 tiles",
 };
-type GameTab = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | QuizGameId;
+type GameTab = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "rubiks" | QuizGameId;
 
 function BreakdownPanel({
   profileId,
@@ -1993,6 +1994,7 @@ function SlidePuzzleScoringGuide() {
 }
 
 type SlidePuzzleLeaderboardEntry = { rank: number; profileId: number; username: string; avatar: string | null; xp: number; totalPoints: number; gamesPlayed: number };
+type RubiksLeaderboardEntry = { rank: number; profileId: number; username: string; avatar: string | null; xp: number; totalPoints: number; gamesPlayed: number };
 
 type QuizLeaderboardEntry = { rank: number; profileId: number; username: string; avatar: string | null; xp: number; totalPoints: number; gamesPlayed: number };
 
@@ -2109,12 +2111,38 @@ function SlidePuzzleBoard({ myProfileId }: { myProfileId?: number }) {
   </div>;
 }
 
+
+function RubiksBoard({ myProfileId }: { myProfileId?: number }) {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["/api/rubiks-games/leaderboard"],
+    queryFn: () => customFetch<RubiksLeaderboardEntry[]>("/api/rubiks-games/leaderboard"),
+    refetchInterval: 60_000,
+  });
+  return <div className="space-y-5">
+    <Card className="shadow-md border-rose-200/60 dark:border-rose-800/40">
+      <CardHeader className="border-b bg-card pb-4"><CardTitle className="flex items-center gap-2 text-lg">{(() => { const Icon = GAME_ICONS.rubiks; return <Icon className="h-5 w-5 text-rose-600" />; })()} Rubik's Cube — All Puzzles</CardTitle></CardHeader>
+      <CardContent className="p-0">
+        {isLoading ? <div className="space-y-4 p-6">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
+          : isError ? <div className="p-10 text-center text-sm text-muted-foreground">Rubik's Cube leaderboard could not be loaded. Please try again.</div>
+          : !data?.length ? <div className="p-12 text-center text-muted-foreground"><Box className="mx-auto mb-3 h-10 w-10 opacity-20" /><p className="font-medium">No completed puzzles yet.</p><p className="mt-1 text-sm">Solve a cube to claim the top spot.</p></div>
+          : <div className="divide-y">{data.map((entry) => {
+            const isMe = myProfileId !== undefined && entry.profileId === myProfileId;
+            return <div key={entry.profileId} className={isMe ? "bg-rose-50/70 dark:bg-rose-950/20" : ""}>
+              <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4"><RankBadge rank={entry.rank} /><div className="min-w-0 flex-1"><div className="flex min-w-0 flex-wrap items-center gap-2"><p title={entry.username} className={isMe ? "text-rose-800 dark:text-rose-300" : ""}>{entry.username}</p>{isMe && <span className="rounded-full bg-rose-600 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">You</span>}</div><p className="mt-0.5 text-xs text-muted-foreground">{entry.gamesPlayed} solve{entry.gamesPlayed !== 1 ? "s" : ""}</p></div></div>
+              <div className="flex shrink-0 items-center gap-2"><div className="text-right"><p className="whitespace-nowrap text-lg font-black tabular-nums text-rose-700 dark:text-rose-300 sm:text-xl">{entry.totalPoints.toLocaleString()}</p><p className="mt-0.5 text-xs text-muted-foreground">pts</p></div></div>
+            </div>;
+          })}</div>}
+      </CardContent>
+    </Card>
+  </div>;
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 function LeaderboardScopeLinks({
   active,
 }: {
-  active: "all" | "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "science-quiz" | "maths-quiz" | "gk-quiz";
+  active: "all" | "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz";
 }) {
   const [, setLocation] = useLocation();
   const links = [
@@ -2125,6 +2153,7 @@ function LeaderboardScopeLinks({
     { id: "word-search", href: "/leaderboard/word-search/", label: "Word Search", icon: GAME_ICONS["word-search"] },
     { id: "minesweeper", href: "/leaderboard/minesweeper/", label: "Minesweeper", icon: GAME_ICONS.minesweeper },
     { id: "slide-puzzle", href: "/leaderboard/slide-puzzle/", label: "Slide Puzzle", icon: GAME_ICONS["slide-puzzle"] },
+    { id: "rubiks", href: "/leaderboard/rubiks/", label: "Rubik's Cube", icon: GAME_ICONS.rubiks },
     { id: "science-quiz", href: "/leaderboard/science-quiz/", label: "Science Quiz", icon: GAME_ICONS["science-quiz"] },
     { id: "maths-quiz", href: "/leaderboard/maths-quiz/", label: "Maths Quiz", icon: GAME_ICONS["maths-quiz"] },
     { id: "gk-quiz", href: "/leaderboard/gk-quiz/", label: "GK Quiz", icon: GAME_ICONS["gk-quiz"] },
@@ -2165,7 +2194,7 @@ function LeaderboardScopeLinks({
 }
 
 const PLAY_LINKS: Record<
-  "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "science-quiz" | "maths-quiz" | "gk-quiz",
+  "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz",
   { href: string; label: string; ariaLabel: string; icon: typeof Zap; borderClass: string; iconClass: string }
 > = {
   sudoku: { href: "/sudoku", label: "Play Sudoku", ariaLabel: "Play Sudoku", icon: GAME_ICONS.sudoku, borderClass: "border-border", iconClass: "text-primary" },
@@ -2174,6 +2203,7 @@ const PLAY_LINKS: Record<
   "word-search": { href: "/word-search", label: "Word Search", ariaLabel: "Play Word Search", icon: GAME_ICONS["word-search"], borderClass: "border-violet-200 dark:border-violet-800", iconClass: "text-violet-600" },
   minesweeper: { href: "/minesweeper", label: "Minesweeper", ariaLabel: "Play Minesweeper", icon: GAME_ICONS.minesweeper, borderClass: "border-emerald-200 dark:border-emerald-800", iconClass: "text-emerald-600" },
   "slide-puzzle": { href: "/slide-puzzle", label: "Slide Puzzle", ariaLabel: "Play Slide Puzzle", icon: GAME_ICONS["slide-puzzle"], borderClass: "border-sky-200 dark:border-sky-800", iconClass: "text-sky-600" },
+  rubiks: { href: "/rubiks", label: "Rubik's Cube", ariaLabel: "Play Rubik's Cube", icon: GAME_ICONS.rubiks, borderClass: "border-rose-200 dark:border-rose-800", iconClass: "text-rose-600" },
   "science-quiz": { href: "/quiz/science", label: "Science Quiz", ariaLabel: "Play Science Quiz", icon: GAME_ICONS["science-quiz"], borderClass: "border-violet-200 dark:border-violet-800", iconClass: "text-violet-600" },
   "maths-quiz": { href: "/quiz/maths", label: "Maths Quiz", ariaLabel: "Play Maths Quiz", icon: GAME_ICONS["maths-quiz"], borderClass: "border-sky-200 dark:border-sky-800", iconClass: "text-sky-600" },
   "gk-quiz": { href: "/quiz/gk", label: "GK Quiz", ariaLabel: "Play GK Quiz", icon: GAME_ICONS["gk-quiz"], borderClass: "border-amber-200 dark:border-amber-800", iconClass: "text-amber-600" },
@@ -2182,13 +2212,13 @@ const PLAY_LINKS: Record<
 export default function Leaderboard({
   gamePage: routeGamePage,
 }: {
-  gamePage?: "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "science-quiz" | "maths-quiz" | "gk-quiz";
+  gamePage?: "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz";
 } = {}) {
   const search = useSearch();
   const requestedTab = new URLSearchParams(search).get("tab");
   const gamePage =
     routeGamePage ??
-    (requestedTab === "sudoku" || requestedTab === "memory" || requestedTab === "jigsaw" || requestedTab === "word-search" || requestedTab === "minesweeper" || requestedTab === "slide-puzzle" || requestedTab === "science-quiz" || requestedTab === "maths-quiz" || requestedTab === "gk-quiz" ? requestedTab : null);
+    (requestedTab === "sudoku" || requestedTab === "memory" || requestedTab === "jigsaw" || requestedTab === "word-search" || requestedTab === "minesweeper" || requestedTab === "slide-puzzle" || requestedTab === "rubiks" || requestedTab === "science-quiz" || requestedTab === "maths-quiz" || requestedTab === "gk-quiz" ? requestedTab : null);
   const initialTab: MainTab =
     requestedTab === "monthly" || requestedTab === "alltime"
       ? requestedTab
@@ -2207,6 +2237,8 @@ export default function Leaderboard({
               ? "Minesweeper Leaderboard | Play Brain Games . Online"
               : gamePage === "slide-puzzle"
                 ? "Slide Puzzle Leaderboard | Play Brain Games . Online"
+                : gamePage === "rubiks"
+                  ? "Rubik's Cube Leaderboard | Play Brain Games . Online"
                 : gamePage === "science-quiz"
                   ? "Science Quiz Leaderboard | Play Brain Games . Online"
                   : gamePage === "maths-quiz"
@@ -2227,6 +2259,8 @@ export default function Leaderboard({
               ? "Compare all-time Minesweeper points across every board size on Play Brain Games . Online."
               : gamePage === "slide-puzzle"
                 ? "Compare all-time Slide Puzzle points across every board size on Play Brain Games . Online."
+                : gamePage === "rubiks"
+                  ? "Compare all-time Rubik's Cube points across every puzzle on Play Brain Games . Online."
                 : gamePage === "science-quiz"
                   ? "Compare all-time Science Quiz points across every level on Play Brain Games . Online."
                   : gamePage === "maths-quiz"
@@ -2252,6 +2286,8 @@ export default function Leaderboard({
             ? "Minesweeper Leaderboard"
             : gamePage === "slide-puzzle"
               ? "Slide Puzzle Leaderboard"
+              : gamePage === "rubiks"
+                ? "Rubik's Cube Leaderboard"
               : gamePage === "science-quiz"
                 ? "Science Quiz Leaderboard"
                 : gamePage === "maths-quiz"
@@ -2272,6 +2308,8 @@ export default function Leaderboard({
             ? "All-time points across every Minesweeper board size."
             : gamePage === "slide-puzzle"
               ? "All-time points across every Slide Puzzle board size."
+              : gamePage === "rubiks"
+                ? "All-time points across every Rubik's Cube puzzle."
               : gamePage === "science-quiz"
                 ? "All-time points across every Science Quiz level."
                 : gamePage === "maths-quiz"
@@ -2325,6 +2363,8 @@ export default function Leaderboard({
         <MinesweeperBoard myProfileId={myProfileId} />
       ) : gamePage === "slide-puzzle" ? (
         <SlidePuzzleBoard myProfileId={myProfileId} />
+      ) : gamePage === "rubiks" ? (
+        <RubiksBoard myProfileId={myProfileId} />
       ) : gamePage === "science-quiz" ? (
         <QuizBoard myProfileId={myProfileId} subjectId="science" />
       ) : gamePage === "maths-quiz" ? (

@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useGetProfile } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,7 @@ function NotifBadge({ count }: { count: number }) {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
+  const search = useSearch();
   // Game routes keep the header/nav chrome visible, just shrunk down, so
   // there's still room to reach Home/Leaderboard/etc. while playing. The
   // extra vertical space needed for the board comes from letting the
@@ -97,6 +98,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     applyAppTheme(profile?.theme ?? "light");
   }, [profile?.theme]);
+
+  // Wouter keeps the window scroll position across navigations, so a page
+  // opened from a scrolled portal would load mid-page. Reset to top on every
+  // route change — pathname AND query, since most games start via ?play= /
+  // ?start= params on the same path. Hash links (/guides/#...) are skipped so
+  // the browser's native anchor scroll still works.
+  React.useEffect(() => {
+    if (!window.location.hash) window.scrollTo(0, 0);
+  }, [location, search]);
 
   const navItems = [
     { href: "/", label: "Home", shortLabel: "Home", icon: Home, badge: 0, tooltip: "Play Brain Games — earn XP and climb the ranks",

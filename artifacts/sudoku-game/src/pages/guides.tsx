@@ -8,6 +8,7 @@ import {
   FlaskConical,
   Globe,
   Grid2x2,
+  Box,
   Grid3x3,
   Puzzle,
   Rocket,
@@ -67,6 +68,12 @@ const THEMES: Record<string, GuideTheme> = {
     icon: "text-sky-700 dark:text-sky-300",
     card: "border-sky-200/70 bg-sky-50/60 dark:border-sky-900/50 dark:bg-sky-950/20",
     btn: "bg-sky-700 text-white hover:bg-sky-800",
+  },
+  rubiks: {
+    section: "border-red-200/70 dark:border-red-900/50",
+    icon: "text-red-700 dark:text-red-300",
+    card: "border-red-200/70 bg-red-50/60 dark:border-red-900/50 dark:bg-red-950/20",
+    btn: "bg-red-700 text-white hover:bg-red-800",
   },
   "science-quiz": {
     section: "border-violet-200/70 dark:border-violet-900/50",
@@ -209,6 +216,7 @@ export default function Guides() {
           <a href="#word-search-guide-title" className="rounded-full border border-indigo-400/30 bg-indigo-500/10 px-3 py-1.5 text-sm font-semibold text-indigo-700 dark:text-indigo-300">Word Search guide</a>
           <a href="#minesweeper-guide-title" className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1.5 text-sm font-semibold text-emerald-700 dark:text-emerald-300">Minesweeper guide</a>
           <a href="#slide-puzzle-guide-title" className="rounded-full border border-sky-400/30 bg-sky-500/10 px-3 py-1.5 text-sm font-semibold text-sky-700 dark:text-sky-300">Slide Puzzle guide</a>
+          <a href="#rubiks-guide-title" className="rounded-full border border-red-400/30 bg-red-500/10 px-3 py-1.5 text-sm font-semibold text-red-700 dark:text-red-300">Rubik's Cube guide</a>
           <a href="#science-quiz-guide-title" className="rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1.5 text-sm font-semibold text-violet-700 dark:text-violet-300">Science Quiz guide</a>
           <a href="#maths-quiz-guide-title" className="rounded-full border border-orange-400/30 bg-orange-500/10 px-3 py-1.5 text-sm font-semibold text-orange-700 dark:text-orange-300">Maths Quiz guide</a>
           <a href="#gk-quiz-guide-title" className="rounded-full border border-rose-400/30 bg-rose-500/10 px-3 py-1.5 text-sm font-semibold text-rose-700 dark:text-rose-300">GK Quiz guide</a>
@@ -415,6 +423,29 @@ export default function Guides() {
           { href: "/slide-puzzle", label: "Play Slide Puzzle", primary: true },
           { href: "/slide-puzzle-challenge", label: "Daily challenge" },
           { href: "/leaderboard/slide-puzzle", label: "Leaderboard" },
+        ]}
+      />
+
+      <GuideSection
+        id="rubiks"
+        title="Rubik's Cube guide"
+        themeKey="rubiks"
+        icon={Box}
+        intro={[
+          "Rubik's Cube challenges you to restore a scrambled puzzle against the clock. Choose the Pocket Cube (2×2), the classic Rubik's Cube (3×3), the Pyraminx, or the Rubik's Revenge (4×4). Drag on a face to twist a layer, drag the background to rotate the view, or tap a face for a quick turn.",
+          "Every solve is timed and counted in moves. Points reward finishing under the puzzle's par time with few moves, and each puzzle awards XP and gems scaled to its difficulty.",
+        ]}
+        cards={[
+          { title: "Pocket Cube (2×2)", detail: "The quickest warm-up — only corners, solved in seconds once you learn the triggers." },
+          { title: "Rubik's Cube (3×3)", detail: "The classic 54-sticker puzzle. Learn a beginner method: white cross, corners, then edges." },
+          { title: "Pyraminx", detail: "A tetrahedral puzzle — twist the three corner pieces at each vertex back into place." },
+          { title: "Rubik's Revenge (4×4)", detail: "The 4×4 has no fixed centres, so pair edges first, then solve it like a 3×3." },
+        ]}
+        details="Points scale with puzzle size — the 4×4 pays the most — with bonuses for beating par time and penalties for extra moves. XP and gems rise from 2×2 up to 4×4. Only completed solves score."
+        tips="Start with the 2×2 to get comfortable with the controls, then move to the 3×3. Rotate the whole cube often so you are never solving blind, and learn one algorithm at a time — the beginner's 'daisy' and 'white cross' steps solve most of a 3×3. Try the daily challenge to race the same scramble as other players, or send a friend a duel from the Challenges page."
+        links={[
+          { href: "/rubiks", label: "Play Rubik's Cube", primary: true },
+          { href: "/leaderboard/rubiks", label: "Leaderboard" },
         ]}
       />
 

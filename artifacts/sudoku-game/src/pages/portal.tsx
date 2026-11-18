@@ -132,6 +132,14 @@ const PORTAL_GAMES: PortalGameEntry[] = [
     desc: "Slide tiles into order on boards from 2×2 to 5×5 — numbers, letters, or pictures. Finish under par with few moves for bonus points.",
     keywords: "tiles 15 puzzle",
   },
+  {
+    id: "rubiks", name: "Rubik's Cube", href: "/rubiks",
+    icon: GAME_ICONS.rubiks, color: gameIconColor("rubiks"), chip: "bg-rose-100 dark:bg-rose-950/60",
+    gradient: "from-rose-100 via-pink-50 to-orange-100 dark:from-rose-950/75 dark:via-pink-950/70 dark:to-orange-950/60",
+    tagline: "Twist and solve",
+    desc: "Solve the Pocket Cube (2×2), classic Rubik's Cube (3×3), Pyraminx and Rubik's Revenge (4×4) against the clock — with daily challenges and duels.",
+    keywords: "cube twist turns 3d",
+  },
   ...(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id): PortalGameEntry => {
     const subject = QUIZ_SUBJECTS[id];
     return {

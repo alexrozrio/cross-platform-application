@@ -193,6 +193,45 @@ export async function ensureDatabaseSchema(): Promise<void> {
     )`,
     `CREATE INDEX IF NOT EXISTS slide_puzzle_challenges_challenger_id_idx ON slide_puzzle_challenges(challenger_id)`,
     `CREATE INDEX IF NOT EXISTS slide_puzzle_challenges_challenged_id_idx ON slide_puzzle_challenges(challenged_id)`,
+    `CREATE TABLE IF NOT EXISTS rubiks_games (
+      id serial PRIMARY KEY,
+      profile_id integer REFERENCES profiles(id),
+      puzzle text NOT NULL,
+      scramble_seed integer,
+      daily_date text,
+      challenge_id integer,
+      status text NOT NULL DEFAULT 'active',
+      elapsed_seconds integer NOT NULL DEFAULT 0,
+      moves integer NOT NULL DEFAULT 0,
+      points integer,
+      xp_earned integer,
+      gems_earned integer,
+      completed_at timestamptz,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )`,
+    `CREATE INDEX IF NOT EXISTS rubiks_games_profile_id_idx
+      ON rubiks_games(profile_id)`,
+    `CREATE INDEX IF NOT EXISTS rubiks_games_status_completed_at_idx
+      ON rubiks_games(status, completed_at)`,
+    `CREATE INDEX IF NOT EXISTS rubiks_games_daily_date_idx
+      ON rubiks_games(daily_date)`,
+    `CREATE INDEX IF NOT EXISTS rubiks_games_challenge_id_idx
+      ON rubiks_games(challenge_id)`,
+    `CREATE TABLE IF NOT EXISTS rubiks_challenges (
+      id serial PRIMARY KEY,
+      challenger_id integer NOT NULL REFERENCES profiles(id),
+      challenged_id integer NOT NULL REFERENCES profiles(id),
+      puzzle text NOT NULL,
+      scramble_seed integer NOT NULL,
+      status text NOT NULL DEFAULT 'pending',
+      challenger_game_id integer REFERENCES rubiks_games(id),
+      challenged_game_id integer REFERENCES rubiks_games(id),
+      winner_id integer REFERENCES profiles(id),
+      created_at timestamptz NOT NULL DEFAULT now(),
+      expires_at timestamptz NOT NULL
+    )`,
+    `CREATE INDEX IF NOT EXISTS rubiks_challenges_challenger_id_idx ON rubiks_challenges(challenger_id)`,
+    `CREATE INDEX IF NOT EXISTS rubiks_challenges_challenged_id_idx ON rubiks_challenges(challenged_id)`,
     `CREATE TABLE IF NOT EXISTS quiz_games (
       id serial PRIMARY KEY,
       profile_id integer REFERENCES profiles(id),
@@ -279,6 +318,8 @@ export async function ensureDatabaseSchema(): Promise<void> {
     `ALTER TABLE IF EXISTS minesweeper_challenges ENABLE ROW LEVEL SECURITY`,
     `ALTER TABLE IF EXISTS slide_puzzle_games ENABLE ROW LEVEL SECURITY`,
     `ALTER TABLE IF EXISTS slide_puzzle_challenges ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS rubiks_games ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS rubiks_challenges ENABLE ROW LEVEL SECURITY`,
     `ALTER TABLE IF EXISTS quiz_games ENABLE ROW LEVEL SECURITY`,
     `ALTER TABLE IF EXISTS quiz_challenges ENABLE ROW LEVEL SECURITY`,
   ];

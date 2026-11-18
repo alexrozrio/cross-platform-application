@@ -99,6 +99,7 @@ const JigsawPage = lazy(() => import("@/pages/jigsaw"));
 const JigsawDailyChallengePage = lazy(() => import("@/pages/jigsaw-challenge"));
 const JigsawChallengesPage = lazy(() => import("@/pages/jigsaw-challenges"));
 const JigsawInvitePage = lazy(() => import("@/pages/jigsaw-invite"));
+const RubiksPage = lazy(() => import("@/pages/rubiks"));
 function JigsawInviteRoute({ params }: { params: { token: string } }) {
   return <JigsawInvitePage token={params.token} />;
 }
@@ -253,6 +254,9 @@ function Router() {
               <Route path="/leaderboard/slide-puzzle">
                 {() => <Leaderboard gamePage="slide-puzzle" />}
               </Route>
+              <Route path="/leaderboard/rubiks">
+                {() => <Leaderboard gamePage="rubiks" />}
+              </Route>
               <Route path="/leaderboard/science-quiz">
                 {() => <Leaderboard gamePage="science-quiz" />}
               </Route>
@@ -287,6 +291,7 @@ function Router() {
               </Route>
               <Route path="/quiz-challenge" component={QuizDailyChallengePage} />
               <Route path="/memory-challenge" component={MemoryChallengePage} />
+              <Route path="/rubiks" component={RubiksPage} />
               <Route path="/jigsaw" component={JigsawPage} />
               <Route path="/jigsaw-challenge" component={JigsawDailyChallengePage} />
               <Route path="/jigsaw-challenges" component={JigsawChallengesPage} />
