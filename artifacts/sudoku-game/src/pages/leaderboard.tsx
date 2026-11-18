@@ -49,6 +49,7 @@ import { MINESWEEPER_LEVELS, type MinesweeperDifficulty } from "@/lib/minesweepe
 import { SLIDE_PUZZLE_LEVELS, type SlidePuzzleDifficulty } from "@/lib/slide-puzzle";
 import { JIGSAW_SIZE_NAMES } from "@/lib/jigsaw-session";
 import { GAME_ICONS, gameIconColor } from "@/lib/game-icons";
+import { RUBIKS_VISIBLE } from "@/lib/rubiks";
 
 type MainTab = "alltime" | "weekly" | "monthly";
 
@@ -2145,7 +2146,7 @@ function LeaderboardScopeLinks({
   active: "all" | "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz";
 }) {
   const [, setLocation] = useLocation();
-  const links = [
+  const links = ([
     { id: "all", href: "/leaderboard/", label: "All Games", icon: Trophy },
     { id: "sudoku", href: "/leaderboard/sudoku/", label: "Sudoku", icon: GAME_ICONS.sudoku },
     { id: "memory", href: "/leaderboard/memory/", label: "Memory Match", icon: GAME_ICONS.memory },
@@ -2157,7 +2158,7 @@ function LeaderboardScopeLinks({
     { id: "science-quiz", href: "/leaderboard/science-quiz/", label: "Science Quiz", icon: GAME_ICONS["science-quiz"] },
     { id: "maths-quiz", href: "/leaderboard/maths-quiz/", label: "Maths Quiz", icon: GAME_ICONS["maths-quiz"] },
     { id: "gk-quiz", href: "/leaderboard/gk-quiz/", label: "GK Quiz", icon: GAME_ICONS["gk-quiz"] },
-  ] as const;
+  ] as const).filter((link) => RUBIKS_VISIBLE || link.id !== "rubiks");
   const selected = links.find((link) => link.id === active) ?? links[0];
   const SelectedIcon = selected.icon;
 

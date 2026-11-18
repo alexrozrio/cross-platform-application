@@ -21,6 +21,7 @@ import {
   LayoutGrid,
   LayoutDashboard,
   X,
+  Box,
   type LucideIcon,
 } from "lucide-react";
 import { customFetch, useGetProfile } from "@workspace/api-client-react";
@@ -31,6 +32,7 @@ import { sudokuGamePath } from "@/lib/sudoku-routes";
 import { WORD_SEARCH_LEVELS, type WordSearchDifficulty } from "@/lib/word-search";
 import { MINESWEEPER_LEVELS, type MinesweeperDifficulty } from "@/lib/minesweeper";
 import { SLIDE_PUZZLE_LEVELS, type SlidePuzzleDifficulty } from "@/lib/slide-puzzle";
+import { RUBIKS_LEVELS, RUBIKS_VISIBLE } from "@/lib/rubiks";
 import { QUIZ_LEVELS, QUIZ_SUBJECTS, quizGameId, type QuizLevel, type QuizSubject } from "@/lib/quiz";
 import { GAME_ICONS, gameIconColor } from "@/lib/game-icons";
 import {
@@ -83,6 +85,8 @@ interface PortalGameEntry {
   keywords?: string;
 }
 
+const FEATURED_GAME_IDS = new Set(["sudoku", "memory", "jigsaw", "word-search", "minesweeper", "slide-puzzle", "science-quiz", "maths-quiz", "gk-quiz"]);
+
 const PORTAL_GAMES: PortalGameEntry[] = [
   {
     id: "sudoku", name: "Sudoku", href: "/sudoku",
@@ -132,14 +136,14 @@ const PORTAL_GAMES: PortalGameEntry[] = [
     desc: "Slide tiles into order on boards from 2×2 to 5×5 — numbers, letters, or pictures. Finish under par with few moves for bonus points.",
     keywords: "tiles 15 puzzle",
   },
-  {
+  ...(RUBIKS_VISIBLE ? [{
     id: "rubiks", name: "Rubik's Cube", href: "/rubiks",
     icon: GAME_ICONS.rubiks, color: gameIconColor("rubiks"), chip: "bg-rose-100 dark:bg-rose-950/60",
     gradient: "from-rose-100 via-pink-50 to-orange-100 dark:from-rose-950/75 dark:via-pink-950/70 dark:to-orange-950/60",
     tagline: "Twist and solve",
     desc: "Solve the Pocket Cube (2×2), classic Rubik's Cube (3×3), Pyraminx and Rubik's Revenge (4×4) against the clock — with daily challenges and duels.",
     keywords: "cube twist turns 3d",
-  },
+  }] : []),
   ...(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id): PortalGameEntry => {
     const subject = QUIZ_SUBJECTS[id];
     return {
@@ -291,6 +295,7 @@ export default function Portal() {
       )
     : PORTAL_GAMES;
   const matchesGame = (id: string) => filteredGames.some((game) => game.id === id);
+  const extraPortalGames = filteredGames.filter((game) => !FEATURED_GAME_IDS.has(game.id));
   const canResumeJigsaw = Boolean(
     jigsawSession &&
       (gameMode === "children"
@@ -728,6 +733,20 @@ export default function Portal() {
           </div>
         </section>
 
+        {/* Rubik's Cube quick launch */}
+        {RUBIKS_VISIBLE && (
+        <section className={`relative isolate overflow-hidden rounded-2xl border-2 border-rose-400/60 bg-gradient-to-br from-rose-100 via-red-50 to-orange-100 p-4 shadow-xl shadow-rose-500/20 ring-1 ring-inset ring-white/70 dark:from-rose-950/75 dark:via-red-950/70 dark:to-orange-950/60 dark:ring-white/10 ${matchesGame("rubiks") ? "" : "hidden"}`}>
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-rose-500 via-red-500 to-orange-400" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-red-300/35 blur-2xl dark:bg-red-400/15" />
+          <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-20 w-20 rotate-6 grid-cols-2 gap-1 overflow-hidden rounded-xl border border-rose-400/15 bg-white/15 opacity-60 dark:bg-white/5">{["⬜", "🟧", "🟩", "🟦", "⬜", "🟥", "🟨", "🟩", "⬜"].map((sticker, index) => <span key={index} className="flex items-center justify-center rounded-sm border border-rose-400/10 text-xs">{sticker}</span>)}</div>
+          <div className="relative z-10 flex items-center justify-between gap-3"><div className="flex items-center gap-2.5"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-600 text-white shadow-md"><Box className="h-6 w-6" /></div><div><span className="block text-xl font-black leading-tight text-slate-900 dark:text-white">Rubik's Cube</span><span className="mt-1 inline-flex w-fit rounded-full bg-white/65 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-rose-700 shadow-sm dark:bg-slate-950/30 dark:text-rose-300">Twist &amp; solve</span></div></div><button onClick={() => setLocation("/rubiks")} className="rounded-full bg-rose-600 px-3 py-1.5 text-[11px] font-bold text-white shadow-sm transition-colors hover:bg-rose-700">All options</button></div>
+          <p className="relative z-10 text-[11px] font-medium leading-tight text-foreground/80">Twist the layers until every face is one colour.</p>
+          <div className="relative z-10 mt-2 grid grid-cols-4 gap-1.5">
+            {RUBIKS_LEVELS.map((level) => <button key={level.puzzle} onClick={() => setLocation(`/rubiks?puzzle=${level.puzzle}`)} className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-rose-400/35 bg-white/75 px-1 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-rose-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"><span className="font-black text-sm leading-tight text-rose-700 dark:text-rose-300">{level.label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{level.name} · {level.puzzle === "pyraminx" ? "Pyramid" : level.puzzle}</span></button>)}
+          </div>
+        </section>
+        )}
+
         {/* Quiz quick launches — one card per subject */}
         {(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id) => {
           const subject = QUIZ_SUBJECTS[id];
@@ -745,6 +764,7 @@ export default function Portal() {
             </section>
           );
         })}
+        {extraPortalGames.length > 0 && <PortalGameEntries view="box" games={extraPortalGames} onOpen={(href) => setLocation(href)} />}
         </>
         ) : (
           <PortalGameEntries view={gameView} games={filteredGames} onOpen={(href) => setLocation(href)} />
@@ -825,6 +845,11 @@ export default function Portal() {
             <button onClick={() => setLocation("/slide-puzzle-challenge")} className="flex w-full items-center gap-3 rounded-xl border border-sky-200 bg-white/60 px-3 py-2.5 text-left transition-all hover:bg-white/90 dark:bg-sky-950/20 dark:hover:bg-sky-950/40">
               <Grid3x3 className="h-5 w-5 shrink-0 text-sky-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Slide Puzzle</p><p className="text-xs text-muted-foreground">One shared scramble each day</p></div><span className="shrink-0 text-sm text-sky-500">→</span>
             </button>
+            {RUBIKS_VISIBLE && (
+            <button onClick={() => setLocation("/rubiks?daily=1")} className="flex w-full items-center gap-3 rounded-xl border border-rose-200 bg-white/60 px-3 py-2.5 text-left transition-all hover:bg-white/90 dark:bg-rose-950/20 dark:hover:bg-rose-950/40">
+              <Box className="h-5 w-5 shrink-0 text-rose-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Rubik's Cube</p><p className="text-xs text-muted-foreground">One shared scramble each day</p></div><span className="shrink-0 text-sm text-rose-500">→</span>
+            </button>
+            )}
             {(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id) => {
               const subject = QUIZ_SUBJECTS[id];
               return (
@@ -1393,6 +1418,27 @@ export default function Portal() {
                 title="Available"
               />
             </section>
+            {RUBIKS_VISIBLE && (
+            <section className={`group relative isolate overflow-hidden rounded-2xl border-2 border-rose-400/60 bg-gradient-to-br from-rose-100 via-red-50 to-orange-100 text-left shadow-xl shadow-rose-500/20 ring-1 ring-inset ring-white/70 transition hover:border-rose-500/80 dark:from-rose-950/75 dark:via-red-950/70 dark:to-orange-950/60 dark:ring-white/10 ${matchesGame("rubiks") ? "" : "hidden"}`}>
+              <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-rose-500 via-red-500 to-orange-400" />
+              <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-red-300/35 blur-2xl dark:bg-red-400/15" />
+              <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-24 w-24 rotate-6 grid-cols-2 gap-1 overflow-hidden rounded-xl border border-rose-400/15 bg-white/15 opacity-60 dark:bg-white/5">{["⬜", "🟧", "🟩", "🟦", "⬜", "🟥", "🟨", "🟩", "⬜"].map((sticker, index) => <span key={index} className="flex items-center justify-center rounded-sm border border-rose-400/10 text-sm">{sticker}</span>)}</div>
+              <button onClick={() => setLocation("/rubiks")} className="relative z-10 block w-full space-y-4 p-6 text-left transition-all duration-200 hover:bg-white/20 dark:hover:bg-slate-950/20">
+                <div className="flex items-center gap-3"><span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-rose-600/10 text-rose-600 ring-1 ring-rose-400/20 dark:text-rose-300"><Box className="h-8 w-8" /></span><div><h2 className="font-serif text-xl font-bold">Rubik's Cube</h2><p className="text-xs text-muted-foreground">Twist &amp; solve against the clock</p></div></div>
+                <p className="text-sm leading-relaxed text-muted-foreground">Restore every face to a single colour across four puzzles — 2×2, 3×3, Pyraminx, and 4×4. Pick a puzzle to start.</p>
+              </button>
+              <div className="relative z-10 px-6 pb-5 pt-1">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {RUBIKS_LEVELS.map((level) => <button key={level.puzzle} onClick={() => setLocation(`/rubiks?puzzle=${level.puzzle}`)} className="flex min-h-[52px] flex-col items-center justify-center rounded-lg border border-rose-400/20 bg-rose-500/5 px-1 py-2 text-center transition-all hover:border-rose-400/40 hover:bg-rose-500/15"><span className="text-xs font-bold leading-none text-rose-700 dark:text-rose-300">{level.label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{level.name} · {level.puzzle === "pyraminx" ? "Pyramid" : level.puzzle}</span></button>)}
+                </div>
+                <button onClick={() => setLocation("/rubiks")} className="mt-3 text-xs font-semibold text-rose-800 underline underline-offset-2 dark:text-rose-200">More options and daily challenge</button>
+              </div>
+              <div
+                className="absolute top-3 right-3 w-2 h-2 rounded-full bg-green-400"
+                title="Available"
+              />
+            </section>
+            )}
             {(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id) => {
               const subject = QUIZ_SUBJECTS[id];
               const levels = visibleQuizLevelsFor(id);
@@ -1418,6 +1464,7 @@ export default function Portal() {
             </section>
               );
             })}
+            {extraPortalGames.length > 0 && <div className="col-span-full"><PortalGameEntries view="box" games={extraPortalGames} onOpen={(href) => setLocation(href)} /></div>}
           </div>
           ) : (
             <PortalGameEntries view={gameView} games={filteredGames} onOpen={(href) => setLocation(href)} />
@@ -1500,6 +1547,11 @@ export default function Portal() {
               <button onClick={() => setLocation("/slide-puzzle-challenge")} className="flex items-center gap-3 rounded-xl border border-sky-200 bg-white/60 px-4 py-3 text-left transition-all hover:bg-white/90 dark:bg-sky-950/20 dark:hover:bg-sky-950/40">
                 <Grid3x3 className="h-6 w-6 shrink-0 text-sky-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Slide Puzzle</p><p className="text-xs text-muted-foreground">One shared scramble each day</p></div><span className="shrink-0 text-sm text-sky-500">→</span>
               </button>
+              {RUBIKS_VISIBLE && (
+              <button onClick={() => setLocation("/rubiks?daily=1")} className="flex items-center gap-3 rounded-xl border border-rose-200 bg-white/60 px-4 py-3 text-left transition-all hover:bg-white/90 dark:bg-rose-950/20 dark:hover:bg-rose-950/40">
+                <Box className="h-6 w-6 shrink-0 text-rose-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Rubik's Cube</p><p className="text-xs text-muted-foreground">One shared scramble each day</p></div><span className="shrink-0 text-sm text-rose-500">→</span>
+              </button>
+              )}
               {(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id) => {
                 const subject = QUIZ_SUBJECTS[id];
                 return (

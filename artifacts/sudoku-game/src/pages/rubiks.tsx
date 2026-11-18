@@ -309,7 +309,7 @@ export default function RubiksPage() {
           </div>
         )}
       </div>
-      <p className="text-center text-xs text-muted-foreground">Drag on a face to twist it · drag the background to rotate the view · tap a face for a quick turn</p>
+      <p className="text-center text-xs text-muted-foreground">Drag on a face to twist it · use the arrows to rotate the view · tap a face for a quick turn · pinch or scroll to zoom</p>
     </div>
   );
 }

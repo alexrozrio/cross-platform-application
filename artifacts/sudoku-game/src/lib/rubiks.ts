@@ -1,22 +1,25 @@
 // Rubik's cube engine: cubie/sticker model shared by 2x2, 3x3 and 4x4,
 // plus a tetrahedral piece model for Pyraminx. Pure logic — no rendering.
 
+// Feature flag: hides every Rubik's Cube UI surface while keeping the game code intact.
+export const RUBIKS_VISIBLE = false;
+
 export type RubiksPuzzle = "2x2" | "3x3" | "pyraminx" | "4x4";
 export type RubiksDifficulty = "easy" | "medium" | "hard" | "expert";
 
 export interface RubiksLevel {
   id: RubiksDifficulty;
-  label: RubiksDifficulty;
+  label: string;
   puzzle: RubiksPuzzle;
   name: string;
   tagline: string;
 }
 
 export const RUBIKS_LEVELS: RubiksLevel[] = [
-  { id: "easy", label: "easy", puzzle: "2x2", name: "Pocket Cube", tagline: "2×2 — the fastest warm-up" },
-  { id: "medium", label: "medium", puzzle: "3x3", name: "Rubik's Cube", tagline: "3×3 — the classic" },
-  { id: "hard", label: "hard", puzzle: "pyraminx", name: "Pyraminx", tagline: "Pyramid — twist the corners" },
-  { id: "expert", label: "expert", puzzle: "4x4", name: "Rubik's Revenge", tagline: "4×4 — twice the layers" },
+  { id: "easy", label: "Easy", puzzle: "2x2", name: "Pocket Cube", tagline: "2×2 — the fastest warm-up" },
+  { id: "medium", label: "Medium", puzzle: "3x3", name: "Rubik's Cube", tagline: "3×3 — the classic" },
+  { id: "hard", label: "Hard", puzzle: "pyraminx", name: "Pyraminx", tagline: "Pyramid — twist the corners" },
+  { id: "expert", label: "Expert", puzzle: "4x4", name: "Rubik's Revenge", tagline: "4×4 — twice the layers" },
 ];
 
 export function puzzleForDifficulty(d: RubiksDifficulty): RubiksPuzzle {
@@ -120,6 +123,7 @@ export interface Piece {
 
 export type CubeMove =
   | { kind: "face"; face: CubeFace; turns: 1 | 2 | 3 } // 1=CW, 2=180, 3=CCW viewed from outside
+  | { kind: "slice"; axis: 0 | 1 | 2; coord: number; turns: 1 | 2 | 3 } // layer along axis at coord
   | { kind: "vertex"; vertex: number; dir: 1 | -1 }; // pyraminx
 
 function cubeSize(p: Exclude<RubiksPuzzle, "pyraminx">): number { return p === "2x2" ? 2 : p === "4x4" ? 4 : 3; }
@@ -164,8 +168,20 @@ function faceMoveQuat(face: CubeFace, turns: 1 | 2 | 3): { axis: 0 | 1 | 2; angl
 
 export function applyCubeMove(pieces: Piece[], move: CubeMove): Piece[] {
   if (move.kind === "vertex") return applyVertexMove(pieces, move.vertex, move.dir);
-  const { axis, angle } = faceMoveQuat(move.face, move.turns);
-  const layerCoord = Math.max(...pieces.map((p) => Math.abs(p.pos[axis]))) * DIR_OF_FACE[move.face];
+  let axis: 0 | 1 | 2;
+  let angle: number;
+  let layerCoord: number;
+  if (move.kind === "slice") {
+    axis = move.axis;
+    const s = move.coord === 0 ? 1 : Math.sign(move.coord);
+    angle = (-Math.PI / 2) * s * move.turns;
+    layerCoord = move.coord;
+  } else {
+    const fm = faceMoveQuat(move.face, move.turns);
+    axis = fm.axis;
+    angle = fm.angle;
+    layerCoord = Math.max(...pieces.map((p) => Math.abs(p.pos[axis]))) * DIR_OF_FACE[move.face];
+  }
   const q = qAxisAngle(axisVec(axis), angle);
   return pieces.map((p) => {
     if (Math.abs(p.pos[axis] - layerCoord) > 0.01) return p;
@@ -316,5 +332,5 @@ export function cubieCount(puzzle: RubiksPuzzle): number {
   return puzzle === "2x2" ? 8 : puzzle === "3x3" ? 26 : puzzle === "4x4" ? 56 : 4;
 }
 
-export { vRot, qSlerp, vAdd, vScale, vDot, vCross, vNorm, vLen };
+export { vRot, qMul, qAxisAngle, qSlerp, vAdd, vScale, vDot, vCross, vNorm, vLen };
 export type { V3, Quat };

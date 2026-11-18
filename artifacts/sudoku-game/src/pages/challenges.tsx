@@ -35,7 +35,7 @@ import { challengeInviteUrl } from "@/lib/app-links";
 import { WORD_SEARCH_LEVELS, WORD_SEARCH_THEMES, type WordSearchDifficulty, type WordSearchTheme } from "@/lib/word-search";
 import { MINESWEEPER_LEVELS, type MinesweeperDifficulty } from "@/lib/minesweeper";
 import { SLIDE_PUZZLE_LEVELS, SLIDE_PUZZLE_TILE_STYLES, type SlidePuzzleDifficulty, type SlidePuzzleTileStyle } from "@/lib/slide-puzzle";
-import { RUBIKS_LEVELS, isRubiksPuzzle, levelForPuzzle, type RubiksPuzzle } from "@/lib/rubiks";
+import { RUBIKS_LEVELS, RUBIKS_VISIBLE, isRubiksPuzzle, levelForPuzzle, type RubiksPuzzle } from "@/lib/rubiks";
 import { QUIZ_LEVELS, QUIZ_SUBJECTS, quizGameId, quizSubjectForGameId, isQuizSubject, type QuizGameId, type QuizLevel, type QuizSubject } from "@/lib/quiz";
 import { IMAGE_THEMES } from "@/lib/themes";
 import { GAME_ICONS, gameIconColor } from "@/lib/game-icons";
@@ -1802,7 +1802,7 @@ function NewChallengeDialog({
                       ["minesweeper", "Minesweeper"],
                       ["slide-puzzle", "Slide Puzzle"],
                       ["rubiks", "Rubik's Cube"],
-                    ] as const).map(([id, label]) => {
+                    ] as const).filter((entry) => RUBIKS_VISIBLE || entry[0] !== "rubiks").map(([id, label]) => {
                       const Icon = GAME_ICONS[id];
                       return <SelectItem key={id} value={id}><span className="flex items-center gap-2"><Icon className={`h-4 w-4 shrink-0 ${gameIconColor(id)}`} />{label}</span></SelectItem>;
                     })}
@@ -2690,7 +2690,7 @@ export default function Challenges() {
   const wordSearchAlert = wordSearchPending.length + wordSearchActive.filter((challenge) => (challenge.challengerId === profileId ? challenge.challengerPoints : challenge.challengedPoints) == null).length;
   const minesweeperAlert = minesweeperPending.length + minesweeperActive.filter((challenge) => (challenge.challengerId === profileId ? challenge.challengerPoints : challenge.challengedPoints) == null).length;
   const slidePuzzleAlert = slidePuzzlePending.length + slidePuzzleActive.filter((challenge) => (challenge.challengerId === profileId ? challenge.challengerPoints : challenge.challengedPoints) == null).length;
-  const rubiksAlert = rubiksPending.length + rubiksActive.filter((challenge) => (challenge.challengerId === profileId ? challenge.challengerPoints : challenge.challengedPoints) == null).length;
+  const rubiksAlert = RUBIKS_VISIBLE ? rubiksPending.length + rubiksActive.filter((challenge) => (challenge.challengerId === profileId ? challenge.challengerPoints : challenge.challengedPoints) == null).length : 0;
   const quizAlertFor = (subject: QuizSubject) =>
     quizPending.filter((c) => c.subject === subject).length +
     quizActive.filter((c) => c.subject === subject && (c.challengerId === profileId ? c.challengerPoints : c.challengedPoints) == null).length;
@@ -2705,7 +2705,7 @@ export default function Challenges() {
     ...(wordSearchChallenges ?? []).map((challenge) => ({ game: "word-search" as const, createdAt: challenge.createdAt, challenge })),
     ...(minesweeperChallenges ?? []).map((challenge) => ({ game: "minesweeper" as const, createdAt: challenge.createdAt, challenge })),
     ...(slidePuzzleChallenges ?? []).map((challenge) => ({ game: "slide-puzzle" as const, createdAt: challenge.createdAt, challenge })),
-    ...(rubiksChallenges ?? []).map((challenge) => ({ game: "rubiks" as const, createdAt: challenge.createdAt, challenge })),
+    ...(RUBIKS_VISIBLE ? rubiksChallenges ?? [] : []).map((challenge) => ({ game: "rubiks" as const, createdAt: challenge.createdAt, challenge })),
     ...(quizChallenges ?? []).map((challenge) => ({ game: quizGameId(challenge.subject), createdAt: challenge.createdAt, challenge })),
   ]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -2817,7 +2817,7 @@ export default function Challenges() {
               ["minesweeper", "Minesweeper", minesweeperAlert],
               ["slide-puzzle", "Slide Puzzle", slidePuzzleAlert],
               ["rubiks", "Rubik's Cube", rubiksAlert],
-            ] as const).map(([id, label, alert]) => {
+            ] as const).filter((entry) => RUBIKS_VISIBLE || entry[0] !== "rubiks").map(([id, label, alert]) => {
               const Icon = GAME_ICONS[id];
               return <SelectItem key={id} value={id}><span className="flex items-center gap-2"><Icon className={`h-4 w-4 shrink-0 ${gameIconColor(id)}`} />{label}{alert > 0 ? ` (${alert})` : ""}</span></SelectItem>;
             })}

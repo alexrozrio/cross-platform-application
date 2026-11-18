@@ -101,7 +101,7 @@ import { getWordSearchHistory, summarizeWordSearchStats, WORD_SEARCH_STATS_UPDAT
 import { getMinesweeperHistory, summarizeMinesweeperStats, MINESWEEPER_STATS_UPDATED } from "@/lib/minesweeper-stats";
 import { getSlidePuzzleHistory, summarizeSlidePuzzleStats, SLIDE_PUZZLE_STATS_UPDATED } from "@/lib/slide-puzzle-stats";
 import { SLIDE_PUZZLE_LEVELS } from "@/lib/slide-puzzle";
-import { RUBIKS_LEVELS } from "@/lib/rubiks";
+import { RUBIKS_LEVELS, RUBIKS_VISIBLE } from "@/lib/rubiks";
 import { getRubiksHistory, summarizeRubiksStats, RUBIKS_STATS_UPDATED } from "@/lib/rubiks-stats";
 import { WORD_SEARCH_LEVELS } from "@/lib/word-search";
 import { MINESWEEPER_LEVELS } from "@/lib/minesweeper";
@@ -1116,7 +1116,7 @@ export default function Profile() {
 
   // Stats tab
   const tabGameId: GameTab | null =
-    tabParam === "memory" || tabParam === "jigsaw" || tabParam === "word-search" || tabParam === "minesweeper" || tabParam === "slide-puzzle" || tabParam === "rubiks" || tabParam === "sudoku" || tabParam === "science-quiz" || tabParam === "maths-quiz" || tabParam === "gk-quiz"
+    tabParam === "memory" || tabParam === "jigsaw" || tabParam === "word-search" || tabParam === "minesweeper" || tabParam === "slide-puzzle" || tabParam === "sudoku" || tabParam === "science-quiz" || tabParam === "maths-quiz" || tabParam === "gk-quiz"
       ? tabParam as GameTab
       : null;
   const [gameTab, setGameTab] = useState<GameTab>(tabGameId ?? "sudoku");
@@ -1131,7 +1131,7 @@ export default function Profile() {
     else if (tabParam === "word-search") setGameTab("word-search");
     else if (tabParam === "minesweeper") setGameTab("minesweeper");
     else if (tabParam === "slide-puzzle") setGameTab("slide-puzzle");
-    else if (tabParam === "rubiks") setGameTab("rubiks");
+    else if (tabParam === "rubiks" && RUBIKS_VISIBLE) setGameTab("rubiks");
     else if (tabParam === "sudoku") setGameTab("sudoku");
     else if (quizSubjectForGameId(tabParam)) setGameTab(tabParam as GameTab);
   }, [tabParam]);
@@ -1673,7 +1673,7 @@ export default function Profile() {
                   ["science-quiz", "Science Quiz"],
                   ["maths-quiz", "Maths Quiz"],
                   ["gk-quiz", "GK Quiz"],
-                ] as const).map(([id, label]) => {
+                ] as const).filter((entry) => RUBIKS_VISIBLE || entry[0] !== "rubiks").map(([id, label]) => {
                   const Icon = GAME_ICONS[id];
                   return <SelectItem key={id} value={id}><span className="flex items-center gap-2"><Icon className={`h-4 w-4 shrink-0 ${gameIconColor(id)}`} />{label}</span></SelectItem>;
                 })}
@@ -1845,7 +1845,7 @@ export default function Profile() {
           {!statsLoading && gameTab === "slide-puzzle" && (
             <SlidePuzzleStatsPanel profileId={profileId} />
           )}
-          {!statsLoading && gameTab === "rubiks" && (
+          {!statsLoading && RUBIKS_VISIBLE && gameTab === "rubiks" && (
             <RubiksStatsPanel profileId={profileId} />
           )}
           {!statsLoading && quizSubjectForGameId(gameTab) && (

@@ -18,6 +18,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { usePageMeta } from "@/components/page-meta";
+import { RUBIKS_VISIBLE } from "@/lib/rubiks";
 
 type GuideTheme = {
   section: string;
@@ -216,7 +217,9 @@ export default function Guides() {
           <a href="#word-search-guide-title" className="rounded-full border border-indigo-400/30 bg-indigo-500/10 px-3 py-1.5 text-sm font-semibold text-indigo-700 dark:text-indigo-300">Word Search guide</a>
           <a href="#minesweeper-guide-title" className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1.5 text-sm font-semibold text-emerald-700 dark:text-emerald-300">Minesweeper guide</a>
           <a href="#slide-puzzle-guide-title" className="rounded-full border border-sky-400/30 bg-sky-500/10 px-3 py-1.5 text-sm font-semibold text-sky-700 dark:text-sky-300">Slide Puzzle guide</a>
+          {RUBIKS_VISIBLE && (
           <a href="#rubiks-guide-title" className="rounded-full border border-red-400/30 bg-red-500/10 px-3 py-1.5 text-sm font-semibold text-red-700 dark:text-red-300">Rubik's Cube guide</a>
+          )}
           <a href="#science-quiz-guide-title" className="rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1.5 text-sm font-semibold text-violet-700 dark:text-violet-300">Science Quiz guide</a>
           <a href="#maths-quiz-guide-title" className="rounded-full border border-orange-400/30 bg-orange-500/10 px-3 py-1.5 text-sm font-semibold text-orange-700 dark:text-orange-300">Maths Quiz guide</a>
           <a href="#gk-quiz-guide-title" className="rounded-full border border-rose-400/30 bg-rose-500/10 px-3 py-1.5 text-sm font-semibold text-rose-700 dark:text-rose-300">GK Quiz guide</a>
@@ -426,6 +429,7 @@ export default function Guides() {
         ]}
       />
 
+      {RUBIKS_VISIBLE && (
       <GuideSection
         id="rubiks"
         title="Rubik's Cube guide"
@@ -448,6 +452,7 @@ export default function Guides() {
           { href: "/leaderboard/rubiks", label: "Leaderboard" },
         ]}
       />
+      )}
 
       <GuideSection
         id="science-quiz"
