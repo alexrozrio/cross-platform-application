@@ -499,7 +499,7 @@ export default function Guides() {
         tips="Eliminate obviously wrong options quickly, and make an educated guess rather than leaving questions blank — there is no penalty for a wrong answer beyond losing the points. Watch the units in questions (km vs miles, °C vs °F) and remember that everyday science questions often have a 'most common' answer. Try the daily Science quiz to compare your score with other players."
         links={[
           { href: "/quiz/science", label: "Play Science Quiz", primary: true },
-          { href: "/quiz-challenge?subject=science", label: "Daily challenge" },
+          { href: "/quiz-challenge/science", label: "Daily challenge" },
           { href: "/leaderboard/science-quiz", label: "Leaderboard" },
         ]}
       />
@@ -518,7 +518,7 @@ export default function Guides() {
         tips="Estimate before you calculate — many options are close enough that a rough mental check eliminates two answers instantly. Watch for unit conversions and 'which is largest/smallest' wording. On Expert, write the working in your head step by step instead of rushing. Try the daily Maths quiz to compare your score with other players."
         links={[
           { href: "/quiz/maths", label: "Play Maths Quiz", primary: true },
-          { href: "/quiz-challenge?subject=maths", label: "Daily challenge" },
+          { href: "/quiz-challenge/maths", label: "Daily challenge" },
           { href: "/leaderboard/maths-quiz", label: "Leaderboard" },
         ]}
       />
@@ -537,7 +537,7 @@ export default function Guides() {
         tips="General knowledge questions reward broad recall: learn capitals with their countries and currencies together, and remember 'firsts' (first person, first country) as a category. Eliminate options that are geographically or historically implausible before guessing. Try the daily GK quiz to compare your score with other players."
         links={[
           { href: "/quiz/gk", label: "Play GK Quiz", primary: true },
-          { href: "/quiz-challenge?subject=gk", label: "Daily challenge" },
+          { href: "/quiz-challenge/gk", label: "Daily challenge" },
           { href: "/leaderboard/gk-quiz", label: "Leaderboard" },
         ]}
       />

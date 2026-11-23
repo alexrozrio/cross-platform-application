@@ -1,5 +1,6 @@
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 import { ArrowLeft, CalendarDays, Clock3, Flame, HelpCircle, Trophy } from "lucide-react";
 import { customFetch } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -7,20 +8,66 @@ import { usePageMeta } from "@/components/page-meta";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { quizSubject, type QuizLevel, type QuizSubject } from "@/lib/quiz";
+import { QUIZ_SUBJECTS, quizSubject, type QuizLevel, type QuizSubject } from "@/lib/quiz";
 
 type DailyConfig = { date: string; subject: QuizSubject; level: QuizLevel; questions: number; seed: number };
 type DailyEntry = { rank: number; profileId: number; username: string; avatar: string | null; points: number; elapsedSeconds: number; correct: number; questions: number };
 
-export default function QuizDailyChallengePage() {
+function QuizDailyChallengeHub() {
+  return (
+    <main className="mx-auto w-full max-w-lg space-y-6 px-4 pb-12 pt-5">
+      <div className="space-y-2 rounded-2xl border bg-card px-5 py-4">
+        <Link href="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft size={16} /> Portal</Link>
+        <h1 className="flex items-center gap-2 font-serif text-3xl font-bold"><Flame className="h-7 w-7 text-violet-600" /> Daily Quiz Challenges</h1>
+        <p className="text-sm text-muted-foreground">Choose Science, Maths, or GK — one shared quiz for everyone, refreshed at 00:00 UTC.</p>
+      </div>
+      <div className="grid gap-3">
+        {Object.values(QUIZ_SUBJECTS).map((subject) => (
+          <Link key={subject.id} href={`/quiz-challenge/${subject.id}`} className={`flex items-center gap-3 rounded-2xl border ${subject.theme.border} bg-gradient-to-br ${subject.gradient} ${subject.gradientDark} px-4 py-4 shadow-sm transition hover:brightness-105`}>
+            <span className={`grid h-11 w-11 place-items-center rounded-xl ${subject.theme.soft} text-xl`}>{subject.emoji}</span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-semibold">{subject.name}</span>
+              <span className="block text-xs text-muted-foreground">{subject.tagline}</span>
+            </span>
+            <span className={`text-sm font-semibold ${subject.theme.text}`}>Play →</span>
+          </Link>
+        ))}
+      </div>
+    </main>
+  );
+}
+
+export default function QuizDailyChallengePage({ subject: subjectSlug }: { subject?: string }) {
   const { profileId } = useAuth();
-  const params = new URLSearchParams(window.location.search);
-  const subjectId = (params.get("subject") as QuizSubject) ?? "science";
-  const subject = quizSubject(subjectId);
-  usePageMeta({ title: `Daily ${subject.name} | Play Brain Games`, description: `Answer today's shared ${subject.name.toLowerCase()} quiz and compare your score with other players.`, path: `/quiz-challenge?subject=${subject.id}` });
-  const configQuery = useQuery({ queryKey: ["/api/quiz-daily-challenge", subject.id], queryFn: () => customFetch<DailyConfig>(`/api/quiz-daily-challenge?subject=${subject.id}`), staleTime: 60_000 });
-  const leaderboardQuery = useQuery({ queryKey: ["/api/quiz-daily-challenge/leaderboard", subject.id], queryFn: () => customFetch<{ date: string; entries: DailyEntry[] }>(`/api/quiz-daily-challenge/leaderboard?subject=${subject.id}`), staleTime: 30_000 });
-  const statusQuery = useQuery({ queryKey: [`/api/quiz-daily-challenge/status/${profileId}`, subject.id], queryFn: () => customFetch<{ completed: boolean; attempts: number; bestPoints: number | null }>(`/api/quiz-daily-challenge/status/${profileId}?subject=${subject.id}`), enabled: Boolean(profileId) });
+  const search = useSearch();
+  const [, setLocation] = useLocation();
+  const querySubject = new URLSearchParams(search).get("subject");
+  const requested = subjectSlug ?? querySubject ?? null;
+  const subject = quizSubject(requested ?? "science");
+  const isHub = requested === null;
+  const canonicalPath = isHub ? "/quiz-challenge" : `/quiz-challenge/${subject.id}`;
+  const title = isHub
+    ? "Daily Quiz Challenges | Science, Maths & GK | Play Brain Games . Online"
+    : `Daily ${subject.name} Challenge | Play Brain Games . Online`;
+  const description = isHub
+    ? "Choose today's shared Science, Maths, or GK quiz challenge. Everyone gets the same questions and level each day."
+    : `Answer today's shared ${subject.name.toLowerCase()} quiz and compare your score with other players.`;
+  usePageMeta({ title, description, path: canonicalPath });
+  const configQuery = useQuery({ queryKey: ["/api/quiz-daily-challenge", subject.id], queryFn: () => customFetch<DailyConfig>(`/api/quiz-daily-challenge?subject=${subject.id}`), staleTime: 60_000, enabled: !isHub });
+  const leaderboardQuery = useQuery({ queryKey: ["/api/quiz-daily-challenge/leaderboard", subject.id], queryFn: () => customFetch<{ date: string; entries: DailyEntry[] }>(`/api/quiz-daily-challenge/leaderboard?subject=${subject.id}`), staleTime: 30_000, enabled: !isHub });
+  const statusQuery = useQuery({ queryKey: [`/api/quiz-daily-challenge/status/${profileId}`, subject.id], queryFn: () => customFetch<{ completed: boolean; attempts: number; bestPoints: number | null }>(`/api/quiz-daily-challenge/status/${profileId}?subject=${subject.id}`), enabled: !isHub && Boolean(profileId) });
+  useEffect(() => {
+    if (subjectSlug === undefined && querySubject) {
+      setLocation(`/quiz-challenge/${subject.id}`);
+      return;
+    }
+    if (subjectSlug !== undefined && subjectSlug !== subject.id) {
+      setLocation(`/quiz-challenge/${subject.id}`);
+    }
+  }, [querySubject, setLocation, subject.id, subjectSlug]);
+  if (isHub) return <QuizDailyChallengeHub />;
+  if (subjectSlug === undefined && querySubject) return null;
+  if (subjectSlug !== undefined && subjectSlug !== subject.id) return null;
   const config = configQuery.data;
   const completed = statusQuery.data?.completed ?? false;
   const startHref = config ? `/quiz/${subject.id}?start=1&dailyDate=${config.date}&level=${config.level}&seed=${config.seed}` : `/quiz/${subject.id}`;

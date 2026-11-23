@@ -94,6 +94,9 @@ const QuizDailyChallengePage = lazy(() => import("@/pages/quiz-challenge"));
 function MemoryBookmarkRoute({ params }: { params: { difficulty: string } }) {
   return <MemoryMatch difficultySlug={params.difficulty} />;
 }
+function QuizDailyChallengeRoute({ params }: { params: { subject: string } }) {
+  return <QuizDailyChallengePage subject={params.subject} />;
+}
 const MemoryChallengePage = lazy(() => import("@/pages/memory-challenge"));
 const JigsawPage = lazy(() => import("@/pages/jigsaw"));
 const JigsawDailyChallengePage = lazy(() => import("@/pages/jigsaw-challenge"));
@@ -294,7 +297,10 @@ function Router() {
               <Route path="/quiz">
                 {() => <QuizPage params={{}} />}
               </Route>
-              <Route path="/quiz-challenge" component={QuizDailyChallengePage} />
+              <Route path="/quiz-challenge/:subject" component={QuizDailyChallengeRoute} />
+              <Route path="/quiz-challenge">
+                {() => <QuizDailyChallengePage />}
+              </Route>
               <Route path="/memory-challenge" component={MemoryChallengePage} />
               <Route path="/rubiks" component={RubiksPage} />
               <Route path="/odd-images" component={OddImagesPage} />

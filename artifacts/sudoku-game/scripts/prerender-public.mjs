@@ -47,6 +47,61 @@ const sudokuBookmarkPages = SUDOKU_BOOKMARK_GRIDS.flatMap((grid) =>
   })),
 );
 
+const MEMORY_BOOKMARK_LEVELS = [
+  { slug: "beginner", board: "2×4", pairs: 4, detail: "a compact board with only four pairs — a gentle warm-up for learning card positions" },
+  { slug: "easy", board: "4×4", pairs: 8, detail: "a 4×4 board with eight pairs that balances recall and speed" },
+  { slug: "medium", board: "8×4", pairs: 16, detail: "an 8×4 board with sixteen pairs for players ready to track more card locations" },
+  { slug: "hard", board: "8×8", pairs: 32, detail: "a full 8×8 board with thirty-two pairs for the biggest Memory Match challenge" },
+];
+
+const memoryBookmarkPages = MEMORY_BOOKMARK_LEVELS.map((level) => ({
+  route: `/memory/${level.slug}`,
+  title: `Play Memory Match ${level.board} Online Free | ${level.pairs} Pairs`,
+  description: `Play a free Memory Match ${level.board} puzzle with ${level.pairs} pairs. Flip two cards at a time, remember positions, and finish with fewer flips.`,
+  heading: `Memory Match ${level.board}`,
+  intro: `This ${level.board} Memory Match board has ${level.pairs} pairs — ${level.detail}. Every round is shuffled, so the goal is to build a reliable location map as you flip cards.`,
+  sections: [
+    ["How to play this board", "Cards start face-down. Reveal two cards on each turn: a matching pair stays visible, while a mismatch turns face-down again after a short pause. Clear every pair to finish the round."],
+    ["A repeatable recall routine", "Scan the board in a consistent order and remember both the symbol and the position of every revealed card. When you see one card again, use the earlier position to complete the pair instead of guessing."],
+    ["Track flips and time", "The game records completion time and total flips. Fewer flips and a faster finish produce a better score, and completed rounds can feed challenges and leaderboards."],
+    ["Play as a guest or save progress", "You can start this board without an account. Optional Google sign-in connects your results, stats, and streaks to a profile across devices."],
+  ],
+  links: [
+    ["/memory", "Choose any Memory Match board"],
+    ["/memory-challenge", "Try a memory challenge"],
+    ["/leaderboard/memory/", "View the Memory Match leaderboard"],
+    ["/guides", "Read the Memory Match guide"],
+  ],
+  schemaType: "WebApplication",
+}));
+
+const QUIZ_DAILY_CHALLENGE_SUBJECTS = [
+  { slug: "science", name: "Science Quiz", leaderboard: "science-quiz" },
+  { slug: "maths", name: "Maths Quiz", leaderboard: "maths-quiz" },
+  { slug: "gk", name: "GK Quiz", leaderboard: "gk-quiz" },
+];
+
+const quizDailyChallengePages = QUIZ_DAILY_CHALLENGE_SUBJECTS.map((subject) => ({
+  route: `/quiz-challenge/${subject.slug}`,
+  title: `Daily ${subject.name} Challenge | Play Brain Games . Online`,
+  description: `Play today's shared ${subject.name} daily challenge. Everyone gets the same questions and level each day — compare your score on the leaderboard.`,
+  heading: `Daily ${subject.name}`,
+  intro: `Today's shared ${subject.name} gives every player the same questions and difficulty level, refreshed at 00:00 UTC.`,
+  sections: [
+    ["One shared quiz each day", `The daily ${subject.name} challenge refreshes at 00:00 UTC so players can compare results on the same questions.`],
+    ["Score by accuracy and speed", "Points combine the level base with your accuracy and a speed bonus, so a fast, clean run ranks highest."],
+    ["Compare with other players", `Each ${subject.name} has its own daily leaderboard and all-time board, plus head-to-head quiz challenges against friends.`],
+    ["Play as a guest or sign in", "Guest play is available immediately. Sign in when you want streaks and progress to sync across devices."],
+  ],
+  links: [
+    [`/quiz/${subject.slug}`, `Play the ${subject.name}`],
+    ["/quiz-challenge", "Choose another daily quiz"],
+    [`/leaderboard/${subject.leaderboard}/`, `View the ${subject.name} leaderboard`],
+    ["/challenges", "Challenge another player"],
+  ],
+  schemaType: "WebApplication",
+}));
+
 const publicPages = [
   {
     route: "/",
@@ -282,6 +337,10 @@ const publicPages = [
       ["Play as a guest or sync your results", "You can start a round without signing in. Optional Google sign-in connects your results and profile statistics across devices. Daily and weekly challenges provide another way to practise the same kind of recall."],
     ],
     links: [
+      ["/memory/beginner", "2×4 board · 4 pairs"],
+      ["/memory/easy", "4×4 board · 8 pairs"],
+      ["/memory/medium", "8×4 board · 16 pairs"],
+      ["/memory/hard", "8×8 board · 32 pairs"],
       ["/guides", "Read the Memory Match guide"],
       ["/themes", "Browse card themes"],
       ["/memory-challenge", "Try a memory challenge"],
@@ -290,6 +349,7 @@ const publicPages = [
     ],
     schemaType: "WebApplication",
   },
+  ...memoryBookmarkPages,
   {
     route: "/memory-challenge",
     title: "Memory Match Challenges | Play Brain Games . Online",
@@ -757,7 +817,7 @@ const publicPages = [
       ["Play as a guest or save progress", "Start a quiz without an account. Optional Google sign-in connects your results, stats, and streaks to a profile across devices."],
     ],
     links: [
-      ["/quiz-challenge", "Play today's quiz challenges"],
+      ["/quiz-challenge/science", "Play today's Science quiz challenge"],
       ["/leaderboard/science-quiz/", "View the Science Quiz leaderboard"],
       ["/quiz/maths", "Try the Maths Quiz"],
       ["/quiz/gk", "Try the GK Quiz"],
@@ -781,7 +841,7 @@ const publicPages = [
       ["Play as a guest or save progress", "Start a quiz without an account. Optional Google sign-in connects your results, stats, and streaks to a profile across devices."],
     ],
     links: [
-      ["/quiz-challenge", "Play today's quiz challenges"],
+      ["/quiz-challenge/maths", "Play today's Maths quiz challenge"],
       ["/leaderboard/maths-quiz/", "View the Maths Quiz leaderboard"],
       ["/quiz/science", "Try the Science Quiz"],
       ["/quiz/gk", "Try the GK Quiz"],
@@ -805,7 +865,7 @@ const publicPages = [
       ["Play as a guest or save progress", "Start a quiz without an account. Optional Google sign-in connects your results, stats, and streaks to a profile across devices."],
     ],
     links: [
-      ["/quiz-challenge", "Play today's quiz challenges"],
+      ["/quiz-challenge/gk", "Play today's GK quiz challenge"],
       ["/leaderboard/gk-quiz/", "View the GK Quiz leaderboard"],
       ["/quiz/science", "Try the Science Quiz"],
       ["/quiz/maths", "Try the Maths Quiz"],
@@ -827,6 +887,9 @@ const publicPages = [
       ["Compare with other players", "Each subject has its own daily leaderboard and all-time board, plus head-to-head quiz challenges against friends."],
     ],
     links: [
+      ["/quiz-challenge/science", "Daily Science Quiz challenge"],
+      ["/quiz-challenge/maths", "Daily Maths Quiz challenge"],
+      ["/quiz-challenge/gk", "Daily GK Quiz challenge"],
       ["/quiz/science", "Play the Science Quiz"],
       ["/quiz/maths", "Play the Maths Quiz"],
       ["/quiz/gk", "Play the GK Quiz"],
@@ -834,6 +897,7 @@ const publicPages = [
     ],
     schemaType: "WebApplication",
   },
+  ...quizDailyChallengePages,
   {
     route: "/leaderboard/minesweeper",
     title: "Minesweeper Leaderboard | Play Brain Games . Online",

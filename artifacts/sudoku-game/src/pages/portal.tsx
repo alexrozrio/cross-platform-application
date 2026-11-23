@@ -884,7 +884,7 @@ export default function Portal() {
             {(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id) => {
               const subject = QUIZ_SUBJECTS[id];
               return (
-                <button key={id} onClick={() => setLocation(`/quiz-challenge?subject=${id}`)} className={`flex w-full items-center gap-3 rounded-xl border bg-white/60 px-3 py-2.5 text-left transition-all hover:bg-white/90 dark:hover:brightness-110 ${subject.theme.border}`}>
+                <button key={id} onClick={() => setLocation(`/quiz-challenge/${id}`)} className={`flex w-full items-center gap-3 rounded-xl border bg-white/60 px-3 py-2.5 text-left transition-all hover:bg-white/90 dark:hover:brightness-110 ${subject.theme.border}`}>
                   <span className="shrink-0 text-lg leading-none">{subject.emoji}</span><div className="min-w-0 flex-1"><p className="text-sm font-semibold">{subject.shortName} Quiz</p><p className="text-xs text-muted-foreground">One shared {subject.shortName.toLowerCase()} quiz each day</p></div><span className={`shrink-0 text-sm ${subject.theme.text}`}>→</span>
                 </button>
               );
@@ -1609,7 +1609,7 @@ export default function Portal() {
               {(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id) => {
                 const subject = QUIZ_SUBJECTS[id];
                 return (
-                  <button key={id} onClick={() => setLocation(`/quiz-challenge?subject=${id}`)} className={`flex items-center gap-3 rounded-xl border bg-white/60 px-4 py-3 text-left transition-all hover:bg-white/90 dark:hover:brightness-110 ${subject.theme.border}`}>
+                  <button key={id} onClick={() => setLocation(`/quiz-challenge/${id}`)} className={`flex items-center gap-3 rounded-xl border bg-white/60 px-4 py-3 text-left transition-all hover:bg-white/90 dark:hover:brightness-110 ${subject.theme.border}`}>
                     <span className="shrink-0 text-2xl leading-none">{subject.emoji}</span><div className="min-w-0 flex-1"><p className="text-sm font-semibold">{subject.shortName} Quiz</p><p className="text-xs text-muted-foreground">One shared {subject.shortName.toLowerCase()} quiz each day</p></div><span className={`shrink-0 text-sm ${subject.theme.text}`}>→</span>
                   </button>
                 );

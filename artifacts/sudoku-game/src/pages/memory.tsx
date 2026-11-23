@@ -207,7 +207,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
     title: `Play Memory Match Online Free | ${memoryMetaLabel}`,
     description:
       "Play Memory Match with number, letter, or image cards. Learn a repeatable recall strategy and choose a 2×4, 4×4, 8×4, or 8×8 board.",
-    path: difficultySlug ? `/memory/${difficultySlug}` : "/memory",
+    path: bookmarkedSize && difficultySlug ? `/memory/${difficultySlug}` : "/memory",
   });
   const [, setLocation] = useLocation();
   const search = useSearch();

@@ -360,7 +360,7 @@ export default function QuizPage({ params }: { params: { subject?: string } }) {
   if (!game) {
     const stats = summarizeQuizStats(getQuizHistory(profileId, subjectId));
     const dailyConfig = dailyQuizConfig(subject, new Date().toISOString().slice(0, 10));
-    const dailyHref = `/quiz-challenge?subject=${subjectId}`;
+    const dailyHref = `/quiz-challenge/${subjectId}`;
     return (
       <main className="mx-auto w-full max-w-lg space-y-3 px-3 py-3 sm:space-y-4 sm:px-6 sm:py-8">
         {/* Header banner */}
@@ -672,7 +672,7 @@ export default function QuizPage({ params }: { params: { subject?: string } }) {
             })}
           </div>
         )}
-        {!game.dailyDate && !game.challengeId && <Button variant="outline" className="w-full gap-2" onClick={() => setLocation(`/quiz-challenge?subject=${subjectId}`)}><Flame className="h-4 w-4" /> Try today&apos;s daily challenge</Button>}
+        {!game.dailyDate && !game.challengeId && <Button variant="outline" className="w-full gap-2" onClick={() => setLocation(`/quiz-challenge/${subjectId}`)}><Flame className="h-4 w-4" /> Try today&apos;s daily challenge</Button>}
         <div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-4">
           <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setGame(null)}><LayoutGrid className="h-4 w-4" /> Game home</Button>
           <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setLocation(`/leaderboard/${quizGameId(subjectId)}`)}><Trophy className="h-4 w-4" /> Leaderboard</Button>
