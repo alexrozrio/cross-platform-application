@@ -38,6 +38,7 @@ const OFFLINE_CHOICES = [
   { id: "word-search", label: "Word Search" },
   { id: "minesweeper", label: "Minesweeper" },
   { id: "slide-puzzle", label: "Slide Puzzle" },
+  { id: "odd-images", label: "Odd Images" },
   { id: "science-quiz", label: "Science Quiz" },
   { id: "maths-quiz", label: "Maths Quiz" },
   { id: "gk-quiz", label: "GK Quiz" },

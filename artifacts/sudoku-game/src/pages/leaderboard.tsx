@@ -47,6 +47,7 @@ import { QUIZ_LEVELS, QUIZ_SUBJECTS, quizGameId, quizSubject, quizSubjectForGame
 import { WORD_SEARCH_LEVELS, type WordSearchDifficulty } from "@/lib/word-search";
 import { MINESWEEPER_LEVELS, type MinesweeperDifficulty } from "@/lib/minesweeper";
 import { SLIDE_PUZZLE_LEVELS, type SlidePuzzleDifficulty } from "@/lib/slide-puzzle";
+import { ODD_IMAGE_LEVELS, ODD_IMAGE_LEVEL_ORDER, type OddImageLevel } from "@/lib/odd-images";
 import { JIGSAW_SIZE_NAMES } from "@/lib/jigsaw-session";
 import { GAME_ICONS, gameIconColor } from "@/lib/game-icons";
 import { RUBIKS_VISIBLE } from "@/lib/rubiks";
@@ -266,6 +267,18 @@ function XpGuide() {
             <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">Slide Puzzle XP is awarded for each solved board and increases with the selected size. Only wins earn XP.</p>
           </div>
           <div className="border-t border-border pt-3">
+            <p className="mb-2 text-xs font-semibold text-foreground">Odd Images XP by level</p>
+            <div className="grid grid-cols-4 gap-2 text-center">
+              {ODD_IMAGE_LEVEL_ORDER.map((level) => (
+                <div key={level} className="rounded-lg border border-border bg-background px-2 py-2">
+                  <p className="text-[10px] font-semibold text-muted-foreground">{ODD_IMAGE_LEVELS[level].label}</p>
+                  <p className="text-xs font-bold text-teal-600">{ODD_IMAGE_LEVELS[level].xp} XP</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">Odd Images XP is awarded for each completed grid set and increases with the selected level.</p>
+          </div>
+          <div className="border-t border-border pt-3">
             <p className="mb-2 text-xs font-semibold text-foreground">Quiz XP by level (Science, Maths & GK)</p>
             <div className="grid grid-cols-4 gap-2 text-center">
               {[{ level: "Easy", xp: 1 }, { level: "Medium", xp: 1 }, { level: "Hard", xp: 2 }, { level: "Expert", xp: 3 }].map((item) => (
@@ -323,6 +336,12 @@ function PointsGuide() {
       kids: "Easy · Medium",
       adult: "Hard · Expert",
       all: "All four sizes",
+    },
+    {
+      game: "Odd Images",
+      kids: "Easy · Medium",
+      adult: "Hard · Expert",
+      all: "All four levels",
     },
     {
       game: "Quizzes",
@@ -617,6 +636,37 @@ function PointsGuide() {
             </p>
           </div>
 
+          {/* Odd Images base points table */}
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              🖼️ Odd Images — base points × level
+            </p>
+            <div className="rounded-xl border overflow-hidden text-xs">
+              <div className="grid grid-cols-5 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+                <span>Level</span>
+                <span className="text-center">Grid</span>
+                <span className="text-center">Questions</span>
+                <span className="text-center">Base pts</span>
+                <span className="text-center">XP · Gems</span>
+              </div>
+              {ODD_IMAGE_LEVEL_ORDER.map((level, i) => {
+                const item = ODD_IMAGE_LEVELS[level];
+                return (
+                  <div key={level} className={`grid grid-cols-5 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}>
+                    <span className={`font-semibold ${level === "easy" ? "text-green-700" : level === "medium" ? "text-blue-700" : level === "hard" ? "text-yellow-700" : "text-orange-700"}`}>{item.label}</span>
+                    <span className="text-center font-mono">{item.gridSize}×{item.gridSize}</span>
+                    <span className="text-center font-mono">{item.questions}</span>
+                    <span className="text-center font-mono">{item.basePoints.toLocaleString()}</span>
+                    <span className="text-center font-mono">{item.xp} XP · {item.gems}💎</span>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2">
+              score = base × (0.5 + 0.5 × accuracy) × (1 + time bonus up to +50%) &nbsp;·&nbsp; accuracy = correct ÷ questions, speed bonus for finishing under par, min 10 pts. XP: Easy/Medium 1, Hard 2, Expert 3.
+            </p>
+          </div>
+
           {/* Quiz base points table (Science, Maths & GK share the same scoring) */}
           <div>
             <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
@@ -792,6 +842,7 @@ interface BreakdownData {
   wordSearch: { difficulty: string; points: number; games: number }[];
   minesweeper: { difficulty: string; points: number; games: number }[];
   slidePuzzle: { difficulty: string; points: number; games: number }[];
+  oddImages: { level: OddImageLevel; points: number; games: number }[];
   quiz?: { subject: string; level: string; points: number; games: number }[];
 }
 
@@ -820,7 +871,7 @@ const SLIDE_PUZZLE_DIFFICULTY_NAMES: Record<string, string> = {
   "4x4": "15 tiles",
   "5x5": "24 tiles",
 };
-type GameTab = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "rubiks" | QuizGameId;
+type GameTab = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "odd-images" | "rubiks" | QuizGameId;
 
 function BreakdownPanel({
   profileId,
@@ -887,6 +938,9 @@ function BreakdownPanel({
           </button>
           <button onClick={() => setBdTab("slide-puzzle")} className={`rounded-lg px-3 py-1 text-xs font-semibold transition-colors ${bdTab === "slide-puzzle" ? "bg-sky-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
             🧩 Slide Puzzle
+          </button>
+          <button onClick={() => setBdTab("odd-images")} className={`rounded-lg px-3 py-1 text-xs font-semibold transition-colors ${bdTab === "odd-images" ? "bg-teal-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+            🖼️ Odd Images
           </button>
           {(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id) => {
             const subject = QUIZ_SUBJECTS[id];
@@ -997,6 +1051,18 @@ function BreakdownPanel({
           ))}
         </div>
       )}
+      {bdTab === "odd-images" && (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {(data?.oddImages ?? ODD_IMAGE_LEVEL_ORDER.map((level) => ({ level, points: 0, games: 0 }))).map((item) => (
+            <div key={item.level} className={`rounded-xl border p-2.5 text-center transition-colors ${item.games > 0 ? "border-teal-300 bg-background" : "border-border bg-muted/30 opacity-50"}`}>
+              <p className="text-xs font-bold text-foreground">{ODD_IMAGE_LEVELS[item.level]?.label ?? item.level}</p>
+              <p className="mt-0.5 text-lg font-black tabular-nums leading-tight text-teal-700 dark:text-teal-300">{item.points > 0 ? item.points.toLocaleString() : "—"}</p>
+              <p className="mt-0.5 text-[10px] text-muted-foreground">{item.games > 0 ? `${item.games} game${item.games !== 1 ? "s" : ""}` : "no games"}</p>
+              <p className="mt-0.5 text-[9px] text-muted-foreground/80">{ODD_IMAGE_LEVELS[item.level] ? `${ODD_IMAGE_LEVELS[item.level].gridSize}×${ODD_IMAGE_LEVELS[item.level].gridSize} · ${ODD_IMAGE_LEVELS[item.level].questions} questions` : ""}</p>
+            </div>
+          ))}
+        </div>
+      )}
       {(() => {
         const subjectId = quizSubjectForGameId(bdTab);
         if (!subjectId) return null;
@@ -1067,6 +1133,7 @@ function GameSummaryPanel({
     { id: "word-search", label: "Word Search", icon: GAME_ICONS["word-search"], ...sum(data?.wordSearch) },
     { id: "minesweeper", label: "Minesweeper", icon: GAME_ICONS.minesweeper, ...sum(data?.minesweeper) },
     { id: "slide-puzzle", label: "Slide Puzzle", icon: GAME_ICONS["slide-puzzle"], ...sum(data?.slidePuzzle) },
+    { id: "odd-images", label: "Odd Images", icon: GAME_ICONS["odd-images"], ...sum(data?.oddImages) },
     { id: "science-quiz", label: `${QUIZ_SUBJECTS.science.shortName} Quiz`, icon: GAME_ICONS["science-quiz"], ...quizFor("science") },
     { id: "maths-quiz", label: `${QUIZ_SUBJECTS.maths.shortName} Quiz`, icon: GAME_ICONS["maths-quiz"], ...quizFor("maths") },
     { id: "gk-quiz", label: `${QUIZ_SUBJECTS.gk.shortName} Quiz`, icon: GAME_ICONS["gk-quiz"], ...quizFor("gk") },
@@ -1270,7 +1337,7 @@ function TournamentBoard({
                   : `No games yet this ${type === "weekly" ? "week" : "month"}.`}
               </p>
               <p className="text-sm mt-1">
-                Complete games in any title — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, or the quizzes — to earn points and climb the rankings!
+                Complete games in any title — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, or the quizzes — to earn points and climb the rankings!
               </p>
             </div>
           ) : (
@@ -2112,6 +2179,85 @@ function SlidePuzzleBoard({ myProfileId }: { myProfileId?: number }) {
   </div>;
 }
 
+function OddImagesScoringGuide() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="overflow-hidden rounded-2xl border border-teal-200/70 dark:border-teal-800/40">
+      <button onClick={() => setOpen((value) => !value)} className="flex w-full items-center justify-between bg-card px-5 py-4 text-left transition-colors hover:bg-muted/40">
+        <div>
+          <p className="text-sm font-semibold">How Odd Images points &amp; XP are calculated</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Grid size, questions, accuracy, and speed all count.</p>
+        </div>
+        {open ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
+      </button>
+      {open && (
+        <div className="space-y-4 border-t border-border bg-muted px-5 py-4 text-sm">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {ODD_IMAGE_LEVEL_ORDER.map((level) => {
+              const config = ODD_IMAGE_LEVELS[level];
+              const par = `${Math.floor(config.parSeconds / 60)}:${String(config.parSeconds % 60).padStart(2, "0")}`;
+              return (
+                <div key={level} className="rounded-xl border border-border bg-background p-3">
+                  <p className="font-bold">{config.label} · {config.gridSize}×{config.gridSize}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Base {config.basePoints.toLocaleString()} pts</p>
+                  <p className="text-xs text-muted-foreground">Par {par} · {config.questions} questions</p>
+                  <p className="text-xs text-muted-foreground">{config.gems} 💎</p>
+                </div>
+              );
+            })}
+          </div>
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">XP by difficulty</p>
+            <div className="overflow-hidden rounded-xl border border-border text-xs">
+              <div className="grid grid-cols-4 bg-muted-foreground/15 px-3 py-2 text-[10px] font-semibold text-muted-foreground"><span>Difficulty</span><span className="text-center">XP</span><span className="text-center">Gems</span><span className="text-center">Grid</span></div>
+              {ODD_IMAGE_LEVEL_ORDER.map((level, index) => {
+                const config = ODD_IMAGE_LEVELS[level];
+                return <div key={level} className={`grid grid-cols-4 px-3 py-2 ${index % 2 === 0 ? "bg-background" : "bg-muted/20"}`}><span className="font-semibold">{config.label}</span><span className="text-center font-semibold text-amber-600">{config.xp} XP</span><span className="text-center font-mono">{config.gems} 💎</span><span className="text-center font-mono">{config.gridSize}×{config.gridSize}</span></div>;
+              })}
+            </div>
+          </div>
+          <div className="rounded-lg border border-border bg-background px-4 py-3 text-[11px] text-muted-foreground">
+            <p className="font-semibold text-foreground">Score formula</p>
+            <p className="mt-1 font-mono leading-relaxed">base × (0.5 + 0.5 × accuracy) × (1 + speed bonus)</p>
+            <p className="mt-1 leading-relaxed">Accuracy is the share of grids answered correctly. Finishing under par time adds up to +50%. A round with zero correct answers scores 0 points.</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+type OddImageLeaderboardEntry = { rank: number; profileId: number; username: string; avatar: string | null; xp: number; totalPoints: number; gamesPlayed: number };
+
+function OddImagesBoard({ myProfileId }: { myProfileId?: number }) {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["/api/odd-image-games/leaderboard"],
+    queryFn: () => customFetch<OddImageLeaderboardEntry[]>("/api/odd-image-games/leaderboard"),
+    refetchInterval: 60_000,
+  });
+  return <div className="space-y-5">
+    <Card className="shadow-md border-teal-200/60 dark:border-teal-800/40">
+      <CardHeader className="border-b bg-card pb-4"><CardTitle className="flex items-center gap-2 text-lg">{(() => { const Icon = GAME_ICONS["odd-images"]; return <Icon className="h-5 w-5 text-teal-600" />; })()} Odd Images — All Levels</CardTitle></CardHeader>
+      <CardContent className="p-0">
+        {isLoading ? <div className="space-y-4 p-6">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
+          : isError ? <div className="p-10 text-center text-sm text-muted-foreground">Odd Images leaderboard could not be loaded. Please try again.</div>
+          : !data?.length ? <div className="p-12 text-center text-muted-foreground"><Trophy className="mx-auto mb-3 h-10 w-10 opacity-20" /><p className="font-medium">No completed Odd Images games yet.</p><p className="mt-1 text-sm">Find the odd image to claim the top spot.</p></div>
+          : <div className="divide-y">{data.map((entry) => {
+            const isMe = myProfileId !== undefined && entry.profileId === myProfileId;
+            return <div key={entry.profileId} className={isMe ? "bg-teal-50/70 dark:bg-teal-950/20" : ""}>
+              <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4 px-3 py-4 sm:px-5">
+                <RankBadge rank={entry.rank} />
+                <div className="min-w-0 flex-1"><div className="flex min-w-0 flex-wrap items-center gap-2"><p title={entry.username} className={`min-w-0 flex-1 truncate font-semibold ${isMe ? "text-teal-800 dark:text-teal-300" : ""}`}>{entry.username}</p>{isMe && <span className="rounded-full bg-teal-600 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">You</span>}</div><p className="mt-0.5 text-xs text-muted-foreground">{entry.gamesPlayed} game{entry.gamesPlayed !== 1 ? "s" : ""}</p></div>
+                <div className="flex shrink-0 items-center gap-2"><div className="text-right"><p className="whitespace-nowrap text-lg font-black tabular-nums text-teal-700 dark:text-teal-300 sm:text-xl">{entry.totalPoints.toLocaleString()}</p><p className="mt-0.5 text-xs text-muted-foreground">pts</p></div></div>
+              </div>
+            </div>;
+          })}</div>}
+      </CardContent>
+    </Card>
+    <OddImagesScoringGuide />
+  </div>;
+}
+
 
 function RubiksBoard({ myProfileId }: { myProfileId?: number }) {
   const { data, isLoading, isError } = useQuery({
@@ -2143,7 +2289,7 @@ function RubiksBoard({ myProfileId }: { myProfileId?: number }) {
 function LeaderboardScopeLinks({
   active,
 }: {
-  active: "all" | "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz";
+  active: "all" | "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "odd-images" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz";
 }) {
   const [, setLocation] = useLocation();
   const links = ([
@@ -2154,6 +2300,7 @@ function LeaderboardScopeLinks({
     { id: "word-search", href: "/leaderboard/word-search/", label: "Word Search", icon: GAME_ICONS["word-search"] },
     { id: "minesweeper", href: "/leaderboard/minesweeper/", label: "Minesweeper", icon: GAME_ICONS.minesweeper },
     { id: "slide-puzzle", href: "/leaderboard/slide-puzzle/", label: "Slide Puzzle", icon: GAME_ICONS["slide-puzzle"] },
+    { id: "odd-images", href: "/leaderboard/odd-images/", label: "Odd Images", icon: GAME_ICONS["odd-images"] },
     { id: "rubiks", href: "/leaderboard/rubiks/", label: "Rubik's Cube", icon: GAME_ICONS.rubiks },
     { id: "science-quiz", href: "/leaderboard/science-quiz/", label: "Science Quiz", icon: GAME_ICONS["science-quiz"] },
     { id: "maths-quiz", href: "/leaderboard/maths-quiz/", label: "Maths Quiz", icon: GAME_ICONS["maths-quiz"] },
@@ -2195,7 +2342,7 @@ function LeaderboardScopeLinks({
 }
 
 const PLAY_LINKS: Record<
-  "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz",
+  "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "odd-images" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz",
   { href: string; label: string; ariaLabel: string; icon: typeof Zap; borderClass: string; iconClass: string }
 > = {
   sudoku: { href: "/sudoku", label: "Play Sudoku", ariaLabel: "Play Sudoku", icon: GAME_ICONS.sudoku, borderClass: "border-border", iconClass: "text-primary" },
@@ -2204,6 +2351,7 @@ const PLAY_LINKS: Record<
   "word-search": { href: "/word-search", label: "Word Search", ariaLabel: "Play Word Search", icon: GAME_ICONS["word-search"], borderClass: "border-violet-200 dark:border-violet-800", iconClass: "text-violet-600" },
   minesweeper: { href: "/minesweeper", label: "Minesweeper", ariaLabel: "Play Minesweeper", icon: GAME_ICONS.minesweeper, borderClass: "border-emerald-200 dark:border-emerald-800", iconClass: "text-emerald-600" },
   "slide-puzzle": { href: "/slide-puzzle", label: "Slide Puzzle", ariaLabel: "Play Slide Puzzle", icon: GAME_ICONS["slide-puzzle"], borderClass: "border-sky-200 dark:border-sky-800", iconClass: "text-sky-600" },
+  "odd-images": { href: "/odd-images", label: "Odd Images", ariaLabel: "Play Odd Images", icon: GAME_ICONS["odd-images"], borderClass: "border-teal-200 dark:border-teal-800", iconClass: "text-teal-600" },
   rubiks: { href: "/rubiks", label: "Rubik's Cube", ariaLabel: "Play Rubik's Cube", icon: GAME_ICONS.rubiks, borderClass: "border-rose-200 dark:border-rose-800", iconClass: "text-rose-600" },
   "science-quiz": { href: "/quiz/science", label: "Science Quiz", ariaLabel: "Play Science Quiz", icon: GAME_ICONS["science-quiz"], borderClass: "border-violet-200 dark:border-violet-800", iconClass: "text-violet-600" },
   "maths-quiz": { href: "/quiz/maths", label: "Maths Quiz", ariaLabel: "Play Maths Quiz", icon: GAME_ICONS["maths-quiz"], borderClass: "border-sky-200 dark:border-sky-800", iconClass: "text-sky-600" },
@@ -2213,13 +2361,13 @@ const PLAY_LINKS: Record<
 export default function Leaderboard({
   gamePage: routeGamePage,
 }: {
-  gamePage?: "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz";
+  gamePage?: "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "odd-images" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz";
 } = {}) {
   const search = useSearch();
   const requestedTab = new URLSearchParams(search).get("tab");
   const gamePage =
     routeGamePage ??
-    (requestedTab === "sudoku" || requestedTab === "memory" || requestedTab === "jigsaw" || requestedTab === "word-search" || requestedTab === "minesweeper" || requestedTab === "slide-puzzle" || requestedTab === "rubiks" || requestedTab === "science-quiz" || requestedTab === "maths-quiz" || requestedTab === "gk-quiz" ? requestedTab : null);
+    (requestedTab === "sudoku" || requestedTab === "memory" || requestedTab === "jigsaw" || requestedTab === "word-search" || requestedTab === "minesweeper" || requestedTab === "slide-puzzle" || requestedTab === "odd-images" || requestedTab === "rubiks" || requestedTab === "science-quiz" || requestedTab === "maths-quiz" || requestedTab === "gk-quiz" ? requestedTab : null);
   const initialTab: MainTab =
     requestedTab === "monthly" || requestedTab === "alltime"
       ? requestedTab
@@ -2238,6 +2386,8 @@ export default function Leaderboard({
               ? "Minesweeper Leaderboard | Play Brain Games . Online"
               : gamePage === "slide-puzzle"
                 ? "Slide Puzzle Leaderboard | Play Brain Games . Online"
+                : gamePage === "odd-images"
+                  ? "Odd Images Leaderboard | Play Brain Games . Online"
                 : gamePage === "rubiks"
                   ? "Rubik's Cube Leaderboard | Play Brain Games . Online"
                 : gamePage === "science-quiz"
@@ -2260,6 +2410,8 @@ export default function Leaderboard({
               ? "Compare all-time Minesweeper points across every board size on Play Brain Games . Online."
               : gamePage === "slide-puzzle"
                 ? "Compare all-time Slide Puzzle points across every board size on Play Brain Games . Online."
+                : gamePage === "odd-images"
+                  ? "Compare all-time Odd Images points across every level on Play Brain Games . Online."
                 : gamePage === "rubiks"
                   ? "Compare all-time Rubik's Cube points across every puzzle on Play Brain Games . Online."
                 : gamePage === "science-quiz"
@@ -2287,6 +2439,8 @@ export default function Leaderboard({
             ? "Minesweeper Leaderboard"
             : gamePage === "slide-puzzle"
               ? "Slide Puzzle Leaderboard"
+              : gamePage === "odd-images"
+                ? "Odd Images Leaderboard"
               : gamePage === "rubiks"
                 ? "Rubik's Cube Leaderboard"
               : gamePage === "science-quiz"
@@ -2309,6 +2463,8 @@ export default function Leaderboard({
             ? "All-time points across every Minesweeper board size."
             : gamePage === "slide-puzzle"
               ? "All-time points across every Slide Puzzle board size."
+              : gamePage === "odd-images"
+                ? "All-time points across every Odd Images level."
               : gamePage === "rubiks"
                 ? "All-time points across every Rubik's Cube puzzle."
               : gamePage === "science-quiz"
@@ -2364,6 +2520,8 @@ export default function Leaderboard({
         <MinesweeperBoard myProfileId={myProfileId} />
       ) : gamePage === "slide-puzzle" ? (
         <SlidePuzzleBoard myProfileId={myProfileId} />
+      ) : gamePage === "odd-images" ? (
+        <OddImagesBoard myProfileId={myProfileId} />
       ) : gamePage === "rubiks" ? (
         <RubiksBoard myProfileId={myProfileId} />
       ) : gamePage === "science-quiz" ? (

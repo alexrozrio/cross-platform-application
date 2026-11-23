@@ -30,6 +30,8 @@ export async function ensureDatabaseSchema(): Promise<void> {
     `ALTER TABLE profiles ADD COLUMN IF NOT EXISTS memory_streak integer NOT NULL DEFAULT 0`,
     `ALTER TABLE profiles ADD COLUMN IF NOT EXISTS longest_memory_streak integer NOT NULL DEFAULT 0`,
     `ALTER TABLE profiles ADD COLUMN IF NOT EXISTS last_memory_date date`,
+    `ALTER TABLE challenges ADD COLUMN IF NOT EXISTS expires_at timestamptz`,
+    `ALTER TABLE memory_duels ADD COLUMN IF NOT EXISTS expires_at timestamptz`,
     `ALTER TABLE profiles ADD COLUMN IF NOT EXISTS xp integer NOT NULL DEFAULT 0`,
     `ALTER TABLE profiles ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now()`,
     `CREATE TABLE IF NOT EXISTS guest_profile_transfer_codes (
@@ -273,6 +275,45 @@ export async function ensureDatabaseSchema(): Promise<void> {
     `CREATE INDEX IF NOT EXISTS quiz_challenges_challenger_id_idx ON quiz_challenges(challenger_id)`,
     `CREATE INDEX IF NOT EXISTS quiz_challenges_challenged_id_idx ON quiz_challenges(challenged_id)`,
     `CREATE INDEX IF NOT EXISTS quiz_challenges_subject_idx ON quiz_challenges(subject)`,
+    `CREATE TABLE IF NOT EXISTS odd_image_games (
+      id serial PRIMARY KEY,
+      profile_id integer REFERENCES profiles(id),
+      level text NOT NULL,
+      theme text NOT NULL DEFAULT 'shapes',
+      seed integer,
+      status text NOT NULL DEFAULT 'active',
+      elapsed_seconds integer NOT NULL DEFAULT 0,
+      questions integer NOT NULL DEFAULT 0,
+      correct integer NOT NULL DEFAULT 0,
+      points integer,
+      xp_earned integer,
+      gems_earned integer,
+      completed_at timestamptz,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )`,
+    `CREATE INDEX IF NOT EXISTS odd_image_games_profile_id_idx ON odd_image_games(profile_id)`,
+    `CREATE INDEX IF NOT EXISTS odd_image_games_status_completed_at_idx ON odd_image_games(status, completed_at)`,
+    `CREATE INDEX IF NOT EXISTS odd_image_games_level_idx ON odd_image_games(level)`,
+    `ALTER TABLE odd_image_games ADD COLUMN IF NOT EXISTS daily_date text`,
+    `ALTER TABLE odd_image_games ADD COLUMN IF NOT EXISTS challenge_id integer`,
+    `CREATE INDEX IF NOT EXISTS odd_image_games_daily_date_idx ON odd_image_games(daily_date)`,
+    `CREATE INDEX IF NOT EXISTS odd_image_games_challenge_id_idx ON odd_image_games(challenge_id)`,
+    `CREATE TABLE IF NOT EXISTS odd_image_challenges (
+      id serial PRIMARY KEY,
+      challenger_id integer NOT NULL REFERENCES profiles(id),
+      challenged_id integer NOT NULL REFERENCES profiles(id),
+      level text NOT NULL,
+      theme text NOT NULL DEFAULT 'shapes',
+      seed integer NOT NULL,
+      status text NOT NULL DEFAULT 'pending',
+      challenger_game_id integer REFERENCES odd_image_games(id),
+      challenged_game_id integer REFERENCES odd_image_games(id),
+      winner_id integer REFERENCES profiles(id),
+      created_at timestamptz NOT NULL DEFAULT now(),
+      expires_at timestamptz NOT NULL
+    )`,
+    `CREATE INDEX IF NOT EXISTS odd_image_challenges_challenger_id_idx ON odd_image_challenges(challenger_id)`,
+    `CREATE INDEX IF NOT EXISTS odd_image_challenges_challenged_id_idx ON odd_image_challenges(challenged_id)`,
     `CREATE TABLE IF NOT EXISTS jigsaw_challenges (
       id serial PRIMARY KEY,
       challenger_id integer NOT NULL REFERENCES profiles(id),
@@ -322,6 +363,8 @@ export async function ensureDatabaseSchema(): Promise<void> {
     `ALTER TABLE IF EXISTS rubiks_challenges ENABLE ROW LEVEL SECURITY`,
     `ALTER TABLE IF EXISTS quiz_games ENABLE ROW LEVEL SECURITY`,
     `ALTER TABLE IF EXISTS quiz_challenges ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS odd_image_games ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS odd_image_challenges ENABLE ROW LEVEL SECURITY`,
   ];
 
   for (const statement of statements) {

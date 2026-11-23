@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   countAchievementProgress,
   getJigsawAchievementProgress,
+  getOddImageAchievementProgress,
   JIGSAW_ACHIEVEMENT_TARGETS,
+  ODD_IMAGE_ACHIEVEMENT_TARGETS,
   SUDOKU_ACHIEVEMENT_TARGETS,
 } from "../utils/achievement-progress";
 
@@ -68,5 +70,51 @@ describe("Jigsaw achievement progression", () => {
     expect(progress.jigsaw_speed_5x5.unlocked).toBe(true);
     expect(progress.jigsaw_advanced_10.progress).toBe(4);
     expect(progress.jigsaw_daily_7.progress).toBe(4);
+  });
+});
+
+describe("Odd Images achievement progression", () => {
+  const game = (
+    level: string,
+    theme = "shapes",
+    elapsedSeconds = 120,
+    questions = 5,
+    correct = questions,
+    dailyDate: string | null = null,
+  ) => ({ level, theme, elapsedSeconds, questions, correct, dailyDate });
+
+  it("tracks completion milestones from winning games only", () => {
+    const games = [
+      ...Array.from({ length: 10 }, () => game("easy")),
+      game("easy", "shapes", 120, 5, 0),
+    ];
+    const progress = getOddImageAchievementProgress(games);
+
+    expect(ODD_IMAGE_ACHIEVEMENT_TARGETS.dedicated).toBe(10);
+    expect(progress.odd_images_dedicated).toEqual({ unlocked: true, progress: 10, total: 10 });
+    expect(progress.odd_images_half_century).toEqual({ unlocked: false, progress: 10, total: 50 });
+  });
+
+  it("tracks levels, themes, perfect games, speed, and distinct daily dates", () => {
+    const games = [
+      game("easy", "shapes", 89, 5, 5, "2026-01-01"),
+      game("medium", "jungle", 149, 8, 8, "2026-01-02"),
+      game("hard", "ocean", 239, 10, 10, "2026-01-03"),
+      game("expert", "space", 359, 12, 12, "2026-01-04"),
+      game("easy", "vehicles", 200, 5, 4, "2026-01-01"),
+      game("medium", "adventure", 200, 8, 8, "2026-01-05"),
+      game("hard", "peppa_pig", 200, 10, 10, "2026-01-06"),
+      game("expert", "paw_patrol", 200, 12, 12, "2026-01-07"),
+    ];
+    const progress = getOddImageAchievementProgress(games);
+
+    expect(progress.odd_images_all_levels.unlocked).toBe(true);
+    expect(progress.odd_images_theme_explorer.progress).toBe(5);
+    expect(progress.odd_images_perfect_5).toEqual({ unlocked: true, progress: 5, total: 5 });
+    expect(progress.odd_images_speed_easy.unlocked).toBe(true);
+    expect(progress.odd_images_speed_medium.unlocked).toBe(true);
+    expect(progress.odd_images_speed_hard.unlocked).toBe(true);
+    expect(progress.odd_images_speed_expert.unlocked).toBe(true);
+    expect(progress.odd_images_daily_7.progress).toBe(7);
   });
 });

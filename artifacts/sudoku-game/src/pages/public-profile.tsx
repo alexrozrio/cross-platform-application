@@ -1,8 +1,9 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
-import { ACHIEVEMENT_META, type AchievementsData } from "@/lib/achievement-utils";
-import { Trophy, Gamepad2, Hash } from "lucide-react";
+import { ACHIEVEMENT_META, type AchievementMeta, type AchievementsData } from "@/lib/achievement-utils";
+import { GAME_ICONS, gameIconColor } from "@/lib/game-icons";
+import { Trophy, Gamepad2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { usePageMeta } from "@/components/page-meta";
@@ -67,8 +68,21 @@ export default function PublicProfilePage({ profileId }: PublicProfileProps) {
     ? ACHIEVEMENT_META.filter((m) => achievements[m.id]?.unlocked)
     : [];
 
-  const sudokuUnlocked = unlockedAchievements.filter((a) => a.game === "sudoku");
-  const memoryUnlocked = unlockedAchievements.filter((a) => a.game === "memory");
+  const PUBLIC_GAME_ORDER: { game: AchievementMeta["game"]; label: string }[] = [
+    { game: "sudoku", label: "Sudoku" },
+    { game: "memory", label: "Memory Match" },
+    { game: "jigsaw", label: "Jigsaw" },
+    { game: "word-search", label: "Word Search" },
+    { game: "minesweeper", label: "Minesweeper" },
+    { game: "slide-puzzle", label: "Slide Puzzle" },
+    { game: "odd-images", label: "Odd Images" },
+    { game: "science-quiz", label: "Science Quiz" },
+    { game: "maths-quiz", label: "Maths Quiz" },
+    { game: "gk-quiz", label: "GK Quiz" },
+  ];
+  const achievementGroups = PUBLIC_GAME_ORDER
+    .map(({ game, label }) => ({ game, label, items: unlockedAchievements.filter((a) => a.game === game) }))
+    .filter((group) => group.items.length > 0);
   const displayName = profile?.displayName || profile?.username;
 
   return (
@@ -123,37 +137,25 @@ export default function PublicProfilePage({ profileId }: PublicProfileProps) {
         </div>
       ) : (
         <div className="space-y-6">
-          {sudokuUnlocked.length > 0 && (
-            <section>
-              <div className="public-profile-section-title flex items-center gap-1.5 mb-3 bg-card border border-border rounded-lg px-3 py-1.5 w-fit max-w-full">
-                <Hash className="w-3.5 h-3.5 text-muted-foreground" />
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground break-words">
-                  Sudoku
-                </h2>
-              </div>
-              <div className="public-profile-achievement-grid grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {sudokuUnlocked.map((a) => (
-                  <AchievementCard key={a.id} emoji={a.emoji} title={a.title} description={a.description} />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {memoryUnlocked.length > 0 && (
-            <section>
-              <div className="public-profile-section-title flex items-center gap-1.5 mb-3 bg-card border border-border rounded-lg px-3 py-1.5 w-fit max-w-full">
-                <span className="text-xs">🧠</span>
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground break-words">
-                  Memory Match
-                </h2>
-              </div>
-              <div className="public-profile-achievement-grid grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {memoryUnlocked.map((a) => (
-                  <AchievementCard key={a.id} emoji={a.emoji} title={a.title} description={a.description} />
-                ))}
-              </div>
-            </section>
-          )}
+          {achievementGroups.map(({ game, label, items }) => {
+            const GameIcon = GAME_ICONS[game] ?? Trophy;
+            const iconColor = gameIconColor(game);
+            return (
+              <section key={game}>
+                <div className="public-profile-section-title flex items-center gap-1.5 mb-3 bg-card border border-border rounded-lg px-3 py-1.5 w-fit max-w-full">
+                  <GameIcon className={`w-3.5 h-3.5 ${iconColor}`} />
+                  <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground break-words">
+                    {label}
+                  </h2>
+                </div>
+                <div className="public-profile-achievement-grid grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {items.map((a) => (
+                    <AchievementCard key={a.id} emoji={a.emoji} title={a.title} description={a.description} />
+                  ))}
+                </div>
+              </section>
+            );
+          })}
         </div>
       )}
 

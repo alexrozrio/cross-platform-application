@@ -7,6 +7,7 @@ import {
   FlaskConical,
   Globe,
   Grid2x2,
+  Images,
   Grid3x3,
   Puzzle,
   WholeWord,
@@ -28,6 +29,7 @@ export const GAME_ICONS: Record<string, LucideIcon> = {
   "science-quiz": FlaskConical,
   "maths-quiz": Calculator,
   "gk-quiz": Globe,
+  "odd-images": Images,
 };
 
 export function gameIcon(id: string | null | undefined): LucideIcon {
@@ -46,6 +48,7 @@ export const GAME_ICON_COLORS: Record<string, string> = {
   "science-quiz": "text-violet-600",
   "maths-quiz": "text-sky-600",
   "gk-quiz": "text-amber-600",
+  "odd-images": "text-teal-600",
 };
 
 export function gameIconColor(id: string | null | undefined): string {

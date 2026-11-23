@@ -1,12 +1,11 @@
 import { Router, type IRouter } from "express";
-import { eq, or, and, ne, gte } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import { db, challengesTable, profilesTable, puzzlesTable, gamesTable } from "@workspace/db";
 import { generatePuzzle } from "../lib/sudoku";
 import { sql } from "drizzle-orm";
 import { sendChallengeNotification } from "../lib/email";
 import { randomBytes } from "node:crypto";
-import { expireInvitationIfDue, expirePendingInvitationsForProfile } from "../utils/challenge-expiry";
-import { getChallengeExpiryCutoff } from "../utils/challenge-expiry-policy";
+import { expireChallengeIfDue, expireChallengesForProfile, isChallengeRecordHidden, CHALLENGE_INVITATION_TTL_MS, CHALLENGE_ACTIVE_TTL_MS } from "../utils/challenge-lifecycle";
 
 const router: IRouter = Router();
 
@@ -134,6 +133,7 @@ router.post("/challenges", async (req, res): Promise<void> => {
       challengerGameId: challengerGame.id,
       challengedGameId: null,
       winnerId: null,
+      expiresAt: new Date(Date.now() + CHALLENGE_INVITATION_TTL_MS),
     })
     .returning();
 
@@ -159,23 +159,15 @@ router.get("/challenges/for/:profileId", async (req, res): Promise<void> => {
     return;
   }
 
-  await expirePendingInvitationsForProfile(profileId);
+  await expireChallengesForProfile(challengesTable, profileId);
 
   const challenges = await db
     .select()
     .from(challengesTable)
-    .where(
-      and(
-        or(eq(challengesTable.challengerId, profileId), eq(challengesTable.challengedId, profileId)),
-        or(
-          ne(challengesTable.status, "pending"),
-          gte(challengesTable.createdAt, getChallengeExpiryCutoff()),
-        ),
-      ),
-    )
+    .where(or(eq(challengesTable.challengerId, profileId), eq(challengesTable.challengedId, profileId)))
     .orderBy(challengesTable.createdAt);
 
-  const details = await Promise.all(challenges.map(formatChallenge));
+  const details = await Promise.all(challenges.filter((challenge) => !isChallengeRecordHidden(challenge)).map(formatChallenge));
   res.json(details.reverse());
 });
 
@@ -196,9 +188,12 @@ router.get("/challenges/for-game/:gameId", async (req, res): Promise<void> => {
     res.status(404).json({ error: "No challenge for this game" });
     return;
   }
-  if (await expireInvitationIfDue({ type: "sudoku", record: challenge })) {
-    res.status(410).json({ error: "Challenge has expired" });
-    return;
+  if (await expireChallengeIfDue(challengesTable, challenge)) {
+    const [updated] = await db.select().from(challengesTable).where(eq(challengesTable.id, challenge.id));
+    if (isChallengeRecordHidden(updated ?? { ...challenge, status: "expired" })) {
+      res.status(410).json({ error: "Challenge has expired" });
+      return;
+    }
   }
 
   res.json(await formatChallenge(challenge));
@@ -216,9 +211,12 @@ router.get("/challenges/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Challenge not found" });
     return;
   }
-  if (await expireInvitationIfDue({ type: "sudoku", record: challenge })) {
-    res.status(410).json({ error: "Challenge has expired" });
-    return;
+  if (await expireChallengeIfDue(challengesTable, challenge)) {
+    const [updated] = await db.select().from(challengesTable).where(eq(challengesTable.id, challenge.id));
+    if (isChallengeRecordHidden(updated ?? { ...challenge, status: "expired" })) {
+      res.status(410).json({ error: "Challenge has expired" });
+      return;
+    }
   }
 
   res.json(await formatChallenge(challenge));
@@ -242,7 +240,7 @@ router.patch("/challenges/:id/respond", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Challenge not found" });
     return;
   }
-  if (await expireInvitationIfDue({ type: "sudoku", record: challenge })) {
+  if (await expireChallengeIfDue(challengesTable, challenge)) {
     res.status(410).json({ error: "Challenge has expired" });
     return;
   }
@@ -282,7 +280,7 @@ router.patch("/challenges/:id/respond", async (req, res): Promise<void> => {
 
   const [updated] = await db
     .update(challengesTable)
-    .set({ status: "accepted", challengedGameId: challengedGame.id })
+    .set({ status: "accepted", challengedGameId: challengedGame.id, expiresAt: new Date(challenge.createdAt.getTime() + CHALLENGE_ACTIVE_TTL_MS) })
     .where(eq(challengesTable.id, id))
     .returning();
 
@@ -324,7 +322,7 @@ export async function resolveChallengeForGame(gameId: number): Promise<void> {
       if (winnerId) await tx.update(profilesTable).set({ gems: sql`gems + 10` }).where(eq(profilesTable.id, winnerId));
       else {
         await tx.update(profilesTable).set({ gems: sql`gems + 2` }).where(eq(profilesTable.id, challenge.challengerId));
-        await tx.update(profilesTable).set({ gems: sql`gems + 2` }).where(eq(profilesTable.id, challenge.challengedId));
+        if (challenge.challengedId) await tx.update(profilesTable).set({ gems: sql`gems + 2` }).where(eq(profilesTable.id, challenge.challengedId));
       }
     });
   }

@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft, Hash, Type, Palette, Trophy, Flame, BarChart2, Gem, Grid3x3, Brain, Puzzle, Search, Sparkles, Bomb, Grid2x2, FlaskConical, Timer, Swords } from "lucide-react";
+import { ArrowLeft, Hash, Type, Palette, Trophy, Flame, BarChart2, Gem, Grid3x3, Brain, Puzzle, Search, Sparkles, Bomb, Grid2x2, Images, FlaskConical, Timer, Swords } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { usePageMeta } from "@/components/page-meta";
 import { getLegalReturnPath } from "@/lib/legal-navigation";
@@ -46,6 +46,13 @@ const SLIDE_PUZZLE_FEATURES = [
   { icon: Gem, label: "Points, XP, and gems", desc: "Points reward few moves and fast solves against each board's par target." },
 ];
 
+const ODD_IMAGE_FEATURES = [
+  { icon: Images, label: "Four grid sizes", desc: "From a quick 3×3 Easy board to a demanding 6×6 Expert grid." },
+  { icon: Search, label: "Spot the odd one", desc: "Each grid repeats one picture theme — find the single tile that does not belong." },
+  { icon: Flame, label: "Daily and friend challenges", desc: "Play the shared daily seed or challenge a friend to the same round." },
+  { icon: Gem, label: "Points, XP, and gems", desc: "Earn points based on level, correct answers, and time, with XP and gems for completing rounds." },
+];
+
 const QUIZ_FEATURES = [
   { icon: FlaskConical, label: "Science, Maths & GK", desc: "Three separate quiz games covering planets and elements, numbers and shapes, and world facts." },
   { icon: Timer, label: "Four timed levels", desc: "Easy (5 questions) through Expert (12 questions) — answer fast and accurately for bonus points." },
@@ -61,9 +68,9 @@ const SHARED_FEATURES = [
 
 export default function About() {
   usePageMeta({
-      title: "About Play Brain Games . Online | Nine Free Games",
+      title: "About Play Brain Games . Online | Ten Free Games",
     description:
-        "Learn how Play Brain Games combines Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and Science, Maths & GK quizzes with daily challenges, guest play, synced progress, and player support.",
+        "Learn how Play Brain Games combines Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and Science, Maths & GK quizzes with daily challenges, guest play, synced progress, and player support.",
     path: "/about",
   });
   const [, setLocation] = useLocation();
@@ -81,13 +88,13 @@ export default function About() {
       <div className="bg-card rounded-2xl px-5 py-4 border border-border">
         <h1 className="text-3xl font-serif font-bold tracking-tight">About</h1>
         <p className="text-muted-foreground mt-1">
-          Nine brain games, reimagined for everyone.
+          Ten brain games, reimagined for everyone.
         </p>
       </div>
 
       <div className="space-y-4 text-sm text-muted-foreground leading-relaxed bg-card rounded-2xl border border-border px-5 py-4">
         <p>
-          Play Brain Games . Online is a general-audience, family-friendly collection of Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and Science, Maths & GK quiz games. It is designed for everyone from first-time players to seasoned experts, with optional child-friendly modes for younger family members. We believe a great puzzle game should be beautiful, fast, and endlessly replayable.
+          Play Brain Games . Online is a general-audience, family-friendly collection of Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and Science, Maths & GK quiz games. It is designed for everyone from first-time players to seasoned experts, with optional child-friendly modes for younger family members. We believe a great puzzle game should be beautiful, fast, and endlessly replayable.
         </p>
         <p>
           In Sudoku, beyond the standard 9×9, we support child-friendly Baby and Mini grids as well as pro-level 16×16 boards that will challenge experienced players. You can play with numbers, letters, or swappable image themes — keeping every session feeling fresh.
@@ -116,6 +123,14 @@ export default function About() {
           gap until the board reads in order. Choose from Easy (2×2) to Expert (5×5) boards and
           number, alphabet, or picture tiles; points reward fast, efficient
           solves against each board&apos;s par target.
+        </p>
+        <p>
+          In Odd Images, each grid repeats one picture theme and hides a single
+          tile that does not belong. Easy uses a clearly different image,
+          Medium recolors the odd tile, and Hard/Expert add subtler changes like
+          flips, rotations, or missing features. Choose from Easy (3×3, 5
+          questions) to Expert (6×6, 12 questions); points reward correct
+          answers and fast completion.
         </p>
         <p>
           The Science, Maths, and GK quizzes are timed multiple-choice games
@@ -254,6 +269,27 @@ export default function About() {
 
       <div className="space-y-3 bg-card rounded-2xl border border-border px-5 py-4">
         <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+          <Images className="w-4 h-4 text-primary" /> Odd Images
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {ODD_IMAGE_FEATURES.map(({ icon: Icon, label, desc }) => (
+            <Card key={label} className="border-border/60">
+              <CardContent className="pt-4 pb-4 flex gap-3 items-start">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3 bg-card rounded-2xl border border-border px-5 py-4">
+        <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
           <FlaskConical className="w-4 h-4 text-primary" /> Science, Maths &amp; GK Quizzes
         </h2>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -322,9 +358,10 @@ export default function About() {
           for that day, so completion time and mistakes can be compared on the
           same board. Every other game has a shared daily challenge too —
           Memory Match offers daily and weekly challenges, Jigsaw and Word
-          Search share a daily puzzle plus friend challenges, Minesweeper and
-          Slide Puzzle each have a daily board, and the Science, Maths &amp; GK
-          quizzes each post a shared daily quiz. Weekly, monthly, and all-time
+          Search share a daily puzzle plus friend challenges, Minesweeper,
+          Slide Puzzle, and Odd Images each have a daily board or grid, and the
+          Science, Maths &amp; GK quizzes each post a shared daily quiz. Weekly,
+          monthly, and all-time
           leaderboards show recorded game results for players who choose to
           take part.
         </p>

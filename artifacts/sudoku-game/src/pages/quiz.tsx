@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation, useSearch } from "wouter";
-import { ArrowLeft, Check, Clock3, Flame, Home, LayoutGrid, Lightbulb, RotateCcw, Share2, Swords, Target, Timer, Trophy, Users, Volume2, VolumeX, X } from "lucide-react";
+import { ArrowLeft, BookOpen, Check, Clock3, Flame, Home, Keyboard, LayoutGrid, Lightbulb, RotateCcw, Scroll, Share2, Swords, Target, Timer, Trophy, Users, Volume2, VolumeX, X } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useSound } from "@/hooks/use-sound";
 import { usePageMeta } from "@/components/page-meta";
@@ -19,6 +19,8 @@ import {
 import { recordQuizCompletion, patchLastQuizPoints, summarizeQuizStats, getQuizHistory } from "@/lib/quiz-stats";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { MobileContentDisclosure } from "@/components/mobile-content-disclosure";
 
 const SAVE_KEY = "brain-games-quiz-session";
 
@@ -89,6 +91,7 @@ export default function QuizPage({ params }: { params: { subject?: string } }) {
   const [rewardLoading, setRewardLoading] = React.useState(false);
   const [challengeResult, setChallengeResult] = React.useState<QuizChallengeResult | null>(null);
   const [picked, setPicked] = React.useState<number | null>(null);
+  const [infoModal, setInfoModal] = React.useState<"rules" | "controls" | "backstory" | null>(null);
   const activeGameRef = React.useRef(game);
   activeGameRef.current = game;
   const pendingGameRef = React.useRef<{ savedAt: number; promise: Promise<number | null> } | null>(null);
@@ -359,9 +362,9 @@ export default function QuizPage({ params }: { params: { subject?: string } }) {
     const dailyConfig = dailyQuizConfig(subject, new Date().toISOString().slice(0, 10));
     const dailyHref = `/quiz-challenge?subject=${subjectId}`;
     return (
-      <main className="mx-auto w-full max-w-lg space-y-4 px-3 py-5 sm:px-6 sm:py-8">
+      <main className="mx-auto w-full max-w-lg space-y-3 px-3 py-3 sm:space-y-4 sm:px-6 sm:py-8">
         {/* Header banner */}
-        <div className={`relative isolate flex items-center justify-between gap-3 overflow-hidden rounded-2xl border-2 ${subject.theme.border} bg-gradient-to-br ${subject.gradient} ${subject.gradientDark} px-4 py-3 shadow-lg`}>
+        <div className={`relative isolate flex items-center justify-between gap-3 overflow-hidden rounded-2xl border-2 ${subject.theme.border} bg-gradient-to-br ${subject.gradient} ${subject.gradientDark} px-3 py-2 shadow-lg sm:px-4 sm:py-3`}>
           <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full blur-2xl" style={{ backgroundColor: `${subject.theme.hex}4d` }} />
           <Button variant="ghost" size="sm" className="relative z-10 shrink-0 px-1" onClick={() => setLocation("/")}><ArrowLeft className="mr-1 h-4 w-4" /> Home</Button>
           <div className="relative z-10 min-w-0 flex-1 text-right">
@@ -372,7 +375,7 @@ export default function QuizPage({ params }: { params: { subject?: string } }) {
         </div>
 
         {hasSavedGame && (
-          <button onClick={() => setLocation(`/quiz/${subjectId}?resume=1`)} className={`flex w-full items-center gap-3 rounded-xl border-2 ${subject.theme.border} bg-card px-4 py-3 text-left transition hover:bg-muted/50`}>
+          <button onClick={() => setLocation(`/quiz/${subjectId}?resume=1`)} className={`flex w-full items-center gap-3 rounded-xl border-2 ${subject.theme.border} bg-card px-3 py-2.5 sm:px-4 sm:py-3 text-left transition hover:bg-muted/50`}>
             <Clock3 className={`h-4 w-4 shrink-0 ${subject.theme.text}`} />
             <span className="min-w-0 flex-1"><span className={`block text-sm font-semibold ${subject.theme.strong}`}>Resume {subject.shortName} Quiz</span><span className="block text-xs text-muted-foreground">Pick up where you left off</span></span>
             <span className={`text-lg ${subject.theme.text}`}>→</span>
@@ -380,21 +383,21 @@ export default function QuizPage({ params }: { params: { subject?: string } }) {
         )}
 
         {/* Hero + level select */}
-        <div className={`relative isolate overflow-hidden rounded-2xl border-2 ${subject.theme.border} bg-gradient-to-br ${subject.gradient} ${subject.gradientDark} p-4 shadow-xl sm:p-5`}>
+        <div className={`relative isolate overflow-hidden rounded-2xl border-2 ${subject.theme.border} bg-gradient-to-br ${subject.gradient} ${subject.gradientDark} p-3 shadow-xl sm:p-5`}>
           <div aria-hidden="true" className="pointer-events-none absolute -bottom-8 -right-8 h-24 w-24 rounded-full blur-2xl" style={{ backgroundColor: `${subject.theme.hex}33` }} />
           <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-20 w-20 rotate-6 grid-cols-2 gap-1 overflow-hidden rounded-xl border bg-white/15 p-1.5 opacity-60 dark:bg-white/5" style={{ borderColor: `${subject.theme.hex}26` }}>{["A", "B", "C", "D", "E", "F", "G", "H"].map((letter) => <span key={letter} className="flex items-center justify-center rounded-md border text-xs font-black" style={{ borderColor: `${subject.theme.hex}1a`, color: `${subject.theme.hex}40` }}>{letter}</span>)}</div>
-          <div className="relative z-10 mb-4 flex items-center gap-3 rounded-xl border bg-white/65 px-3 py-3 dark:bg-slate-950/30" style={{ borderColor: `${subject.theme.hex}33` }}>
+          <div className="relative z-10 mb-4 hidden items-center gap-3 rounded-xl border bg-white/65 px-3 py-3 dark:bg-slate-950/30 sm:flex" style={{ borderColor: `${subject.theme.hex}33` }}>
             <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl text-2xl ${subject.theme.soft}`}>{subject.emoji}</span>
             <div className="min-w-0 flex-1"><h2 className="font-serif text-lg font-bold">Ready to quiz?</h2><p className="text-xs leading-relaxed text-muted-foreground">Timed multiple-choice questions — answer before the clock runs out. Pick a level to start.</p></div>
           </div>
-          <p className="relative z-10 mb-2.5 text-xs font-semibold uppercase tracking-widest" style={{ color: subject.theme.hex }}>Choose Level</p>
-          <div className="relative z-10 grid grid-cols-2 gap-2.5">
+          <p className="relative z-10 mb-2 hidden text-xs font-semibold uppercase tracking-widest sm:block" style={{ color: subject.theme.hex }}>Choose Level</p>
+          <div className="relative z-10 grid grid-cols-2 gap-2 sm:gap-2.5">
             {levels.map((level) => {
               const cfg = subject.levels[level];
               const icons: Record<QuizLevel, string> = { easy: "🌱", medium: "🧭", hard: "🔥", expert: "⚡" };
               return (
-                <button key={level} type="button" onClick={() => startGame(level)} className={`group flex min-h-[92px] flex-col items-center justify-center gap-1 rounded-2xl border-2 bg-white/80 p-3 text-center shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] dark:bg-slate-950/40 ${subject.theme.border} ${subject.theme.hover}`}>
-                  <span className={`grid h-9 w-9 place-items-center rounded-xl text-xl ${subject.theme.soft}`}>{icons[level]}</span>
+                <button key={level} type="button" onClick={() => startGame(level)} className={`group flex min-h-[72px] flex-col items-center justify-center gap-1 rounded-2xl border-2 bg-white/80 p-2 text-center shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] sm:min-h-[92px] sm:p-3 dark:bg-slate-950/40 ${subject.theme.border} ${subject.theme.hover}`}>
+                  <span className={`grid h-8 w-8 place-items-center rounded-xl text-lg sm:h-9 sm:w-9 sm:text-xl ${subject.theme.soft}`}>{icons[level]}</span>
                   <span className="text-sm font-bold leading-tight">{cfg.label}</span>
                   <span className="text-[10px] leading-tight text-muted-foreground">{cfg.detail} · {cfg.parSeconds}s</span>
                 </button>
@@ -405,7 +408,7 @@ export default function QuizPage({ params }: { params: { subject?: string } }) {
         </div>
 
         {/* Daily challenge */}
-        <button onClick={() => setLocation(dailyHref)} className={`flex w-full items-center gap-3 rounded-xl border-2 ${subject.theme.border} bg-card px-4 py-3 text-left transition hover:bg-muted/50`}>
+        <button onClick={() => setLocation(dailyHref)} className={`flex w-full items-center gap-3 rounded-xl border-2 ${subject.theme.border} bg-card px-3 py-2.5 sm:px-4 sm:py-3 text-left transition hover:bg-muted/50`}>
           <Flame className={`h-5 w-5 shrink-0 ${subject.theme.text}`} />
           <span className="min-w-0 flex-1"><span className="block text-sm font-semibold">Daily {subject.shortName} Quiz</span><span className="block text-xs text-muted-foreground">{subject.levels[dailyConfig.level].label} · {dailyConfig.questions} questions — one shared quiz each day</span></span>
           <span className={subject.theme.text}>→</span>
@@ -413,10 +416,10 @@ export default function QuizPage({ params }: { params: { subject?: string } }) {
 
         {/* Options */}
         <div className="grid grid-cols-2 gap-3">
-          <button onClick={() => setLocation(`/profile?tab=${quizGameId(subjectId)}`)} className="flex items-center gap-3 rounded-xl border bg-card p-3 text-left transition hover:bg-muted/50"><Users className={`h-5 w-5 shrink-0 ${subject.theme.text}`} /><span><span className="block text-sm font-semibold">My Stats</span><span className="hidden text-xs text-muted-foreground sm:block">Best scores & progress</span></span></button>
-          <button onClick={() => setLocation(`/leaderboard/${quizGameId(subjectId)}`)} className="flex items-center gap-3 rounded-xl border bg-card p-3 text-left transition hover:bg-muted/50"><Trophy className={`h-5 w-5 shrink-0 ${subject.theme.text}`} /><span><span className="block text-sm font-semibold">Leaderboard</span><span className="hidden text-xs text-muted-foreground sm:block">Top quizzer</span></span></button>
+          <button onClick={() => setLocation(`/profile?tab=${quizGameId(subjectId)}`)} className="flex items-center gap-3 rounded-xl border bg-card p-2.5 text-left sm:p-3 transition hover:bg-muted/50"><Users className={`h-5 w-5 shrink-0 ${subject.theme.text}`} /><span><span className="block text-sm font-semibold">My Stats</span><span className="hidden text-xs text-muted-foreground sm:block">Best scores & progress</span></span></button>
+          <button onClick={() => setLocation(`/leaderboard/${quizGameId(subjectId)}`)} className="flex items-center gap-3 rounded-xl border bg-card p-2.5 text-left sm:p-3 transition hover:bg-muted/50"><Trophy className={`h-5 w-5 shrink-0 ${subject.theme.text}`} /><span><span className="block text-sm font-semibold">Leaderboard</span><span className="hidden text-xs text-muted-foreground sm:block">Top quizzer</span></span></button>
         </div>
-        <button onClick={() => setLocation(`/challenges?tab=${quizGameId(subjectId)}`)} className="flex w-full items-center gap-3 rounded-xl border-2 border-dashed bg-card/60 px-4 py-3 text-left transition hover:bg-muted/50">
+        <button onClick={() => setLocation(`/challenges?tab=${quizGameId(subjectId)}`)} className="flex w-full items-center gap-3 rounded-xl border-2 border-dashed bg-card/60 px-3 py-2.5 sm:px-4 sm:py-3 text-left transition hover:bg-muted/50">
           <Swords className={`h-5 w-5 shrink-0 ${subject.theme.text}`} />
           <span className="min-w-0 flex-1"><span className="block text-sm font-semibold">Challenges</span><span className="block text-xs text-muted-foreground">Challenge a friend to beat your score</span></span>
           <span className={subject.theme.text}>→</span>
@@ -428,9 +431,143 @@ export default function QuizPage({ params }: { params: { subject?: string } }) {
               { label: "Played", value: String(stats.totalGames) },
               { label: "Best accuracy", value: `${stats.bestAccuracy}%` },
               { label: "Day streak", value: `🔥${stats.currentStreak}` },
-            ].map(({ label, value }) => <div key={label} className="space-y-1 rounded-xl border bg-card p-3 text-center"><p className="text-base font-black tabular-nums sm:text-lg">{value}</p><p className="text-[11px] text-muted-foreground">{label}</p></div>)}
+            ].map(({ label, value }) => <div key={label} className="space-y-1 rounded-xl border bg-card p-2.5 text-center sm:p-3"><p className="text-base font-black tabular-nums sm:text-lg">{value}</p><p className="text-[11px] text-muted-foreground">{label}</p></div>)}
           </div>
         )}
+
+        {/* Info links */}
+        <div className="home-info-links flex items-center justify-center gap-4 rounded-xl border border-border bg-card px-3 py-2 sm:gap-6 sm:px-4 sm:py-2.5">
+          <button onClick={() => setInfoModal("rules")} className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"><BookOpen className="h-3.5 w-3.5" /> Rules</button>
+          <span className="text-border">·</span>
+          <button onClick={() => setInfoModal("controls")} className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"><Keyboard className="h-3.5 w-3.5" /> Controls</button>
+          <span className="text-border">·</span>
+          <button onClick={() => setInfoModal("backstory")} className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"><Scroll className="h-3.5 w-3.5" /> Backstory</button>
+        </div>
+
+        <MobileContentDisclosure
+          id={`${subjectId}-quiz-guidance`}
+          title={`More ${subject.shortName} Quiz guidance`}
+          className={`rounded-2xl border ${subject.theme.border} bg-card p-5 sm:p-6`}
+        >
+          <section className="space-y-4">
+            <div>
+              <h2 className="font-serif text-xl font-bold text-foreground">How to play and improve at {subject.shortName} Quiz</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+                Each round is a timed set of multiple-choice {subject.name.toLowerCase()} questions. Answer before the timer moves on, skip only when you are unsure, and finish every question to earn points, XP, and gems.
+              </p>
+            </div>
+            <div className="grid gap-4 text-sm leading-relaxed text-muted-foreground sm:grid-cols-2">
+              <article>
+                <h3 className="font-semibold text-foreground">Pick the right level</h3>
+                <p className="mt-1">Easy is the fastest warm-up, Medium adds more questions, Hard increases the pace, and Expert asks the toughest mix. Higher levels award more points but demand quicker recall.</p>
+              </article>
+              <article>
+                <h3 className="font-semibold text-foreground">Use skips wisely</h3>
+                <p className="mt-1">Skipping keeps the round moving, but unanswered questions do not add to your correct count. Guess only when the choices give you a real chance.</p>
+              </article>
+              <article>
+                <h3 className="font-semibold text-foreground">Track your streak</h3>
+                <p className="mt-1">Daily quizzes refresh once per day and feed your streak. Regular practice also builds the accuracy shown in your stats.</p>
+              </article>
+              <article>
+                <h3 className="font-semibold text-foreground">Challenge friends</h3>
+                <p className="mt-1">Head-to-head challenges compare points and correct answers, so a fast accurate run can beat a slower perfect one.</p>
+              </article>
+            </div>
+          </section>
+        </MobileContentDisclosure>
+
+        {/* Rules modal */}
+        <Dialog open={infoModal === "rules"} onOpenChange={(open) => !open && setInfoModal(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2"><BookOpen className={`h-5 w-5 ${subject.theme.text}`} /> Rules</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">
+              <p>{subject.name} Quiz is a timed multiple-choice game. Answer as many questions correctly as you can before the round ends.</p>
+              <ul className="list-none space-y-2">
+                {[
+                  "Choose a level, then answer every question in order.",
+                  "Each level has its own question count and seconds-per-question pace.",
+                  "Correct answers add to your score; wrong answers and skips do not.",
+                  "Finish the full round to earn points, XP, and gems.",
+                  "Daily quizzes use the same questions for everyone each day.",
+                ].map((rule, index) => (
+                  <li key={rule} className="flex gap-2">
+                    <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full text-xs font-bold ${subject.theme.soft}`}>{index + 1}</span>
+                    <span>{rule}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="pt-1">Score reflects the level, correct answers, and completion time.</p>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Controls modal */}
+        <Dialog open={infoModal === "controls"} onOpenChange={(open) => !open && setInfoModal(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2"><Keyboard className={`h-5 w-5 ${subject.theme.text}`} /> Controls</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 text-sm">
+              <div>
+                <p className="mb-2 font-semibold text-foreground">Mouse / Touch</p>
+                <div className="space-y-1.5 text-muted-foreground">
+                  {[
+                    ["Tap / click an answer", "Submit that choice for the current question"],
+                    ["Skip button", "Move to the next question without answering"],
+                    ["Back button", "Return to the quiz level picker"],
+                    ["Daily Quiz", "Play today's shared round"],
+                  ].map(([action, result]) => (
+                    <div key={action} className="flex justify-between gap-4">
+                      <span>{action}</span>
+                      <span className="text-right font-medium text-foreground">{result}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="border-t pt-3">
+                <p className="mb-2 font-semibold text-foreground">Scoring</p>
+                <div className="space-y-1.5 text-muted-foreground">
+                  {[
+                    ["Level", "Higher levels award more points"],
+                    ["Correct answers", "Each correct answer adds to the score"],
+                    ["Time", "Faster rounds earn a bonus"],
+                    ["Daily / challenge", "Shared rounds and friend duels compare points"],
+                  ].map(([key, result]) => (
+                    <div key={key} className="flex justify-between gap-4">
+                      <span className="font-medium text-foreground">{key}</span>
+                      <span className="text-right">{result}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Backstory modal */}
+        <Dialog open={infoModal === "backstory"} onOpenChange={(open) => !open && setInfoModal(null)}>
+          <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-md overflow-y-auto overscroll-contain">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2"><Scroll className={`h-5 w-5 ${subject.theme.text}`} /> Backstory</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">
+              <p>
+                Quiz games have been a staple of puzzle books, radio shows, and
+                television for decades. The multiple-choice format became famous
+                through pub quizzes and TV game shows, where quick recall and
+                broad knowledge decided the winner.
+              </p>
+              <p>
+                This {subject.shortName} Quiz keeps that fast recall challenge
+                and adds four levels, daily shared quizzes, leaderboards, and
+                head-to-head challenges against friends.
+              </p>
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
     );
   }
@@ -441,8 +578,8 @@ export default function QuizPage({ params }: { params: { subject?: string } }) {
     const cfg = subject.levels[game.level];
     const answered = game.answers.filter((a) => a !== undefined && a !== -1).length;
     return (
-      <main className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-lg flex-col px-4 pb-8 pt-4">
-        <div className={`mb-4 flex items-center gap-2 rounded-xl border ${subject.theme.border} bg-gradient-to-br ${subject.gradient} ${subject.gradientDark} px-3 py-2 shadow-sm`}>
+      <main className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-lg flex-col px-3 pb-6 pt-3 sm:px-4 sm:pb-8 sm:pt-4">
+        <div className={`mb-2 flex items-center gap-2 rounded-xl border ${subject.theme.border} bg-gradient-to-br ${subject.gradient} ${subject.gradientDark} px-2.5 py-1.5 shadow-sm sm:px-3 sm:py-2`}>
           <Button variant="ghost" size="sm" className="shrink-0 px-1" onClick={exitToGameHome} aria-label="Back to quiz home"><ArrowLeft className="h-4 w-4" /></Button>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">{subject.emoji} {subject.name} · {cfg.label}</p>
@@ -451,20 +588,27 @@ export default function QuizPage({ params }: { params: { subject?: string } }) {
           <span className="flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm font-mono font-bold"><Timer size={14} className={subject.theme.text} />{fmt(elapsed)}</span>
         </div>
 
-        <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-muted"><div className={`h-full rounded-full transition-all ${subject.theme.fill}`} style={{ width: `${((game.index + (picked !== null ? 1 : 0)) / game.questions.length) * 100}%` }} /></div>
+        <div className="mb-2 flex items-center gap-2">
+          <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-muted"><div className={`h-full rounded-full transition-all ${subject.theme.fill}`} style={{ width: `${((game.index + (picked !== null ? 1 : 0)) / game.questions.length) * 100}%` }} /></div>
+          {!game.dailyDate && !game.challengeId && (
+            <select value={game.level} disabled={picked !== null} onChange={(event) => startGame(event.target.value as QuizLevel)} aria-label="Change quiz level" className="h-8 max-w-[7rem] shrink-0 rounded-lg border border-border bg-card px-2 text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-primary disabled:opacity-50">
+              {levels.map((level) => <option key={level} value={level}>{subject.levels[level].label}</option>)}
+            </select>
+          )}
+        </div>
 
-        <Card className="flex-1"><CardContent className="flex flex-col gap-4 pb-6 pt-6">
+        <Card className="flex-1"><CardContent className="flex flex-col gap-3 pb-4 pt-4 sm:gap-4 sm:pb-6 sm:pt-6">
           {question ? (
             <>
               <p className="text-lg font-semibold leading-snug">{question.text}</p>
-              <div className="grid gap-2.5">
+              <div className="grid gap-2 sm:gap-2.5">
                 {question.options.map((option, i) => {
                   const isPicked = picked === i;
                   const isCorrect = question.answer === i;
                   const showResult = picked !== null;
                   return (
                     <button key={i} type="button" onClick={() => answerQuestion(i)} disabled={picked !== null}
-                      className={`flex items-center gap-3 rounded-xl border px-4 py-3.5 text-left text-sm font-medium transition ${
+                      className={`flex items-center gap-3 rounded-xl border px-3 py-3 text-left text-sm font-medium transition sm:px-4 sm:py-3.5 ${
                         showResult && isCorrect ? "border-green-500 bg-green-500/15 text-green-800 dark:text-green-300" :
                         showResult && isPicked ? "border-red-500 bg-red-500/15 text-red-800 dark:text-red-300" :
                         picked === null ? `border-border bg-white/60 ${subject.theme.hover} dark:bg-slate-950/30` :
@@ -528,6 +672,7 @@ export default function QuizPage({ params }: { params: { subject?: string } }) {
             })}
           </div>
         )}
+        {!game.dailyDate && !game.challengeId && <Button variant="outline" className="w-full gap-2" onClick={() => setLocation(`/quiz-challenge?subject=${subjectId}`)}><Flame className="h-4 w-4" /> Try today&apos;s daily challenge</Button>}
         <div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-4">
           <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setGame(null)}><LayoutGrid className="h-4 w-4" /> Game home</Button>
           <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setLocation(`/leaderboard/${quizGameId(subjectId)}`)}><Trophy className="h-4 w-4" /> Leaderboard</Button>

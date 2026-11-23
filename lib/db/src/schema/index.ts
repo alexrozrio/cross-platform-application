@@ -17,3 +17,4 @@ export * from "./minesweeper-games";
 export * from "./slide-puzzle-games";
 export * from "./quiz-games";
 export * from "./rubiks-games";
+export * from "./odd-image-games";

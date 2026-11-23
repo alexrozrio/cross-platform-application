@@ -13,6 +13,7 @@ export const memoryDuelsTable = pgTable("memory_duels", {
   challengedGameId: integer("challenged_game_id").references(() => memoryGamesTable.id),
   winnerId: integer("winner_id").references(() => profilesTable.id),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
 });
 
 export type MemoryDuel = typeof memoryDuelsTable.$inferSelect;

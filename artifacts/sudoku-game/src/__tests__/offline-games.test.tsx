@@ -57,6 +57,15 @@ describe('OfflineGameFallback', () => {
     expect(screen.getByRole('button', { name: 'New game' })).toBeTruthy();
   });
 
+  it('odd images fallback renders a 3x3 grid and advances after a pick', () => {
+    render(createElement(OfflineGameFallback, { game: 'odd-images' }));
+    expect(screen.getByText(/Question 1 of 5/)).toBeTruthy();
+    const cells = screen.getAllByRole('button').filter((button) => button.className.includes('aspect-square'));
+    expect(cells).toHaveLength(9);
+    fireEvent.click(cells[0]);
+    expect(screen.getByRole('button', { name: 'Next grid' })).toBeTruthy();
+  });
+
   it('minesweeper fallback renders the board and controls', () => {
     render(createElement(OfflineGameFallback, { game: 'minesweeper' }));
     const buttons = screen.getAllByRole('button');

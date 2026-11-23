@@ -7,6 +7,7 @@ import {
   jigsawGamesTable,
   profilesTable,
 } from "@workspace/db";
+import { expireChallengeIfDue, expireChallengesForProfile, isChallengeRecordHidden, CHALLENGE_INVITATION_TTL_MS, CHALLENGE_ACTIVE_TTL_MS } from "../utils/challenge-lifecycle";
 
 const router: IRouter = Router();
 const VALID_SIZES = new Set([2, 3, 4, 5]);
@@ -83,7 +84,7 @@ router.post("/jigsaw-challenges", async (req, res): Promise<void> => {
   }
 
   const shareToken = randomUUID().replaceAll("-", "");
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const expiresAt = new Date(Date.now() + CHALLENGE_INVITATION_TTL_MS);
   const created = await db.transaction(async (tx) => {
     const [game] = await tx.insert(jigsawGamesTable).values({
       profileId: challengerId,
@@ -114,6 +115,7 @@ router.get("/jigsaw-challenges/for/:profileId", async (req, res): Promise<void> 
     res.status(400).json({ error: "Invalid profile id." });
     return;
   }
+  await expireChallengesForProfile(jigsawChallengesTable, profileId);
   const challenges = await db.select({ id: jigsawChallengesTable.id })
     .from(jigsawChallengesTable)
     .where(or(
@@ -122,16 +124,20 @@ router.get("/jigsaw-challenges/for/:profileId", async (req, res): Promise<void> 
     ))
     .orderBy(desc(jigsawChallengesTable.createdAt))
     .limit(50);
-  const details = await Promise.all(challenges.map(({ id }) => challengeDetail(id)));
-  res.json(details.filter(Boolean));
+  const details = (await Promise.all(challenges.map(({ id }) => challengeDetail(id)))).filter((detail): detail is NonNullable<typeof detail> => !!detail && !isChallengeRecordHidden(detail));
+  res.json(details);
 });
 
 router.get("/jigsaw-challenges/:id", async (req, res): Promise<void> => {
   const id = Number.parseInt(req.params.id, 10);
   if (!Number.isInteger(id) || id <= 0) { res.status(400).json({ error: "Invalid challenge id." }); return; }
-  const detail = await challengeDetail(id);
-  if (!detail) { res.status(404).json({ error: "Challenge not found." }); return; }
-  res.json(detail);
+  const [challenge] = await db.select().from(jigsawChallengesTable).where(eq(jigsawChallengesTable.id, id));
+  if (!challenge) { res.status(404).json({ error: "Challenge not found." }); return; }
+  if (await expireChallengeIfDue(jigsawChallengesTable, challenge)) {
+    const [updated] = await db.select().from(jigsawChallengesTable).where(eq(jigsawChallengesTable.id, challenge.id));
+    if (isChallengeRecordHidden(updated ?? { ...challenge, status: "expired" })) { res.status(410).json({ error: "This challenge has expired." }); return; }
+  }
+  res.json(await challengeDetail(id));
 });
 
 router.get("/jigsaw-challenges/for-game/:gameId", async (req, res): Promise<void> => {
@@ -140,6 +146,12 @@ router.get("/jigsaw-challenges/for-game/:gameId", async (req, res): Promise<void
   const [challenge] = await db.select({ id: jigsawChallengesTable.id }).from(jigsawChallengesTable)
     .where(or(eq(jigsawChallengesTable.challengerGameId, gameId), eq(jigsawChallengesTable.challengedGameId, gameId)));
   if (!challenge) { res.status(404).json({ error: "Challenge not found." }); return; }
+  const [record] = await db.select().from(jigsawChallengesTable).where(eq(jigsawChallengesTable.id, challenge.id));
+  if (!record) { res.status(404).json({ error: "Challenge not found." }); return; }
+  if (await expireChallengeIfDue(jigsawChallengesTable, record)) {
+    const [updated] = await db.select().from(jigsawChallengesTable).where(eq(jigsawChallengesTable.id, record.id));
+    if (isChallengeRecordHidden(updated ?? { ...record, status: "expired" })) { res.status(410).json({ error: "This challenge has expired." }); return; }
+  }
   res.json(await challengeDetail(challenge.id));
 });
 
@@ -153,10 +165,12 @@ router.get("/jigsaw-challenges/invite/:token", async (req, res): Promise<void> =
     return;
   }
   const detail = await challengeDetail(challenge.id);
-  if (detail && detail.status === "pending" && detail.expiresAt.getTime() <= Date.now()) {
-    await db.update(jigsawChallengesTable).set({ status: "expired" })
-      .where(and(eq(jigsawChallengesTable.id, detail.id), eq(jigsawChallengesTable.status, "pending")));
+  if (detail && await expireChallengeIfDue(jigsawChallengesTable, detail)) {
     detail.status = "expired";
+  }
+  if (detail && isChallengeRecordHidden(detail)) {
+    res.status(410).json({ error: "This challenge link has expired." });
+    return;
   }
   res.json(detail);
 });
@@ -184,6 +198,10 @@ router.post("/jigsaw-challenges/:id/respond", async (req, res): Promise<void> =>
     res.status(403).json({ error: "This challenge was sent to another player." });
     return;
   }
+  if (await expireChallengeIfDue(jigsawChallengesTable, challenge)) {
+    res.status(410).json({ error: "This challenge link has expired." });
+    return;
+  }
   if (challenge.status === "accepted" && body.action === "accept"
     && challenge.challengedId === profileId && challenge.challengedGameId) {
     res.json({ challengeId: id, gameId: challenge.challengedGameId, status: "accepted" });
@@ -191,12 +209,6 @@ router.post("/jigsaw-challenges/:id/respond", async (req, res): Promise<void> =>
   }
   if (challenge.status !== "pending") {
     res.status(409).json({ error: "This challenge is no longer waiting for a response." });
-    return;
-  }
-  if (challenge.expiresAt.getTime() <= Date.now()) {
-    await db.update(jigsawChallengesTable).set({ status: "expired" })
-      .where(and(eq(jigsawChallengesTable.id, id), eq(jigsawChallengesTable.status, "pending")));
-    res.status(410).json({ error: "This challenge link has expired." });
     return;
   }
 
@@ -223,7 +235,7 @@ router.post("/jigsaw-challenges/:id/respond", async (req, res): Promise<void> =>
         status: "active",
       }).returning({ id: jigsawGamesTable.id });
       const [updated] = await tx.update(jigsawChallengesTable)
-        .set({ status: "accepted", challengedId: profileId, challengedGameId: game.id })
+        .set({ status: "accepted", challengedId: profileId, challengedGameId: game.id, expiresAt: new Date(challenge.createdAt.getTime() + CHALLENGE_ACTIVE_TTL_MS) })
         .where(and(eq(jigsawChallengesTable.id, id), eq(jigsawChallengesTable.status, "pending")))
         .returning({ id: jigsawChallengesTable.id });
       if (!updated) throw new Error("CHALLENGE_ALREADY_ANSWERED");

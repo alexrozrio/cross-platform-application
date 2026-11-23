@@ -84,8 +84,8 @@ export default function AccountDeletion() {
         <CardContent className="space-y-5">
           <div className="space-y-2 text-sm text-muted-foreground">
             <p>
-              Deletion removes your Google sign-in identity from this service, your profile, Sudoku
-              and Memory Match history, statistics, badges, and related challenge records from our
+              Deletion removes your Google sign-in identity from this service, your profile, game
+              history across all titles, statistics, badges, and related challenge records from our
               servers.
             </p>
             <p>

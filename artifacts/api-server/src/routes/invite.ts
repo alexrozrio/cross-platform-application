@@ -9,6 +9,7 @@
 import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { expireInvitationIfDue } from "../utils/challenge-expiry";
+import { CHALLENGE_ACTIVE_TTL_MS } from "../utils/challenge-lifecycle";
 import {
   db,
   challengesTable,
@@ -138,7 +139,7 @@ router.post("/invite/:token/accept", async (req, res): Promise<void> => {
 
     await db
       .update(challengesTable)
-      .set({ status: "accepted", challengedId: profileId, challengedGameId: game.id })
+      .set({ status: "accepted", challengedId: profileId, challengedGameId: game.id, expiresAt: new Date(c.createdAt.getTime() + CHALLENGE_ACTIVE_TTL_MS) })
       .where(eq(challengesTable.id, c.id));
 
     res.json({ type: "sudoku", gameId: game.id });
@@ -152,7 +153,7 @@ router.post("/invite/:token/accept", async (req, res): Promise<void> => {
 
     await db
       .update(memoryDuelsTable)
-      .set({ status: "accepted", challengedId: profileId, challengedGameId: game.id })
+      .set({ status: "accepted", challengedId: profileId, challengedGameId: game.id, expiresAt: new Date(d.createdAt.getTime() + CHALLENGE_ACTIVE_TTL_MS) })
       .where(eq(memoryDuelsTable.id, d.id));
 
     res.json({ type: "memory", gameId: game.id, gridSize: d.gridSize });

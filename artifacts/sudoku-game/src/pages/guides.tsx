@@ -10,6 +10,7 @@ import {
   Grid2x2,
   Box,
   Grid3x3,
+  Images,
   Puzzle,
   Rocket,
   Search,
@@ -69,6 +70,12 @@ const THEMES: Record<string, GuideTheme> = {
     icon: "text-sky-700 dark:text-sky-300",
     card: "border-sky-200/70 bg-sky-50/60 dark:border-sky-900/50 dark:bg-sky-950/20",
     btn: "bg-sky-700 text-white hover:bg-sky-800",
+  },
+  "odd-images": {
+    section: "border-teal-200/70 dark:border-teal-900/50",
+    icon: "text-teal-700 dark:text-teal-300",
+    card: "border-teal-200/70 bg-teal-50/60 dark:border-teal-900/50 dark:bg-teal-950/20",
+    btn: "bg-teal-700 text-white hover:bg-teal-800",
   },
   rubiks: {
     section: "border-red-200/70 dark:border-red-900/50",
@@ -177,9 +184,9 @@ const QUIZ_SCORING =
 
 export default function Guides() {
   usePageMeta({
-    title: "Game Guides: All Nine Games | Play Brain Games . Online",
+    title: "Game Guides: All Ten Games | Play Brain Games . Online",
     description:
-      "Learn every game — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and the Science, Maths & GK quizzes — with practical strategies and tips.",
+      "Learn every game — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and the Science, Maths & GK quizzes — with practical strategies and tips.",
     path: "/guides",
     type: "article",
   });
@@ -217,6 +224,7 @@ export default function Guides() {
           <a href="#word-search-guide-title" className="rounded-full border border-indigo-400/30 bg-indigo-500/10 px-3 py-1.5 text-sm font-semibold text-indigo-700 dark:text-indigo-300">Word Search guide</a>
           <a href="#minesweeper-guide-title" className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1.5 text-sm font-semibold text-emerald-700 dark:text-emerald-300">Minesweeper guide</a>
           <a href="#slide-puzzle-guide-title" className="rounded-full border border-sky-400/30 bg-sky-500/10 px-3 py-1.5 text-sm font-semibold text-sky-700 dark:text-sky-300">Slide Puzzle guide</a>
+          <a href="#odd-images-guide-title" className="rounded-full border border-teal-400/30 bg-teal-500/10 px-3 py-1.5 text-sm font-semibold text-teal-700 dark:text-teal-300">Odd Images guide</a>
           {RUBIKS_VISIBLE && (
           <a href="#rubiks-guide-title" className="rounded-full border border-red-400/30 bg-red-500/10 px-3 py-1.5 text-sm font-semibold text-red-700 dark:text-red-300">Rubik's Cube guide</a>
           )}
@@ -236,8 +244,8 @@ export default function Guides() {
           "Your Game Mode — set in your profile — controls which board sizes and difficulty levels each game offers, so the same game can feel completely different for a child and an experienced player.",
         ]}
         cards={[
-          { title: "Guest play", detail: "Start any of the nine games immediately. Progress is kept in the browser until you sign in." },
-          { title: "Kids mode", detail: "Shows only the smaller boards and easier levels — 3×3–6×6 Sudoku, short Memory boards, Easy–Medium Jigsaw, Word Search and Minesweeper, and Easy–Medium quizzes." },
+          { title: "Guest play", detail: "Start any of the ten games immediately. Progress is kept in the browser until you sign in." },
+          { title: "Kids mode", detail: "Shows only the smaller boards and easier levels — 3×3–6×6 Sudoku, short Memory boards, Easy–Medium Jigsaw, Word Search and Minesweeper, Odd Images Easy–Medium, and Easy–Medium quizzes." },
           { title: "Adult & 4 All", detail: "Adult mode offers the larger boards and harder levels; the default 4 All mode shows every size and level for every game." },
         ]}
         details="A profile adds saved results, personal bests, game statistics, achievements, avatar themes, and daily streaks. Signing in is always optional — guest play keeps working either way, and the app remembers unfinished rounds so you can pick up where you left off."
@@ -263,7 +271,7 @@ export default function Guides() {
           { title: "XP", detail: "Earned for completing games at higher difficulties — harder puzzles give more XP and build your overall player rank." },
           { title: "Gems", detail: "Bonus currency awarded with completed games, scaling with the difficulty or board size you chose." },
         ]}
-        details="Quizzes score on accuracy plus a speed bonus for beating the level's par time. Puzzle games like Sudoku, Memory, Jigsaw, Word Search, Minesweeper, and Slide Puzzle each have their own formula — the expandable 'How points are calculated' guide on the leaderboard page lists every game's exact rules."
+        details="Quizzes score on accuracy plus a speed bonus for beating the level's par time. Puzzle games like Sudoku, Memory, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and Odd Images each have their own formula — the expandable 'How points are calculated' guide on the leaderboard page lists every game's exact rules."
         tips="For the best scores, learn each game's penalty rules first — for example, hints reduce points in Jigsaw and Slide Puzzle, and wrong reveals cost you in Minesweeper. Clean, efficient runs always beat frantic ones."
         links={[
           { href: "/leaderboard", label: "View leaderboards", primary: true },
@@ -279,12 +287,12 @@ export default function Guides() {
         icon={CalendarCheck}
         intro={[
           "Every game has a daily challenge: the same puzzle, board, or quiz set is dealt to every player each day, refreshed at 00:00 UTC. It is the fairest way to compare yourself with the whole community.",
-          "Leaderboards rank players on weekly, monthly, and all-time boards — per game and across all nine games combined. Friend challenges let you send a head-to-head duel to another player on any game.",
+          "Leaderboards rank players on weekly, monthly, and all-time boards — per game and across all ten games combined. Friend challenges let you send a head-to-head duel to another player on any game.",
         ]}
         cards={[
-          { title: "Daily challenges", detail: "One shared puzzle or quiz per game per day — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and all three quizzes each have their own." },
+          { title: "Daily challenges", detail: "One shared puzzle or quiz per game per day — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and all three quizzes each have their own." },
           { title: "Leaderboards", detail: "Weekly, monthly, and all-time rankings per game plus an all-games board that combines your scores everywhere." },
-          { title: "Friend duels", detail: "Challenge another player to the same round on any of the nine games — the higher score wins bonus gems." },
+          { title: "Friend duels", detail: "Challenge another player to the same round on any of the ten games — the higher score wins bonus gems." },
         ]}
         details="Daily results feed the daily and all-time leaderboards, and completing challenges in a row builds streaks shown on your profile. Each game's daily challenge page also shows today's leaderboard so you can see how your run compares in real time."
         tips="Make the dailies part of your routine — they refresh at 00:00 UTC, so an evening run counts for that day. You can also challenge friends directly from the Challenges page to settle rivalries on your favourite game."
@@ -429,6 +437,29 @@ export default function Guides() {
         ]}
       />
 
+      <GuideSection
+        id="odd-images"
+        title="Odd Images guide"
+        themeKey="odd-images"
+        icon={Images}
+        intro={[
+          "Odd Images is a visual spot-the-difference game. Each question shows one grid filled with repeats of the same picture theme, and exactly one tile does not belong. Tap the odd image before moving to the next grid.",
+          "Choose from four levels that grow the grid and question count: Easy (3×3, 5 questions), Medium (4×4, 8), Hard (5×5, 10), and Expert (6×6, 12). Your Game Mode controls which levels are offered — Kids mode has Easy and Medium, Adult mode has Hard and Expert, and the default 4 All mode has all four.",
+        ]}
+        cards={[
+          { title: "Easy / Medium", detail: "Smaller grids with clearly different or recolored odd tiles — a gentle way to learn the scan pattern." },
+          { title: "Hard", detail: "A 5×5 grid with 10 questions uses subtler same-image changes like flips, rotations, and missing features." },
+          { title: "Expert", detail: "A 6×6 grid with 12 questions is the biggest board and the sharpest test of attention." },
+        ]}
+        details="Points start from a base set by level and adjust for correct answers and completion time — faster, cleaner runs earn more. Completing a round awards XP and gems that scale with the level. Daily challenges use the same seed for every player, and friend challenges compare points head-to-head."
+        tips="Scan row by row or quadrant by quadrant instead of jumping randomly. The odd tile usually differs by color, orientation, or a missing feature — compare suspicious tiles against their neighbours before tapping. Try the daily Odd Images challenge to play the same seed as other players."
+        links={[
+          { href: "/odd-images", label: "Play Odd Images", primary: true },
+          { href: "/odd-images-challenge", label: "Daily challenge" },
+          { href: "/leaderboard/odd-images", label: "Leaderboard" },
+        ]}
+      />
+
       {RUBIKS_VISIBLE && (
       <GuideSection
         id="rubiks"
@@ -528,6 +559,7 @@ export default function Guides() {
           <Link href="/word-search" className="rounded-lg border border-border bg-background px-4 py-2 font-semibold text-foreground transition-colors hover:bg-muted">Play Word Search</Link>
           <Link href="/minesweeper" className="rounded-lg border border-border bg-background px-4 py-2 font-semibold text-foreground transition-colors hover:bg-muted">Play Minesweeper</Link>
           <Link href="/slide-puzzle" className="rounded-lg border border-border bg-background px-4 py-2 font-semibold text-foreground transition-colors hover:bg-muted">Play Slide Puzzle</Link>
+          <Link href="/odd-images" className="rounded-lg border border-border bg-background px-4 py-2 font-semibold text-foreground transition-colors hover:bg-muted">Play Odd Images</Link>
           <Link href="/quiz/science" className="rounded-lg border border-border bg-background px-4 py-2 font-semibold text-foreground transition-colors hover:bg-muted">Play Science Quiz</Link>
           <Link href="/quiz/maths" className="rounded-lg border border-border bg-background px-4 py-2 font-semibold text-foreground transition-colors hover:bg-muted">Play Maths Quiz</Link>
           <Link href="/quiz/gk" className="rounded-lg border border-border bg-background px-4 py-2 font-semibold text-foreground transition-colors hover:bg-muted">Play GK Quiz</Link>

@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation, useSearch } from "wouter";
-import { ArrowLeft, BookOpen, Clock3, Grid3x3, Home, Keyboard, LayoutGrid, Lightbulb, MousePointerClick, RotateCcw, Scroll, Share2, Timer, Trophy, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeft, BookOpen, Clock3, Flame, Grid3x3, Home, Keyboard, LayoutGrid, Lightbulb, MousePointerClick, RotateCcw, Scroll, Share2, Timer, Trophy, Volume2, VolumeX } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useImageTheme } from "@/hooks/use-image-theme";
 import { useSound } from "@/hooks/use-sound";
@@ -427,6 +427,7 @@ export default function SlidePuzzlePage() {
             </button>;
           })}
         </div>
+        {!game.dailyDate && !game.challengeId && <Button variant="outline" className="w-full gap-2" onClick={() => setLocation("/slide-puzzle-challenge")}><Flame className="h-4 w-4"/> Try today&apos;s daily challenge</Button>}
         <div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-4">
           <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setGame(null)}><LayoutGrid className="h-4 w-4"/> Game home</Button>
           <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setLocation("/leaderboard/slide-puzzle")}><Trophy className="h-4 w-4"/> Leaderboard</Button>
@@ -468,9 +469,9 @@ export default function SlidePuzzlePage() {
   const solvedPreview = createSolvedTiles(3);
   const slideableSet = game ? new Set(slideableIndexes(game.tiles, game.size)) : new Set<number>();
 
-  return <main className={`mx-auto w-full px-3 py-5 sm:px-6 sm:py-8 ${game ? "max-w-3xl" : "max-w-lg"}`}>
+  return <main className={`mx-auto w-full px-3 py-3 sm:px-6 sm:py-8 ${game ? "max-w-3xl" : "max-w-lg"}`}>
     {showConfetti && <Confetti />}
-    <div className="relative isolate mb-4 flex items-center justify-between gap-3 overflow-hidden rounded-2xl border-2 border-sky-200/80 bg-gradient-to-br from-sky-50 via-white to-cyan-100 px-4 py-3 shadow-lg shadow-sky-500/10 dark:border-sky-800/60 dark:from-sky-950/60 dark:via-card dark:to-cyan-950/60">
+    <div className="relative isolate mb-3 flex items-center sm:mb-4 justify-between gap-3 overflow-hidden rounded-2xl border-2 border-sky-200/80 bg-gradient-to-br from-sky-50 via-white to-cyan-100 px-3 py-2 shadow-lg shadow-sky-500/10 sm:px-4 sm:py-3 dark:border-sky-800/60 dark:from-sky-950/60 dark:via-card dark:to-cyan-950/60">
       <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full bg-cyan-300/30 blur-2xl dark:bg-cyan-400/15" />
       <Button variant="ghost" size="sm" className="relative z-10 shrink-0 px-1" onClick={() => (game ? setGame(null) : setLocation("/"))}><ArrowLeft className="mr-1 h-4 w-4"/> {game ? "Back" : "Home"}</Button>
       <div className="relative z-10 min-w-0 text-right">
@@ -479,40 +480,40 @@ export default function SlidePuzzlePage() {
       </div>
       <Button variant="ghost" size="icon" className="relative z-10 shrink-0" aria-label={sounds.enabled ? "Mute sounds" : "Enable sounds"} onClick={sounds.toggle}>{sounds.enabled ? <Volume2 className="h-4 w-4"/> : <VolumeX className="h-4 w-4"/>}</Button>
     </div>
-    <div className={`grid gap-5 ${game ? "" : "grid-cols-1"}`}>
-      <section className="min-w-0 space-y-4">
+    <div className={`grid gap-4 sm:gap-5 ${game ? "" : "grid-cols-1"}`}>
+      <section className="min-w-0 space-y-3 sm:space-y-4">
         {!game ? <>
-          {hasSavedGame && <button onClick={() => setLocation("/slide-puzzle?resume=1")} className="flex w-full items-center gap-3 rounded-xl border-2 border-sky-300/60 bg-card px-4 py-3 text-left transition hover:bg-sky-50 dark:border-sky-800/50 dark:hover:bg-sky-950/30"><RotateCcw className="h-4 w-4 shrink-0 text-sky-600"/><span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-sky-700 dark:text-sky-300">Resume Slide Puzzle</span><span className="block text-xs text-muted-foreground">Pick up where you left off</span></span><span className="text-lg text-sky-600">→</span></button>}
-          <div className="relative isolate overflow-hidden rounded-2xl border-2 border-sky-200/80 bg-gradient-to-br from-white via-sky-50 to-cyan-50 p-4 shadow-xl shadow-sky-500/10 dark:border-sky-800/50 dark:from-card dark:via-sky-950/35 dark:to-cyan-950/40 sm:p-5">
+          {hasSavedGame && <button onClick={() => setLocation("/slide-puzzle?resume=1")} className="flex w-full items-center gap-3 rounded-xl border-2 border-sky-300/60 bg-card px-3 py-2.5 sm:px-4 sm:py-3 text-left transition hover:bg-sky-50 dark:border-sky-800/50 dark:hover:bg-sky-950/30"><RotateCcw className="h-4 w-4 shrink-0 text-sky-600"/><span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-sky-700 dark:text-sky-300">Resume Slide Puzzle</span><span className="block text-xs text-muted-foreground">Pick up where you left off</span></span><span className="text-lg text-sky-600">→</span></button>}
+          <div className="relative isolate overflow-hidden rounded-2xl border-2 border-sky-200/80 bg-gradient-to-br from-white via-sky-50 to-cyan-50 p-3 shadow-xl shadow-sky-500/10 dark:border-sky-800/50 dark:from-card dark:via-sky-950/35 dark:to-cyan-950/40 sm:p-5">
             <div aria-hidden="true" className="pointer-events-none absolute -bottom-8 -left-8 h-24 w-24 rounded-full bg-cyan-300/25 blur-2xl dark:bg-cyan-400/10" />
-            <div className="relative z-10 mb-4 flex items-center gap-3 rounded-xl border border-sky-200/70 bg-white/65 px-3 py-3 dark:border-sky-800/50 dark:bg-slate-950/20">
+            <div className="relative z-10 mb-4 hidden items-center gap-3 rounded-xl border border-sky-200/70 bg-white/65 px-3 py-3 dark:border-sky-800/50 dark:bg-slate-950/20 sm:flex">
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-sky-500/15 text-2xl">🧩</span>
               <div className="min-w-0 flex-1"><h2 className="font-serif text-lg font-bold">Ready to slide?</h2><p className="text-xs leading-relaxed text-muted-foreground">Tap a tile next to the gap to slide it. Restore tiles 1 through {SLIDE_PUZZLE_LEVELS["3x3"].tiles} in order to solve the board.</p></div>
               <div className="hidden grid-cols-3 gap-1 rounded-lg border border-sky-200/70 bg-white/70 p-1 sm:grid dark:border-sky-800/50 dark:bg-slate-950/30">{solvedPreview.map((value, i) => <span key={i} className={`grid h-5 w-5 place-items-center rounded text-[9px] font-black ${value === 0 ? "bg-sky-200/60 text-sky-400" : "bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-200"}`}>{value === 0 ? "·" : value}</span>)}</div>
             </div>
-            <p className="relative z-10 mb-2.5 text-xs font-semibold uppercase tracking-widest text-sky-700 dark:text-sky-300">Choose Board Size</p>
-            <div className="relative z-10 grid grid-cols-2 gap-2.5">
+            <p className="relative z-10 mb-2 hidden text-xs font-semibold uppercase tracking-widest text-sky-700 dark:text-sky-300 sm:block">Choose Board Size</p>
+            <div className="relative z-10 grid grid-cols-2 gap-2 sm:gap-2.5">
               {availableDifficulties.map((item) => {
                 const meta = { "2x2": "🧸", "3x3": "🌱", "4x4": "🧭", "5x5": "🔥" }[item.id];
                 const level = SLIDE_PUZZLE_LEVELS[item.id];
-                return <button key={item.id} onClick={() => startGame(item.id, tileStyle, tileStyle === "icons" ? imageThemeId : null)} className="group flex min-h-[92px] flex-col items-center justify-center gap-1 rounded-2xl border-2 border-sky-200/80 bg-gradient-to-br from-sky-50 to-cyan-50 p-3 text-center shadow-sm transition-all hover:-translate-y-0.5 hover:border-sky-400 hover:shadow-md active:scale-[0.98] dark:border-sky-800/60 dark:from-sky-950/45 dark:to-cyan-950/40">
-                  <span className="grid h-9 w-9 place-items-center rounded-xl bg-sky-500/10 text-xl group-hover:bg-sky-500/20">{meta}</span>
+                return <button key={item.id} onClick={() => startGame(item.id, tileStyle, tileStyle === "icons" ? imageThemeId : null)} className="group flex min-h-[72px] sm:min-h-[92px] flex-col items-center justify-center gap-1 rounded-2xl border-2 border-sky-200/80 bg-gradient-to-br from-sky-50 to-cyan-50 p-2 text-center shadow-sm sm:p-3 transition-all hover:-translate-y-0.5 hover:border-sky-400 hover:shadow-md active:scale-[0.98] dark:border-sky-800/60 dark:from-sky-950/45 dark:to-cyan-950/40">
+                  <span className="grid h-8 w-8 place-items-center sm:h-9 sm:w-9 rounded-xl bg-sky-500/10 text-xl group-hover:bg-sky-500/20">{meta}</span>
                   <span className="text-sm font-bold leading-tight">{level.label}</span>
                   <span className="text-[10px] leading-tight text-muted-foreground">{item.detail}</span>
                 </button>;
               })}
             </div>
-            <div className="relative z-10 mt-3 space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-widest text-sky-700 dark:text-sky-300">Tile Style</p>
+            <div className="relative z-10 mt-3 space-y-1.5">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-sky-700 dark:text-sky-300 sm:text-xs">Tile Style</p>
               <div className="grid grid-cols-3 gap-1.5">
                 {SLIDE_PUZZLE_TILE_STYLES.map((style) => (
-                  <button key={style.id} onClick={() => setTileStyle(style.id)} className={`min-h-10 rounded-xl border px-2 text-xs font-bold transition ${tileStyle === style.id ? "border-sky-500 bg-sky-500/15 text-sky-700 dark:text-sky-300" : "border-border bg-white/60 text-muted-foreground hover:border-sky-300 dark:bg-slate-950/30"}`}>{style.label}</button>
+                  <button key={style.id} onClick={() => setTileStyle(style.id)} className={`min-h-9 rounded-xl border px-2 text-xs font-bold transition sm:min-h-10 ${tileStyle === style.id ? "border-sky-500 bg-sky-500/15 text-sky-700 dark:text-sky-300" : "border-border bg-white/60 text-muted-foreground hover:border-sky-300 dark:bg-slate-950/30"}`}>{style.label}</button>
                 ))}
               </div>
               {tileStyle === "icons" && (
                 <div className="space-y-1.5">
                   <p className="text-[10px] font-semibold uppercase tracking-widest text-sky-700 dark:text-sky-300">Choose picture · {getTheme(imageThemeId).name}</p>
-                  <div className="grid max-h-32 grid-cols-8 gap-1 overflow-y-auto rounded-xl border border-border/60 bg-white/40 p-1.5 dark:bg-slate-950/30">
+                  <div className="grid max-h-24 grid-cols-8 gap-0.5 overflow-y-auto rounded-xl border border-border/60 bg-white/40 p-1.5 dark:bg-slate-950/30 sm:max-h-32 sm:gap-1">
                     {Array.from({ length: getTheme(imageThemeId).symbols.length }, (_, i) => i + 1).map((v) => (
                       <button key={v} onClick={() => setIconValue(v)} title={`Picture ${v}`} className={`flex aspect-square items-center justify-center rounded-lg transition ${iconValue === v ? "bg-sky-500/20 ring-1 ring-sky-500" : "hover:bg-sky-500/10"}`}>
                         <ThemeIcon themeId={imageThemeId} value={v} size={20} />
@@ -524,16 +525,16 @@ export default function SlidePuzzlePage() {
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <button onClick={() => setLocation("/profile?tab=slide-puzzle")} className="flex items-center gap-3 rounded-xl border bg-card p-3 text-left transition hover:border-sky-300 hover:bg-muted/50"><Grid3x3 className="h-5 w-5 shrink-0 text-sky-600"/><span><span className="block text-sm font-semibold">My Stats</span><span className="hidden text-xs text-muted-foreground sm:block">Best times & progress</span></span></button>
-            <button onClick={() => setLocation("/leaderboard/slide-puzzle")} className="flex items-center gap-3 rounded-xl border bg-card p-3 text-left transition hover:border-sky-300 hover:bg-muted/50"><Trophy className="h-5 w-5 shrink-0 text-sky-600"/><span><span className="block text-sm font-semibold">Leaderboard</span><span className="hidden text-xs text-muted-foreground sm:block">Top solvers</span></span></button>
+            <button onClick={() => setLocation("/profile?tab=slide-puzzle")} className="flex items-center gap-3 rounded-xl border bg-card p-2.5 text-left sm:p-3 transition hover:border-sky-300 hover:bg-muted/50"><Grid3x3 className="h-5 w-5 shrink-0 text-sky-600"/><span><span className="block text-sm font-semibold">My Stats</span><span className="hidden text-xs text-muted-foreground sm:block">Best times & progress</span></span></button>
+            <button onClick={() => setLocation("/leaderboard/slide-puzzle")} className="flex items-center gap-3 rounded-xl border bg-card p-2.5 text-left sm:p-3 transition hover:border-sky-300 hover:bg-muted/50"><Trophy className="h-5 w-5 shrink-0 text-sky-600"/><span><span className="block text-sm font-semibold">Leaderboard</span><span className="hidden text-xs text-muted-foreground sm:block">Top solvers</span></span></button>
           </div>
-          <button onClick={() => setLocation("/slide-puzzle-challenge")} className="flex w-full items-center gap-3 rounded-xl border border-orange-200 bg-orange-50/60 px-4 py-3 text-left transition hover:bg-orange-50 dark:border-orange-800/40 dark:bg-orange-950/20 dark:hover:bg-orange-950/30">
+          <button onClick={() => setLocation("/slide-puzzle-challenge")} className="flex w-full items-center gap-3 rounded-xl border border-orange-200 bg-orange-50/60 px-3 py-2.5 sm:px-4 sm:py-3 text-left transition hover:bg-orange-50 dark:border-orange-800/40 dark:bg-orange-950/20 dark:hover:bg-orange-950/30">
             <span className="text-lg leading-none">🔥</span>
             <span className="min-w-0 flex-1"><span className="block text-sm font-semibold">Daily Slide Puzzle</span><span className="block text-xs text-muted-foreground">One shared board for everyone each day</span></span>
             <span className="text-orange-500">→</span>
           </button>
           {/* Info links */}
-          <div className="home-info-links flex items-center justify-center gap-6 rounded-xl border border-border bg-card px-4 py-2.5">
+          <div className="home-info-links flex items-center justify-center gap-4 rounded-xl border border-border bg-card px-3 py-2 sm:gap-6 sm:px-4 sm:py-2.5">
             <button onClick={() => setInfoModal("rules")} className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"><BookOpen className="h-3.5 w-3.5" /> Rules</button>
             <span className="text-border">·</span>
             <button onClick={() => setInfoModal("controls")} className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"><Keyboard className="h-3.5 w-3.5" /> Controls</button>
@@ -675,18 +676,28 @@ export default function SlidePuzzlePage() {
               </div>
             </DialogContent>
           </Dialog>
-        </> : <section className="rounded-3xl border border-border bg-card p-3 shadow-sm sm:p-5">
+        </> : <section className="rounded-3xl border border-border bg-card p-2 shadow-sm sm:p-5">
           {/* Top controls — single line */}
-          <div className="mb-3 flex flex-nowrap items-center gap-1 rounded-xl border border-border bg-muted/40 px-2 py-1.5 text-xs sm:gap-2 sm:px-3">
+          <div className="mb-2 flex flex-nowrap items-center gap-1 overflow-x-auto rounded-xl border border-border bg-muted/40 px-2 py-1.5 text-xs [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-2 sm:px-3">
             <span className="flex shrink-0 items-center gap-1 rounded-full bg-background px-2 py-1 font-bold tabular-nums sm:px-2.5"><MousePointerClick className="h-3.5 w-3.5 text-sky-600"/>{game.moves} moves</span>
             <span className="flex shrink-0 items-center gap-1 rounded-full bg-background px-2 py-1 font-bold tabular-nums sm:px-2.5"><Clock3 className="h-3.5 w-3.5 text-sky-600"/>{fmt(elapsed)}</span>
-            <Button variant="outline" size="sm" className="ml-auto h-8 shrink-0 gap-1 px-2" onClick={issueHint} disabled={game.hintsUsed >= MAX_HINTS} aria-label={`Hint, ${MAX_HINTS - game.hintsUsed} left`}><Lightbulb className="h-4 w-4"/> <span className="hidden sm:inline">Hint ({MAX_HINTS - game.hintsUsed})</span><span className="sm:hidden">{MAX_HINTS - game.hintsUsed}</span></Button>
-            <Button variant="ghost" size="sm" className="h-8 shrink-0 gap-1 px-2" onClick={() => startGame(game.difficulty, game.tileStyle, game.themeId, undefined, undefined, undefined, undefined, game.iconValue)} aria-label="Restart"><RotateCcw className="h-4 w-4"/><span className="hidden sm:inline">Restart</span></Button>
-          </div>
-
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <div><h2 className="font-bold">{SLIDE_PUZZLE_LEVELS[game.difficulty].label} board · {STYLE_LABELS[game.tileStyle]}</h2><p className="mt-0.5 text-xs text-muted-foreground">{game.size}×{game.size} · {game.tiles.filter((t) => t !== 0).length} tiles · slide tiles beside the gap</p></div>
-            {!game.dailyDate && !game.challengeId && styleSwitcher(game.tileStyle)}
+            {!game.dailyDate && !game.challengeId && (
+              <>
+                <select aria-label="Board size" title="Changing options starts a new puzzle" value={game.difficulty} onChange={(event) => startGame(event.target.value as SlidePuzzleDifficulty, game.tileStyle, game.themeId, undefined, undefined, undefined, undefined, game.iconValue)} className="h-8 w-[4.5rem] shrink-0 rounded-lg border border-sky-200 bg-background px-1.5 text-[11px] font-semibold text-foreground outline-none focus:ring-2 focus:ring-sky-400 dark:border-sky-800 sm:w-auto sm:px-2">
+                  {availableDifficulties.map(({ id }) => <option key={id} value={id}>{SLIDE_PUZZLE_LEVELS[id].label}</option>)}
+                </select>
+                <select aria-label="Tile style" title="Changing options starts a new puzzle" value={game.tileStyle} onChange={(event) => switchTileStyle(event.target.value as SlidePuzzleTileStyle)} className="h-8 w-[5.25rem] shrink-0 rounded-lg border border-sky-200 bg-background px-1.5 text-[11px] font-semibold text-foreground outline-none focus:ring-2 focus:ring-sky-400 dark:border-sky-800 sm:w-auto sm:px-2">
+                  {SLIDE_PUZZLE_TILE_STYLES.map((style) => <option key={style.id} value={style.id}>{style.label}</option>)}
+                </select>
+                {game.tileStyle === "icons" && (
+                  <select aria-label="Picture" title="Changing picture starts a new puzzle" value={game.iconValue ?? iconValue} onChange={(event) => switchPicture(Number(event.target.value))} className="h-8 w-[4.75rem] shrink-0 rounded-lg border border-sky-200 bg-background px-1.5 text-[11px] font-semibold text-foreground outline-none focus:ring-2 focus:ring-sky-400 dark:border-sky-800 sm:w-auto sm:px-2">
+                    {Array.from({ length: getTheme(game.themeId ?? imageThemeId).symbols.length }, (_, i) => i + 1).map((value) => <option key={value} value={value}>Pic {value}</option>)}
+                  </select>
+                )}
+              </>
+            )}
+            <Button variant="outline" size="sm" className="h-8 shrink-0 gap-1 px-2" onClick={issueHint} disabled={game.hintsUsed >= MAX_HINTS} aria-label={`Hint, ${MAX_HINTS - game.hintsUsed} left`}><Lightbulb className="h-4 w-4"/> <span className="hidden sm:inline">Hint ({MAX_HINTS - game.hintsUsed})</span><span className="sm:hidden">{MAX_HINTS - game.hintsUsed}</span></Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => startGame(game.difficulty, game.tileStyle, game.themeId, undefined, undefined, undefined, undefined, game.iconValue)} aria-label="Restart"><RotateCcw className="h-4 w-4"/></Button>
           </div>
 
           <div className="mx-auto w-full max-w-[560px] rounded-2xl bg-gradient-to-br from-sky-300 via-cyan-300 to-blue-300 p-1.5 shadow-lg shadow-sky-500/15 dark:from-sky-800 dark:via-cyan-800 dark:to-blue-800">

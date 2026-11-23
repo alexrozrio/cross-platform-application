@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation, useSearch } from "wouter";
-import { ArrowLeft, BookOpen, Bomb, Clock3, Flag, Home, Keyboard, LayoutGrid, Lightbulb, RotateCcw, Scroll, Share2, Timer, Trophy, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeft, BookOpen, Bomb, Clock3, Flag, Flame, Home, Keyboard, LayoutGrid, Lightbulb, RotateCcw, Scroll, Share2, Timer, Trophy, Volume2, VolumeX } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useSound } from "@/hooks/use-sound";
 import { usePageMeta } from "@/components/page-meta";
@@ -394,6 +394,7 @@ export default function MinesweeperPage() {
             </button>;
           })}
         </div>
+        {!game.dailyDate && !game.challengeId && <Button variant="outline" className="w-full gap-2" onClick={() => setLocation("/minesweeper-challenge")}><Flame className="h-4 w-4"/> Try today&apos;s daily challenge</Button>}
         <div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-4">
           <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setGame(null)}><LayoutGrid className="h-4 w-4"/> Game home</Button>
           <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setLocation("/leaderboard/minesweeper")}><Trophy className="h-4 w-4"/> Leaderboard</Button>
@@ -432,9 +433,9 @@ export default function MinesweeperPage() {
     </main>;
   }
 
-  return <main className={`mx-auto w-full px-3 py-5 sm:px-6 sm:py-8 ${game ? "max-w-3xl" : "max-w-lg"}`}>
+  return <main className={`mx-auto w-full px-3 py-3 sm:px-6 sm:py-8 ${game ? "max-w-3xl" : "max-w-lg"}`}>
     {showConfetti && <Confetti />}
-    <div className="relative isolate mb-4 flex items-center justify-between gap-3 overflow-hidden rounded-2xl border-2 border-emerald-200/80 bg-gradient-to-br from-emerald-50 via-white to-teal-100 px-4 py-3 shadow-lg shadow-emerald-500/10 dark:border-emerald-800/60 dark:from-emerald-950/60 dark:via-card dark:to-teal-950/60">
+    <div className="relative isolate mb-3 flex items-center sm:mb-4 justify-between gap-3 overflow-hidden rounded-2xl border-2 border-emerald-200/80 bg-gradient-to-br from-emerald-50 via-white to-teal-100 px-3 py-2 shadow-lg shadow-emerald-500/10 sm:px-4 sm:py-3 dark:border-emerald-800/60 dark:from-emerald-950/60 dark:via-card dark:to-teal-950/60">
       <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full bg-teal-300/30 blur-2xl dark:bg-teal-400/15" />
       <Button variant="ghost" size="sm" className="relative z-10 shrink-0 px-1" onClick={() => (game ? setGame(null) : setLocation("/"))}><ArrowLeft className="mr-1 h-4 w-4"/> {game ? "Back" : "Home"}</Button>
       <div className="relative z-10 min-w-0 text-right">
@@ -443,24 +444,24 @@ export default function MinesweeperPage() {
       </div>
       <Button variant="ghost" size="icon" className="relative z-10 shrink-0" aria-label={sounds.enabled ? "Mute sounds" : "Enable sounds"} onClick={sounds.toggle}>{sounds.enabled ? <Volume2 className="h-4 w-4"/> : <VolumeX className="h-4 w-4"/>}</Button>
     </div>
-    <div className={`grid gap-5 ${game ? "" : "grid-cols-1"}`}>
-      <section className="min-w-0 space-y-4">
+    <div className={`grid gap-4 sm:gap-5 ${game ? "" : "grid-cols-1"}`}>
+      <section className="min-w-0 space-y-3 sm:space-y-4">
         {!game ? <>
-          {hasSavedGame && <button onClick={() => setLocation("/minesweeper?resume=1")} className="flex w-full items-center gap-3 rounded-xl border-2 border-emerald-300/60 bg-card px-4 py-3 text-left transition hover:bg-emerald-50 dark:border-emerald-800/50 dark:hover:bg-emerald-950/30"><RotateCcw className="h-4 w-4 shrink-0 text-emerald-600"/><span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-emerald-700 dark:text-emerald-300">Resume Minesweeper</span><span className="block text-xs text-muted-foreground">Pick up where you left off</span></span><span className="text-lg text-emerald-600">→</span></button>}
-          <div className="relative isolate overflow-hidden rounded-2xl border-2 border-emerald-200/80 bg-gradient-to-br from-white via-emerald-50 to-teal-50 p-4 shadow-xl shadow-emerald-500/10 dark:border-emerald-800/50 dark:from-card dark:via-emerald-950/35 dark:to-teal-950/40 sm:p-5">
+          {hasSavedGame && <button onClick={() => setLocation("/minesweeper?resume=1")} className="flex w-full items-center gap-3 rounded-xl border-2 border-emerald-300/60 bg-card px-3 py-2.5 sm:px-4 sm:py-3 text-left transition hover:bg-emerald-50 dark:border-emerald-800/50 dark:hover:bg-emerald-950/30"><RotateCcw className="h-4 w-4 shrink-0 text-emerald-600"/><span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-emerald-700 dark:text-emerald-300">Resume Minesweeper</span><span className="block text-xs text-muted-foreground">Pick up where you left off</span></span><span className="text-lg text-emerald-600">→</span></button>}
+          <div className="relative isolate overflow-hidden rounded-2xl border-2 border-emerald-200/80 bg-gradient-to-br from-white via-emerald-50 to-teal-50 p-3 shadow-xl shadow-emerald-500/10 dark:border-emerald-800/50 dark:from-card dark:via-emerald-950/35 dark:to-teal-950/40 sm:p-5">
             <div aria-hidden="true" className="pointer-events-none absolute -bottom-8 -left-8 h-24 w-24 rounded-full bg-teal-300/25 blur-2xl dark:bg-teal-400/10" />
-            <div className="relative z-10 mb-4 flex items-center gap-3 rounded-xl border border-emerald-200/70 bg-white/65 px-3 py-3 dark:border-emerald-800/50 dark:bg-slate-950/20">
+            <div className="relative z-10 mb-4 hidden items-center gap-3 rounded-xl border border-emerald-200/70 bg-white/65 px-3 py-3 dark:border-emerald-800/50 dark:bg-slate-950/20 sm:flex">
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-emerald-500/15 text-2xl">💣</span>
               <div className="min-w-0 flex-1"><h2 className="font-serif text-lg font-bold">Ready to sweep?</h2><p className="text-xs leading-relaxed text-muted-foreground">Reveal every safe cell without hitting {MAX_MISTAKES} mines. Numbers show how many mines touch each cell.</p></div>
               <div className="hidden grid-cols-3 gap-1 rounded-lg border border-emerald-200/70 bg-white/70 p-1 sm:grid dark:border-emerald-800/50 dark:bg-slate-950/30">{["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((n, i) => <span key={i} className={`grid h-5 w-5 place-items-center rounded text-[9px] font-black ${NUMBER_COLORS[Number(n)]}`}>{n}</span>)}</div>
             </div>
-            <p className="relative z-10 mb-2.5 text-xs font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-300">Choose Difficulty</p>
-            <div className="relative z-10 grid grid-cols-2 gap-2.5">
+            <p className="relative z-10 mb-2 hidden text-xs font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-300 sm:block">Choose Difficulty</p>
+            <div className="relative z-10 grid grid-cols-2 gap-2 sm:gap-2.5">
               {availableDifficulties.map((item) => {
                 const meta = { beginner: "🧸", easy: "🌱", medium: "🧭", hard: "🔥" }[item.id];
                 const level = MINESWEEPER_LEVELS[item.id];
-                return <button key={item.id} onClick={() => startGame(item.id)} className="group flex min-h-[92px] flex-col items-center justify-center gap-1 rounded-2xl border-2 border-emerald-200/80 bg-gradient-to-br from-emerald-50 to-teal-50 p-3 text-center shadow-sm transition-all hover:-translate-y-0.5 hover:border-emerald-400 hover:shadow-md active:scale-[0.98] dark:border-emerald-800/60 dark:from-emerald-950/45 dark:to-teal-950/40">
-                  <span className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-500/10 text-xl group-hover:bg-emerald-500/20">{meta}</span>
+                return <button key={item.id} onClick={() => startGame(item.id)} className="group flex min-h-[72px] sm:min-h-[92px] flex-col items-center justify-center gap-1 rounded-2xl border-2 border-emerald-200/80 bg-gradient-to-br from-emerald-50 to-teal-50 p-2 text-center shadow-sm sm:p-3 transition-all hover:-translate-y-0.5 hover:border-emerald-400 hover:shadow-md active:scale-[0.98] dark:border-emerald-800/60 dark:from-emerald-950/45 dark:to-teal-950/40">
+                  <span className="grid h-8 w-8 place-items-center sm:h-9 sm:w-9 rounded-xl bg-emerald-500/10 text-xl group-hover:bg-emerald-500/20">{meta}</span>
                   <span className="text-sm font-bold leading-tight">{level.label}</span>
                   <span className="text-[10px] leading-tight text-muted-foreground">{item.detail}</span>
                 </button>;
@@ -468,16 +469,16 @@ export default function MinesweeperPage() {
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <button onClick={() => setLocation("/profile?tab=minesweeper")} className="flex items-center gap-3 rounded-xl border bg-card p-3 text-left transition hover:border-emerald-300 hover:bg-muted/50"><Flag className="h-5 w-5 shrink-0 text-emerald-600"/><span><span className="block text-sm font-semibold">My Stats</span><span className="hidden text-xs text-muted-foreground sm:block">Best times & progress</span></span></button>
-            <button onClick={() => setLocation("/leaderboard/minesweeper")} className="flex items-center gap-3 rounded-xl border bg-card p-3 text-left transition hover:border-emerald-300 hover:bg-muted/50"><Trophy className="h-5 w-5 shrink-0 text-emerald-600"/><span><span className="block text-sm font-semibold">Leaderboard</span><span className="hidden text-xs text-muted-foreground sm:block">Top sweepers</span></span></button>
+            <button onClick={() => setLocation("/profile?tab=minesweeper")} className="flex items-center gap-3 rounded-xl border bg-card p-2.5 text-left sm:p-3 transition hover:border-emerald-300 hover:bg-muted/50"><Flag className="h-5 w-5 shrink-0 text-emerald-600"/><span><span className="block text-sm font-semibold">My Stats</span><span className="hidden text-xs text-muted-foreground sm:block">Best times & progress</span></span></button>
+            <button onClick={() => setLocation("/leaderboard/minesweeper")} className="flex items-center gap-3 rounded-xl border bg-card p-2.5 text-left sm:p-3 transition hover:border-emerald-300 hover:bg-muted/50"><Trophy className="h-5 w-5 shrink-0 text-emerald-600"/><span><span className="block text-sm font-semibold">Leaderboard</span><span className="hidden text-xs text-muted-foreground sm:block">Top sweepers</span></span></button>
           </div>
-          <button onClick={() => setLocation("/minesweeper-challenge")} className="flex w-full items-center gap-3 rounded-xl border border-orange-200 bg-orange-50/60 px-4 py-3 text-left transition hover:bg-orange-50 dark:border-orange-800/40 dark:bg-orange-950/20 dark:hover:bg-orange-950/30">
+          <button onClick={() => setLocation("/minesweeper-challenge")} className="flex w-full items-center gap-3 rounded-xl border border-orange-200 bg-orange-50/60 px-3 py-2.5 sm:px-4 sm:py-3 text-left transition hover:bg-orange-50 dark:border-orange-800/40 dark:bg-orange-950/20 dark:hover:bg-orange-950/30">
             <span className="text-lg leading-none">🔥</span>
             <span className="min-w-0 flex-1"><span className="block text-sm font-semibold">Daily Minesweeper</span><span className="block text-xs text-muted-foreground">One shared board for everyone each day</span></span>
             <span className="text-orange-500">→</span>
           </button>
           {/* Info links */}
-          <div className="home-info-links flex items-center justify-center gap-6 rounded-xl border border-border bg-card px-4 py-2.5">
+          <div className="home-info-links flex items-center justify-center gap-4 rounded-xl border border-border bg-card px-3 py-2 sm:gap-6 sm:px-4 sm:py-2.5">
             <button onClick={() => setInfoModal("rules")} className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"><BookOpen className="h-3.5 w-3.5" /> Rules</button>
             <span className="text-border">·</span>
             <button onClick={() => setInfoModal("controls")} className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"><Keyboard className="h-3.5 w-3.5" /> Controls</button>
@@ -619,21 +620,22 @@ export default function MinesweeperPage() {
               </div>
             </DialogContent>
           </Dialog>
-        </> : <section className="rounded-3xl border border-border bg-card p-3 shadow-sm sm:p-5">
+        </> : <section className="rounded-3xl border border-border bg-card p-2 shadow-sm sm:p-5">
           {/* Top controls — single line */}
-          <div className="mb-3 flex flex-nowrap items-center gap-1 rounded-xl border border-border bg-muted/40 px-2 py-1.5 text-xs sm:gap-2 sm:px-3">
+          <div className="mb-2 flex flex-nowrap items-center gap-1 overflow-x-auto rounded-xl border border-border bg-muted/40 px-2 py-1.5 text-xs [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-2 sm:px-3">
             <Button variant={flagMode ? "default" : "outline"} size="sm" className={`h-8 shrink-0 gap-1 px-2 ${flagMode ? "bg-emerald-600 hover:bg-emerald-700" : ""}`} onClick={() => { sounds.click(); setFlagMode((v) => !v); }} aria-pressed={flagMode} aria-label={flagMode ? "Flag mode on" : "Flag mode"}><Flag className="h-4 w-4"/> <span className="hidden sm:inline">{flagMode ? "Flagging" : "Flag"}</span></Button>
             <span className="flex shrink-0 items-center gap-1 rounded-full bg-background px-2 py-1 font-bold tabular-nums sm:px-2.5" title="Mines remaining"><Bomb className="h-3.5 w-3.5 text-rose-500"/>{game.mines.filter(Boolean).length - game.flagged.filter(Boolean).length}</span>
             <span className="flex shrink-0 items-center gap-1 rounded-full bg-background px-2 py-1 font-bold tabular-nums sm:px-2.5"><Clock3 className="h-3.5 w-3.5 text-emerald-600"/>{fmt(elapsed)}</span>
-            <span className="flex shrink-0 items-center gap-0.5 rounded-full bg-background px-1.5 py-1 sm:px-2" title={`Mines hit — ${MAX_MISTAKES} ends the game`}>
+            <span className="hidden shrink-0 items-center gap-0.5 rounded-full bg-background px-1.5 py-1 sm:flex sm:px-2" title={`Mines hit — ${MAX_MISTAKES} ends the game`}>
               {Array.from({ length: MAX_MISTAKES }, (_, i) => <span key={i} className={`h-2 w-2 rounded-full ${i < game.mistakes ? "bg-rose-500" : "bg-muted-foreground/25"}`} />)}
             </span>
-            <Button variant="outline" size="sm" className="ml-auto h-8 shrink-0 gap-1 px-2" onClick={issueHint} disabled={game.hintsUsed >= MAX_HINTS} aria-label={`Hint, ${MAX_HINTS - game.hintsUsed} left`}><Lightbulb className="h-4 w-4"/> <span className="hidden sm:inline">Hint ({MAX_HINTS - game.hintsUsed})</span><span className="sm:hidden">{MAX_HINTS - game.hintsUsed}</span></Button>
-          </div>
-
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <div><h2 className="font-bold">{MINESWEEPER_LEVELS[game.difficulty].label} board</h2><p className="mt-0.5 text-xs text-muted-foreground">{game.size}×{game.size} · {game.mines.filter(Boolean).length} mines · {flagMode ? "Tap to flag cells" : "Tap to reveal · click a number to chord"}</p></div>
-            <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setGame(null)}><RotateCcw className="h-4 w-4"/> New game</Button>
+            {!game.dailyDate && !game.challengeId && (
+              <select aria-label="Difficulty" title="Changing difficulty starts a new board" value={game.difficulty} onChange={(event) => startGame(event.target.value as MinesweeperDifficulty)} className="h-8 w-[4.75rem] shrink-0 rounded-lg border border-emerald-200 bg-background px-1.5 text-[11px] font-semibold text-foreground outline-none focus:ring-2 focus:ring-emerald-400 dark:border-emerald-800 sm:w-auto sm:px-2">
+                {availableDifficulties.map(({ id }) => <option key={id} value={id}>{MINESWEEPER_LEVELS[id].label}</option>)}
+              </select>
+            )}
+            <Button variant="outline" size="sm" className="h-8 shrink-0 gap-1 px-2" onClick={issueHint} disabled={game.hintsUsed >= MAX_HINTS} aria-label={`Hint, ${MAX_HINTS - game.hintsUsed} left`}><Lightbulb className="h-4 w-4"/> <span className="hidden sm:inline">Hint ({MAX_HINTS - game.hintsUsed})</span><span className="sm:hidden">{MAX_HINTS - game.hintsUsed}</span></Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setGame(null)} aria-label="New game"><RotateCcw className="h-4 w-4"/></Button>
           </div>
 
           <div className="mx-auto w-full max-w-[560px] rounded-2xl bg-gradient-to-br from-emerald-300 via-teal-300 to-cyan-300 p-1.5 shadow-lg shadow-emerald-500/15 dark:from-emerald-800 dark:via-teal-800 dark:to-cyan-800">

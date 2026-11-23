@@ -1,9 +1,10 @@
 import { Router, type IRouter } from "express";
 import { eq, and } from "drizzle-orm";
-import { db, gamesTable, puzzlesTable, dailyChallengesTable, memoryGamesTable, jigsawGamesTable, wordSearchGamesTable, minesweeperGamesTable, slidePuzzleGamesTable, quizGamesTable, profilesTable } from "@workspace/db";
+import { db, gamesTable, puzzlesTable, dailyChallengesTable, memoryGamesTable, jigsawGamesTable, wordSearchGamesTable, minesweeperGamesTable, slidePuzzleGamesTable, quizGamesTable, oddImageGamesTable, profilesTable } from "@workspace/db";
 import {
   countAchievementProgress,
   getJigsawAchievementProgress,
+  getOddImageAchievementProgress,
   SUDOKU_ACHIEVEMENT_TARGETS,
 } from "../utils/achievement-progress";
 
@@ -196,6 +197,18 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
   const slidePuzzleDailyCount = new Set(slidePuzzleWins.map(({ dailyDate }) => dailyDate).filter((date): date is string => !!date)).size;
   const hasFastSlidePuzzle = (difficulty: string, maxTime: number) => slidePuzzleWins.some((game) => game.difficulty === difficulty && game.elapsedSeconds < maxTime);
 
+  // ── Odd Images data ───────────────────────────────────────────────────────
+  const completedOddImages = await db.select({
+    level: oddImageGamesTable.level,
+    theme: oddImageGamesTable.theme,
+    elapsedSeconds: oddImageGamesTable.elapsedSeconds,
+    questions: oddImageGamesTable.questions,
+    correct: oddImageGamesTable.correct,
+    dailyDate: oddImageGamesTable.dailyDate,
+  }).from(oddImageGamesTable).where(and(
+    eq(oddImageGamesTable.profileId, profileId), eq(oddImageGamesTable.status, "completed"),
+  ));
+
   // ── Quiz data (each subject has its own achievement set) ─────────────────
   const completedQuiz = await db.select({
     subject: quizGamesTable.subject,
@@ -372,6 +385,9 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
     slide_puzzle_daily_7: { unlocked: slidePuzzleDailyCount >= 7, progress: Math.min(slidePuzzleDailyCount, 7), total: 7 },
     slide_puzzle_daily_30: { unlocked: slidePuzzleDailyCount >= 30, progress: Math.min(slidePuzzleDailyCount, 30), total: 30 },
     slide_puzzle_daily_100: { unlocked: slidePuzzleDailyCount >= 100, progress: Math.min(slidePuzzleDailyCount, 100), total: 100 },
+
+    // ── Odd Images ──────────────────────────────────────────────────────────
+    ...getOddImageAchievementProgress(completedOddImages),
 
     // ── Quiz games: Science / Maths / GK each have their own set ────────────
     ...quizAchievements,

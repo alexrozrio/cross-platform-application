@@ -52,10 +52,10 @@ const publicPages = [
     route: "/",
     title: "Free Puzzle & Quiz Games Online | Sudoku, Memory, Word Search & More",
     description:
-      "Play nine free browser games: Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and Science, Maths & GK quizzes — with daily challenges, leaderboards, and guest play.",
+      "Play ten free browser games: Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and Science, Maths & GK quizzes — with daily challenges, leaderboards, and guest play.",
     heading: "Free Puzzle & Quiz Games Online",
     intro:
-      "Nine games, one place: logic puzzles, word and picture games, minefields, sliding tiles, and timed quizzes. Every game can be started as a guest, with daily challenges and leaderboards to compare scores.",
+      "Ten games, one place: logic puzzles, word and picture games, minefields, sliding tiles, spot-the-difference grids, and timed quizzes. Every game can be started as a guest, with daily challenges and leaderboards to compare scores.",
     sections: [
       ["Sudoku for logic", "Baby 3×3 through Pro 16×16 grids in easy, medium, hard, and expert. Each symbol must fit its row, column, and marked box — use candidate notes and a repeatable solving loop."],
       ["Memory Match for recall", "2×4 to 8×8 boards with number, letter, or image cards. Turn over two cards at a time and build a location map as you play."],
@@ -63,6 +63,7 @@ const publicPages = [
       ["Word Search for words", "Themed word lists hide in letter grids — Beginner and Easy go across and down, Medium adds diagonals, and Hard includes backwards words."],
       ["Minesweeper for nerves of steel", "Clear the minefield on 6×6 to 14×14 boards from Beginner to Hard. Numbers show adjacent mines; you get up to three mistakes and two hints."],
       ["Slide Puzzle for tile sliding", "Arrange numbered, alphabet, or picture tiles in order on 2×2 to 5×5 boards. Points reward fast, efficient solves with few hints."],
+      ["Odd Images for visual scans", "Each round fills a grid with the same picture theme and hides one odd image. Easy through Expert scales the grid from 3×3 to 6×6 and increases the number of questions."],
       ["Science, Maths & GK quizzes", "Timed multiple-choice quizzes with four levels — Easy (5 questions) up to Expert (12 questions). Answer quickly and accurately to maximise points, XP, and gems."],
       ["Daily challenges for everyone", "Every game has a shared daily challenge that refreshes each day, so you can compare your score with other players on the same puzzle."],
       ["Play as a guest or keep progress in a profile", "You can start any game without an account. Optional Google sign-in connects game statistics, achievements, and streaks to a profile so progress can sync across devices."],
@@ -74,6 +75,7 @@ const publicPages = [
       ["/word-search", "Play Word Search online"],
       ["/minesweeper", "Play Minesweeper online"],
       ["/slide-puzzle", "Play Slide Puzzle online"],
+      ["/odd-images", "Play Odd Images online"],
       ["/quiz/science", "Play the Science Quiz"],
       ["/quiz/maths", "Play the Maths Quiz"],
       ["/quiz/gk", "Play the GK Quiz"],
@@ -158,9 +160,9 @@ const publicPages = [
   },
   {
     route: "/guides",
-    title: "Game Guides: Sudoku, Memory Match, Word Search & More | Play Brain Games . Online",
+    title: "Game Guides: All Ten Games | Play Brain Games . Online",
     description:
-      "Learn Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and the quizzes with practical strategies, board-size guidance, and tips for daily puzzles and friend challenges.",
+      "Learn Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and the quizzes with practical strategies, board-size guidance, and tips for daily puzzles and friend challenges.",
     heading: "Game Guides",
     intro:
       "Use these practical guides to learn the rules, work through a sample move, and choose a board that fits your experience — covering every game on Play Brain Games . Online.",
@@ -214,6 +216,10 @@ const publicPages = [
         "Work row by row from the top-left: place tile 1, then complete the first row, then the next. Keep the blank space near the tiles you're working on, and use the hint button when a row looks stuck.",
       ],
       [
+        "Odd Images scanning strategy",
+        "Compare tiles in rows or quadrants instead of jumping randomly. The odd image usually differs by colour, orientation, or a missing feature, so check suspicious tiles against their neighbours before tapping.",
+      ],
+      [
         "Quiz strategy",
         "In the Science, Maths & GK quizzes, points combine accuracy with speed. Eliminate obviously wrong options quickly, guess rather than skip when unsure, and finish under the par time for the speed bonus.",
       ],
@@ -229,6 +235,8 @@ const publicPages = [
       ["/word-search", "Play Word Search"],
       ["/minesweeper", "Play Minesweeper"],
       ["/slide-puzzle", "Play Slide Puzzle"],
+      ["/odd-images", "Play Odd Images"],
+      ["/odd-images-challenge", "Try the Odd Images daily challenge"],
       ["/quiz/science", "Play the quizzes"],
       ["/daily-challenge", "Try the daily challenge"],
     ],
@@ -326,13 +334,13 @@ const publicPages = [
     route: "/leaderboard",
     title: "All Games Leaderboard | Play Brain Games . Online",
     description:
-      "Compare scores across all nine games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and Science, Maths & GK quizzes — on weekly, monthly, and all-time boards.",
+      "Compare scores across all ten games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and Science, Maths & GK quizzes — on weekly, monthly, and all-time boards.",
     heading: "All Games Leaderboard",
     intro:
       "Compare combined points across every game — puzzles, word games, quizzes, and more — on weekly tournaments, monthly tournaments, and all-time rankings.",
     sections: [
       ["Weekly and monthly tournaments", "Follow changing tournament standings and compete for a place near the top."],
-      ["All-time combined scores", "Completed games from every title — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and the Science, Maths & GK quizzes — contribute points to the all-games ranking."],
+      ["All-time combined scores", "Completed games from every title — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and the Science, Maths & GK quizzes — contribute points to the all-games ranking."],
       ["Game-specific leaderboards", "Open separate all-time boards to compare scores for any individual game."],
     ],
     links: [
@@ -342,6 +350,7 @@ const publicPages = [
       ["/leaderboard/word-search/", "View all-time Word Search scores"],
       ["/leaderboard/minesweeper/", "View all-time Minesweeper scores"],
       ["/leaderboard/slide-puzzle/", "View all-time Slide Puzzle scores"],
+      ["/leaderboard/odd-images/", "View all-time Odd Images scores"],
       ["/leaderboard/science-quiz/", "View Science Quiz scores"],
       ["/leaderboard/maths-quiz/", "View Maths Quiz scores"],
       ["/leaderboard/gk-quiz/", "View GK Quiz scores"],
@@ -360,7 +369,7 @@ const publicPages = [
       "See the players with the highest combined points across completed Sudoku games of every grid size.",
     sections: [
       ["Scores across every grid", "Points from completed 3×3, 4×4, 6×6, 9×9, and 16×16 Sudoku games count toward this all-time board."],
-      ["Compare all games", "The all-games leaderboard also includes Memory Match and Jigsaw scores from weekly, monthly, and all-time results."],
+      ["Compare all games", "The all-games leaderboard also includes every other game's scores from weekly, monthly, and all-time results."],
     ],
     links: [
       ["/leaderboard/", "View the all-games leaderboard"],
@@ -380,7 +389,7 @@ const publicPages = [
       "See the players with the highest combined points across completed Memory Match games of every level.",
     sections: [
       ["Scores across every level", "Points from completed Beginner, Easy, Medium, and Hard games count toward this all-time board."],
-      ["Compare all games", "The all-games leaderboard also includes Sudoku and Jigsaw scores from weekly, monthly, and all-time results."],
+      ["Compare all games", "The all-games leaderboard also includes every other game's scores from weekly, monthly, and all-time results."],
     ],
     links: [
       ["/leaderboard/", "View the all-games leaderboard"],
@@ -393,13 +402,13 @@ const publicPages = [
     route: "/challenges",
     title: "Game Challenges & Duels | Play Brain Games . Online",
     description:
-      "Create and join challenges for any of the nine games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and the quizzes — compare scores, and compete with friends.",
+      "Create and join challenges for any of the ten games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and the quizzes — compare scores, and compete with friends.",
     heading: "Game Challenges & Duels",
     intro:
       "Create a head-to-head challenge in any game. Share an invitation link, complete the same round, and compare results.",
     sections: [
       ["What challenges are", "Challenges let two players compete on the same puzzle, board, or quiz. Each player completes a round, then the higher score wins bonus gems."],
-      ["Every game supported", "Duels are available for Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and the Science, Maths & GK quizzes."],
+      ["Every game supported", "Duels are available for Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and the Science, Maths & GK quizzes."],
       ["How invitations work", "Create a challenge and share the invitation link with a friend. They can open the link and accept the duel without signing in."],
       ["How scoring works", "Scores reward speed and difficulty while accounting for mistakes, hints, or extra moves. The winner earns gems; ties reward both players."],
     ],
@@ -412,17 +421,17 @@ const publicPages = [
   },
   {
     route: "/about",
-    title: "About Play Brain Games . Online | Nine Free Games",
+    title: "About Play Brain Games . Online | Ten Free Games",
     description:
-      "Learn about Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and Science, Maths & GK quizzes — board choices, daily challenges, guest play, and saved progress.",
+      "Learn about Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and Science, Maths & GK quizzes — board choices, daily challenges, guest play, and saved progress.",
     heading: "About Play Brain Games . Online",
     intro:
-      "Play Brain Games . Online brings together nine puzzle and quiz formats with adjustable boards, practical guides, daily challenges, and guest play.",
+      "Play Brain Games . Online brings together ten puzzle and quiz formats with adjustable boards, practical guides, daily challenges, and guest play.",
     sections: [
-      ["Nine games, many kinds of play", "Sudoku is a logic puzzle; Memory Match is a recall game; Jigsaw rebuilds a picture; Word Search hides themed words; Minesweeper tests deduction under pressure; Slide Puzzle orders shuffled tiles; and the Science, Maths & GK quizzes test knowledge against the clock."],
-      ["Board and level choices for every experience", "Sudoku ranges from 3×3 to 16×16 grids; Memory Match has 2×4 through 8×8 boards; Jigsaw offers 2×2 to 5×5 pictures; Word Search scales from 6×6 to 14×14; Minesweeper runs 6×6 to 14×14; Slide Puzzle goes 2×2 to 5×5; and each quiz has Easy through Expert levels."],
+      ["Ten games, many kinds of play", "Sudoku is a logic puzzle; Memory Match is a recall game; Jigsaw rebuilds a picture; Word Search hides themed words; Minesweeper tests deduction under pressure; Slide Puzzle orders shuffled tiles; Odd Images tests visual scanning; and the Science, Maths & GK quizzes test knowledge against the clock."],
+      ["Board and level choices for every experience", "Sudoku ranges from 3×3 to 16×16 grids; Memory Match has 2×4 through 8×8 boards; Jigsaw offers 2×2 to 5×5 pictures; Word Search scales from 6×6 to 14×14; Minesweeper runs 6×6 to 14×14; Slide Puzzle goes 2×2 to 5×5; Odd Images runs 3×3 to 6×6 grids; and each quiz has Easy through Expert levels."],
       ["Progress is optional", "Start as a guest without signing in. Google sign-in connects profile statistics, achievements, and streaks so progress can sync across devices. The games remain available without a profile."],
-      ["Daily practice and shared results", "Every game has a daily challenge that refreshes each day, plus head-to-head challenges against friends. Leaderboards cover all nine games across weekly, monthly, and all-time boards."],
+      ["Daily practice and shared results", "Every game has a daily challenge that refreshes each day, plus head-to-head challenges against friends. Leaderboards cover all ten games across weekly, monthly, and all-time boards."],
       ["Privacy and account control", "The Privacy Policy describes how account and game-progress information is used. The account deletion page explains how to request removal of an account and associated server data."],
     ],
     links: [
@@ -432,6 +441,7 @@ const publicPages = [
       ["/word-search", "Play Word Search"],
       ["/minesweeper", "Play Minesweeper"],
       ["/slide-puzzle", "Play Slide Puzzle"],
+      ["/odd-images", "Play Odd Images"],
       ["/quiz/science", "Play the quizzes"],
       ["/guides", "Read the puzzle guides"],
       ["/account-deletion", "Account deletion"],
@@ -463,7 +473,7 @@ const publicPages = [
     route: "/account-deletion",
     title: "Delete Your Account and Data | Play Brain Games . Online",
     description:
-      "Request deletion of your Play Brain Games account and associated Sudoku, Memory Match, Jigsaw, and profile data.",
+      "Request deletion of your Play Brain Games account and associated game and profile data.",
     heading: "Delete Your Account and Data",
     intro:
       "You can permanently delete your Play Brain Games account and associated server data from the app's Account page. Sign in to the account you want deleted, then confirm the deletion request.",
@@ -485,7 +495,7 @@ const publicPages = [
       "Read the terms for using Play Brain Games . Online, including guest play, accounts, family-friendly use, acceptable behavior, and game content.",
     heading: "Terms of Service",
     intro:
-      "These terms describe the rules for using Play Brain Games . Online, including its Sudoku, Memory Match, and Jigsaw games, accounts, challenges, and virtual rewards.",
+      "These terms describe the rules for using Play Brain Games . Online, including its Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and quiz games, accounts, challenges, and virtual rewards.",
     sections: [
       ["Using the service", "By using the games, you agree to these terms. The service is general-audience and family-friendly, with optional child-friendly modes."],
       ["Fair play", "Do not use bots or automated tools to manipulate scores, disrupt the service, impersonate another user, or violate applicable laws."],
@@ -572,7 +582,7 @@ const publicPages = [
       "See the players with the highest combined points across completed Jigsaw picture puzzles of every board size and level.",
     sections: [
       ["Scores across every board", "Points from completed 2×2, 3×3, 4×4, and 5×5 Jigsaw puzzles count toward this all-time board."],
-      ["Compare all games", "The all-games leaderboard also includes Sudoku, Memory Match, and Word Search scores from weekly, monthly, and all-time results."],
+      ["Compare all games", "The all-games leaderboard also includes every other game's scores from weekly, monthly, and all-time results."],
     ],
     links: [
       ["/leaderboard/", "View the all-games leaderboard"],
@@ -591,7 +601,7 @@ const publicPages = [
       "See the players with the highest combined points across completed Word Search games of every difficulty.",
     sections: [
       ["Scores across every difficulty", "Points from completed Beginner, Easy, Medium, and Hard Word Search games count toward this all-time board."],
-      ["Compare all games", "The all-games leaderboard also includes Sudoku, Memory Match, Jigsaw, and daily challenge results."],
+      ["Compare all games", "The all-games leaderboard also includes every other game's scores from weekly, monthly, and all-time results."],
     ],
     links: [
       ["/leaderboard/", "View the all-games leaderboard"],
@@ -684,6 +694,50 @@ const publicPages = [
       ["/slide-puzzle", "Play Slide Puzzles"],
       ["/leaderboard/slide-puzzle/", "View the Slide Puzzle leaderboard"],
       ["/guides", "Read the puzzle guides"],
+    ],
+    schemaType: "WebApplication",
+  },
+  {
+    route: "/odd-images",
+    title: "Odd Images Game Online Free | Spot the Different Picture",
+    description:
+      "Play free Odd Images puzzles online. Find the one different image in grids from 3×3 to 6×6 across Easy, Medium, Hard, and Expert levels.",
+    heading: "Odd Images Game Online Free",
+    intro:
+      "Every round shows a grid filled with matching images and exactly one odd image. Tap the different picture to move to the next question.",
+    sections: [
+      ["Four levels that scale", "Easy uses a 3×3 grid with 5 questions, Medium a 4×4 grid with 8 questions, Hard a 5×5 grid with 10 questions, and Expert a 6×6 grid with 12 questions."],
+      ["How scoring works", "Points combine the level base with your accuracy and a speed bonus for finishing under the par time. Every correct pick counts toward your score."],
+      ["Resume a puzzle later", "An unfinished Odd Images round is saved in your browser, so you can resume where you left off or start a fresh grid set."],
+      ["Play as a guest or save progress", "Start a puzzle without an account. Optional Google sign-in connects your results, stats, and streaks to a profile across devices."],
+    ],
+    links: [
+      ["/leaderboard/odd-images/", "View the Odd Images leaderboard"],
+      ["/odd-images-challenge", "Play today's Odd Images challenge"],
+      ["/themes", "Browse picture themes"],
+      ["/guides", "Read the Odd Images guide"],
+      ["/challenges", "Challenge another player"],
+    ],
+    schemaType: "WebApplication",
+  },
+  {
+    route: "/odd-images-challenge",
+    title: "Daily Odd Images Challenge | Play Brain Games . Online",
+    description:
+      "Play today's shared Odd Images puzzle, find the odd image in the same grid as every player, and compare your score on the daily leaderboard.",
+    heading: "Daily Odd Images Challenge",
+    intro:
+      "Everyone gets the same image grid and level each day, refreshed at 00:00 UTC. Find every odd image and post your score.",
+    sections: [
+      ["One shared grid each day", "The daily Odd Images challenge uses the same level, picture theme, grid size, and seed for every player on that date."],
+      ["Score by accuracy and speed", "Points reward correct picks and a faster finish relative to the level's par time, so clean scanning ranks higher."],
+      ["Compare with other players", "The daily leaderboard shows completion times and points, and you can return tomorrow to build a streak."],
+    ],
+    links: [
+      ["/odd-images", "Play Odd Images puzzles"],
+      ["/leaderboard/odd-images/", "View the Odd Images leaderboard"],
+      ["/guides", "Read the Odd Images guide"],
+      ["/challenges", "Challenge another player"],
     ],
     schemaType: "WebApplication",
   },
@@ -815,6 +869,25 @@ const publicPages = [
       ["/leaderboard/", "View the all-games leaderboard"],
       ["/slide-puzzle", "Play Slide Puzzle"],
       ["/slide-puzzle-challenge", "Try today's challenge"],
+    ],
+    schemaType: "CollectionPage",
+  },
+  {
+    route: "/leaderboard/odd-images",
+    title: "Odd Images Leaderboard | Play Brain Games . Online",
+    description:
+      "Compare all-time Odd Images scores across Easy, Medium, Hard, and Expert levels.",
+    heading: "Odd Images Leaderboard",
+    intro:
+      "See the players with the highest combined points across completed Odd Images games of every level.",
+    sections: [
+      ["Scores across every level", "Points from completed Easy, Medium, Hard, and Expert rounds count toward this all-time board."],
+      ["Compare all games", "The all-games leaderboard also includes every other game's scores from weekly, monthly, and all-time results."],
+    ],
+    links: [
+      ["/leaderboard/", "View the all-games leaderboard"],
+      ["/odd-images", "Play Odd Images"],
+      ["/themes", "Browse picture themes"],
     ],
     schemaType: "CollectionPage",
   },

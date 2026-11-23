@@ -1,10 +1,9 @@
 import { Router, type IRouter } from "express";
-import { eq, or, and, ne, gte } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import { db, memoryDuelsTable, memoryGamesTable, profilesTable } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
-import { expireInvitationIfDue, expirePendingInvitationsForProfile } from "../utils/challenge-expiry";
-import { getChallengeExpiryCutoff } from "../utils/challenge-expiry-policy";
+import { expireChallengeIfDue, expireChallengesForProfile, isChallengeRecordHidden, CHALLENGE_INVITATION_TTL_MS, CHALLENGE_ACTIVE_TTL_MS } from "../utils/challenge-lifecycle";
 
 const router: IRouter = Router();
 
@@ -106,6 +105,7 @@ router.post("/memory-duels", async (req, res): Promise<void> => {
       challengerGameId: challengerGame.id,
       challengedGameId: null,
       winnerId: null,
+      expiresAt: new Date(Date.now() + CHALLENGE_INVITATION_TTL_MS),
     })
     .returning();
 
@@ -120,23 +120,15 @@ router.get("/memory-duels/for/:profileId", async (req, res): Promise<void> => {
     return;
   }
 
-  await expirePendingInvitationsForProfile(profileId);
+  await expireChallengesForProfile(memoryDuelsTable, profileId);
 
   const duels = await db
     .select()
     .from(memoryDuelsTable)
-    .where(
-      and(
-        or(eq(memoryDuelsTable.challengerId, profileId), eq(memoryDuelsTable.challengedId, profileId)),
-        or(
-          ne(memoryDuelsTable.status, "pending"),
-          gte(memoryDuelsTable.createdAt, getChallengeExpiryCutoff()),
-        ),
-      ),
-    )
+    .where(or(eq(memoryDuelsTable.challengerId, profileId), eq(memoryDuelsTable.challengedId, profileId)))
     .orderBy(memoryDuelsTable.createdAt);
 
-  const details = await Promise.all(duels.map(formatDuel));
+  const details = await Promise.all(duels.filter((duel) => !isChallengeRecordHidden(duel)).map(formatDuel));
   res.json(details.reverse());
 });
 
@@ -152,9 +144,12 @@ router.get("/memory-duels/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Duel not found" });
     return;
   }
-  if (await expireInvitationIfDue({ type: "memory", record: duel })) {
-    res.status(410).json({ error: "Challenge has expired" });
-    return;
+  if (await expireChallengeIfDue(memoryDuelsTable, duel)) {
+    const [updated] = await db.select().from(memoryDuelsTable).where(eq(memoryDuelsTable.id, duel.id));
+    if (isChallengeRecordHidden(updated ?? { ...duel, status: "expired" })) {
+      res.status(410).json({ error: "Challenge has expired" });
+      return;
+    }
   }
   res.json(await formatDuel(duel));
 });
@@ -178,7 +173,7 @@ router.patch("/memory-duels/:id/respond", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Duel not found" });
     return;
   }
-  if (await expireInvitationIfDue({ type: "memory", record: duel })) {
+  if (await expireChallengeIfDue(memoryDuelsTable, duel)) {
     res.status(410).json({ error: "Challenge has expired" });
     return;
   }
@@ -205,7 +200,7 @@ router.patch("/memory-duels/:id/respond", async (req, res): Promise<void> => {
 
   const [updated] = await db
     .update(memoryDuelsTable)
-    .set({ status: "accepted", challengedGameId: challengedGame.id })
+    .set({ status: "accepted", challengedGameId: challengedGame.id, expiresAt: new Date(duel.createdAt.getTime() + CHALLENGE_ACTIVE_TTL_MS) })
     .where(eq(memoryDuelsTable.id, id))
     .returning();
 

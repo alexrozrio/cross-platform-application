@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { quizBank, pickQuestions, type QuizSubject, type QuizQuestion } from "@workspace/api-zod/quiz";
+import { oddImageRound, type OddImageQuestion } from "@/lib/odd-images";
 
 const BANNER =
   "bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700 rounded-xl px-4 py-3 text-center";
@@ -443,6 +444,110 @@ export function OfflineSlidePuzzleFallback() {
   );
 }
 
+/* ---------------- Odd images: find the different tile ---------------- */
+
+const OFFLINE_ODD_IMAGE_EMOJIS = [
+  "🍎", "🍌", "🍇", "🍉", "🍓", "🫐", "🍑", "🥭", "🍍", "🥥",
+  "🥝", "🍅", "🥑", "🌽", "🥕", "🍠", "🥦", "🧀", "🍞", "🧃",
+  "☕", "🍪", "🎂", "🍕", "🍔", "🌮", "🍣", "🍜", "🍦", "🍩",
+  "🥗", "🍿",
+];
+
+function createOfflineOddImageQuestions(): OddImageQuestion[] {
+  return oddImageRound("easy", Math.floor(Math.random() * 1_000_000_000));
+}
+
+export function OfflineOddImagesFallback() {
+  const [questions, setQuestions] = React.useState<OddImageQuestion[]>(createOfflineOddImageQuestions);
+  const [index, setIndex] = React.useState(0);
+  const [picked, setPicked] = React.useState<number | null>(null);
+  const [score, setScore] = React.useState(0);
+  const [done, setDone] = React.useState(false);
+
+  const question = questions[index];
+
+  const pick = (cellIndex: number) => {
+    if (!question || picked !== null) return;
+    setPicked(cellIndex);
+    if (cellIndex === question.oddIndex) setScore((value) => value + 1);
+  };
+
+  const next = () => {
+    if (index + 1 >= questions.length) {
+      setDone(true);
+    } else {
+      setIndex((value) => value + 1);
+      setPicked(null);
+    }
+  };
+
+  const restart = () => {
+    setQuestions(createOfflineOddImageQuestions());
+    setIndex(0);
+    setPicked(null);
+    setScore(0);
+    setDone(false);
+  };
+
+  if (done) {
+    return (
+      <div className="min-h-[70vh] w-full max-w-md mx-auto px-4 py-8 space-y-5">
+        <OfflineBanner title="Offline Odd Images">
+          You found {score} out of {questions.length} odd images. Local game — no rewards saved.
+        </OfflineBanner>
+        <Button className="w-full" onClick={restart}>Play again</Button>
+      </div>
+    );
+  }
+
+  if (!question) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center px-4">
+        <OfflineBanner title="Offline Odd Images">No puzzle available right now.</OfflineBanner>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-[70vh] w-full max-w-md mx-auto px-4 py-6 space-y-4">
+      <OfflineBanner title="Offline Odd Images">
+        Tap the one image that does not belong. Question {index + 1} of {questions.length}.
+      </OfflineBanner>
+      <div className="grid grid-cols-3 gap-2 mx-auto" style={{ maxWidth: 340 }}>
+        {question.values.map((value, cellIndex) => {
+          const isPicked = picked === cellIndex;
+          const isOdd = cellIndex === question.oddIndex;
+          return (
+            <button
+              key={cellIndex}
+              type="button"
+              onClick={() => pick(cellIndex)}
+              disabled={picked !== null}
+              className={[
+                "aspect-square rounded-xl border-2 bg-card text-3xl flex items-center justify-center transition-colors",
+                isPicked
+                  ? isOdd
+                    ? "border-emerald-500 bg-emerald-500/10"
+                    : "border-rose-500 bg-rose-500/10"
+                  : picked !== null && isOdd
+                    ? "border-emerald-400 bg-emerald-500/10"
+                    : "border-border hover:border-teal-500/60",
+              ].join(" ")}
+            >
+              {OFFLINE_ODD_IMAGE_EMOJIS[(value - 1) % OFFLINE_ODD_IMAGE_EMOJIS.length]}
+            </button>
+          );
+        })}
+      </div>
+      {picked !== null && (
+        <Button className="w-full" onClick={next}>
+          {index + 1 >= questions.length ? "See score" : "Next grid"}
+        </Button>
+      )}
+    </div>
+  );
+}
+
 /* ---------------- Quiz fallbacks (real question banks) ---------------- */
 
 const QUIZ_SUBJECT_META: Record<QuizSubject, { title: string; emoji: string; blurb: string }> = {
@@ -559,6 +664,8 @@ export function OfflineGameFallback({ game }: { game: string }) {
       return <OfflineMinesweeperFallback />;
     case "slide-puzzle":
       return <OfflineSlidePuzzleFallback />;
+    case "odd-images":
+      return <OfflineOddImagesFallback />;
     case "science-quiz":
     case "maths-quiz":
     case "gk-quiz":
@@ -573,6 +680,7 @@ export const OFFLINE_GAME_IDS = [
   "word-search",
   "minesweeper",
   "slide-puzzle",
+  "odd-images",
   "science-quiz",
   "maths-quiz",
   "gk-quiz",

@@ -37,7 +37,7 @@ describe('ACHIEVEMENT_META', () => {
   it('all game values are supported game types', () => {
     const supported = [
       'sudoku', 'memory', 'jigsaw', 'word-search', 'minesweeper',
-      'slide-puzzle', 'science-quiz', 'maths-quiz', 'gk-quiz',
+      'slide-puzzle', 'odd-images', 'science-quiz', 'maths-quiz', 'gk-quiz',
     ];
     for (const a of ACHIEVEMENT_META) {
       expect(supported).toContain(a.game);

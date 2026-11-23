@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation, useSearch } from "wouter";
-import { ArrowLeft, BookOpen, Clock3, Keyboard, Lightbulb, RotateCcw, Scroll, Search, Share2, Trophy, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeft, BookOpen, Clock3, Flame, Home, Keyboard, LayoutGrid, Lightbulb, RotateCcw, Scroll, Search, Share2, Trophy, Volume2, VolumeX } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useImageTheme } from "@/hooks/use-image-theme";
 import { useSound } from "@/hooks/use-sound";
@@ -464,9 +464,12 @@ export default function WordSearchPage() {
             </div>
           </fieldset>
         </div>
-        <div className="grid grid-cols-2 gap-2 pt-1">
-          <Button variant="ghost" className="gap-2" onClick={() => setLocation("/profile?tab=word-search")}><Trophy className="h-4 w-4"/> My stats</Button>
-          <Button variant="ghost" className="gap-2" onClick={() => setLocation("/")}><ArrowLeft className="h-4 w-4"/> Home</Button>
+        {!game.dailyDate && !game.challengeId && <Button variant="outline" className="w-full gap-2" onClick={() => setLocation("/word-search-challenge")}><Flame className="h-4 w-4"/> Try today&apos;s daily challenge</Button>}
+        <div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-4">
+          <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => { setGame(null); setSelected([]); setLocation("/word-search"); }}><LayoutGrid className="h-4 w-4"/> Game home</Button>
+          <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setLocation("/leaderboard/word-search")}><Trophy className="h-4 w-4"/> Leaderboard</Button>
+          <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setLocation("/profile?tab=word-search")}><Search className="h-4 w-4"/> My stats</Button>
+          <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setLocation("/")}><Home className="h-4 w-4"/> Portal</Button>
         </div>
       </section>
 
@@ -509,9 +512,9 @@ export default function WordSearchPage() {
     </main>;
   }
 
-  return <main className={`mx-auto w-full px-3 py-5 sm:px-6 sm:py-8 ${game ? "max-w-5xl" : "max-w-lg"}`}>
+  return <main className={`mx-auto w-full px-3 py-3 sm:px-6 sm:py-8 ${game ? "max-w-5xl" : "max-w-lg"}`}>
     {showConfetti && <Confetti />}
-    <div className="relative isolate mb-4 flex items-center justify-between gap-3 overflow-hidden rounded-2xl border-2 border-violet-200/80 bg-gradient-to-br from-violet-50 via-white to-fuchsia-100 px-4 py-3 shadow-lg shadow-violet-500/10 dark:border-violet-800/60 dark:from-violet-950/60 dark:via-card dark:to-fuchsia-950/60">
+    <div className="relative isolate mb-3 flex items-center sm:mb-4 justify-between gap-3 overflow-hidden rounded-2xl border-2 border-violet-200/80 bg-gradient-to-br from-violet-50 via-white to-fuchsia-100 px-3 py-2 shadow-lg shadow-violet-500/10 sm:px-4 sm:py-3 dark:border-violet-800/60 dark:from-violet-950/60 dark:via-card dark:to-fuchsia-950/60">
       <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full bg-fuchsia-300/30 blur-2xl dark:bg-fuchsia-400/15" />
       <Button variant="ghost" size="sm" className="relative z-10 shrink-0 px-1" onClick={() => setLocation("/")}><ArrowLeft className="mr-1 h-4 w-4"/> Home</Button>
       <div className="relative z-10 min-w-0 text-right">
@@ -520,30 +523,30 @@ export default function WordSearchPage() {
       </div>
       <Button variant="ghost" size="icon" className="relative z-10 shrink-0" aria-label={sounds.enabled ? "Mute sounds" : "Enable sounds"} onClick={sounds.toggle}>{sounds.enabled ? <Volume2 className="h-4 w-4"/> : <VolumeX className="h-4 w-4"/>}</Button>
     </div>
-    <div className={`grid gap-5 ${game ? "lg:grid-cols-[minmax(0,1fr)_280px]" : "grid-cols-1"}`}>
-      <section className="min-w-0 space-y-4">
+    <div className={`grid gap-4 sm:gap-5 ${game ? "lg:grid-cols-[minmax(0,1fr)_280px]" : "grid-cols-1"}`}>
+      <section className="min-w-0 space-y-3 sm:space-y-4">
         {!game ? <>
-          {hasSavedGame && <button onClick={() => setLocation("/word-search?resume=1")} className="flex w-full items-center gap-3 rounded-xl border-2 border-violet-300/60 bg-card px-4 py-3 text-left transition hover:bg-violet-50 dark:border-violet-800/50 dark:hover:bg-violet-950/30"><RotateCcw className="h-4 w-4 shrink-0 text-violet-600"/><span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-violet-700 dark:text-violet-300">Resume Word Search</span><span className="block text-xs text-muted-foreground">Pick up where you left off</span></span><span className="text-lg text-violet-600">→</span></button>}
-          <div className="relative isolate overflow-hidden rounded-2xl border-2 border-violet-200/80 bg-gradient-to-br from-white via-violet-50 to-fuchsia-50 p-4 shadow-xl shadow-violet-500/10 dark:border-violet-800/50 dark:from-card dark:via-violet-950/35 dark:to-fuchsia-950/40 sm:p-5">
+          {hasSavedGame && <button onClick={() => setLocation("/word-search?resume=1")} className="flex w-full items-center gap-3 rounded-xl border-2 border-violet-300/60 bg-card px-3 py-2.5 sm:px-4 sm:py-3 text-left transition hover:bg-violet-50 dark:border-violet-800/50 dark:hover:bg-violet-950/30"><RotateCcw className="h-4 w-4 shrink-0 text-violet-600"/><span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-violet-700 dark:text-violet-300">Resume Word Search</span><span className="block text-xs text-muted-foreground">Pick up where you left off</span></span><span className="text-lg text-violet-600">→</span></button>}
+          <div className="relative isolate overflow-hidden rounded-2xl border-2 border-violet-200/80 bg-gradient-to-br from-white via-violet-50 to-fuchsia-50 p-3 shadow-xl shadow-violet-500/10 dark:border-violet-800/50 dark:from-card dark:via-violet-950/35 dark:to-fuchsia-950/40 sm:p-5">
             <div aria-hidden="true" className="pointer-events-none absolute -bottom-8 -left-8 h-24 w-24 rounded-full bg-fuchsia-300/25 blur-2xl dark:bg-fuchsia-400/10" />
-            <div className="relative z-10 mb-4 flex items-center gap-3 rounded-xl border border-violet-200/70 bg-white/65 px-3 py-3 dark:border-violet-800/50 dark:bg-slate-950/20">
+            <div className="relative z-10 mb-4 hidden items-center gap-3 rounded-xl border border-violet-200/70 bg-white/65 px-3 py-3 dark:border-violet-800/50 dark:bg-slate-950/20 sm:flex">
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-violet-500/15 text-2xl">🔎</span>
               <div className="min-w-0 flex-1"><h2 className="font-serif text-lg font-bold">Ready for a word hunt?</h2><p className="text-xs leading-relaxed text-muted-foreground">Easy and Medium use forward horizontal and vertical words. Hard and Expert add diagonals and backwards words.</p></div>
               <div className="hidden grid-cols-3 gap-1 rounded-lg border border-violet-200/70 bg-white/70 p-1 sm:grid dark:border-violet-800/50 dark:bg-slate-950/30">{["W", "O", "R", "D", "S", "E", "A", "R", "C"].map((letter, i) => <span key={i} className="grid h-5 w-5 place-items-center rounded bg-violet-500/10 text-[9px] font-black text-violet-700 dark:text-violet-300">{letter}</span>)}</div>
             </div>
-            <div className="relative z-10 mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-violet-200/70 bg-white/65 px-3 py-2.5 dark:border-violet-800/50 dark:bg-slate-950/20">
-              <div><label htmlFor="word-search-home-theme" className="block text-xs font-semibold uppercase tracking-widest text-violet-700 dark:text-violet-300">Word theme</label><p className="mt-0.5 text-[11px] text-muted-foreground">Each theme has its own word list</p></div>
-              <select id="word-search-home-theme" value={selectedTheme} onChange={(event) => { userSelectedThemeRef.current = true; setSelectedTheme(event.target.value as WordSearchTheme); }} className="rounded-lg border border-violet-200 bg-background px-3 py-2 text-sm font-semibold text-foreground shadow-sm outline-none focus:ring-2 focus:ring-violet-400 dark:border-violet-800">
+            <div className="relative z-10 mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-violet-200/70 bg-white/65 px-2.5 py-1.5 dark:border-violet-800/50 dark:bg-slate-950/20">
+              <div className="min-w-0"><label htmlFor="word-search-home-theme" className="block text-[10px] font-semibold uppercase tracking-widest text-violet-700 dark:text-violet-300">Word theme</label><p className="mt-0.5 hidden text-[10px] text-muted-foreground sm:block">Each theme has its own word list</p></div>
+              <select id="word-search-home-theme" value={selectedTheme} onChange={(event) => { userSelectedThemeRef.current = true; setSelectedTheme(event.target.value as WordSearchTheme); }} className="max-w-[11rem] rounded-lg border border-violet-200 bg-background px-2 py-1.5 text-xs font-semibold text-foreground shadow-sm outline-none focus:ring-2 focus:ring-violet-400 dark:border-violet-800 sm:px-3 sm:py-2 sm:text-sm">
                 {WORD_SEARCH_THEMES.map((theme) => <option key={theme.id} value={theme.id}>{theme.emoji} {theme.label}</option>)}
               </select>
             </div>
-            <p className="relative z-10 mb-2.5 text-xs font-semibold uppercase tracking-widest text-violet-700 dark:text-violet-300">Choose Difficulty</p>
-            <div className="relative z-10 grid grid-cols-2 gap-2.5">
+            <p className="relative z-10 mb-2 hidden text-xs font-semibold uppercase tracking-widest text-violet-700 dark:text-violet-300 sm:block">Choose Difficulty</p>
+            <div className="relative z-10 grid grid-cols-2 gap-2 sm:gap-2.5">
               {availableDifficulties.map((item) => {
                 const meta = { beginner: "🧸", easy: "🌱", medium: "🧭", hard: "🔥" }[item.id];
                 const level = WORD_SEARCH_LEVELS[item.id];
-                return <button key={item.id} onClick={() => startGame(item.id)} className="group flex min-h-[92px] flex-col items-center justify-center gap-1 rounded-2xl border-2 border-violet-200/80 bg-gradient-to-br from-violet-50 to-fuchsia-50 p-3 text-center shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet-400 hover:shadow-md active:scale-[0.98] dark:border-violet-800/60 dark:from-violet-950/45 dark:to-fuchsia-950/40">
-                  <span className="grid h-9 w-9 place-items-center rounded-xl bg-violet-500/10 text-xl group-hover:bg-violet-500/20">{meta}</span>
+                return <button key={item.id} onClick={() => startGame(item.id)} className="group flex min-h-[72px] sm:min-h-[92px] flex-col items-center justify-center gap-1 rounded-2xl border-2 border-violet-200/80 bg-gradient-to-br from-violet-50 to-fuchsia-50 p-2 text-center shadow-sm sm:p-3 transition-all hover:-translate-y-0.5 hover:border-violet-400 hover:shadow-md active:scale-[0.98] dark:border-violet-800/60 dark:from-violet-950/45 dark:to-fuchsia-950/40">
+                  <span className="grid h-8 w-8 place-items-center sm:h-9 sm:w-9 rounded-xl bg-violet-500/10 text-xl group-hover:bg-violet-500/20">{meta}</span>
                   <span className="text-sm font-bold leading-tight">{level.label}</span>
                   <span className="text-[10px] leading-tight text-muted-foreground">{item.detail}</span>
                 </button>;
@@ -551,11 +554,13 @@ export default function WordSearchPage() {
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <button onClick={() => setLocation("/profile?tab=word-search")} className="flex items-center gap-3 rounded-xl border bg-card p-3 text-left transition hover:border-violet-300 hover:bg-muted/50"><Search className="h-5 w-5 shrink-0 text-violet-600"/><span><span className="block text-sm font-semibold">My Stats</span><span className="hidden text-xs text-muted-foreground sm:block">Best times & progress</span></span></button>
-            <button onClick={share} className="flex items-center gap-3 rounded-xl border bg-card p-3 text-left transition hover:border-violet-300 hover:bg-muted/50"><Share2 className="h-5 w-5 shrink-0 text-violet-600"/><span><span className="block text-sm font-semibold">Share Game</span><span className="hidden text-xs text-muted-foreground sm:block">Invite someone to play</span></span></button>
+            <button onClick={() => setLocation("/profile?tab=word-search")} className="flex items-center gap-3 rounded-xl border bg-card p-2.5 text-left sm:p-3 transition hover:border-violet-300 hover:bg-muted/50"><Search className="h-5 w-5 shrink-0 text-violet-600"/><span><span className="block text-sm font-semibold">My Stats</span><span className="hidden text-xs text-muted-foreground sm:block">Best times & progress</span></span></button>
+            <button onClick={() => setLocation("/leaderboard/word-search")} className="flex items-center gap-3 rounded-xl border bg-card p-2.5 text-left sm:p-3 transition hover:border-violet-300 hover:bg-muted/50"><Trophy className="h-5 w-5 shrink-0 text-violet-600"/><span><span className="block text-sm font-semibold">Leaderboard</span><span className="hidden text-xs text-muted-foreground sm:block">Top word hunters</span></span></button>
+            <button onClick={share} className="col-span-2 flex items-center gap-3 rounded-xl border bg-card p-2.5 text-left sm:p-3 transition hover:border-violet-300 hover:bg-muted/50"><Share2 className="h-5 w-5 shrink-0 text-violet-600"/><span><span className="block text-sm font-semibold">Share Game</span><span className="hidden text-xs text-muted-foreground sm:block">Invite someone to play</span></span></button>
           </div>
+          <button onClick={() => setLocation("/word-search-challenge")} className="flex w-full items-center gap-3 rounded-xl border-2 border-orange-300/60 bg-gradient-to-r from-orange-50 to-amber-50 px-3 py-2.5 sm:px-4 sm:py-3 text-left transition hover:bg-orange-50 dark:border-orange-800/50 dark:from-orange-950/30 dark:to-amber-950/20"><Flame className="h-5 w-5 shrink-0 text-orange-500"/><span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-orange-700 dark:text-orange-300">Daily Word Search</span><span className="block text-xs text-muted-foreground">One shared puzzle · refreshed at 00:00 UTC</span></span><span className="text-lg text-orange-500">→</span></button>
           {/* Info links */}
-          <div className="home-info-links flex items-center justify-center gap-6 rounded-xl border border-border bg-card px-4 py-2.5">
+          <div className="home-info-links flex items-center justify-center gap-4 rounded-xl border border-border bg-card px-3 py-2 sm:gap-6 sm:px-4 sm:py-2.5">
             <button
               onClick={() => setInfoModal("rules")}
               className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -736,8 +741,23 @@ export default function WordSearchPage() {
               </div>
             </DialogContent>
           </Dialog>
-        </> : <section className="rounded-3xl border border-border bg-card p-3 shadow-sm sm:p-5">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><div><h2 className="font-bold">{WORD_SEARCH_LEVELS[game.difficulty].label} puzzle</h2><div className="mt-1 flex flex-wrap items-center gap-2"><label htmlFor="word-search-game-theme" className="text-xs text-muted-foreground">Word theme</label><select id="word-search-game-theme" value={game.theme} onChange={(event) => startGame(game.difficulty, event.target.value as WordSearchTheme)} className="rounded-lg border border-violet-200 bg-background px-2 py-1 text-xs font-semibold text-foreground outline-none focus:ring-2 focus:ring-violet-400 dark:border-violet-800">{WORD_SEARCH_THEMES.map((theme) => <option key={theme.id} value={theme.id}>{theme.emoji} {theme.label}</option>)}</select><span className="text-[10px] text-muted-foreground">Changing theme starts a new puzzle</span></div></div><div className="flex items-center gap-1 rounded-full bg-muted px-3 py-1.5 text-sm font-semibold"><Clock3 className="h-4 w-4"/>{fmt(elapsed)}</div></div>
+        </> : <section className="rounded-3xl border border-border bg-card p-2 shadow-sm sm:p-5">
+          <div className="mb-2 flex flex-nowrap items-center gap-1 overflow-x-auto rounded-xl border border-border bg-muted/40 px-2 py-1.5 text-xs [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-2 sm:px-3">
+            <span className="min-w-0 flex-1 truncate font-bold">{WORD_SEARCH_LEVELS[game.difficulty].label} puzzle</span>
+            {!game.dailyDate && !game.challengeId ? (
+              <>
+                <select aria-label="Word theme" title="Changing options starts a new puzzle" value={game.theme} onChange={(event) => startGame(game.difficulty, event.target.value as WordSearchTheme)} className="h-8 max-w-[7rem] shrink-0 rounded-lg border border-violet-200 bg-background px-1.5 text-[11px] font-semibold text-foreground outline-none focus:ring-2 focus:ring-violet-400 dark:border-violet-800">
+                  {WORD_SEARCH_THEMES.map((theme) => <option key={theme.id} value={theme.id}>{theme.emoji} {theme.label}</option>)}
+                </select>
+                <select aria-label="Difficulty" title="Changing options starts a new puzzle" value={game.difficulty} onChange={(event) => startGame(event.target.value as WordSearchDifficulty, game.theme)} className="h-8 w-[4.5rem] shrink-0 rounded-lg border border-violet-200 bg-background px-1.5 text-[11px] font-semibold text-foreground outline-none focus:ring-2 focus:ring-violet-400 dark:border-violet-800">
+                  {availableDifficulties.map(({ id }) => <option key={id} value={id}>{WORD_SEARCH_LEVELS[id].label}</option>)}
+                </select>
+              </>
+            ) : (
+              <span className="shrink-0 truncate text-muted-foreground">{WORD_SEARCH_THEMES.find((theme) => theme.id === game.theme)?.emoji} fixed puzzle</span>
+            )}
+            <span className="ml-auto flex shrink-0 items-center gap-1 rounded-full bg-background px-2 py-1 font-bold tabular-nums"><Clock3 className="h-3.5 w-3.5 text-violet-600" />{fmt(elapsed)}</span>
+          </div>
           <div className="mx-auto w-full max-w-[560px] rounded-2xl bg-gradient-to-br from-rose-300 via-violet-300 to-cyan-300 p-1.5 shadow-lg shadow-violet-500/15 dark:from-rose-800 dark:via-violet-800 dark:to-cyan-800">
             <div
               className="select-none touch-none overflow-hidden rounded-xl border border-white/70 bg-white/70 dark:border-slate-700 dark:bg-slate-950/70"

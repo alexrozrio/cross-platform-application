@@ -30,10 +30,10 @@ describe('ErrorBoundary', () => {
   it('shows the offline game picker when a child throws', () => {
     render(createElement(ErrorBoundary, null, createElement(Bomb)));
     expect(screen.getByText('Choose a game to keep playing')).toBeTruthy();
-    // All nine offline games are offered
+    // All ten offline games are offered
     for (const label of [
       'Sudoku', 'Memory Match', 'Jigsaw', 'Word Search', 'Minesweeper',
-      'Slide Puzzle', 'Science Quiz', 'Maths Quiz', 'GK Quiz',
+      'Slide Puzzle', 'Odd Images', 'Science Quiz', 'Maths Quiz', 'GK Quiz',
     ]) {
       expect(screen.getByRole('button', { name: new RegExp(label) })).toBeTruthy();
     }

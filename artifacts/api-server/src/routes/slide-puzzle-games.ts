@@ -3,6 +3,7 @@ import { randomInt } from "node:crypto";
 import { and, asc, desc, eq, gte, lt, or } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import { db, profilesTable, slidePuzzleGamesTable, slidePuzzleChallengesTable } from "@workspace/db";
+import { expireChallengeIfDue, expireChallengesForProfile, isChallengeRecordHidden, CHALLENGE_INVITATION_TTL_MS, CHALLENGE_ACTIVE_TTL_MS } from "../utils/challenge-lifecycle";
 
 const router: IRouter = Router();
 
@@ -75,7 +76,7 @@ router.post("/slide-puzzle-challenges", async (req, res): Promise<void> => {
   const [challenged] = await db.select({ id: profilesTable.id }).from(profilesTable).where(eq(profilesTable.id, challengedId));
   if (!challenger || !challenged) { res.status(404).json({ error: "Player not found." }); return; }
   const seed = randomInt(1, 2_147_483_647);
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const expiresAt = new Date(Date.now() + CHALLENGE_INVITATION_TTL_MS);
   const created = await db.transaction(async (tx) => {
     const [challenge] = await tx.insert(slidePuzzleChallengesTable).values({ challengerId, challengedId, difficulty: body.difficulty as string, tileStyle, themeId, seed, expiresAt }).returning({ id: slidePuzzleChallengesTable.id });
     const [game] = await tx.insert(slidePuzzleGamesTable).values({ profileId: challengerId, difficulty: body.difficulty as string, tileStyle, themeId, challengeId: challenge.id, status: "active" }).returning({ id: slidePuzzleGamesTable.id });
@@ -88,24 +89,24 @@ router.post("/slide-puzzle-challenges", async (req, res): Promise<void> => {
 router.get("/slide-puzzle-challenges/for/:profileId", async (req, res): Promise<void> => {
   const profileId = Number.parseInt(req.params.profileId, 10);
   if (!Number.isInteger(profileId) || profileId <= 0) { res.status(400).json({ error: "Invalid profile id." }); return; }
+  await expireChallengesForProfile(slidePuzzleChallengesTable, profileId);
   const rows = await db.select({ id: slidePuzzleChallengesTable.id }).from(slidePuzzleChallengesTable)
     .where(or(eq(slidePuzzleChallengesTable.challengerId, profileId), eq(slidePuzzleChallengesTable.challengedId, profileId)))
     .orderBy(desc(slidePuzzleChallengesTable.createdAt)).limit(50);
-  for (const { id } of rows) {
-    const [challenge] = await db.select({ status: slidePuzzleChallengesTable.status, expiresAt: slidePuzzleChallengesTable.expiresAt }).from(slidePuzzleChallengesTable).where(eq(slidePuzzleChallengesTable.id, id));
-    if (challenge?.status === "pending" && challenge.expiresAt.getTime() <= Date.now()) {
-      await db.update(slidePuzzleChallengesTable).set({ status: "expired" }).where(eq(slidePuzzleChallengesTable.id, id));
-    }
-  }
-  res.json((await Promise.all(rows.map(({ id }) => formatSlidePuzzleChallenge(id)))).filter(Boolean));
+  const details = (await Promise.all(rows.map(({ id }) => formatSlidePuzzleChallenge(id)))).filter((detail): detail is NonNullable<typeof detail> => !!detail && !isChallengeRecordHidden(detail));
+  res.json(details);
 });
 
 router.get("/slide-puzzle-challenges/:id", async (req, res): Promise<void> => {
   const id = Number.parseInt(req.params.id, 10);
   if (!Number.isInteger(id) || id <= 0) { res.status(400).json({ error: "Invalid challenge id." }); return; }
-  const detail = await formatSlidePuzzleChallenge(id);
-  if (!detail) { res.status(404).json({ error: "Challenge not found." }); return; }
-  res.json(detail);
+  const [challenge] = await db.select().from(slidePuzzleChallengesTable).where(eq(slidePuzzleChallengesTable.id, id));
+  if (!challenge) { res.status(404).json({ error: "Challenge not found." }); return; }
+  if (await expireChallengeIfDue(slidePuzzleChallengesTable, challenge)) {
+    const [updated] = await db.select().from(slidePuzzleChallengesTable).where(eq(slidePuzzleChallengesTable.id, id));
+    if (isChallengeRecordHidden(updated ?? { ...challenge, status: "expired" })) { res.status(410).json({ error: "This challenge has expired." }); return; }
+  }
+  res.json(await formatSlidePuzzleChallenge(id));
 });
 
 router.patch("/slide-puzzle-challenges/:id/respond", async (req, res): Promise<void> => {
@@ -118,18 +119,15 @@ router.patch("/slide-puzzle-challenges/:id/respond", async (req, res): Promise<v
   const [challenge] = await db.select().from(slidePuzzleChallengesTable).where(eq(slidePuzzleChallengesTable.id, id));
   if (!challenge) { res.status(404).json({ error: "Challenge not found." }); return; }
   if (challenge.challengedId !== profileId) { res.status(403).json({ error: "This challenge was sent to another player." }); return; }
+  if (await expireChallengeIfDue(slidePuzzleChallengesTable, challenge)) { res.status(410).json({ error: "This challenge has expired." }); return; }
   if (challenge.status !== "pending") { res.status(409).json({ error: "This challenge is no longer waiting for a response." }); return; }
-  if (challenge.expiresAt.getTime() <= Date.now()) {
-    await db.update(slidePuzzleChallengesTable).set({ status: "expired" }).where(eq(slidePuzzleChallengesTable.id, id));
-    res.status(410).json({ error: "This challenge has expired." }); return;
-  }
   if (body.action === "decline") {
     await db.update(slidePuzzleChallengesTable).set({ status: "declined" }).where(eq(slidePuzzleChallengesTable.id, id));
     res.json(await formatSlidePuzzleChallenge(id)); return;
   }
   const [game] = await db.transaction(async (tx) => {
     const [created] = await tx.insert(slidePuzzleGamesTable).values({ profileId, difficulty: challenge.difficulty, tileStyle: challenge.tileStyle, themeId: challenge.themeId, challengeId: challenge.id, status: "active" }).returning();
-    await tx.update(slidePuzzleChallengesTable).set({ status: "accepted", challengedGameId: created.id }).where(eq(slidePuzzleChallengesTable.id, id));
+    await tx.update(slidePuzzleChallengesTable).set({ status: "accepted", challengedGameId: created.id, expiresAt: new Date(challenge.createdAt.getTime() + CHALLENGE_ACTIVE_TTL_MS) }).where(eq(slidePuzzleChallengesTable.id, id));
     return [created];
   });
   res.json({ ...(await formatSlidePuzzleChallenge(id)), gameId: game.id });

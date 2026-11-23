@@ -3,6 +3,7 @@ import { randomInt } from "node:crypto";
 import { and, asc, desc, eq, gte, lt, or } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import { db, profilesTable, minesweeperGamesTable, minesweeperChallengesTable } from "@workspace/db";
+import { expireChallengeIfDue, expireChallengesForProfile, isChallengeRecordHidden, CHALLENGE_INVITATION_TTL_MS, CHALLENGE_ACTIVE_TTL_MS } from "../utils/challenge-lifecycle";
 
 const router: IRouter = Router();
 
@@ -45,7 +46,7 @@ router.post("/minesweeper-challenges", async (req, res): Promise<void> => {
   const [challenged] = await db.select({ id: profilesTable.id }).from(profilesTable).where(eq(profilesTable.id, challengedId));
   if (!challenger || !challenged) { res.status(404).json({ error: "Player not found." }); return; }
   const seed = randomInt(1, 2_147_483_647);
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const expiresAt = new Date(Date.now() + CHALLENGE_INVITATION_TTL_MS);
   const created = await db.transaction(async (tx) => {
     const [challenge] = await tx.insert(minesweeperChallengesTable).values({ challengerId, challengedId, difficulty: body.difficulty as string, seed, expiresAt }).returning({ id: minesweeperChallengesTable.id });
     const [game] = await tx.insert(minesweeperGamesTable).values({ profileId: challengerId, difficulty: body.difficulty as string, challengeId: challenge.id, status: "active" }).returning({ id: minesweeperGamesTable.id });
@@ -58,24 +59,24 @@ router.post("/minesweeper-challenges", async (req, res): Promise<void> => {
 router.get("/minesweeper-challenges/for/:profileId", async (req, res): Promise<void> => {
   const profileId = Number.parseInt(req.params.profileId, 10);
   if (!Number.isInteger(profileId) || profileId <= 0) { res.status(400).json({ error: "Invalid profile id." }); return; }
+  await expireChallengesForProfile(minesweeperChallengesTable, profileId);
   const rows = await db.select({ id: minesweeperChallengesTable.id }).from(minesweeperChallengesTable)
     .where(or(eq(minesweeperChallengesTable.challengerId, profileId), eq(minesweeperChallengesTable.challengedId, profileId)))
     .orderBy(desc(minesweeperChallengesTable.createdAt)).limit(50);
-  for (const { id } of rows) {
-    const [challenge] = await db.select({ status: minesweeperChallengesTable.status, expiresAt: minesweeperChallengesTable.expiresAt }).from(minesweeperChallengesTable).where(eq(minesweeperChallengesTable.id, id));
-    if (challenge?.status === "pending" && challenge.expiresAt.getTime() <= Date.now()) {
-      await db.update(minesweeperChallengesTable).set({ status: "expired" }).where(eq(minesweeperChallengesTable.id, id));
-    }
-  }
-  res.json((await Promise.all(rows.map(({ id }) => formatMinesweeperChallenge(id)))).filter(Boolean));
+  const details = (await Promise.all(rows.map(({ id }) => formatMinesweeperChallenge(id)))).filter((detail): detail is NonNullable<typeof detail> => !!detail && !isChallengeRecordHidden(detail));
+  res.json(details);
 });
 
 router.get("/minesweeper-challenges/:id", async (req, res): Promise<void> => {
   const id = Number.parseInt(req.params.id, 10);
   if (!Number.isInteger(id) || id <= 0) { res.status(400).json({ error: "Invalid challenge id." }); return; }
-  const detail = await formatMinesweeperChallenge(id);
-  if (!detail) { res.status(404).json({ error: "Challenge not found." }); return; }
-  res.json(detail);
+  const [challenge] = await db.select().from(minesweeperChallengesTable).where(eq(minesweeperChallengesTable.id, id));
+  if (!challenge) { res.status(404).json({ error: "Challenge not found." }); return; }
+  if (await expireChallengeIfDue(minesweeperChallengesTable, challenge)) {
+    const [updated] = await db.select().from(minesweeperChallengesTable).where(eq(minesweeperChallengesTable.id, id));
+    if (isChallengeRecordHidden(updated ?? { ...challenge, status: "expired" })) { res.status(410).json({ error: "This challenge has expired." }); return; }
+  }
+  res.json(await formatMinesweeperChallenge(id));
 });
 
 router.patch("/minesweeper-challenges/:id/respond", async (req, res): Promise<void> => {
@@ -88,18 +89,15 @@ router.patch("/minesweeper-challenges/:id/respond", async (req, res): Promise<vo
   const [challenge] = await db.select().from(minesweeperChallengesTable).where(eq(minesweeperChallengesTable.id, id));
   if (!challenge) { res.status(404).json({ error: "Challenge not found." }); return; }
   if (challenge.challengedId !== profileId) { res.status(403).json({ error: "This challenge was sent to another player." }); return; }
+  if (await expireChallengeIfDue(minesweeperChallengesTable, challenge)) { res.status(410).json({ error: "This challenge has expired." }); return; }
   if (challenge.status !== "pending") { res.status(409).json({ error: "This challenge is no longer waiting for a response." }); return; }
-  if (challenge.expiresAt.getTime() <= Date.now()) {
-    await db.update(minesweeperChallengesTable).set({ status: "expired" }).where(eq(minesweeperChallengesTable.id, id));
-    res.status(410).json({ error: "This challenge has expired." }); return;
-  }
   if (body.action === "decline") {
     await db.update(minesweeperChallengesTable).set({ status: "declined" }).where(eq(minesweeperChallengesTable.id, id));
     res.json(await formatMinesweeperChallenge(id)); return;
   }
   const [game] = await db.transaction(async (tx) => {
     const [created] = await tx.insert(minesweeperGamesTable).values({ profileId, difficulty: challenge.difficulty, challengeId: challenge.id, status: "active" }).returning();
-    await tx.update(minesweeperChallengesTable).set({ status: "accepted", challengedGameId: created.id }).where(eq(minesweeperChallengesTable.id, id));
+    await tx.update(minesweeperChallengesTable).set({ status: "accepted", challengedGameId: created.id, expiresAt: new Date(challenge.createdAt.getTime() + CHALLENGE_ACTIVE_TTL_MS) }).where(eq(minesweeperChallengesTable.id, id));
     return [created];
   });
   res.json({ ...(await formatMinesweeperChallenge(id)), gameId: game.id });

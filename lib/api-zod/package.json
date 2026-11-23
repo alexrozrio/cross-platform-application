@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./jigsaw-scoring": "./src/jigsaw-scoring.ts",
+    "./odd-images": "./src/odd-images.ts",
     "./quiz": "./src/quiz/index.ts"
   },
   "dependencies": {

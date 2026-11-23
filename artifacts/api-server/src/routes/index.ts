@@ -25,6 +25,7 @@ import minesweeperGamesRouter from "./minesweeper-games";
 import slidePuzzleGamesRouter from "./slide-puzzle-games";
 import rubiksGamesRouter from "./rubiks-games";
 import quizGamesRouter from "./quiz-games";
+import oddImageGamesRouter from "./odd-image-games";
 
 const router: IRouter = Router();
 
@@ -51,6 +52,7 @@ router.use(minesweeperGamesRouter);
 router.use(slidePuzzleGamesRouter);
 router.use(rubiksGamesRouter);
 router.use(quizGamesRouter);
+router.use(oddImageGamesRouter);
 router.use(testEmailRouter);
 router.use(inviteRouter);
 router.use(accountRouter);

@@ -4,7 +4,7 @@ export interface AchievementMeta {
   title: string;
   description: string;
   group: string;
-  game: 'sudoku' | 'memory' | 'jigsaw' | 'word-search' | 'minesweeper' | 'slide-puzzle' | 'science-quiz' | 'maths-quiz' | 'gk-quiz';
+  game: 'sudoku' | 'memory' | 'jigsaw' | 'word-search' | 'minesweeper' | 'slide-puzzle' | 'odd-images' | 'science-quiz' | 'maths-quiz' | 'gk-quiz';
 }
 
 const QUIZ_SUBJECT_ACHIEVEMENTS = [
@@ -154,6 +154,22 @@ export const ACHIEVEMENT_META: AchievementMeta[] = [
   { id: 'slide_puzzle_daily_7', game: 'slide-puzzle', emoji: '📅', title: 'Daily Slider', description: 'Solve 7 daily Slide Puzzles', group: 'Slide Puzzle Daily' },
   { id: 'slide_puzzle_daily_30', game: 'slide-puzzle', emoji: '🗓️', title: 'Daily Solver', description: 'Solve 30 daily Slide Puzzles', group: 'Slide Puzzle Daily' },
   { id: 'slide_puzzle_daily_100', game: 'slide-puzzle', emoji: '🏅', title: 'Daily Slide Master', description: 'Solve 100 daily Slide Puzzles', group: 'Slide Puzzle Daily' },
+
+  // ── Odd Images ────────────────────────────────────────────────────────────
+  { id: 'odd_images_first', game: 'odd-images', emoji: '🔍', title: 'First Spot', description: 'Complete your first Odd Images game', group: 'Odd Images Milestones' },
+  { id: 'odd_images_dedicated', game: 'odd-images', emoji: '🖼️', title: 'Image Hunter', description: 'Complete 10 Odd Images games', group: 'Odd Images Milestones' },
+  { id: 'odd_images_half_century', game: 'odd-images', emoji: '🏆', title: 'Spotter', description: 'Complete 50 Odd Images games', group: 'Odd Images Milestones' },
+  { id: 'odd_images_century', game: 'odd-images', emoji: '🌟', title: 'Odd Image Legend', description: 'Complete 100 Odd Images games', group: 'Odd Images Milestones' },
+  { id: 'odd_images_all_levels', game: 'odd-images', emoji: '🌈', title: 'Level Explorer', description: 'Complete a game at all four Odd Images levels', group: 'Odd Images Skills' },
+  { id: 'odd_images_theme_explorer', game: 'odd-images', emoji: '🎨', title: 'Theme Collector', description: 'Complete games in 5 different image themes', group: 'Odd Images Skills' },
+  { id: 'odd_images_perfect_5', game: 'odd-images', emoji: '💯', title: 'Perfect Vision', description: 'Answer every question correctly in 5 Odd Images games', group: 'Odd Images Skills' },
+  { id: 'odd_images_speed_easy', game: 'odd-images', emoji: '🐇', title: 'Quick Glance', description: 'Finish an Easy game in under 90 seconds', group: 'Odd Images Skills' },
+  { id: 'odd_images_speed_medium', game: 'odd-images', emoji: '⚡', title: 'Fast Finder', description: 'Finish a Medium game in under 2.5 minutes', group: 'Odd Images Skills' },
+  { id: 'odd_images_speed_hard', game: 'odd-images', emoji: '🚀', title: 'Sharp Eye', description: 'Finish a Hard game in under 4 minutes', group: 'Odd Images Skills' },
+  { id: 'odd_images_speed_expert', game: 'odd-images', emoji: '💨', title: 'Image Sprint', description: 'Finish an Expert game in under 6 minutes', group: 'Odd Images Skills' },
+  { id: 'odd_images_daily_7', game: 'odd-images', emoji: '📅', title: 'Daily Spotter', description: 'Complete 7 daily Odd Images challenges', group: 'Odd Images Daily' },
+  { id: 'odd_images_daily_30', game: 'odd-images', emoji: '🗓️', title: 'Daily Hunter', description: 'Complete 30 daily Odd Images challenges', group: 'Odd Images Daily' },
+  { id: 'odd_images_daily_100', game: 'odd-images', emoji: '🏅', title: 'Daily Image Master', description: 'Complete 100 daily Odd Images challenges', group: 'Odd Images Daily' },
 
   // ── Quiz games: Science / Maths / GK each have their own set ─────────────
   ...QUIZ_SUBJECT_ACHIEVEMENTS.flatMap(({ subject, game, label }) => [

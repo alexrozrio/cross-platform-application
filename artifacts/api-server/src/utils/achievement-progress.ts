@@ -85,3 +85,49 @@ export function getJigsawAchievementProgress(games: JigsawAchievementGame[]) {
     jigsaw_daily_100: countAchievementProgress(completedDailyDates.size, JIGSAW_ACHIEVEMENT_TARGETS.dailyMaster),
   };
 }
+
+export const ODD_IMAGE_ACHIEVEMENT_TARGETS = {
+  dedicated: 10,
+  halfCentury: 50,
+  century: 100,
+  themeExplorer: 5,
+  perfectGames: 5,
+  dailyDevotion: 7,
+  dailyCraft: 30,
+  dailyMaster: 100,
+} as const;
+
+export interface OddImageAchievementGame {
+  level: string;
+  theme: string;
+  elapsedSeconds: number;
+  questions: number;
+  correct: number;
+  dailyDate: string | null;
+}
+
+export function getOddImageAchievementProgress(games: OddImageAchievementGame[]) {
+  const wins = games.filter((game) => game.correct > 0);
+  const levelCount = new Set(wins.map((game) => game.level)).size;
+  const themeCount = new Set(wins.map((game) => game.theme)).size;
+  const perfectCount = wins.filter((game) => game.questions > 0 && game.correct === game.questions).length;
+  const dailyDates = new Set(wins.flatMap((game) => game.dailyDate ? [game.dailyDate] : []));
+  const hasFastWin = (level: string, maxSeconds: number) => wins.some((game) => game.level === level && game.elapsedSeconds < maxSeconds);
+
+  return {
+    odd_images_first: countAchievementProgress(wins.length, 1),
+    odd_images_dedicated: countAchievementProgress(wins.length, ODD_IMAGE_ACHIEVEMENT_TARGETS.dedicated),
+    odd_images_half_century: countAchievementProgress(wins.length, ODD_IMAGE_ACHIEVEMENT_TARGETS.halfCentury),
+    odd_images_century: countAchievementProgress(wins.length, ODD_IMAGE_ACHIEVEMENT_TARGETS.century),
+    odd_images_all_levels: countAchievementProgress(levelCount, 4),
+    odd_images_theme_explorer: countAchievementProgress(themeCount, ODD_IMAGE_ACHIEVEMENT_TARGETS.themeExplorer),
+    odd_images_perfect_5: countAchievementProgress(perfectCount, ODD_IMAGE_ACHIEVEMENT_TARGETS.perfectGames),
+    odd_images_speed_easy: countAchievementProgress(hasFastWin("easy", 90) ? 1 : 0, 1),
+    odd_images_speed_medium: countAchievementProgress(hasFastWin("medium", 150) ? 1 : 0, 1),
+    odd_images_speed_hard: countAchievementProgress(hasFastWin("hard", 240) ? 1 : 0, 1),
+    odd_images_speed_expert: countAchievementProgress(hasFastWin("expert", 360) ? 1 : 0, 1),
+    odd_images_daily_7: countAchievementProgress(dailyDates.size, ODD_IMAGE_ACHIEVEMENT_TARGETS.dailyDevotion),
+    odd_images_daily_30: countAchievementProgress(dailyDates.size, ODD_IMAGE_ACHIEVEMENT_TARGETS.dailyCraft),
+    odd_images_daily_100: countAchievementProgress(dailyDates.size, ODD_IMAGE_ACHIEVEMENT_TARGETS.dailyMaster),
+  };
+}
