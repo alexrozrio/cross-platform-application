@@ -60,10 +60,9 @@ export async function signOut(): Promise<void> {
   }
 
   const url = apiUrl("/api/native/logout");
-  const isCrossOrigin = url.startsWith('http');
   const response = await fetch(url, {
     method: "POST",
-    credentials: isCrossOrigin ? "omit" : "include",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: "{}",
   });
@@ -98,10 +97,9 @@ export async function completeNativeGoogleSignIn(code: string): Promise<void> {
   }
 
   const url = apiUrl("/api/native-auth/exchange");
-  const isCrossOrigin = url.startsWith('http');
   const response = await fetch(url, {
     method: "POST",
-    credentials: isCrossOrigin ? "omit" : "include",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ code, verifier: pending.verifier }),
   });

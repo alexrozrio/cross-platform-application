@@ -35,10 +35,9 @@ export default function AccountDeletion() {
     setIsDeleting(true);
     try {
       const url = apiUrl("/api/account");
-      const isCrossOrigin = url.startsWith('http');
       const response = await fetch(url, {
         method: "DELETE",
-        credentials: isCrossOrigin ? "omit" : "include",
+        credentials: "include",
       });
       if (!response.ok) {
         const body = await response.json().catch(() => null) as { message?: string } | null;

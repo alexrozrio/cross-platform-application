@@ -101,7 +101,7 @@ export function AuthProvider({
     // The deployed API may be waking from an idle period. A short timeout
     // makes native startup silently skip guest-profile creation on cold starts.
     const timeoutId = setTimeout(() => controller.abort(), isCrossOrigin ? 60_000 : 15_000);
-    fetch(url, { credentials: isCrossOrigin ? 'omit' : 'include', signal: controller.signal })
+    fetch(url, { credentials: 'include', signal: controller.signal })
       .then((res) => {
         if (res.status === 401) return null;
         if (!res.ok) return null;
