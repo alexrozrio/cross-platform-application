@@ -15,23 +15,40 @@ const DEPLOYED_API_BASE_URL = "https://cross-platform-application.onrender.com";
 // This must be set at build/dev-start time (Vite inlines VITE_* env vars),
 // so restart the dev server / rebuild after changing it.
 export function getConfiguredApiBaseUrl(): string | null {
+  const isNative = Capacitor.isNativePlatform();
+
   // In a browser dev session, keep requests same-origin so Vite can proxy
   // them. This avoids browser CORS and cookie issues when the UI talks to a
   // remotely hosted API. The proxy target is configured in vite.config.ts.
-  if (import.meta.env.DEV && !Capacitor.isNativePlatform()) return null;
+  if (import.meta.env.DEV && !isNative) return null;
 
   // An explicit local override is useful for pointing a local UI at a chosen
   // API. Native builds call the configured API directly because they have no
   // browser dev-server proxy.
-  const raw = import.meta.env.VITE_API_BASE_URL_LOCAL || import.meta.env.VITE_API_BASE_URL;
-  if (!raw) {
-    // Production builds call the deployed API directly so static hosts
-    // (Cloudflare Pages, etc.) without an /api proxy still reach it.
-    // Browser development keeps using Vite's local /api proxy instead.
-    return import.meta.env.DEV && !Capacitor.isNativePlatform() ? null : DEPLOYED_API_BASE_URL;
+  const localOverride = import.meta.env.VITE_API_BASE_URL_LOCAL;
+  if (localOverride) {
+    const trimmed = localOverride.trim().replace(/\/+$/, "");
+    if (trimmed) return trimmed;
   }
-  const trimmed = raw.trim().replace(/\/+$/, "");
-  return trimmed === "" ? null : trimmed;
+
+  if (
+    !isNative &&
+    typeof window !== "undefined" &&
+    ["localhost", "127.0.0.1"].includes(window.location.hostname)
+  ) {
+    // Production/preview builds opened locally do not have Vite's /api proxy.
+    return `http://${window.location.hostname}:8080`;
+  }
+
+  const configured = import.meta.env.VITE_API_BASE_URL;
+  if (configured) {
+    const trimmed = configured.trim().replace(/\/+$/, "");
+    if (trimmed) return trimmed;
+  }
+
+  // Production builds call the deployed API directly so static hosts
+  // (Cloudflare Pages, etc.) without an /api proxy still reach it.
+  return DEPLOYED_API_BASE_URL;
 }
 
 /**
