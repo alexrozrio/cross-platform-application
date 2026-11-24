@@ -107,10 +107,10 @@ const publicPages = [
     route: "/",
     title: "Free Puzzle & Quiz Games Online | Sudoku, Memory, Word Search & More",
     description:
-      "Play ten free browser games: Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and Science, Maths & GK quizzes — with daily challenges, leaderboards, and guest play.",
+      "Play twelve free browser games: Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, and Science, Maths & GK quizzes — with daily challenges, leaderboards, and guest play.",
     heading: "Free Puzzle & Quiz Games Online",
     intro:
-      "Ten games, one place: logic puzzles, word and picture games, minefields, sliding tiles, spot-the-difference grids, and timed quizzes. Every game can be started as a guest, with daily challenges and leaderboards to compare scores.",
+      "Twelve games, one place: logic puzzles, word and picture games, minefields, sliding tiles, tile-merging, anagram words, spot-the-difference grids, and timed quizzes. Every game can be started as a guest, with daily challenges and leaderboards to compare scores.",
     sections: [
       ["Sudoku for logic", "Baby 3×3 through Pro 16×16 grids in easy, medium, hard, and expert. Each symbol must fit its row, column, and marked box — use candidate notes and a repeatable solving loop."],
       ["Memory Match for recall", "2×4 to 8×8 boards with number, letter, or image cards. Turn over two cards at a time and build a location map as you play."],
@@ -118,6 +118,8 @@ const publicPages = [
       ["Word Search for words", "Themed word lists hide in letter grids — Beginner and Easy go across and down, Medium adds diagonals, and Hard includes backwards words."],
       ["Minesweeper for nerves of steel", "Clear the minefield on 6×6 to 14×14 boards from Beginner to Hard. Numbers show adjacent mines; you get up to three mistakes and two hints."],
       ["Slide Puzzle for tile sliding", "Arrange numbered, alphabet, or picture tiles in order on 2×2 to 5×5 boards. Points reward fast, efficient solves with few hints."],
+      ["2048 for tile merging", "Slide and merge numbered tiles on 3×3 to 6×6 boards. Points reward a high max tile, fast finishes, and efficient moves."],
+      ["Jumble Words for anagrams", "Unscramble jumbled English letters into real words across four levels. Points reward accuracy, speed, and few wrong attempts — skipped words can be retried."],
       ["Odd Images for visual scans", "Each round fills a grid with the same picture theme and hides one odd image. Easy through Expert scales the grid from 3×3 to 6×6 and increases the number of questions."],
       ["Science, Maths & GK quizzes", "Timed multiple-choice quizzes with four levels — Easy (5 questions) up to Expert (12 questions). Answer quickly and accurately to maximise points, XP, and gems."],
       ["Daily challenges for everyone", "Every game has a shared daily challenge that refreshes each day, so you can compare your score with other players on the same puzzle."],
@@ -130,6 +132,8 @@ const publicPages = [
       ["/word-search", "Play Word Search online"],
       ["/minesweeper", "Play Minesweeper online"],
       ["/slide-puzzle", "Play Slide Puzzle online"],
+      ["/game-2048", "Play 2048 online"],
+      ["/jumble", "Play Jumble Words online"],
       ["/odd-images", "Play Odd Images online"],
       ["/quiz/science", "Play the Science Quiz"],
       ["/quiz/maths", "Play the Maths Quiz"],
@@ -290,6 +294,10 @@ const publicPages = [
       ["/word-search", "Play Word Search"],
       ["/minesweeper", "Play Minesweeper"],
       ["/slide-puzzle", "Play Slide Puzzle"],
+      ["/game-2048", "Play 2048"],
+      ["/game-2048-challenge", "Try the 2048 daily challenge"],
+      ["/jumble", "Play Jumble Words"],
+      ["/jumble-challenge", "Try the Jumble Words daily challenge"],
       ["/odd-images", "Play Odd Images"],
       ["/odd-images-challenge", "Try the Odd Images daily challenge"],
       ["/quiz/science", "Play the quizzes"],
@@ -394,13 +402,13 @@ const publicPages = [
     route: "/leaderboard",
     title: "All Games Leaderboard | Play Brain Games . Online",
     description:
-      "Compare scores across all ten games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and Science, Maths & GK quizzes — on weekly, monthly, and all-time boards.",
+      "Compare scores across all twelve games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, and Science, Maths & GK quizzes — on weekly, monthly, and all-time boards.",
     heading: "All Games Leaderboard",
     intro:
       "Compare combined points across every game — puzzles, word games, quizzes, and more — on weekly tournaments, monthly tournaments, and all-time rankings.",
     sections: [
       ["Weekly and monthly tournaments", "Follow changing tournament standings and compete for a place near the top."],
-      ["All-time combined scores", "Completed games from every title — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and the Science, Maths & GK quizzes — contribute points to the all-games ranking."],
+      ["All-time combined scores", "Completed games from every title — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, and the Science, Maths & GK quizzes — contribute points to the all-games ranking."],
       ["Game-specific leaderboards", "Open separate all-time boards to compare scores for any individual game."],
     ],
     links: [
@@ -410,6 +418,8 @@ const publicPages = [
       ["/leaderboard/word-search/", "View all-time Word Search scores"],
       ["/leaderboard/minesweeper/", "View all-time Minesweeper scores"],
       ["/leaderboard/slide-puzzle/", "View all-time Slide Puzzle scores"],
+      ["/leaderboard/game-2048/", "View all-time 2048 scores"],
+      ["/leaderboard/jumble/", "View all-time Jumble Words scores"],
       ["/leaderboard/odd-images/", "View all-time Odd Images scores"],
       ["/leaderboard/science-quiz/", "View Science Quiz scores"],
       ["/leaderboard/maths-quiz/", "View Maths Quiz scores"],
@@ -483,15 +493,15 @@ const publicPages = [
     route: "/about",
     title: "About Play Brain Games . Online | Ten Free Games",
     description:
-      "Learn about Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and Science, Maths & GK quizzes — board choices, daily challenges, guest play, and saved progress.",
+      "Learn about Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, and Science, Maths & GK quizzes — board choices, daily challenges, guest play, and saved progress.",
     heading: "About Play Brain Games . Online",
     intro:
-      "Play Brain Games . Online brings together ten puzzle and quiz formats with adjustable boards, practical guides, daily challenges, and guest play.",
+      "Play Brain Games . Online brings together twelve puzzle and quiz formats with adjustable boards, practical guides, daily challenges, and guest play.",
     sections: [
-      ["Ten games, many kinds of play", "Sudoku is a logic puzzle; Memory Match is a recall game; Jigsaw rebuilds a picture; Word Search hides themed words; Minesweeper tests deduction under pressure; Slide Puzzle orders shuffled tiles; Odd Images tests visual scanning; and the Science, Maths & GK quizzes test knowledge against the clock."],
-      ["Board and level choices for every experience", "Sudoku ranges from 3×3 to 16×16 grids; Memory Match has 2×4 through 8×8 boards; Jigsaw offers 2×2 to 5×5 pictures; Word Search scales from 6×6 to 14×14; Minesweeper runs 6×6 to 14×14; Slide Puzzle goes 2×2 to 5×5; Odd Images runs 3×3 to 6×6 grids; and each quiz has Easy through Expert levels."],
+      ["Twelve games, many kinds of play", "Sudoku is a logic puzzle; Memory Match is a recall game; Jigsaw rebuilds a picture; Word Search hides themed words; Minesweeper tests deduction under pressure; Slide Puzzle orders shuffled tiles; 2048 merges numbered tiles; Jumble Words unscrambles anagrams; Odd Images tests visual scanning; and the Science, Maths & GK quizzes test knowledge against the clock."],
+      ["Board and level choices for every experience", "Sudoku ranges from 3×3 to 16×16 grids; Memory Match has 2×4 through 8×8 boards; Jigsaw offers 2×2 to 5×5 pictures; Word Search scales from 6×6 to 14×14; Minesweeper runs 6×6 to 14×14; Slide Puzzle goes 2×2 to 5×5; 2048 runs 3×3 to 6×6 boards; Jumble Words deals 5 to 12 words per round; Odd Images runs 3×3 to 6×6 grids; and each quiz has Easy through Expert levels."],
       ["Progress is optional", "Start as a guest without signing in. Google sign-in connects profile statistics, achievements, and streaks so progress can sync across devices. The games remain available without a profile."],
-      ["Daily practice and shared results", "Every game has a daily challenge that refreshes each day, plus head-to-head challenges against friends. Leaderboards cover all ten games across weekly, monthly, and all-time boards."],
+      ["Daily practice and shared results", "Every game has a daily challenge that refreshes each day, plus head-to-head challenges against friends. Leaderboards cover all twelve games across weekly, monthly, and all-time boards."],
       ["Privacy and account control", "The Privacy Policy describes how account and game-progress information is used. The account deletion page explains how to request removal of an account and associated server data."],
     ],
     links: [
@@ -501,6 +511,8 @@ const publicPages = [
       ["/word-search", "Play Word Search"],
       ["/minesweeper", "Play Minesweeper"],
       ["/slide-puzzle", "Play Slide Puzzle"],
+      ["/game-2048", "Play 2048"],
+      ["/jumble", "Play Jumble Words"],
       ["/odd-images", "Play Odd Images"],
       ["/quiz/science", "Play the quizzes"],
       ["/guides", "Read the puzzle guides"],
@@ -758,6 +770,92 @@ const publicPages = [
     schemaType: "WebApplication",
   },
   {
+    route: "/game-2048",
+    title: "Play 2048 Online Free | Merge Tiles on 3×3 to 6×6",
+    description:
+      "Play free 2048 online with 3×3, 4×4, 5×5, and 6×6 boards. Slide and merge numbered tiles, reach the target tile, and climb the leaderboard.",
+    heading: "Play 2048 Online Free",
+    intro:
+      "Every move slides all tiles toward one edge and equal tiles merge into their double. Build the highest tile you can before the board fills up.",
+    sections: [
+      ["Four board sizes", "3×3 (Easy) is a quick warm-up, 4×4 (Medium) is the classic board, 5×5 (Hard) is a marathon, and 6×6 (Expert) gives you room to plan long-term."],
+      ["How scoring works", "Points reward your highest tile combined with speed and move efficiency — bigger merges and faster finishes earn more. Completing a game awards XP and gems scaled by board size."],
+      ["Daily challenge and duels", "The daily 2048 challenge gives everyone the same starting board each day, and you can challenge friends to beat your score head-to-head."],
+      ["Play as a guest or save progress", "Start a game without an account. Optional Google sign-in connects your results, stats, and streaks to a profile across devices."],
+    ],
+    links: [
+      ["/game-2048-challenge", "Play today's 2048 challenge"],
+      ["/leaderboard/game-2048/", "View the 2048 leaderboard"],
+      ["/guides", "Read the 2048 guide"],
+      ["/challenges", "Challenge another player"],
+    ],
+    schemaType: "WebApplication",
+  },
+  {
+    route: "/game-2048-challenge",
+    title: "Daily 2048 Challenge | Play Brain Games . Online",
+    description:
+      "Play today's shared 2048 board, reach the highest tile you can, and compare your score with every other player on the daily leaderboard.",
+    heading: "Daily 2048 Challenge",
+    intro:
+      "Everyone gets the same starting board each day, refreshed at 00:00 UTC. Merge tiles, reach the target, and post your score.",
+    sections: [
+      ["One shared board each day", "The daily 2048 challenge uses the same board size and starting tiles for every player on that date."],
+      ["Score by tile and speed", "Points reward your highest tile plus fast, efficient play, so a big merge streak ranks higher."],
+      ["Compare with other players", "The daily leaderboard shows scores and completion times so you can benchmark your merging."],
+    ],
+    links: [
+      ["/game-2048", "Play 2048"],
+      ["/leaderboard/game-2048/", "View the 2048 leaderboard"],
+      ["/guides", "Read the 2048 guide"],
+      ["/challenges", "Challenge another player"],
+    ],
+    schemaType: "WebApplication",
+  },
+  {
+    route: "/jumble",
+    title: "Play Jumble Words Online Free | Unscramble Words Across 4 Levels",
+    description:
+      "Play free Jumble Words online. Unscramble jumbled English letters into real words across Easy, Medium, Hard, and Expert levels — with daily challenges and duels.",
+    heading: "Play Jumble Words Online Free",
+    intro:
+      "Every round hides real English words behind shuffled letters. Tap the tiles to rebuild each word, then check your answer before moving on.",
+    sections: [
+      ["Four levels of vocabulary", "Easy deals 5 short everyday words, Medium 8, Hard 10 medium-length words, and Expert 12 long vocabulary words — your Game Mode controls which levels appear."],
+      ["Retry skipped words", "Stuck on a scramble? Skip it and keep going — every skipped word can be retried before the round closes, so nothing is lost."],
+      ["How scoring works", "Points scale with the level base, your accuracy, completion speed, and how few wrong attempts you make. Completing a round awards XP and gems scaled by level."],
+      ["Daily challenge and duels", "The daily Jumble Words challenge gives everyone the same word set each day, and you can challenge friends to beat your score head-to-head."],
+    ],
+    links: [
+      ["/jumble-challenge", "Play today's Jumble Words challenge"],
+      ["/leaderboard/jumble/", "View the Jumble Words leaderboard"],
+      ["/guides", "Read the Jumble Words guide"],
+      ["/challenges", "Challenge another player"],
+    ],
+    schemaType: "WebApplication",
+  },
+  {
+    route: "/jumble-challenge",
+    title: "Daily Jumble Words Challenge | Play Brain Games . Online",
+    description:
+      "Play today's shared Jumble Words round — the same word set for every player — and compare your score on the daily leaderboard.",
+    heading: "Daily Jumble Words Challenge",
+    intro:
+      "Everyone gets the same jumbled word set each day, refreshed at 00:00 UTC. Unscramble every word and post your score.",
+    sections: [
+      ["One shared word set each day", "The daily Jumble Words challenge deals the same words and scramble to every player on that date."],
+      ["Score by accuracy and speed", "Points reward correct answers, fast finishes, and few wrong attempts, so a clean run ranks higher."],
+      ["Compare with other players", "The daily leaderboard shows scores and completion times so you can benchmark your anagram skills."],
+    ],
+    links: [
+      ["/jumble", "Play Jumble Words"],
+      ["/leaderboard/jumble/", "View the Jumble Words leaderboard"],
+      ["/guides", "Read the Jumble Words guide"],
+      ["/challenges", "Challenge another player"],
+    ],
+    schemaType: "WebApplication",
+  },
+  {
     route: "/odd-images",
     title: "Odd Images Game Online Free | Spot the Different Picture",
     description:
@@ -933,6 +1031,44 @@ const publicPages = [
       ["/leaderboard/", "View the all-games leaderboard"],
       ["/slide-puzzle", "Play Slide Puzzle"],
       ["/slide-puzzle-challenge", "Try today's challenge"],
+    ],
+    schemaType: "CollectionPage",
+  },
+  {
+    route: "/leaderboard/game-2048",
+    title: "2048 Leaderboard | Play Brain Games . Online",
+    description:
+      "Compare all-time 2048 scores across 3×3, 4×4, 5×5, and 6×6 boards.",
+    heading: "2048 Leaderboard",
+    intro:
+      "See the players with the highest combined points across completed 2048 games of every board size.",
+    sections: [
+      ["Scores across every board", "Points from completed 3×3, 4×4, 5×5, and 6×6 games count toward this all-time board."],
+      ["Compare all games", "The all-games leaderboard also includes every other game's scores from weekly, monthly, and all-time results."],
+    ],
+    links: [
+      ["/leaderboard/", "View the all-games leaderboard"],
+      ["/game-2048", "Play 2048"],
+      ["/game-2048-challenge", "Try today's challenge"],
+    ],
+    schemaType: "CollectionPage",
+  },
+  {
+    route: "/leaderboard/jumble",
+    title: "Jumble Words Leaderboard | Play Brain Games . Online",
+    description:
+      "Compare all-time Jumble Words scores across Easy, Medium, Hard, and Expert levels.",
+    heading: "Jumble Words Leaderboard",
+    intro:
+      "See the players with the highest combined points across completed Jumble Words rounds of every level.",
+    sections: [
+      ["Scores across every level", "Points from completed Easy, Medium, Hard, and Expert rounds count toward this all-time board."],
+      ["Compare all games", "The all-games leaderboard also includes every other game's scores from weekly, monthly, and all-time results."],
+    ],
+    links: [
+      ["/leaderboard/", "View the all-games leaderboard"],
+      ["/jumble", "Play Jumble Words"],
+      ["/jumble-challenge", "Try today's challenge"],
     ],
     schemaType: "CollectionPage",
   },

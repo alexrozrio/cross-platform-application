@@ -1,7 +1,7 @@
 import { IMAGE_THEMES } from "@/lib/themes";
 
 export type WordSearchDifficulty = "beginner" | "easy" | "medium" | "hard";
-type BaseWordSearchTheme = "animals" | "food" | "ocean" | "nature" | "space" | "sports" | "weather" | "music" | "travel" | "school";
+export type BaseWordSearchTheme = "animals" | "food" | "ocean" | "nature" | "space" | "sports" | "weather" | "music" | "travel" | "school";
 export type WordSearchTheme = BaseWordSearchTheme | `icon-${string}`;
 
 export interface WordSearchThemeOption {
@@ -45,9 +45,9 @@ export interface WordSearchPuzzle {
   placements: Record<string, number[]>;
 }
 
-type ThemeWordBank = Record<WordSearchDifficulty, string[]>;
+export type ThemeWordBank = Record<WordSearchDifficulty, string[]>;
 
-const WORD_BANKS: Record<BaseWordSearchTheme, ThemeWordBank> = {
+export const WORD_BANKS: Record<BaseWordSearchTheme, ThemeWordBank> = {
   animals: {
     beginner: ["CAT", "DOG", "PIG", "COW", "HEN", "FOX"],
     easy: ["TIGER", "MONKEY", "RABBIT", "HORSE", "PANDA", "ZEBRA", "KOALA", "LLAMA"],

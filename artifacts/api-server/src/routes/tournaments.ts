@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and, gte, lt, inArray } from "drizzle-orm";
-import { db, gamesTable, puzzlesTable, profilesTable, memoryGamesTable, jigsawGamesTable, wordSearchGamesTable, minesweeperGamesTable, slidePuzzleGamesTable, quizGamesTable, oddImageGamesTable, badgesTable } from "@workspace/db";
+import { db, gamesTable, puzzlesTable, profilesTable, memoryGamesTable, jigsawGamesTable, wordSearchGamesTable, minesweeperGamesTable, slidePuzzleGamesTable, quizGamesTable, oddImageGamesTable, game2048GamesTable, jumbleGamesTable, badgesTable } from "@workspace/db";
 import {
   getWeekPeriod,
   getMonthPeriod,
@@ -129,6 +129,20 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
         .where(range ? and(eq(slidePuzzleGamesTable.status, "completed"), gte(slidePuzzleGamesTable.completedAt, range.start), lt(slidePuzzleGamesTable.completedAt, range.end)) : eq(slidePuzzleGamesTable.status, "completed"))
     : [];
 
+  const game2048Rows = gridSize === undefined
+    ? await db.select({ profileId: game2048GamesTable.profileId, username: profilesTable.username, avatar: profilesTable.avatar,
+        xp: profilesTable.xp, points: game2048GamesTable.points })
+        .from(game2048GamesTable).innerJoin(profilesTable, eq(game2048GamesTable.profileId, profilesTable.id))
+        .where(range ? and(eq(game2048GamesTable.status, "completed"), gte(game2048GamesTable.completedAt, range.start), lt(game2048GamesTable.completedAt, range.end)) : eq(game2048GamesTable.status, "completed"))
+    : [];
+
+  const jumbleRows = gridSize === undefined
+    ? await db.select({ profileId: jumbleGamesTable.profileId, username: profilesTable.username, avatar: profilesTable.avatar,
+        xp: profilesTable.xp, points: jumbleGamesTable.points })
+        .from(jumbleGamesTable).innerJoin(profilesTable, eq(jumbleGamesTable.profileId, profilesTable.id))
+        .where(range ? and(eq(jumbleGamesTable.status, "completed"), gte(jumbleGamesTable.completedAt, range.start), lt(jumbleGamesTable.completedAt, range.end)) : eq(jumbleGamesTable.status, "completed"))
+    : [];
+
   const quizRows = gridSize === undefined
     ? await db.select({ profileId: quizGamesTable.profileId, username: profilesTable.username, avatar: profilesTable.avatar,
         xp: profilesTable.xp, points: quizGamesTable.points, subject: quizGamesTable.subject })
@@ -163,6 +177,8 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
       wordSearchGamesPlayed: number;
       minesweeperGamesPlayed: number;
       slidePuzzleGamesPlayed: number;
+      game2048GamesPlayed: number;
+      jumbleGamesPlayed: number;
       oddImageGamesPlayed: number;
       scienceQuizGamesPlayed: number;
       mathsQuizGamesPlayed: number;
@@ -172,7 +188,7 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
 
   const ensureEntry = (profileId: number, username: string, avatar: string | null, xp: number) => {
     if (!grouped.has(profileId)) {
-      grouped.set(profileId, { username, avatar, xp, totalPoints: 0, gamesPlayed: 0, sudokuGamesPlayed: 0, memoryGamesPlayed: 0, jigsawGamesPlayed: 0, wordSearchGamesPlayed: 0, minesweeperGamesPlayed: 0, slidePuzzleGamesPlayed: 0, oddImageGamesPlayed: 0, scienceQuizGamesPlayed: 0, mathsQuizGamesPlayed: 0, gkQuizGamesPlayed: 0 });
+      grouped.set(profileId, { username, avatar, xp, totalPoints: 0, gamesPlayed: 0, sudokuGamesPlayed: 0, memoryGamesPlayed: 0, jigsawGamesPlayed: 0, wordSearchGamesPlayed: 0, minesweeperGamesPlayed: 0, slidePuzzleGamesPlayed: 0, game2048GamesPlayed: 0, jumbleGamesPlayed: 0, oddImageGamesPlayed: 0, scienceQuizGamesPlayed: 0, mathsQuizGamesPlayed: 0, gkQuizGamesPlayed: 0 });
     }
     return grouped.get(profileId)!;
   };
@@ -223,6 +239,22 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
     entry.totalPoints += row.points ?? 0;
     entry.gamesPlayed += 1;
     entry.slidePuzzleGamesPlayed += 1;
+  }
+
+  for (const row of game2048Rows) {
+    if (!row.profileId) continue;
+    const entry = ensureEntry(row.profileId, row.username, row.avatar ?? null, row.xp ?? 0);
+    entry.totalPoints += row.points ?? 0;
+    entry.gamesPlayed += 1;
+    entry.game2048GamesPlayed += 1;
+  }
+
+  for (const row of jumbleRows) {
+    if (!row.profileId) continue;
+    const entry = ensureEntry(row.profileId, row.username, row.avatar ?? null, row.xp ?? 0);
+    entry.totalPoints += row.points ?? 0;
+    entry.gamesPlayed += 1;
+    entry.jumbleGamesPlayed += 1;
   }
 
   for (const row of oddImageRows) {
@@ -292,6 +324,8 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
     wordSearchGamesPlayed: data.wordSearchGamesPlayed,
     minesweeperGamesPlayed: data.minesweeperGamesPlayed,
     slidePuzzleGamesPlayed: data.slidePuzzleGamesPlayed,
+    game2048GamesPlayed: data.game2048GamesPlayed,
+    jumbleGamesPlayed: data.jumbleGamesPlayed,
     oddImageGamesPlayed: data.oddImageGamesPlayed,
     streak: streakMap.get(profileId) ?? 0,
   }));
@@ -457,6 +491,28 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
     slidePuzzleByDifficulty.set(row.difficulty, current);
   }
 
+  const game2048Rows2 = await db.select({ difficulty: game2048GamesTable.difficulty, points: game2048GamesTable.points })
+    .from(game2048GamesTable).where(range ? and(eq(game2048GamesTable.status, "completed"), eq(game2048GamesTable.profileId, profileId), gte(game2048GamesTable.completedAt, range.start), lt(game2048GamesTable.completedAt, range.end)) : and(eq(game2048GamesTable.status, "completed"), eq(game2048GamesTable.profileId, profileId)));
+
+  const game2048ByDifficulty = new Map<string, { points: number; games: number }>();
+  for (const row of game2048Rows2) {
+    const current = game2048ByDifficulty.get(row.difficulty) ?? { points: 0, games: 0 };
+    current.points += row.points ?? 0;
+    current.games += 1;
+    game2048ByDifficulty.set(row.difficulty, current);
+  }
+
+  const jumbleRows2 = await db.select({ difficulty: jumbleGamesTable.difficulty, points: jumbleGamesTable.points })
+    .from(jumbleGamesTable).where(range ? and(eq(jumbleGamesTable.status, "completed"), eq(jumbleGamesTable.profileId, profileId), gte(jumbleGamesTable.completedAt, range.start), lt(jumbleGamesTable.completedAt, range.end)) : and(eq(jumbleGamesTable.status, "completed"), eq(jumbleGamesTable.profileId, profileId)));
+
+  const jumbleByDifficulty = new Map<string, { points: number; games: number }>();
+  for (const row of jumbleRows2) {
+    const current = jumbleByDifficulty.get(row.difficulty) ?? { points: 0, games: 0 };
+    current.points += row.points ?? 0;
+    current.games += 1;
+    jumbleByDifficulty.set(row.difficulty, current);
+  }
+
   const oddImageRows = await db.select({ level: oddImageGamesTable.level, points: oddImageGamesTable.points })
     .from(oddImageGamesTable).where(range ? and(eq(oddImageGamesTable.status, "completed"), eq(oddImageGamesTable.profileId, profileId), gte(oddImageGamesTable.completedAt, range.start), lt(oddImageGamesTable.completedAt, range.end)) : and(eq(oddImageGamesTable.status, "completed"), eq(oddImageGamesTable.profileId, profileId)));
 
@@ -512,6 +568,16 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
       difficulty,
       points: slidePuzzleByDifficulty.get(difficulty)?.points ?? 0,
       games: slidePuzzleByDifficulty.get(difficulty)?.games ?? 0,
+    })),
+    game2048: (["3x3", "4x4", "5x5", "6x6"] as const).map((difficulty) => ({
+      difficulty,
+      points: game2048ByDifficulty.get(difficulty)?.points ?? 0,
+      games: game2048ByDifficulty.get(difficulty)?.games ?? 0,
+    })),
+    jumble: (["easy", "medium", "hard", "expert"] as const).map((difficulty) => ({
+      difficulty,
+      points: jumbleByDifficulty.get(difficulty)?.points ?? 0,
+      games: jumbleByDifficulty.get(difficulty)?.games ?? 0,
     })),
     oddImages: (["easy", "medium", "hard", "expert"] as const).map((level) => ({
       level,

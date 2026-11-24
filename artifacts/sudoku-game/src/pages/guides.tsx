@@ -11,6 +11,8 @@ import {
   Box,
   Grid3x3,
   Images,
+  LayoutGrid,
+  LetterText,
   Puzzle,
   Rocket,
   Search,
@@ -70,6 +72,18 @@ const THEMES: Record<string, GuideTheme> = {
     icon: "text-sky-700 dark:text-sky-300",
     card: "border-sky-200/70 bg-sky-50/60 dark:border-sky-900/50 dark:bg-sky-950/20",
     btn: "bg-sky-700 text-white hover:bg-sky-800",
+  },
+  "game-2048": {
+    section: "border-orange-200/70 dark:border-orange-900/50",
+    icon: "text-orange-700 dark:text-orange-300",
+    card: "border-orange-200/70 bg-orange-50/60 dark:border-orange-900/50 dark:bg-orange-950/20",
+    btn: "bg-orange-700 text-white hover:bg-orange-800",
+  },
+  jumble: {
+    section: "border-cyan-200/70 dark:border-cyan-900/50",
+    icon: "text-cyan-700 dark:text-cyan-300",
+    card: "border-cyan-200/70 bg-cyan-50/60 dark:border-cyan-900/50 dark:bg-cyan-950/20",
+    btn: "bg-cyan-700 text-white hover:bg-cyan-800",
   },
   "odd-images": {
     section: "border-teal-200/70 dark:border-teal-900/50",
@@ -186,7 +200,7 @@ export default function Guides() {
   usePageMeta({
     title: "Game Guides: All Ten Games | Play Brain Games . Online",
     description:
-      "Learn every game — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and the Science, Maths & GK quizzes — with practical strategies and tips.",
+      "Learn every game — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, and Science, Maths & GK quizzes — with practical strategies and tips.",
     path: "/guides",
     type: "article",
   });
@@ -224,6 +238,8 @@ export default function Guides() {
           <a href="#word-search-guide-title" className="rounded-full border border-indigo-400/30 bg-indigo-500/10 px-3 py-1.5 text-sm font-semibold text-indigo-700 dark:text-indigo-300">Word Search guide</a>
           <a href="#minesweeper-guide-title" className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1.5 text-sm font-semibold text-emerald-700 dark:text-emerald-300">Minesweeper guide</a>
           <a href="#slide-puzzle-guide-title" className="rounded-full border border-sky-400/30 bg-sky-500/10 px-3 py-1.5 text-sm font-semibold text-sky-700 dark:text-sky-300">Slide Puzzle guide</a>
+          <a href="#game-2048-guide-title" className="rounded-full border border-orange-400/30 bg-orange-500/10 px-3 py-1.5 text-sm font-semibold text-orange-700 dark:text-orange-300">2048 guide</a>
+          <a href="#jumble-guide-title" className="rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-sm font-semibold text-cyan-700 dark:text-cyan-300">Jumble Words guide</a>
           <a href="#odd-images-guide-title" className="rounded-full border border-teal-400/30 bg-teal-500/10 px-3 py-1.5 text-sm font-semibold text-teal-700 dark:text-teal-300">Odd Images guide</a>
           {RUBIKS_VISIBLE && (
           <a href="#rubiks-guide-title" className="rounded-full border border-red-400/30 bg-red-500/10 px-3 py-1.5 text-sm font-semibold text-red-700 dark:text-red-300">Rubik's Cube guide</a>
@@ -244,7 +260,7 @@ export default function Guides() {
           "Your Game Mode — set in your profile — controls which board sizes and difficulty levels each game offers, so the same game can feel completely different for a child and an experienced player.",
         ]}
         cards={[
-          { title: "Guest play", detail: "Start any of the ten games immediately. Progress is kept in the browser until you sign in." },
+          { title: "Guest play", detail: "Start any of the twelve games immediately. Progress is kept in the browser until you sign in." },
           { title: "Kids mode", detail: "Shows only the smaller boards and easier levels — 3×3–6×6 Sudoku, short Memory boards, Easy–Medium Jigsaw, Word Search and Minesweeper, Odd Images Easy–Medium, and Easy–Medium quizzes." },
           { title: "Adult & 4 All", detail: "Adult mode offers the larger boards and harder levels; the default 4 All mode shows every size and level for every game." },
         ]}
@@ -271,7 +287,7 @@ export default function Guides() {
           { title: "XP", detail: "Earned for completing games at higher difficulties — harder puzzles give more XP and build your overall player rank." },
           { title: "Gems", detail: "Bonus currency awarded with completed games, scaling with the difficulty or board size you chose." },
         ]}
-        details="Quizzes score on accuracy plus a speed bonus for beating the level's par time. Puzzle games like Sudoku, Memory, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and Odd Images each have their own formula — the expandable 'How points are calculated' guide on the leaderboard page lists every game's exact rules."
+        details="Quizzes score on accuracy plus a speed bonus for beating the level's par time. Puzzle games like Sudoku, Memory, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, and Odd Images each have their own formula — the expandable 'How points are calculated' guide on the leaderboard page lists every game's exact rules."
         tips="For the best scores, learn each game's penalty rules first — for example, hints reduce points in Jigsaw and Slide Puzzle, and wrong reveals cost you in Minesweeper. Clean, efficient runs always beat frantic ones."
         links={[
           { href: "/leaderboard", label: "View leaderboards", primary: true },
@@ -287,12 +303,12 @@ export default function Guides() {
         icon={CalendarCheck}
         intro={[
           "Every game has a daily challenge: the same puzzle, board, or quiz set is dealt to every player each day, refreshed at 00:00 UTC. It is the fairest way to compare yourself with the whole community.",
-          "Leaderboards rank players on weekly, monthly, and all-time boards — per game and across all ten games combined. Friend challenges let you send a head-to-head duel to another player on any game.",
+          "Leaderboards rank players on weekly, monthly, and all-time boards — per game and across all twelve games combined. Friend challenges let you send a head-to-head duel to another player on any game.",
         ]}
         cards={[
-          { title: "Daily challenges", detail: "One shared puzzle or quiz per game per day — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and all three quizzes each have their own." },
+          { title: "Daily challenges", detail: "One shared puzzle or quiz per game per day — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, and all three quizzes each have their own." },
           { title: "Leaderboards", detail: "Weekly, monthly, and all-time rankings per game plus an all-games board that combines your scores everywhere." },
-          { title: "Friend duels", detail: "Challenge another player to the same round on any of the ten games — the higher score wins bonus gems." },
+          { title: "Friend duels", detail: "Challenge another player to the same round on any of the twelve games — the higher score wins bonus gems." },
         ]}
         details="Daily results feed the daily and all-time leaderboards, and completing challenges in a row builds streaks shown on your profile. Each game's daily challenge page also shows today's leaderboard so you can see how your run compares in real time."
         tips="Make the dailies part of your routine — they refresh at 00:00 UTC, so an evening run counts for that day. You can also challenge friends directly from the Challenges page to settle rivalries on your favourite game."
@@ -434,6 +450,50 @@ export default function Guides() {
           { href: "/slide-puzzle", label: "Play Slide Puzzle", primary: true },
           { href: "/slide-puzzle-challenge", label: "Daily challenge" },
           { href: "/leaderboard/slide-puzzle", label: "Leaderboard" },
+        ]}
+      />
+
+      <GuideSection
+        id="game-2048"
+        title="2048 guide"
+        themeKey="game-2048"
+        icon={LayoutGrid}
+        intro={[
+          "2048 is a merge puzzle: every move slides all tiles toward one edge, equal tiles merge into their double, and a new tile spawns after each move. Build the highest tile you can before the board fills up. Choose a board size — Easy (3×3), Medium (4×4), Hard (5×5), or Expert (6×6) — where the target tile grows with the board.",
+          "Swipe on touch screens, drag with a mouse, use the arrow pad, or press the arrow keys / WASD on a keyboard. Undo is available a limited number of times per game. Reaching the level target wins the game, but you can keep playing to push your highest tile even further.",
+        ]}
+        cards={[
+          { title: "Easy / Medium · Kids", detail: "3×3 and 4×4 boards — fewer tiles to track, ideal for learning merge patterns and corner strategy." },
+          { title: "Hard / Expert · Adult", detail: "5×5 and 6×6 boards are a marathon — they need a clear lane plan and patience to reach the target tile." },
+        ]}
+        details="Points reward your highest tile combined with speed and move efficiency — big merges and fast finishes earn more. Completing a game awards XP and gems scaled by the board size. Daily challenges give every player the same starting board each day, and friend challenges compare points head-to-head."
+        tips="Keep your largest tiles locked in one corner and build a snake pattern along the edges. Never fill your escape lane — always leave at least one row or column open so you can shuffle tiles back into position. On bigger boards, merge small tiles in the middle rows early so they do not crowd your main line. Try the daily challenge to race the same board as other players."
+        links={[
+          { href: "/game-2048", label: "Play 2048", primary: true },
+          { href: "/game-2048-challenge", label: "Daily challenge" },
+          { href: "/leaderboard/game-2048", label: "Leaderboard" },
+        ]}
+      />
+
+      <GuideSection
+        id="jumble"
+        title="Jumble Words guide"
+        themeKey="jumble"
+        icon={LetterText}
+        intro={[
+          "Jumble Words hides real English words behind shuffled letters. Each round deals a set of jumbled words — tap the letter tiles to build your answer, then press Check. Solve as many as you can before the round ends.",
+          "Choose a level — Easy (5 words), Medium (8), Hard (10), or Expert (12). Words get longer and trickier as you climb, and your Game Mode controls which levels are offered. Skipped words can be retried before the round closes.",
+        ]}
+        cards={[
+          { title: "Easy / Medium · Kids", detail: "Short everyday words — great for warming up your anagram eye and building speed." },
+          { title: "Hard / Expert · Adult", detail: "Ten to twelve longer words with trickier letter patterns; planning a few letters ahead pays off." },
+        ]}
+        details="Points scale with the level base, your accuracy, completion speed, and how few wrong attempts you make — fast, clean rounds earn the most. Completing a round awards XP and gems scaled by level. Daily challenges deal the same word set to every player each day, and friend challenges compare points head-to-head."
+        tips="Say the letters out loud or look for common prefixes and suffixes — many jumbles resolve once you spot a likely start. Use the Clear button to rebuild instead of deleting one letter at a time, and don't be afraid to skip a word that won't come; you can retry every skipped word before finishing. Try the daily challenge to race the same word set as other players."
+        links={[
+          { href: "/jumble", label: "Play Jumble Words", primary: true },
+          { href: "/jumble-challenge", label: "Daily challenge" },
+          { href: "/leaderboard/jumble", label: "Leaderboard" },
         ]}
       />
 

@@ -23,6 +23,7 @@ import {
   LayoutDashboard,
   X,
   Box,
+  LetterText,
   type LucideIcon,
 } from "lucide-react";
 import { customFetch, useGetProfile } from "@workspace/api-client-react";
@@ -33,6 +34,8 @@ import { sudokuGamePath } from "@/lib/sudoku-routes";
 import { WORD_SEARCH_LEVELS, type WordSearchDifficulty } from "@/lib/word-search";
 import { MINESWEEPER_LEVELS, type MinesweeperDifficulty } from "@/lib/minesweeper";
 import { SLIDE_PUZZLE_LEVELS, type SlidePuzzleDifficulty } from "@/lib/slide-puzzle";
+import { GAME_2048_LEVELS, type Game2048Difficulty } from "@/lib/game-2048";
+import { JUMBLE_LEVELS, type JumbleDifficulty } from "@/lib/jumble-words";
 import { ODD_IMAGE_LEVELS, ODD_IMAGE_LEVEL_ORDER, type OddImageLevel } from "@/lib/odd-images";
 import { RUBIKS_LEVELS, RUBIKS_VISIBLE } from "@/lib/rubiks";
 import { QUIZ_LEVELS, QUIZ_SUBJECTS, quizGameId, type QuizLevel, type QuizSubject } from "@/lib/quiz";
@@ -87,7 +90,7 @@ interface PortalGameEntry {
   keywords?: string;
 }
 
-const FEATURED_GAME_IDS = new Set(["sudoku", "memory", "jigsaw", "word-search", "minesweeper", "slide-puzzle", "odd-images", "science-quiz", "maths-quiz", "gk-quiz"]);
+const FEATURED_GAME_IDS = new Set(["sudoku", "memory", "jigsaw", "word-search", "minesweeper", "slide-puzzle", "game-2048", "jumble", "odd-images", "science-quiz", "maths-quiz", "gk-quiz"]);
 
 const PORTAL_GAMES: PortalGameEntry[] = [
   {
@@ -137,6 +140,22 @@ const PORTAL_GAMES: PortalGameEntry[] = [
     tagline: "Slide to order",
     desc: "Slide tiles into order on boards from 2×2 to 5×5 — numbers, letters, or pictures. Finish under par with few moves for bonus points.",
     keywords: "tiles 15 puzzle",
+  },
+  {
+    id: "game-2048", name: "2048", href: "/game-2048",
+    icon: GAME_ICONS["game-2048"], color: gameIconColor("game-2048"), chip: "bg-orange-100 dark:bg-orange-950/60",
+    gradient: "from-orange-100 via-amber-50 to-yellow-100 dark:from-orange-950/75 dark:via-amber-950/70 dark:to-yellow-950/60",
+    tagline: "Merge & reach 2048",
+    desc: "Slide and merge numbered tiles on boards from 3×3 to 6×6. Reach the target tile before you run out of moves — daily challenges and duels included.",
+    keywords: "merge numbers tiles",
+  },
+  {
+    id: "jumble", name: "Jumble Words", href: "/jumble",
+    icon: GAME_ICONS.jumble, color: gameIconColor("jumble"), chip: "bg-cyan-100 dark:bg-cyan-950/60",
+    gradient: "from-cyan-100 via-sky-50 to-blue-100 dark:from-cyan-950/75 dark:via-sky-950/70 dark:to-blue-950/60",
+    tagline: "Unscramble the word",
+    desc: "Jumbled English letters hide a real word — rebuild it letter by letter across four levels with growing word counts and difficulty.",
+    keywords: "anagram letters word",
   },
   {
     id: "odd-images", name: "Odd Images", href: "/odd-images",
@@ -197,13 +216,13 @@ export default function Portal() {
     applicationCategory: "GameApplication",
     operatingSystem: "Web",
     description:
-      "Play ten free games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and Science, Maths & GK quizzes — with daily challenges, leaderboards, guest play, and optional synced progress.",
+      "Play twelve free games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, and Science, Maths & GK quizzes — with daily challenges, leaderboards, guest play, and optional synced progress.",
     url: new URL("/", window.location.origin).toString(),
   };
   usePageMeta({
     title: "Free Puzzle & Quiz Games Online | Play Brain Games . Online",
     description:
-      "Play free browser-based Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and Science, Maths & GK quizzes. Choose a game, join daily challenges, and play as a guest or sync progress.",
+      "Play free browser-based Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, and Science, Maths & GK quizzes. Choose a game, join daily challenges, and play as a guest or sync progress.",
     path: "/",
     structuredData: landingPageSchema,
   });
@@ -257,6 +276,16 @@ export default function Portal() {
   );
   const launchSlidePuzzle = (difficulty: SlidePuzzleDifficulty) =>
     setLocation(`/slide-puzzle?start=1&difficulty=${difficulty}`);
+  const visibleGame2048Levels: Game2048Difficulty[] = (["3x3", "4x4", "5x5", "6x6"] as Game2048Difficulty[]).filter((level) =>
+    gameMode === "children" ? GAME_2048_LEVELS[level].mode === "baby" : gameMode === "adult" ? GAME_2048_LEVELS[level].mode === "adult" : true,
+  );
+  const launchGame2048 = (difficulty: Game2048Difficulty) =>
+    setLocation(`/game-2048?start=1&difficulty=${difficulty}`);
+  const visibleJumbleLevels: JumbleDifficulty[] = (["easy", "medium", "hard", "expert"] as JumbleDifficulty[]).filter((level) =>
+    gameMode === "children" ? JUMBLE_LEVELS[level].mode === "baby" : gameMode === "adult" ? JUMBLE_LEVELS[level].mode === "adult" : true,
+  );
+  const launchJumble = (difficulty: JumbleDifficulty) =>
+    setLocation(`/jumble?start=1&difficulty=${difficulty}`);
   const visibleOddImageLevels: OddImageLevel[] = ODD_IMAGE_LEVEL_ORDER.filter((level) =>
     gameMode === "children" ? ODD_IMAGE_LEVELS[level].mode === "baby" : gameMode === "adult" ? ODD_IMAGE_LEVELS[level].mode === "adult" : true,
   );
@@ -748,6 +777,30 @@ export default function Portal() {
           </div>
         </section>
 
+        {/* 2048 quick launch */}
+        <section className={`relative isolate overflow-hidden rounded-2xl border-2 border-orange-400/60 bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-100 p-4 shadow-xl shadow-orange-500/20 ring-1 ring-inset ring-white/70 dark:from-orange-950/75 dark:via-amber-950/70 dark:to-yellow-950/60 dark:ring-white/10 ${matchesGame("game-2048") ? "" : "hidden"}`}>
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-amber-300/35 blur-2xl dark:bg-amber-400/15" />
+          <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-20 w-20 rotate-6 grid-cols-2 gap-1 overflow-hidden rounded-xl border border-orange-400/15 bg-white/15 opacity-60 dark:bg-white/5">{["2", "4", "8", "16", "32", "64", "128", "256", "512"].map((tile, index) => <span key={index} className="flex items-center justify-center border border-orange-400/10 text-[10px] font-black text-orange-700/30 dark:text-orange-200/20">{tile}</span>)}</div>
+          <div className="relative z-10 flex items-center justify-between gap-3"><div className="flex items-center gap-2.5"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-600 text-white shadow-md"><LayoutGrid className="h-6 w-6" /></div><div><span className="block text-xl font-black leading-tight text-slate-900 dark:text-white">2048</span><span className="mt-1 inline-flex w-fit rounded-full bg-white/65 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-orange-700 shadow-sm dark:bg-slate-950/30 dark:text-orange-300">Merge &amp; reach</span></div></div><button onClick={() => setLocation("/game-2048")} className="rounded-full bg-orange-600 px-3 py-1.5 text-[11px] font-bold text-white shadow-sm transition-colors hover:bg-orange-700">All options</button></div>
+          <p className="relative z-10 text-[11px] font-medium leading-tight text-foreground/80">Slide tiles to merge matching numbers.</p>
+          <div className={`relative z-10 mt-2 grid gap-1.5 ${visibleGame2048Levels.length <= 2 ? "grid-cols-2" : "grid-cols-4"}`}>
+            {visibleGame2048Levels.map((level) => <button key={level} onClick={() => launchGame2048(level)} className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-orange-400/35 bg-white/75 px-1 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-orange-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"><span className="font-black text-sm leading-tight text-orange-700 dark:text-orange-300">{GAME_2048_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{GAME_2048_LEVELS[level].size}×{GAME_2048_LEVELS[level].size} · {GAME_2048_LEVELS[level].targetTile} · {GAME_2048_LEVELS[level].mode === "baby" ? "Kids" : "Adult"}</span></button>)}
+          </div>
+        </section>
+
+        {/* Jumble Words quick launch */}
+        <section className={`relative isolate overflow-hidden rounded-2xl border-2 border-cyan-400/60 bg-gradient-to-br from-cyan-100 via-sky-50 to-blue-100 p-4 shadow-xl shadow-cyan-500/20 ring-1 ring-inset ring-white/70 dark:from-cyan-950/75 dark:via-sky-950/70 dark:to-blue-950/60 dark:ring-white/10 ${matchesGame("jumble") ? "" : "hidden"}`}>
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-400" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-sky-300/35 blur-2xl dark:bg-sky-400/15" />
+          <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-20 w-20 rotate-6 grid-cols-3 overflow-hidden rounded-xl border border-cyan-400/15 bg-white/15 opacity-60 dark:bg-white/5">{["T", "A", "C", "E", "P", "O", "H", "S", "R"].map((letter, index) => <span key={index} className="flex items-center justify-center border border-cyan-400/10 text-[10px] font-black text-cyan-700/30 dark:text-cyan-200/20">{letter}</span>)}</div>
+          <div className="relative z-10 flex items-center justify-between gap-3"><div className="flex items-center gap-2.5"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-600 text-white shadow-md"><LetterText className="h-6 w-6" /></div><div><span className="block text-xl font-black leading-tight text-slate-900 dark:text-white">Jumble Words</span><span className="mt-1 inline-flex w-fit rounded-full bg-white/65 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-cyan-700 shadow-sm dark:bg-slate-950/30 dark:text-cyan-300">Unscramble &amp; spell</span></div></div><button onClick={() => setLocation("/jumble")} className="rounded-full bg-cyan-600 px-3 py-1.5 text-[11px] font-bold text-white shadow-sm transition-colors hover:bg-cyan-700">All options</button></div>
+          <p className="relative z-10 text-[11px] font-medium leading-tight text-foreground/80">Rebuild the hidden word from jumbled letters.</p>
+          <div className={`relative z-10 mt-2 grid gap-1.5 ${visibleJumbleLevels.length <= 2 ? "grid-cols-2" : "grid-cols-4"}`}>
+            {visibleJumbleLevels.map((level) => <button key={level} onClick={() => launchJumble(level)} className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-cyan-400/35 bg-white/75 px-1 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-cyan-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"><span className="font-black text-sm leading-tight text-cyan-700 dark:text-cyan-300">{JUMBLE_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{JUMBLE_LEVELS[level].questions} words · {JUMBLE_LEVELS[level].mode === "baby" ? "Kids" : "Adult"}</span></button>)}
+          </div>
+        </section>
+
         {/* Odd Images quick launch */}
         <section className={`relative isolate overflow-hidden rounded-2xl border-2 border-teal-400/60 bg-gradient-to-br from-teal-100 via-cyan-50 to-sky-100 p-4 shadow-xl shadow-teal-500/20 ring-1 ring-inset ring-white/70 dark:from-teal-950/75 dark:via-cyan-950/70 dark:to-sky-950/60 dark:ring-white/10 ${matchesGame("odd-images") ? "" : "hidden"}`}>
           <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-500 via-cyan-500 to-sky-400" />
@@ -872,6 +925,12 @@ export default function Portal() {
             </button>
             <button onClick={() => setLocation("/slide-puzzle-challenge")} className="flex w-full items-center gap-3 rounded-xl border border-sky-200 bg-white/60 px-3 py-2.5 text-left transition-all hover:bg-white/90 dark:bg-sky-950/20 dark:hover:bg-sky-950/40">
               <Grid3x3 className="h-5 w-5 shrink-0 text-sky-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Slide Puzzle</p><p className="text-xs text-muted-foreground">One shared scramble each day</p></div><span className="shrink-0 text-sm text-sky-500">→</span>
+            </button>
+            <button onClick={() => setLocation("/game-2048-challenge")} className="flex w-full items-center gap-3 rounded-xl border border-orange-200 bg-white/60 px-3 py-2.5 text-left transition-all hover:bg-white/90 dark:bg-orange-950/20 dark:hover:bg-orange-950/40">
+              <LayoutGrid className="h-5 w-5 shrink-0 text-orange-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">2048</p><p className="text-xs text-muted-foreground">One shared tile sequence each day</p></div><span className="shrink-0 text-sm text-orange-500">→</span>
+            </button>
+            <button onClick={() => setLocation("/jumble-challenge")} className="flex w-full items-center gap-3 rounded-xl border border-cyan-200 bg-white/60 px-3 py-2.5 text-left transition-all hover:bg-white/90 dark:bg-cyan-950/20 dark:hover:bg-cyan-950/40">
+              <LetterText className="h-5 w-5 shrink-0 text-cyan-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Jumble Words</p><p className="text-xs text-muted-foreground">One shared word set each day</p></div><span className="shrink-0 text-sm text-cyan-500">→</span>
             </button>
             <button onClick={() => setLocation("/odd-images-challenge")} className="flex w-full items-center gap-3 rounded-xl border border-teal-200 bg-white/60 px-3 py-2.5 text-left transition-all hover:bg-white/90 dark:bg-teal-950/20 dark:hover:bg-teal-950/40">
               <Images className="h-5 w-5 shrink-0 text-teal-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Odd Images</p><p className="text-xs text-muted-foreground">One shared image grid each day</p></div><span className="shrink-0 text-sm text-teal-500">→</span>
@@ -1449,6 +1508,44 @@ export default function Portal() {
                 title="Available"
               />
             </section>
+            <section className={`group relative isolate overflow-hidden rounded-2xl border-2 border-orange-400/60 bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-100 text-left shadow-xl shadow-orange-500/20 ring-1 ring-inset ring-white/70 transition hover:border-orange-500/80 dark:from-orange-950/75 dark:via-amber-950/70 dark:to-yellow-950/60 dark:ring-white/10 ${matchesGame("game-2048") ? "" : "hidden"}`}>
+              <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400" />
+              <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-amber-300/35 blur-2xl dark:bg-amber-400/15" />
+              <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-24 w-24 rotate-6 grid-cols-2 gap-1 overflow-hidden rounded-xl border border-orange-400/15 bg-white/15 opacity-60 dark:bg-white/5">{["2", "4", "8", "16", "32", "64", "128", "256", "512"].map((tile, index) => <span key={index} className="flex items-center justify-center border border-orange-400/10 text-sm font-black text-orange-700/25 dark:text-orange-200/20">{tile}</span>)}</div>
+              <button onClick={() => setLocation("/game-2048")} className="relative z-10 block w-full space-y-4 p-6 text-left transition-all duration-200 hover:bg-white/20 dark:hover:bg-slate-950/20">
+                <div className="flex items-center gap-3"><span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-orange-600/10 text-orange-600 ring-1 ring-orange-400/20 dark:text-orange-300"><LayoutGrid className="h-8 w-8" /></span><div><h2 className="font-serif text-xl font-bold">2048</h2><p className="text-xs text-muted-foreground">Merge tiles, reach the target</p></div></div>
+                <p className="text-sm leading-relaxed text-muted-foreground">Slide every tile to merge matching numbers across four board sizes — 3×3 up to 6×6. Reach the target tile before you run out of moves.</p>
+              </button>
+              <div className="relative z-10 px-6 pb-5 pt-1">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {visibleGame2048Levels.map((level) => <button key={level} onClick={() => launchGame2048(level)} className="flex min-h-[52px] flex-col items-center justify-center rounded-lg border border-orange-400/20 bg-orange-500/5 px-1 py-2 text-center transition-all hover:border-orange-400/40 hover:bg-orange-500/15"><span className="text-xs font-bold leading-none text-orange-700 dark:text-orange-300">{GAME_2048_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{GAME_2048_LEVELS[level].size}×{GAME_2048_LEVELS[level].size} · {GAME_2048_LEVELS[level].targetTile} · {GAME_2048_LEVELS[level].mode === "baby" ? "Kids" : "Adult"}</span></button>)}
+                </div>
+                <button onClick={() => setLocation("/game-2048")} className="mt-3 text-xs font-semibold text-orange-800 underline underline-offset-2 dark:text-orange-200">More options</button>
+              </div>
+              <div
+                className="absolute top-3 right-3 w-2 h-2 rounded-full bg-green-400"
+                title="Available"
+              />
+            </section>
+            <section className={`group relative isolate overflow-hidden rounded-2xl border-2 border-cyan-400/60 bg-gradient-to-br from-cyan-100 via-sky-50 to-blue-100 text-left shadow-xl shadow-cyan-500/20 ring-1 ring-inset ring-white/70 transition hover:border-cyan-500/80 dark:from-cyan-950/75 dark:via-sky-950/70 dark:to-blue-950/60 dark:ring-white/10 ${matchesGame("jumble") ? "" : "hidden"}`}>
+              <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-400" />
+              <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-sky-300/35 blur-2xl dark:bg-sky-400/15" />
+              <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 grid h-24 w-24 rotate-6 grid-cols-3 overflow-hidden rounded-xl border border-cyan-400/15 bg-white/15 opacity-60 dark:bg-white/5">{["T", "A", "C", "E", "P", "O", "H", "S", "R"].map((letter, index) => <span key={index} className="flex items-center justify-center border border-cyan-400/10 text-sm font-black text-cyan-700/25 dark:text-cyan-200/20">{letter}</span>)}</div>
+              <button onClick={() => setLocation("/jumble")} className="relative z-10 block w-full space-y-4 p-6 text-left transition-all duration-200 hover:bg-white/20 dark:hover:bg-slate-950/20">
+                <div className="flex items-center gap-3"><span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-cyan-600/10 text-cyan-600 ring-1 ring-cyan-400/20 dark:text-cyan-300"><LetterText className="h-8 w-8" /></span><div><h2 className="font-serif text-xl font-bold">Jumble Words</h2><p className="text-xs text-muted-foreground">Unscramble jumbled letters into words</p></div></div>
+                <p className="text-sm leading-relaxed text-muted-foreground">Every round hides real English words behind shuffled letters. Rebuild each word letter by letter — four levels with growing word counts and difficulty.</p>
+              </button>
+              <div className="relative z-10 px-6 pb-5 pt-1">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {visibleJumbleLevels.map((level) => <button key={level} onClick={() => launchJumble(level)} className="flex min-h-[52px] flex-col items-center justify-center rounded-lg border border-cyan-400/20 bg-cyan-500/5 px-1 py-2 text-center transition-all hover:border-cyan-400/40 hover:bg-cyan-500/15"><span className="text-xs font-bold leading-none text-cyan-700 dark:text-cyan-300">{JUMBLE_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{JUMBLE_LEVELS[level].questions} words · {JUMBLE_LEVELS[level].mode === "baby" ? "Kids" : "Adult"}</span></button>)}
+                </div>
+                <button onClick={() => setLocation("/jumble")} className="mt-3 text-xs font-semibold text-cyan-800 underline underline-offset-2 dark:text-cyan-200">More options</button>
+              </div>
+              <div
+                className="absolute top-3 right-3 w-2 h-2 rounded-full bg-green-400"
+                title="Available"
+              />
+            </section>
             <section className={`group relative isolate overflow-hidden rounded-2xl border-2 border-teal-400/60 bg-gradient-to-br from-teal-100 via-cyan-50 to-sky-100 text-left shadow-xl shadow-teal-500/20 ring-1 ring-inset ring-white/70 transition hover:border-teal-500/80 dark:from-teal-950/75 dark:via-cyan-950/70 dark:to-sky-950/60 dark:ring-white/10 ${matchesGame("odd-images") ? "" : "hidden"}`}>
               <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-500 via-cyan-500 to-sky-400" />
               <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-cyan-300/35 blur-2xl dark:bg-cyan-400/15" />
@@ -1598,6 +1695,12 @@ export default function Portal() {
               <button onClick={() => setLocation("/slide-puzzle-challenge")} className="flex items-center gap-3 rounded-xl border border-sky-200 bg-white/60 px-4 py-3 text-left transition-all hover:bg-white/90 dark:bg-sky-950/20 dark:hover:bg-sky-950/40">
                 <Grid3x3 className="h-6 w-6 shrink-0 text-sky-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Slide Puzzle</p><p className="text-xs text-muted-foreground">One shared scramble each day</p></div><span className="shrink-0 text-sm text-sky-500">→</span>
               </button>
+              <button onClick={() => setLocation("/game-2048-challenge")} className="flex items-center gap-3 rounded-xl border border-orange-200 bg-white/60 px-4 py-3 text-left transition-all hover:bg-white/90 dark:bg-orange-950/20 dark:hover:bg-orange-950/40">
+                <LayoutGrid className="h-6 w-6 shrink-0 text-orange-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">2048</p><p className="text-xs text-muted-foreground">One shared tile sequence each day</p></div><span className="shrink-0 text-sm text-orange-500">→</span>
+              </button>
+              <button onClick={() => setLocation("/jumble-challenge")} className="flex items-center gap-3 rounded-xl border border-cyan-200 bg-white/60 px-4 py-3 text-left transition-all hover:bg-white/90 dark:bg-cyan-950/20 dark:hover:bg-cyan-950/40">
+                <LetterText className="h-6 w-6 shrink-0 text-cyan-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Jumble Words</p><p className="text-xs text-muted-foreground">One shared word set each day</p></div><span className="shrink-0 text-sm text-cyan-500">→</span>
+              </button>
               <button onClick={() => setLocation("/odd-images-challenge")} className="flex items-center gap-3 rounded-xl border border-teal-200 bg-white/60 px-4 py-3 text-left transition-all hover:bg-white/90 dark:bg-teal-950/20 dark:hover:bg-teal-950/40">
                 <Images className="h-6 w-6 shrink-0 text-teal-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Odd Images</p><p className="text-xs text-muted-foreground">One shared image grid each day</p></div><span className="shrink-0 text-sm text-teal-500">→</span>
               </button>
@@ -1642,7 +1745,7 @@ export default function Portal() {
                   Play Brain Games . Online
                 </span>
                 <span className="text-[11px] leading-tight text-muted-foreground">
-                  Ten puzzle &amp; quiz games, endlessly replayable
+                  Twelve puzzle &amp; quiz games, endlessly replayable
                 </span>
               </span>
               <ChevronDown
@@ -1706,17 +1809,20 @@ export default function Portal() {
             Choose a puzzle, then adjust the challenge
           </h2>
           <p className="mt-2">
-            Play Brain Games . Online brings together ten games that reward
+            Play Brain Games . Online brings together twelve games that reward
             different kinds of attention. Sudoku asks you to compare rows,
             columns, and boxes before placing a symbol. Memory Match asks you to
             remember where cards appeared. Jigsaw asks you to rebuild a picture
             piece by piece. Word Search asks you to spot hidden words inside a
             letter grid. Minesweeper asks you to clear every safe cell without
             touching a mine. Slide Puzzle asks you to slide every tile back
-            into order. Odd Images asks you to find the one picture that does
-            not belong in each grid. The Science, Maths, and GK quizzes ask you
-            to answer timed multiple-choice questions before the clock runs out.
-            All ten can be started in a browser without creating an account.
+            into order. 2048 asks you to merge numbered tiles into bigger and
+            bigger values. Jumble Words asks you to unscramble jumbled letters
+            back into real words. Odd Images asks you to find the one picture
+            that does not belong in each grid. The Science, Maths, and GK
+            quizzes ask you to answer timed multiple-choice questions before
+            the clock runs out. All twelve can be started in a browser without
+            creating an account.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -1799,6 +1905,25 @@ export default function Portal() {
             </p>
           </div>
           <div>
+            <h3 className="font-semibold text-foreground">Merge tiles in 2048</h3>
+            <p className="mt-1">
+              In 2048, slide numbered tiles across the grid to merge matching
+              values — every merge builds a bigger number. Boards come in 3×3,
+              4×4, 5×5, and 6×6, and each board has its own target tile to
+              reach. Finish quickly with efficient moves for the best score.
+            </p>
+          </div>
+          <div>
+            <h3 className="font-semibold text-foreground">Unscramble words in Jumble</h3>
+            <p className="mt-1">
+              In Jumble Words, a real English word arrives with its letters
+              scrambled — rebuild it letter by letter or type it out. Rounds
+              grow from 5 words on Easy to 12 on Expert, with harder vocabulary
+              at every level. Stuck on one? Skip it and revisit the skipped
+              words before finishing.
+            </p>
+          </div>
+          <div>
             <h3 className="font-semibold text-foreground">Test yourself in the quizzes</h3>
             <p className="mt-1">
               Science Quiz covers planets, elements, and living things; Maths
@@ -1840,6 +1965,12 @@ export default function Portal() {
           <Link href="/slide-puzzle" className="font-semibold text-primary underline-offset-2 hover:underline">
             Slide Puzzle setup
           </Link>
+          <Link href="/game-2048" className="font-semibold text-primary underline-offset-2 hover:underline">
+            2048 setup
+          </Link>
+          <Link href="/jumble" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Jumble Words setup
+          </Link>
           <Link href="/quiz/science" className="font-semibold text-primary underline-offset-2 hover:underline">
             Science Quiz
           </Link>
@@ -1872,6 +2003,12 @@ export default function Portal() {
           </Link>
           <Link href="/slide-puzzle-challenge" className="font-semibold text-primary underline-offset-2 hover:underline">
             Try today’s Slide Puzzle challenge
+          </Link>
+          <Link href="/game-2048-challenge" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Try today’s 2048 challenge
+          </Link>
+          <Link href="/jumble-challenge" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Try today’s Jumble Words challenge
           </Link>
         </div>
       </section>

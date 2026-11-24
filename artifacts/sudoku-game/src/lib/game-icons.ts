@@ -9,8 +9,10 @@ import {
   Grid2x2,
   Images,
   Grid3x3,
+  LayoutGrid,
   Puzzle,
   WholeWord,
+  LetterText,
   type LucideIcon,
 } from "lucide-react";
 
@@ -25,6 +27,8 @@ export const GAME_ICONS: Record<string, LucideIcon> = {
   "word-search": WholeWord,
   minesweeper: Bomb,
   "slide-puzzle": Grid2x2,
+  "game-2048": LayoutGrid,
+  jumble: LetterText,
   rubiks: Box,
   "science-quiz": FlaskConical,
   "maths-quiz": Calculator,
@@ -44,6 +48,8 @@ export const GAME_ICON_COLORS: Record<string, string> = {
   "word-search": "text-violet-600",
   minesweeper: "text-emerald-600",
   "slide-puzzle": "text-sky-600",
+  "game-2048": "text-orange-600",
+  jumble: "text-cyan-600",
   rubiks: "text-rose-600",
   "science-quiz": "text-violet-600",
   "maths-quiz": "text-sky-600",

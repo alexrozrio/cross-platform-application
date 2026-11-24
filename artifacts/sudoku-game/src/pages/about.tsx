@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft, Hash, Type, Palette, Trophy, Flame, BarChart2, Gem, Grid3x3, Brain, Puzzle, Search, Sparkles, Bomb, Grid2x2, Images, FlaskConical, Timer, Swords } from "lucide-react";
+import { ArrowLeft, Hash, Type, Palette, Trophy, Flame, BarChart2, Gem, Grid3x3, Brain, Puzzle, Search, Sparkles, Bomb, Grid2x2, Images, FlaskConical, Timer, Swords, LetterText } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { usePageMeta } from "@/components/page-meta";
 import { getLegalReturnPath } from "@/lib/legal-navigation";
@@ -46,6 +46,20 @@ const SLIDE_PUZZLE_FEATURES = [
   { icon: Gem, label: "Points, XP, and gems", desc: "Points reward few moves and fast solves against each board's par target." },
 ];
 
+const GAME_2048_FEATURES = [
+  { icon: Grid3x3, label: "Four board sizes", desc: "Kids mode gets the 3×3 and 4×4 boards; Adult mode unlocks the demanding 5×5 and 6×6." },
+  { icon: Trophy, label: "Chase the target tile", desc: "Reach 512 on 3×3 up to 2048 on the larger boards — then keep merging for a higher max tile." },
+  { icon: Flame, label: "Daily challenge", desc: "One shared seed each day — every player gets the same opening tiles." },
+  { icon: Gem, label: "Points, XP, and gems", desc: "Points reward your max tile, fast finishes, and efficient moves." },
+];
+
+const JUMBLE_FEATURES = [
+  { icon: LetterText, label: "Four levels, growing rounds", desc: "Kids mode deals 5–8 everyday words; Adult mode steps up to 10–12 harder ones." },
+  { icon: Type, label: "Unscramble the letters", desc: "Jumbled letters hide a real English word — rebuild it letter by letter or type it out." },
+  { icon: Flame, label: "Daily and friend challenges", desc: "Solve the same shared word set each day or challenge a friend head-to-head." },
+  { icon: Gem, label: "Points, XP, and gems", desc: "Points reward accuracy, speed, and fewer wrong attempts." },
+];
+
 const ODD_IMAGE_FEATURES = [
   { icon: Images, label: "Four grid sizes", desc: "From a quick 3×3 Easy board to a demanding 6×6 Expert grid." },
   { icon: Search, label: "Spot the odd one", desc: "Each grid repeats one picture theme — find the single tile that does not belong." },
@@ -68,9 +82,9 @@ const SHARED_FEATURES = [
 
 export default function About() {
   usePageMeta({
-      title: "About Play Brain Games . Online | Ten Free Games",
+      title: "About Play Brain Games . Online | Twelve Free Games",
     description:
-        "Learn how Play Brain Games combines Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and Science, Maths & GK quizzes with daily challenges, guest play, synced progress, and player support.",
+        "Learn how Play Brain Games combines Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, and Science, Maths & GK quizzes with daily challenges, guest play, synced progress, and player support.",
     path: "/about",
   });
   const [, setLocation] = useLocation();
@@ -88,13 +102,13 @@ export default function About() {
       <div className="bg-card rounded-2xl px-5 py-4 border border-border">
         <h1 className="text-3xl font-serif font-bold tracking-tight">About</h1>
         <p className="text-muted-foreground mt-1">
-          Ten brain games, reimagined for everyone.
+          Twelve brain games, reimagined for everyone.
         </p>
       </div>
 
       <div className="space-y-4 text-sm text-muted-foreground leading-relaxed bg-card rounded-2xl border border-border px-5 py-4">
         <p>
-          Play Brain Games . Online is a general-audience, family-friendly collection of Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and Science, Maths & GK quiz games. It is designed for everyone from first-time players to seasoned experts, with optional child-friendly modes for younger family members. We believe a great puzzle game should be beautiful, fast, and endlessly replayable.
+          Play Brain Games . Online is a general-audience, family-friendly collection of Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, and Science, Maths & GK quizzes. It is designed for everyone from first-time players to seasoned experts, with optional child-friendly modes for younger family members. We believe a great puzzle game should be beautiful, fast, and endlessly replayable.
         </p>
         <p>
           In Sudoku, beyond the standard 9×9, we support child-friendly Baby and Mini grids as well as pro-level 16×16 boards that will challenge experienced players. You can play with numbers, letters, or swappable image themes — keeping every session feeling fresh.
@@ -123,6 +137,20 @@ export default function About() {
           gap until the board reads in order. Choose from Easy (2×2) to Expert (5×5) boards and
           number, alphabet, or picture tiles; points reward fast, efficient
           solves against each board&apos;s par target.
+        </p>
+        <p>
+          In 2048, slide numbered tiles across the grid to merge matching
+          values — every merge builds a bigger number. Boards run from a quick
+          3×3 Easy to a demanding 6×6 Expert, and each board has its own target
+          tile to reach. Points reward the highest tile you achieve, fast
+          finishes, and efficient moves.
+        </p>
+        <p>
+          In Jumble Words, a real English word arrives with its letters
+          scrambled — rearrange them back into the hidden word. Rounds grow
+          from 5 words on Easy to 12 on Expert, with harder vocabulary as the
+          level rises, and skipped words can be revisited before finishing.
+          Points reward accuracy, speed, and clean attempts.
         </p>
         <p>
           In Odd Images, each grid repeats one picture theme and hides a single
@@ -269,6 +297,48 @@ export default function About() {
 
       <div className="space-y-3 bg-card rounded-2xl border border-border px-5 py-4">
         <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+          <Grid3x3 className="w-4 h-4 text-primary" /> 2048
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {GAME_2048_FEATURES.map(({ icon: Icon, label, desc }) => (
+            <Card key={label} className="border-border/60">
+              <CardContent className="pt-4 pb-4 flex gap-3 items-start">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3 bg-card rounded-2xl border border-border px-5 py-4">
+        <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+          <LetterText className="w-4 h-4 text-primary" /> Jumble Words
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {JUMBLE_FEATURES.map(({ icon: Icon, label, desc }) => (
+            <Card key={label} className="border-border/60">
+              <CardContent className="pt-4 pb-4 flex gap-3 items-start">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3 bg-card rounded-2xl border border-border px-5 py-4">
+        <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
           <Images className="w-4 h-4 text-primary" /> Odd Images
         </h2>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -359,8 +429,9 @@ export default function About() {
           same board. Every other game has a shared daily challenge too —
           Memory Match offers daily and weekly challenges, Jigsaw and Word
           Search share a daily puzzle plus friend challenges, Minesweeper,
-          Slide Puzzle, and Odd Images each have a daily board or grid, and the
-          Science, Maths &amp; GK quizzes each post a shared daily quiz. Weekly,
+          Slide Puzzle, 2048, Jumble Words, and Odd Images each have a daily
+          board, grid, or word set, and the Science, Maths &amp; GK quizzes
+          each post a shared daily quiz. Weekly,
           monthly, and all-time
           leaderboards show recorded game results for players who choose to
           take part.

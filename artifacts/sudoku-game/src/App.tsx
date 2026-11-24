@@ -89,6 +89,10 @@ const Minesweeper = lazy(() => import("@/pages/minesweeper"));
 const MinesweeperDailyChallengePage = lazy(() => import("@/pages/minesweeper-challenge"));
 const SlidePuzzle = lazy(() => import("@/pages/slide-puzzle"));
 const SlidePuzzleDailyChallengePage = lazy(() => import("@/pages/slide-puzzle-challenge"));
+const Game2048 = lazy(() => import("@/pages/game-2048"));
+const Game2048DailyChallengePage = lazy(() => import("@/pages/game-2048-challenge"));
+const JumbleWords = lazy(() => import("@/pages/jumble"));
+const JumbleDailyChallengePage = lazy(() => import("@/pages/jumble-challenge"));
 const QuizPage = lazy(() => import("@/pages/quiz"));
 const QuizDailyChallengePage = lazy(() => import("@/pages/quiz-challenge"));
 function MemoryBookmarkRoute({ params }: { params: { difficulty: string } }) {
@@ -259,6 +263,9 @@ function Router() {
               <Route path="/leaderboard/slide-puzzle">
                 {() => <Leaderboard gamePage="slide-puzzle" />}
               </Route>
+              <Route path="/leaderboard/game-2048">
+                {() => <Leaderboard gamePage="game-2048" />}
+              </Route>
               <Route path="/leaderboard/rubiks">
                 {() => <Leaderboard gamePage="rubiks" />}
               </Route>
@@ -293,6 +300,13 @@ function Router() {
               <Route path="/minesweeper-challenge" component={MinesweeperDailyChallengePage} />
               <Route path="/slide-puzzle" component={SlidePuzzle} />
               <Route path="/slide-puzzle-challenge" component={SlidePuzzleDailyChallengePage} />
+              <Route path="/game-2048" component={Game2048} />
+              <Route path="/game-2048-challenge" component={Game2048DailyChallengePage} />
+              <Route path="/leaderboard/jumble">
+                {() => <Leaderboard gamePage="jumble" />}
+              </Route>
+              <Route path="/jumble" component={JumbleWords} />
+              <Route path="/jumble-challenge" component={JumbleDailyChallengePage} />
               <Route path="/quiz/:subject" component={QuizPage} />
               <Route path="/quiz">
                 {() => <QuizPage params={{}} />}

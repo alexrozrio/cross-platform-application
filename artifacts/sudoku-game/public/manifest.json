@@ -1,7 +1,7 @@
 {
   "name": "Play Brain Games",
   "short_name": "Play Brain Games",
-  "description": "Play nine free games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, and Science, Maths & GK quizzes — earn achievements, and compete on the leaderboard.",
+  "description": "Play twelve free games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, and Science, Maths & GK quizzes — earn achievements, and compete on the leaderboard.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

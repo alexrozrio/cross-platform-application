@@ -4,7 +4,7 @@ export interface AchievementMeta {
   title: string;
   description: string;
   group: string;
-  game: 'sudoku' | 'memory' | 'jigsaw' | 'word-search' | 'minesweeper' | 'slide-puzzle' | 'odd-images' | 'science-quiz' | 'maths-quiz' | 'gk-quiz';
+  game: 'sudoku' | 'memory' | 'jigsaw' | 'word-search' | 'minesweeper' | 'slide-puzzle' | 'game-2048' | 'jumble' | 'odd-images' | 'science-quiz' | 'maths-quiz' | 'gk-quiz';
 }
 
 const QUIZ_SUBJECT_ACHIEVEMENTS = [
@@ -154,6 +154,35 @@ export const ACHIEVEMENT_META: AchievementMeta[] = [
   { id: 'slide_puzzle_daily_7', game: 'slide-puzzle', emoji: '📅', title: 'Daily Slider', description: 'Solve 7 daily Slide Puzzles', group: 'Slide Puzzle Daily' },
   { id: 'slide_puzzle_daily_30', game: 'slide-puzzle', emoji: '🗓️', title: 'Daily Solver', description: 'Solve 30 daily Slide Puzzles', group: 'Slide Puzzle Daily' },
   { id: 'slide_puzzle_daily_100', game: 'slide-puzzle', emoji: '🏅', title: 'Daily Slide Master', description: 'Solve 100 daily Slide Puzzles', group: 'Slide Puzzle Daily' },
+
+  // ── 2048 ──────────────────────────────────────────────────────────────────
+  { id: 'game2048_first', game: 'game-2048', emoji: '🔢', title: 'First Merge', description: 'Complete your first 2048 game', group: '2048 Milestones' },
+  { id: 'game2048_10', game: 'game-2048', emoji: '🎮', title: 'Merge Regular', description: 'Complete 10 2048 games', group: '2048 Milestones' },
+  { id: 'game2048_50', game: 'game-2048', emoji: '🏆', title: 'Merge Veteran', description: 'Complete 50 2048 games', group: '2048 Milestones' },
+  { id: 'game2048_100', game: 'game-2048', emoji: '🌟', title: 'Merge Legend', description: 'Complete 100 2048 games', group: '2048 Milestones' },
+  { id: 'game2048_all_boards', game: 'game-2048', emoji: '🌈', title: 'Board Explorer', description: 'Win a game on all four board sizes', group: '2048 Skills' },
+  { id: 'game2048_tile_512', game: 'game-2048', emoji: '🔷', title: 'Triple Digits', description: 'Reach a 512 tile', group: '2048 Skills' },
+  { id: 'game2048_tile_1024', game: 'game-2048', emoji: '💠', title: 'Four Digits', description: 'Reach a 1024 tile', group: '2048 Skills' },
+  { id: 'game2048_tile_2048', game: 'game-2048', emoji: '👑', title: 'The Big One', description: 'Reach the legendary 2048 tile', group: '2048 Skills' },
+  { id: 'game2048_speed_3x3', game: 'game-2048', emoji: '🐇', title: 'Quick Merge', description: 'Win a 3×3 game in under 5 minutes', group: '2048 Skills' },
+  { id: 'game2048_speed_4x4', game: 'game-2048', emoji: '⚡', title: 'Fast Merger', description: 'Win a 4×4 game in under 15 minutes', group: '2048 Skills' },
+  { id: 'game2048_daily_7', game: 'game-2048', emoji: '📅', title: 'Daily Merger', description: 'Complete 7 daily 2048 challenges', group: '2048 Daily' },
+  { id: 'game2048_daily_30', game: 'game-2048', emoji: '🗓️', title: 'Daily Solver', description: 'Complete 30 daily 2048 challenges', group: '2048 Daily' },
+  { id: 'game2048_daily_100', game: 'game-2048', emoji: '🏅', title: 'Daily Merge Master', description: 'Complete 100 daily 2048 challenges', group: '2048 Daily' },
+
+  // ── Jumble Words ──────────────────────────────────────────────────────────
+  { id: 'jumble_first', game: 'jumble', emoji: '🔤', title: 'First Unscramble', description: 'Complete your first Jumble Words round', group: 'Jumble Words Milestones' },
+  { id: 'jumble_10', game: 'jumble', emoji: '🎮', title: 'Word Regular', description: 'Complete 10 Jumble Words rounds', group: 'Jumble Words Milestones' },
+  { id: 'jumble_50', game: 'jumble', emoji: '🏆', title: 'Word Veteran', description: 'Complete 50 Jumble Words rounds', group: 'Jumble Words Milestones' },
+  { id: 'jumble_100', game: 'jumble', emoji: '🌟', title: 'Word Legend', description: 'Complete 100 Jumble Words rounds', group: 'Jumble Words Milestones' },
+  { id: 'jumble_all_levels', game: 'jumble', emoji: '🌈', title: 'Vocabulary Explorer', description: 'Win a round on all four levels', group: 'Jumble Words Skills' },
+  { id: 'jumble_perfect', game: 'jumble', emoji: '💯', title: 'Perfect Round', description: 'Unscramble every word in a round', group: 'Jumble Words Skills' },
+  { id: 'jumble_speed_easy', game: 'jumble', emoji: '🐇', title: 'Speedy Sprinter', description: 'Finish an Easy round in under 3 minutes', group: 'Jumble Words Skills' },
+  { id: 'jumble_speed_medium', game: 'jumble', emoji: '⚡', title: 'Quick Unscrambler', description: 'Finish a Medium round in under 5 minutes', group: 'Jumble Words Skills' },
+  { id: 'jumble_speed_expert', game: 'jumble', emoji: '🚀', title: 'Expert Sprinter', description: 'Finish an Expert round in under 10 minutes', group: 'Jumble Words Skills' },
+  { id: 'jumble_daily_7', game: 'jumble', emoji: '📅', title: 'Daily Jumbler', description: 'Complete 7 daily Jumble Words challenges', group: 'Jumble Words Daily' },
+  { id: 'jumble_daily_30', game: 'jumble', emoji: '🗓️', title: 'Daily Word Solver', description: 'Complete 30 daily Jumble Words challenges', group: 'Jumble Words Daily' },
+  { id: 'jumble_daily_100', game: 'jumble', emoji: '🏅', title: 'Daily Jumble Master', description: 'Complete 100 daily Jumble Words challenges', group: 'Jumble Words Daily' },
 
   // ── Odd Images ────────────────────────────────────────────────────────────
   { id: 'odd_images_first', game: 'odd-images', emoji: '🔍', title: 'First Spot', description: 'Complete your first Odd Images game', group: 'Odd Images Milestones' },

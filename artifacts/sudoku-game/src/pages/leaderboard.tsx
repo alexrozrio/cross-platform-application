@@ -23,6 +23,7 @@ import {
   Puzzle,
   Bomb,
   Grid2x2,
+  LayoutGrid,
   WholeWord,
   Timer,
   Repeat2,
@@ -47,6 +48,8 @@ import { QUIZ_LEVELS, QUIZ_SUBJECTS, quizGameId, quizSubject, quizSubjectForGame
 import { WORD_SEARCH_LEVELS, type WordSearchDifficulty } from "@/lib/word-search";
 import { MINESWEEPER_LEVELS, type MinesweeperDifficulty } from "@/lib/minesweeper";
 import { SLIDE_PUZZLE_LEVELS, type SlidePuzzleDifficulty } from "@/lib/slide-puzzle";
+import { GAME_2048_LEVELS } from "@/lib/game-2048";
+import { JUMBLE_LEVELS } from "@/lib/jumble-words";
 import { ODD_IMAGE_LEVELS, ODD_IMAGE_LEVEL_ORDER, type OddImageLevel } from "@/lib/odd-images";
 import { JIGSAW_SIZE_NAMES } from "@/lib/jigsaw-session";
 import { GAME_ICONS, gameIconColor } from "@/lib/game-icons";
@@ -636,6 +639,76 @@ function PointsGuide() {
             </p>
           </div>
 
+          {/* 2048 base points table */}
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              🔢 2048 — base points × board size
+            </p>
+            <div className="rounded-xl border overflow-hidden text-xs">
+              <div className="grid grid-cols-6 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+                <span>Level</span>
+                <span className="text-center">Mode</span>
+                <span className="text-center">Target tile</span>
+                <span className="text-center">Par time</span>
+                <span className="text-center">Base pts</span>
+                <span className="text-center">XP · Gems</span>
+              </div>
+              {[
+                { label: "Easy · 3×3", mode: "Kids", target: 512, par: "10:00", base: 150, xp: 1, gems: 1, cls: "text-green-700" },
+                { label: "Medium · 4×4", mode: "Kids", target: 1024, par: "25:00", base: 400, xp: 2, gems: 2, cls: "text-blue-700" },
+                { label: "Hard · 5×5", mode: "Adult", target: 2048, par: "45:00", base: 900, xp: 3, gems: 3, cls: "text-yellow-700" },
+                { label: "Expert · 6×6", mode: "Adult", target: 2048, par: "75:00", base: 1800, xp: 4, gems: 5, cls: "text-orange-700" },
+              ].map((row, i) => (
+                <div key={row.label} className={`grid grid-cols-6 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}>
+                  <span className={`font-semibold ${row.cls}`}>{row.label}</span>
+                  <span className="text-center font-semibold text-muted-foreground">{row.mode}</span>
+                  <span className="text-center font-mono">{row.target}</span>
+                  <span className="text-center font-mono">{row.par}</span>
+                  <span className="text-center font-mono">{row.base.toLocaleString()}</span>
+                  <span className="text-center font-mono">{row.xp} XP · {row.gems}💎</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2">
+              score = base × tile factor (log-scaled to the target tile, up to 1.5×) × (1 + time bonus up to +50%) × move factor &nbsp;·&nbsp; move factor scales 70–100% toward the par move count, min 10 pts. Higher max tiles always score more.
+            </p>
+          </div>
+
+          {/* Jumble Words base points table */}
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              🔤 Jumble Words — base points × level
+            </p>
+            <div className="rounded-xl border overflow-hidden text-xs">
+              <div className="grid grid-cols-6 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+                <span>Level</span>
+                <span className="text-center">Mode</span>
+                <span className="text-center">Words</span>
+                <span className="text-center">Par time</span>
+                <span className="text-center">Base pts</span>
+                <span className="text-center">XP · Gems</span>
+              </div>
+              {[
+                { label: "Easy", mode: "Kids", words: 5, par: "3:00", base: 300, xp: 1, gems: 1, cls: "text-green-700" },
+                { label: "Medium", mode: "Kids", words: 8, par: "5:00", base: 650, xp: 2, gems: 2, cls: "text-blue-700" },
+                { label: "Hard", mode: "Adult", words: 10, par: "7:00", base: 1300, xp: 3, gems: 3, cls: "text-yellow-700" },
+                { label: "Expert", mode: "Adult", words: 12, par: "10:00", base: 2400, xp: 4, gems: 5, cls: "text-orange-700" },
+              ].map((row, i) => (
+                <div key={row.label} className={`grid grid-cols-6 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}>
+                  <span className={`font-semibold ${row.cls}`}>{row.label}</span>
+                  <span className="text-center font-semibold text-muted-foreground">{row.mode}</span>
+                  <span className="text-center font-mono">{row.words}</span>
+                  <span className="text-center font-mono">{row.par}</span>
+                  <span className="text-center font-mono">{row.base.toLocaleString()}</span>
+                  <span className="text-center font-mono">{row.xp} XP · {row.gems}💎</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2">
+              score = base × accuracy factor (0.3 + 0.7 × correct ÷ questions) × (1 + time bonus up to +50%) × attempt factor &nbsp;·&nbsp; attempt factor scales 70–100% with fewer wrong guesses, min 10 pts.
+            </p>
+          </div>
+
           {/* Odd Images base points table */}
           <div>
             <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
@@ -842,6 +915,8 @@ interface BreakdownData {
   wordSearch: { difficulty: string; points: number; games: number }[];
   minesweeper: { difficulty: string; points: number; games: number }[];
   slidePuzzle: { difficulty: string; points: number; games: number }[];
+  game2048: { difficulty: string; points: number; games: number }[];
+  jumble: { difficulty: string; points: number; games: number }[];
   oddImages: { level: OddImageLevel; points: number; games: number }[];
   quiz?: { subject: string; level: string; points: number; games: number }[];
 }
@@ -871,7 +946,7 @@ const SLIDE_PUZZLE_DIFFICULTY_NAMES: Record<string, string> = {
   "4x4": "15 tiles",
   "5x5": "24 tiles",
 };
-type GameTab = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "odd-images" | "rubiks" | QuizGameId;
+type GameTab = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "odd-images" | "rubiks" | QuizGameId;
 
 function BreakdownPanel({
   profileId,
@@ -938,6 +1013,12 @@ function BreakdownPanel({
           </button>
           <button onClick={() => setBdTab("slide-puzzle")} className={`rounded-lg px-3 py-1 text-xs font-semibold transition-colors ${bdTab === "slide-puzzle" ? "bg-sky-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
             🧩 Slide Puzzle
+          </button>
+          <button onClick={() => setBdTab("game-2048")} className={`rounded-lg px-3 py-1 text-xs font-semibold transition-colors ${bdTab === "game-2048" ? "bg-orange-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+            🔢 2048
+          </button>
+          <button onClick={() => setBdTab("jumble")} className={`rounded-lg px-3 py-1 text-xs font-semibold transition-colors ${bdTab === "jumble" ? "bg-cyan-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+            🔤 Jumble
           </button>
           <button onClick={() => setBdTab("odd-images")} className={`rounded-lg px-3 py-1 text-xs font-semibold transition-colors ${bdTab === "odd-images" ? "bg-teal-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
             🖼️ Odd Images
@@ -1051,6 +1132,30 @@ function BreakdownPanel({
           ))}
         </div>
       )}
+      {bdTab === "game-2048" && (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {(data?.game2048 ?? (["3x3", "4x4", "5x5", "6x6"] as const).map((difficulty) => ({ difficulty, points: 0, games: 0 }))).map((item) => (
+            <div key={item.difficulty} className={`rounded-xl border p-2.5 text-center transition-colors ${item.games > 0 ? "border-orange-300 bg-background" : "border-border bg-muted/30 opacity-50"}`}>
+              <p className="text-xs font-bold text-foreground">{GAME_2048_LEVELS[item.difficulty as keyof typeof GAME_2048_LEVELS]?.label ?? item.difficulty} · {item.difficulty.replace("x", "×")}</p>
+              <p className="mt-0.5 text-lg font-black tabular-nums leading-tight text-orange-700 dark:text-orange-300">{item.points > 0 ? item.points.toLocaleString() : "—"}</p>
+              <p className="mt-0.5 text-[10px] text-muted-foreground">{item.games > 0 ? `${item.games} game${item.games !== 1 ? "s" : ""}` : "no games"}</p>
+              <p className="mt-0.5 text-[9px] text-muted-foreground/80">{item.difficulty.replace("x", "×")} board</p>
+            </div>
+          ))}
+        </div>
+      )}
+      {bdTab === "jumble" && (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {(data?.jumble ?? (["easy", "medium", "hard", "expert"] as const).map((difficulty) => ({ difficulty, points: 0, games: 0 }))).map((item) => (
+            <div key={item.difficulty} className={`rounded-xl border p-2.5 text-center transition-colors ${item.games > 0 ? "border-cyan-300 bg-background" : "border-border bg-muted/30 opacity-50"}`}>
+              <p className="text-xs font-bold text-foreground">{JUMBLE_LEVELS[item.difficulty as keyof typeof JUMBLE_LEVELS]?.label ?? item.difficulty}</p>
+              <p className="mt-0.5 text-lg font-black tabular-nums leading-tight text-cyan-700 dark:text-cyan-300">{item.points > 0 ? item.points.toLocaleString() : "—"}</p>
+              <p className="mt-0.5 text-[10px] text-muted-foreground">{item.games > 0 ? `${item.games} game${item.games !== 1 ? "s" : ""}` : "no games"}</p>
+              <p className="mt-0.5 text-[9px] text-muted-foreground/80">{JUMBLE_LEVELS[item.difficulty as keyof typeof JUMBLE_LEVELS] ? `${JUMBLE_LEVELS[item.difficulty as keyof typeof JUMBLE_LEVELS].questions} words` : ""}</p>
+            </div>
+          ))}
+        </div>
+      )}
       {bdTab === "odd-images" && (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {(data?.oddImages ?? ODD_IMAGE_LEVEL_ORDER.map((level) => ({ level, points: 0, games: 0 }))).map((item) => (
@@ -1133,6 +1238,8 @@ function GameSummaryPanel({
     { id: "word-search", label: "Word Search", icon: GAME_ICONS["word-search"], ...sum(data?.wordSearch) },
     { id: "minesweeper", label: "Minesweeper", icon: GAME_ICONS.minesweeper, ...sum(data?.minesweeper) },
     { id: "slide-puzzle", label: "Slide Puzzle", icon: GAME_ICONS["slide-puzzle"], ...sum(data?.slidePuzzle) },
+    { id: "game-2048", label: "2048", icon: GAME_ICONS["game-2048"], ...sum(data?.game2048) },
+    { id: "jumble", label: "Jumble Words", icon: GAME_ICONS.jumble, ...sum(data?.jumble) },
     { id: "odd-images", label: "Odd Images", icon: GAME_ICONS["odd-images"], ...sum(data?.oddImages) },
     { id: "science-quiz", label: `${QUIZ_SUBJECTS.science.shortName} Quiz`, icon: GAME_ICONS["science-quiz"], ...quizFor("science") },
     { id: "maths-quiz", label: `${QUIZ_SUBJECTS.maths.shortName} Quiz`, icon: GAME_ICONS["maths-quiz"], ...quizFor("maths") },
@@ -1337,7 +1444,7 @@ function TournamentBoard({
                   : `No games yet this ${type === "weekly" ? "week" : "month"}.`}
               </p>
               <p className="text-sm mt-1">
-                Complete games in any title — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, or the quizzes — to earn points and climb the rankings!
+                Complete games in any title — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, or the quizzes — to earn points and climb the rankings!
               </p>
             </div>
           ) : (
@@ -2284,12 +2391,172 @@ function RubiksBoard({ myProfileId }: { myProfileId?: number }) {
   </div>;
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+function Game2048ScoringGuide() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="overflow-hidden rounded-2xl border border-orange-200/70 dark:border-orange-800/40">
+      <button onClick={() => setOpen((value) => !value)} className="flex w-full items-center justify-between bg-card px-5 py-4 text-left transition-colors hover:bg-muted/40">
+        <div>
+          <p className="text-sm font-semibold">How 2048 points &amp; XP are calculated</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Biggest tile, speed, and move efficiency all count.</p>
+        </div>
+        {open ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
+      </button>
+      {open && (
+        <div className="space-y-4 border-t border-border bg-muted px-5 py-4 text-sm">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[{ level: "Easy · 3×3", mode: "Kids", base: 150, par: "10:00", target: 512, gems: 1 }, { level: "Medium · 4×4", mode: "Kids", base: 400, par: "25:00", target: 1024, gems: 2 }, { level: "Hard · 5×5", mode: "Adult", base: 900, par: "45:00", target: 2048, gems: 3 }, { level: "Expert · 6×6", mode: "Adult", base: 1800, par: "75:00", target: 2048, gems: 5 }].map((item) => (
+              <div key={item.level} className="rounded-xl border border-border bg-background p-3">
+                <p className="font-bold">{item.level}</p>
+                <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{item.mode} mode</p>
+                <p className="mt-1 text-xs text-muted-foreground">Base {item.base.toLocaleString()} pts</p>
+                <p className="text-xs text-muted-foreground">Par {item.par} · target {item.target}</p>
+                <p className="text-xs text-muted-foreground">{item.gems} 💎</p>
+              </div>
+            ))}
+          </div>
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">XP &amp; gems by level</p>
+            <div className="overflow-hidden rounded-xl border border-border text-xs">
+              <div className="grid grid-cols-4 bg-muted-foreground/15 px-3 py-2 text-[10px] font-semibold text-muted-foreground"><span>Level</span><span className="text-center">XP</span><span className="text-center">Gems</span><span className="text-center">Target tile</span></div>
+              {Object.values(GAME_2048_LEVELS).map((level, index) => (
+                <div key={level.id} className={`grid grid-cols-4 px-3 py-2 ${index % 2 === 0 ? "bg-background" : "bg-muted/20"}`}>
+                  <span className="font-semibold">{level.label} · {level.size}×{level.size}</span>
+                  <span className="text-center font-semibold text-amber-600">{level.xp} XP</span>
+                  <span className="text-center font-mono">{level.gems} 💎</span>
+                  <span className="text-center font-mono">{level.targetTile}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-lg border border-border bg-background px-4 py-3 text-[11px] text-muted-foreground">
+            <p className="font-semibold text-foreground">Score formula</p>
+            <p className="mt-1 font-mono leading-relaxed">base × tile factor × (1 + time bonus) × move factor</p>
+            <p className="mt-1 leading-relaxed">The tile factor scales with the highest tile you reach (up to 1.5× at the target). Finishing under par time adds up to +50%. Move factor scales from 70% to 100% as your move count approaches par. Minimum score: 10 points. Daily challenges use the same formula with today&apos;s shared tile sequence.</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+type Game2048LeaderboardEntry = { rank: number; profileId: number; username: string; avatar: string | null; xp: number; totalPoints: number; gamesPlayed: number };
+
+function Game2048Board({ myProfileId }: { myProfileId?: number }) {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["/api/game-2048-games/leaderboard"],
+    queryFn: () => customFetch<Game2048LeaderboardEntry[]>("/api/game-2048-games/leaderboard"),
+    refetchInterval: 60_000,
+  });
+  return <div className="space-y-5">
+    <Card className="shadow-md border-orange-200/60 dark:border-orange-800/40">
+      <CardHeader className="border-b bg-card pb-4"><CardTitle className="flex items-center gap-2 text-lg">{(() => { const Icon = GAME_ICONS["game-2048"]; return <Icon className="h-5 w-5 text-orange-600" />; })()} 2048 — All Board Sizes</CardTitle></CardHeader>
+      <CardContent className="p-0">
+        {isLoading ? <div className="space-y-4 p-6">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
+          : isError ? <div className="p-10 text-center text-sm text-muted-foreground">2048 leaderboard could not be loaded. Please try again.</div>
+          : !data?.length ? <div className="p-12 text-center text-muted-foreground"><Grid2x2 className="mx-auto mb-3 h-10 w-10 opacity-20" /><p className="font-medium">No completed 2048 games yet.</p><p className="mt-1 text-sm">Merge tiles to claim the top spot.</p></div>
+          : <div className="divide-y">{data.map((entry) => {
+            const isMe = myProfileId !== undefined && entry.profileId === myProfileId;
+            return <div key={entry.profileId} className={isMe ? "bg-orange-50/70 dark:bg-orange-950/20" : ""}>
+              <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4 px-3 py-4 sm:px-5">
+                <RankBadge rank={entry.rank} />
+                <div className="min-w-0 flex-1"><div className="flex min-w-0 flex-wrap items-center gap-2"><p title={entry.username} className={`min-w-0 flex-1 truncate font-semibold ${isMe ? "text-orange-800 dark:text-orange-300" : ""}`}>{entry.username}</p>{isMe && <span className="rounded-full bg-orange-600 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">You</span>}</div><p className="mt-0.5 text-xs text-muted-foreground">{entry.gamesPlayed} game{entry.gamesPlayed !== 1 ? "s" : ""}</p></div>
+                <div className="flex shrink-0 items-center gap-2"><div className="text-right"><p className="whitespace-nowrap text-lg font-black tabular-nums text-orange-700 dark:text-orange-300 sm:text-xl">{entry.totalPoints.toLocaleString()}</p><p className="mt-0.5 text-xs text-muted-foreground">pts</p></div></div>
+              </div>
+            </div>;
+          })}</div>}
+      </CardContent>
+    </Card>
+    <Game2048ScoringGuide />
+  </div>;
+}
+
+function JumbleScoringGuide() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="overflow-hidden rounded-2xl border border-cyan-200/70 dark:border-cyan-800/40">
+      <button onClick={() => setOpen((value) => !value)} className="flex w-full items-center justify-between bg-card px-5 py-4 text-left transition-colors hover:bg-muted/40">
+        <div>
+          <p className="text-sm font-semibold">How Jumble Words points &amp; XP are calculated</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Accuracy, speed, and word difficulty all count.</p>
+        </div>
+        {open ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
+      </button>
+      {open && (
+        <div className="space-y-4 border-t border-border bg-muted px-5 py-4 text-sm">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[{ level: "Easy", mode: "Kids", words: 5, par: "3:00", gems: 1 }, { level: "Medium", mode: "Kids", words: 8, par: "5:00", gems: 2 }, { level: "Hard", mode: "Adult", words: 10, par: "7:00", gems: 3 }, { level: "Expert", mode: "Adult", words: 12, par: "10:00", gems: 5 }].map((item) => (
+              <div key={item.level} className="rounded-xl border border-border bg-background p-3">
+                <p className="font-bold">{item.level}</p>
+                <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{item.mode} mode</p>
+                <p className="mt-1 text-xs text-muted-foreground">{item.words} words per round</p>
+                <p className="text-xs text-muted-foreground">Par {item.par}</p>
+                <p className="text-xs text-muted-foreground">{item.gems} 💎</p>
+              </div>
+            ))}
+          </div>
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">XP &amp; gems by level</p>
+            <div className="overflow-hidden rounded-xl border border-border text-xs">
+              <div className="grid grid-cols-4 bg-muted-foreground/15 px-3 py-2 text-[10px] font-semibold text-muted-foreground"><span>Level</span><span className="text-center">XP</span><span className="text-center">Gems</span><span className="text-center">Words</span></div>
+              {Object.values(JUMBLE_LEVELS).map((level, index) => (
+                <div key={level.id} className={`grid grid-cols-4 px-3 py-2 ${index % 2 === 0 ? "bg-background" : "bg-muted/20"}`}>
+                  <span className="font-semibold">{level.label}</span>
+                  <span className="text-center font-semibold text-amber-600">{level.xp} XP</span>
+                  <span className="text-center font-mono">{level.gems} 💎</span>
+                  <span className="text-center font-mono">{level.questions}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-lg border border-border bg-background px-4 py-3 text-[11px] text-muted-foreground">
+            <p className="font-semibold text-foreground">Score formula</p>
+            <p className="mt-1 font-mono leading-relaxed">base × accuracy factor × speed factor × attempt factor</p>
+            <p className="mt-1 leading-relaxed">Accuracy factor scales with the share of words solved. Finishing under par time adds up to +50%. Fewer wrong attempts keep more of the score (down to 70%). Minimum score: 10 points. Daily challenges use the same formula with today&apos;s shared word set.</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+type JumbleLeaderboardEntry = { rank: number; profileId: number; username: string; avatar: string | null; xp: number; totalPoints: number; gamesPlayed: number };
+
+function JumbleBoard({ myProfileId }: { myProfileId?: number }) {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["/api/jumble-games/leaderboard"],
+    queryFn: () => customFetch<JumbleLeaderboardEntry[]>("/api/jumble-games/leaderboard"),
+    refetchInterval: 60_000,
+  });
+  return <div className="space-y-5">
+    <Card className="shadow-md border-cyan-200/60 dark:border-cyan-800/40">
+      <CardHeader className="border-b bg-card pb-4"><CardTitle className="flex items-center gap-2 text-lg">{(() => { const Icon = GAME_ICONS.jumble; return <Icon className="h-5 w-5 text-cyan-600" />; })()} Jumble Words — All Levels</CardTitle></CardHeader>
+      <CardContent className="p-0">
+        {isLoading ? <div className="space-y-4 p-6">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
+          : isError ? <div className="p-10 text-center text-sm text-muted-foreground">Jumble Words leaderboard could not be loaded. Please try again.</div>
+          : !data?.length ? <div className="p-12 text-center text-muted-foreground"><LayoutGrid className="mx-auto mb-3 h-10 w-10 opacity-20" /><p className="font-medium">No completed Jumble rounds yet.</p><p className="mt-1 text-sm">Unscramble words to claim the top spot.</p></div>
+          : <div className="divide-y">{data.map((entry) => {
+            const isMe = myProfileId !== undefined && entry.profileId === myProfileId;
+            return <div key={entry.profileId} className={isMe ? "bg-cyan-50/70 dark:bg-cyan-950/20" : ""}>
+              <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4 px-3 py-4 sm:px-5">
+                <RankBadge rank={entry.rank} />
+                <div className="min-w-0 flex-1"><div className="flex min-w-0 flex-wrap items-center gap-2"><p title={entry.username} className={`min-w-0 flex-1 truncate font-semibold ${isMe ? "text-cyan-800 dark:text-cyan-300" : ""}`}>{entry.username}</p>{isMe && <span className="rounded-full bg-cyan-600 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">You</span>}</div><p className="mt-0.5 text-xs text-muted-foreground">{entry.gamesPlayed} game{entry.gamesPlayed !== 1 ? "s" : ""}</p></div>
+                <div className="flex shrink-0 items-center gap-2"><div className="text-right"><p className="whitespace-nowrap text-lg font-black tabular-nums text-cyan-700 dark:text-cyan-300 sm:text-xl">{entry.totalPoints.toLocaleString()}</p><p className="mt-0.5 text-xs text-muted-foreground">pts</p></div></div>
+              </div>
+            </div>;
+          })}</div>}
+      </CardContent>
+    </Card>
+    <JumbleScoringGuide />
+  </div>;
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 function LeaderboardScopeLinks({
   active,
 }: {
-  active: "all" | "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "odd-images" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz";
+  active: "all" | "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "odd-images" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz";
 }) {
   const [, setLocation] = useLocation();
   const links = ([
@@ -2300,6 +2567,8 @@ function LeaderboardScopeLinks({
     { id: "word-search", href: "/leaderboard/word-search/", label: "Word Search", icon: GAME_ICONS["word-search"] },
     { id: "minesweeper", href: "/leaderboard/minesweeper/", label: "Minesweeper", icon: GAME_ICONS.minesweeper },
     { id: "slide-puzzle", href: "/leaderboard/slide-puzzle/", label: "Slide Puzzle", icon: GAME_ICONS["slide-puzzle"] },
+    { id: "game-2048", href: "/leaderboard/game-2048/", label: "2048", icon: GAME_ICONS["game-2048"] },
+    { id: "jumble", href: "/leaderboard/jumble/", label: "Jumble Words", icon: GAME_ICONS.jumble },
     { id: "odd-images", href: "/leaderboard/odd-images/", label: "Odd Images", icon: GAME_ICONS["odd-images"] },
     { id: "rubiks", href: "/leaderboard/rubiks/", label: "Rubik's Cube", icon: GAME_ICONS.rubiks },
     { id: "science-quiz", href: "/leaderboard/science-quiz/", label: "Science Quiz", icon: GAME_ICONS["science-quiz"] },
@@ -2342,7 +2611,7 @@ function LeaderboardScopeLinks({
 }
 
 const PLAY_LINKS: Record<
-  "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "odd-images" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz",
+  "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "odd-images" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz",
   { href: string; label: string; ariaLabel: string; icon: typeof Zap; borderClass: string; iconClass: string }
 > = {
   sudoku: { href: "/sudoku", label: "Play Sudoku", ariaLabel: "Play Sudoku", icon: GAME_ICONS.sudoku, borderClass: "border-border", iconClass: "text-primary" },
@@ -2351,6 +2620,8 @@ const PLAY_LINKS: Record<
   "word-search": { href: "/word-search", label: "Word Search", ariaLabel: "Play Word Search", icon: GAME_ICONS["word-search"], borderClass: "border-violet-200 dark:border-violet-800", iconClass: "text-violet-600" },
   minesweeper: { href: "/minesweeper", label: "Minesweeper", ariaLabel: "Play Minesweeper", icon: GAME_ICONS.minesweeper, borderClass: "border-emerald-200 dark:border-emerald-800", iconClass: "text-emerald-600" },
   "slide-puzzle": { href: "/slide-puzzle", label: "Slide Puzzle", ariaLabel: "Play Slide Puzzle", icon: GAME_ICONS["slide-puzzle"], borderClass: "border-sky-200 dark:border-sky-800", iconClass: "text-sky-600" },
+  "game-2048": { href: "/game-2048", label: "2048", ariaLabel: "Play 2048", icon: GAME_ICONS["game-2048"], borderClass: "border-orange-200 dark:border-orange-800", iconClass: "text-orange-600" },
+  jumble: { href: "/jumble", label: "Jumble Words", ariaLabel: "Play Jumble Words", icon: GAME_ICONS.jumble, borderClass: "border-cyan-200 dark:border-cyan-800", iconClass: "text-cyan-600" },
   "odd-images": { href: "/odd-images", label: "Odd Images", ariaLabel: "Play Odd Images", icon: GAME_ICONS["odd-images"], borderClass: "border-teal-200 dark:border-teal-800", iconClass: "text-teal-600" },
   rubiks: { href: "/rubiks", label: "Rubik's Cube", ariaLabel: "Play Rubik's Cube", icon: GAME_ICONS.rubiks, borderClass: "border-rose-200 dark:border-rose-800", iconClass: "text-rose-600" },
   "science-quiz": { href: "/quiz/science", label: "Science Quiz", ariaLabel: "Play Science Quiz", icon: GAME_ICONS["science-quiz"], borderClass: "border-violet-200 dark:border-violet-800", iconClass: "text-violet-600" },
@@ -2361,13 +2632,13 @@ const PLAY_LINKS: Record<
 export default function Leaderboard({
   gamePage: routeGamePage,
 }: {
-  gamePage?: "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "odd-images" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz";
+  gamePage?: "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "odd-images" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz";
 } = {}) {
   const search = useSearch();
   const requestedTab = new URLSearchParams(search).get("tab");
   const gamePage =
     routeGamePage ??
-    (requestedTab === "sudoku" || requestedTab === "memory" || requestedTab === "jigsaw" || requestedTab === "word-search" || requestedTab === "minesweeper" || requestedTab === "slide-puzzle" || requestedTab === "odd-images" || requestedTab === "rubiks" || requestedTab === "science-quiz" || requestedTab === "maths-quiz" || requestedTab === "gk-quiz" ? requestedTab : null);
+    (requestedTab === "sudoku" || requestedTab === "memory" || requestedTab === "jigsaw" || requestedTab === "word-search" || requestedTab === "minesweeper" || requestedTab === "slide-puzzle" || requestedTab === "game-2048" || requestedTab === "jumble" || requestedTab === "odd-images" || requestedTab === "rubiks" || requestedTab === "science-quiz" || requestedTab === "maths-quiz" || requestedTab === "gk-quiz" ? requestedTab : null);
   const initialTab: MainTab =
     requestedTab === "monthly" || requestedTab === "alltime"
       ? requestedTab
@@ -2386,6 +2657,10 @@ export default function Leaderboard({
               ? "Minesweeper Leaderboard | Play Brain Games . Online"
               : gamePage === "slide-puzzle"
                 ? "Slide Puzzle Leaderboard | Play Brain Games . Online"
+                : gamePage === "game-2048"
+                  ? "2048 Leaderboard | Play Brain Games . Online"
+                : gamePage === "jumble"
+                  ? "Jumble Words Leaderboard | Play Brain Games . Online"
                 : gamePage === "odd-images"
                   ? "Odd Images Leaderboard | Play Brain Games . Online"
                 : gamePage === "rubiks"
@@ -2410,6 +2685,10 @@ export default function Leaderboard({
               ? "Compare all-time Minesweeper points across every board size on Play Brain Games . Online."
               : gamePage === "slide-puzzle"
                 ? "Compare all-time Slide Puzzle points across every board size on Play Brain Games . Online."
+                : gamePage === "game-2048"
+                  ? "Compare all-time 2048 points across every board size on Play Brain Games . Online."
+                : gamePage === "jumble"
+                  ? "Compare all-time Jumble Words points across every level on Play Brain Games . Online."
                 : gamePage === "odd-images"
                   ? "Compare all-time Odd Images points across every level on Play Brain Games . Online."
                 : gamePage === "rubiks"
@@ -2439,6 +2718,10 @@ export default function Leaderboard({
             ? "Minesweeper Leaderboard"
             : gamePage === "slide-puzzle"
               ? "Slide Puzzle Leaderboard"
+              : gamePage === "game-2048"
+                ? "2048 Leaderboard"
+              : gamePage === "jumble"
+                ? "Jumble Words Leaderboard"
               : gamePage === "odd-images"
                 ? "Odd Images Leaderboard"
               : gamePage === "rubiks"
@@ -2463,6 +2746,10 @@ export default function Leaderboard({
             ? "All-time points across every Minesweeper board size."
             : gamePage === "slide-puzzle"
               ? "All-time points across every Slide Puzzle board size."
+              : gamePage === "game-2048"
+                ? "All-time points across every 2048 board size."
+              : gamePage === "jumble"
+                ? "All-time points across every Jumble Words level."
               : gamePage === "odd-images"
                 ? "All-time points across every Odd Images level."
               : gamePage === "rubiks"
@@ -2520,6 +2807,10 @@ export default function Leaderboard({
         <MinesweeperBoard myProfileId={myProfileId} />
       ) : gamePage === "slide-puzzle" ? (
         <SlidePuzzleBoard myProfileId={myProfileId} />
+      ) : gamePage === "game-2048" ? (
+        <Game2048Board myProfileId={myProfileId} />
+      ) : gamePage === "jumble" ? (
+        <JumbleBoard myProfileId={myProfileId} />
       ) : gamePage === "odd-images" ? (
         <OddImagesBoard myProfileId={myProfileId} />
       ) : gamePage === "rubiks" ? (

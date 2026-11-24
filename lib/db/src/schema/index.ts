@@ -15,6 +15,8 @@ export * from "./profile-merges";
 export * from "./word-search-games";
 export * from "./minesweeper-games";
 export * from "./slide-puzzle-games";
+export * from "./game-2048-games";
+export * from "./jumble-games";
 export * from "./quiz-games";
 export * from "./rubiks-games";
 export * from "./odd-image-games";

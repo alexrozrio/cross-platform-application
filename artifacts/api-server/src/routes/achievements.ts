@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and } from "drizzle-orm";
-import { db, gamesTable, puzzlesTable, dailyChallengesTable, memoryGamesTable, jigsawGamesTable, wordSearchGamesTable, minesweeperGamesTable, slidePuzzleGamesTable, quizGamesTable, oddImageGamesTable, profilesTable } from "@workspace/db";
+import { db, gamesTable, puzzlesTable, dailyChallengesTable, memoryGamesTable, jigsawGamesTable, wordSearchGamesTable, minesweeperGamesTable, slidePuzzleGamesTable, quizGamesTable, oddImageGamesTable, game2048GamesTable, jumbleGamesTable, profilesTable } from "@workspace/db";
 import {
   countAchievementProgress,
   getJigsawAchievementProgress,
@@ -197,6 +197,42 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
   const slidePuzzleDailyCount = new Set(slidePuzzleWins.map(({ dailyDate }) => dailyDate).filter((date): date is string => !!date)).size;
   const hasFastSlidePuzzle = (difficulty: string, maxTime: number) => slidePuzzleWins.some((game) => game.difficulty === difficulty && game.elapsedSeconds < maxTime);
 
+  // ── 2048 data ────────────────────────────────────────────────────────────
+  const completedGame2048 = await db.select({
+    difficulty: game2048GamesTable.difficulty,
+    elapsedSeconds: game2048GamesTable.elapsedSeconds,
+    moves: game2048GamesTable.moves,
+    maxTile: game2048GamesTable.maxTile,
+    points: game2048GamesTable.points,
+    dailyDate: game2048GamesTable.dailyDate,
+  }).from(game2048GamesTable).where(and(
+    eq(game2048GamesTable.profileId, profileId), eq(game2048GamesTable.status, "completed"),
+  ));
+  const game2048Wins = completedGame2048.filter((game) => (game.points ?? 0) > 0);
+  const game2048WinCount = game2048Wins.length;
+  const game2048DifficultyCount = new Set(game2048Wins.map(({ difficulty }) => difficulty)).size;
+  const game2048DailyCount = new Set(game2048Wins.map(({ dailyDate }) => dailyDate).filter((date): date is string => !!date)).size;
+  const hasTile2048 = (tile: number) => completedGame2048.some((game) => (game.maxTile ?? 0) >= tile);
+  const hasFastGame2048 = (difficulty: string, maxTime: number) => game2048Wins.some((game) => game.difficulty === difficulty && game.elapsedSeconds < maxTime);
+
+  // ── Jumble Words data ────────────────────────────────────────────────────
+  const completedJumble = await db.select({
+    difficulty: jumbleGamesTable.difficulty,
+    elapsedSeconds: jumbleGamesTable.elapsedSeconds,
+    correct: jumbleGamesTable.correct,
+    questions: jumbleGamesTable.questions,
+    points: jumbleGamesTable.points,
+    dailyDate: jumbleGamesTable.dailyDate,
+  }).from(jumbleGamesTable).where(and(
+    eq(jumbleGamesTable.profileId, profileId), eq(jumbleGamesTable.status, "completed"),
+  ));
+  const jumbleWins = completedJumble.filter((game) => (game.points ?? 0) > 0);
+  const jumbleWinCount = jumbleWins.length;
+  const jumbleDifficultyCount = new Set(jumbleWins.map(({ difficulty }) => difficulty)).size;
+  const jumbleDailyCount = new Set(jumbleWins.map(({ dailyDate }) => dailyDate).filter((date): date is string => !!date)).size;
+  const hasPerfectJumble = completedJumble.some((game) => game.questions > 0 && game.correct >= game.questions);
+  const hasFastJumble = (difficulty: string, maxTime: number) => jumbleWins.some((game) => game.difficulty === difficulty && game.elapsedSeconds < maxTime);
+
   // ── Odd Images data ───────────────────────────────────────────────────────
   const completedOddImages = await db.select({
     level: oddImageGamesTable.level,
@@ -385,6 +421,35 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
     slide_puzzle_daily_7: { unlocked: slidePuzzleDailyCount >= 7, progress: Math.min(slidePuzzleDailyCount, 7), total: 7 },
     slide_puzzle_daily_30: { unlocked: slidePuzzleDailyCount >= 30, progress: Math.min(slidePuzzleDailyCount, 30), total: 30 },
     slide_puzzle_daily_100: { unlocked: slidePuzzleDailyCount >= 100, progress: Math.min(slidePuzzleDailyCount, 100), total: 100 },
+
+    // ── 2048 ────────────────────────────────────────────────────────────────
+    game2048_first: { unlocked: game2048WinCount >= 1, progress: Math.min(game2048WinCount, 1), total: 1 },
+    game2048_10: { unlocked: game2048WinCount >= 10, progress: Math.min(game2048WinCount, 10), total: 10 },
+    game2048_50: { unlocked: game2048WinCount >= 50, progress: Math.min(game2048WinCount, 50), total: 50 },
+    game2048_100: { unlocked: game2048WinCount >= 100, progress: Math.min(game2048WinCount, 100), total: 100 },
+    game2048_all_boards: { unlocked: game2048DifficultyCount === 4, progress: game2048DifficultyCount, total: 4 },
+    game2048_tile_512: { unlocked: hasTile2048(512), progress: hasTile2048(512) ? 1 : 0, total: 1 },
+    game2048_tile_1024: { unlocked: hasTile2048(1024), progress: hasTile2048(1024) ? 1 : 0, total: 1 },
+    game2048_tile_2048: { unlocked: hasTile2048(2048), progress: hasTile2048(2048) ? 1 : 0, total: 1 },
+    game2048_speed_3x3: { unlocked: hasFastGame2048("3x3", 300), progress: hasFastGame2048("3x3", 300) ? 1 : 0, total: 1 },
+    game2048_speed_4x4: { unlocked: hasFastGame2048("4x4", 900), progress: hasFastGame2048("4x4", 900) ? 1 : 0, total: 1 },
+    game2048_daily_7: { unlocked: game2048DailyCount >= 7, progress: Math.min(game2048DailyCount, 7), total: 7 },
+    game2048_daily_30: { unlocked: game2048DailyCount >= 30, progress: Math.min(game2048DailyCount, 30), total: 30 },
+    game2048_daily_100: { unlocked: game2048DailyCount >= 100, progress: Math.min(game2048DailyCount, 100), total: 100 },
+
+    // ── Jumble Words ────────────────────────────────────────────────────────
+    jumble_first: { unlocked: jumbleWinCount >= 1, progress: Math.min(jumbleWinCount, 1), total: 1 },
+    jumble_10: { unlocked: jumbleWinCount >= 10, progress: Math.min(jumbleWinCount, 10), total: 10 },
+    jumble_50: { unlocked: jumbleWinCount >= 50, progress: Math.min(jumbleWinCount, 50), total: 50 },
+    jumble_100: { unlocked: jumbleWinCount >= 100, progress: Math.min(jumbleWinCount, 100), total: 100 },
+    jumble_all_levels: { unlocked: jumbleDifficultyCount === 4, progress: jumbleDifficultyCount, total: 4 },
+    jumble_perfect: { unlocked: hasPerfectJumble, progress: hasPerfectJumble ? 1 : 0, total: 1 },
+    jumble_speed_easy: { unlocked: hasFastJumble("easy", 180), progress: hasFastJumble("easy", 180) ? 1 : 0, total: 1 },
+    jumble_speed_medium: { unlocked: hasFastJumble("medium", 300), progress: hasFastJumble("medium", 300) ? 1 : 0, total: 1 },
+    jumble_speed_expert: { unlocked: hasFastJumble("expert", 600), progress: hasFastJumble("expert", 600) ? 1 : 0, total: 1 },
+    jumble_daily_7: { unlocked: jumbleDailyCount >= 7, progress: Math.min(jumbleDailyCount, 7), total: 7 },
+    jumble_daily_30: { unlocked: jumbleDailyCount >= 30, progress: Math.min(jumbleDailyCount, 30), total: 30 },
+    jumble_daily_100: { unlocked: jumbleDailyCount >= 100, progress: Math.min(jumbleDailyCount, 100), total: 100 },
 
     // ── Odd Images ──────────────────────────────────────────────────────────
     ...getOddImageAchievementProgress(completedOddImages),
