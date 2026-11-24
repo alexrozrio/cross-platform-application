@@ -15,12 +15,14 @@ afterEach(() => {
 });
 
 describe("configured API base URL", () => {
-  it("uses the local API for production builds opened on localhost", () => {
+  it("uses the configured shared API for production builds opened locally", () => {
     vi.stubEnv("DEV", false);
     vi.stubEnv("VITE_API_BASE_URL_LOCAL", "");
     vi.stubEnv("VITE_API_BASE_URL", "https://cross-platform-application.onrender.com");
 
-    expect(getConfiguredApiBaseUrl()).toBe("http://localhost:8080");
+    expect(getConfiguredApiBaseUrl()).toBe(
+      "https://cross-platform-application.onrender.com",
+    );
   });
 
   it("keeps an explicitly configured API URL for local production builds", () => {

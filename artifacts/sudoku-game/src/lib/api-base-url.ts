@@ -25,30 +25,15 @@ export function getConfiguredApiBaseUrl(): string | null {
   // An explicit local override is useful for pointing a local UI at a chosen
   // API. Native builds call the configured API directly because they have no
   // browser dev-server proxy.
-  const localOverride = import.meta.env.VITE_API_BASE_URL_LOCAL;
-  if (localOverride) {
-    const trimmed = localOverride.trim().replace(/\/+$/, "");
-    if (trimmed) return trimmed;
+  const raw = import.meta.env.VITE_API_BASE_URL_LOCAL || import.meta.env.VITE_API_BASE_URL;
+  if (!raw) {
+    // Production builds call the deployed API directly so static hosts
+    // (Cloudflare Pages, etc.) without an /api proxy still reach it.
+    // Browser development keeps using Vite's local /api proxy instead.
+    return import.meta.env.DEV && !isNative ? null : DEPLOYED_API_BASE_URL;
   }
-
-  if (
-    !isNative &&
-    typeof window !== "undefined" &&
-    ["localhost", "127.0.0.1"].includes(window.location.hostname)
-  ) {
-    // Production/preview builds opened locally do not have Vite's /api proxy.
-    return `http://${window.location.hostname}:8080`;
-  }
-
-  const configured = import.meta.env.VITE_API_BASE_URL;
-  if (configured) {
-    const trimmed = configured.trim().replace(/\/+$/, "");
-    if (trimmed) return trimmed;
-  }
-
-  // Production builds call the deployed API directly so static hosts
-  // (Cloudflare Pages, etc.) without an /api proxy still reach it.
-  return DEPLOYED_API_BASE_URL;
+  const trimmed = raw.trim().replace(/\/+$/, "");
+  return trimmed === "" ? null : trimmed;
 }
 
 /**

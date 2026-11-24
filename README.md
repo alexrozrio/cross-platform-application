@@ -131,13 +131,13 @@ API (port 8080):
 pnpm --filter @workspace/api-server run dev
 ```
 
-Frontend (port 19093; `/api` is proxied to the API in development):
+Frontend (port 19093; `/api` is proxied to the shared API in development):
 
 ```bash
 PORT=19093 BASE_PATH=/ pnpm --filter @workspace/sudoku-game run dev
 ```
 
-Production/preview builds opened on `localhost` or `127.0.0.1` use the local API at `http://localhost:8080` by default, even if `VITE_API_BASE_URL` points to the deployed API. Set `VITE_API_BASE_URL_LOCAL` at build time to choose a different API for a local build.
+Vite development uses `VITE_API_PROXY_TARGET` or `VITE_API_BASE_URL` as its proxy target; without either, it falls back to `http://localhost:8080`. Production/preview builds use the deployed API by default, and `VITE_API_BASE_URL_LOCAL` or `VITE_API_BASE_URL` can override it at build time.
 
 On Windows, `dev.bat` starts both processes. Keep secrets in local env files or your shell — do not commit credentials.
 
