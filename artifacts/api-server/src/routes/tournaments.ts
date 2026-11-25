@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and, gte, lt, inArray } from "drizzle-orm";
-import { db, gamesTable, puzzlesTable, profilesTable, memoryGamesTable, jigsawGamesTable, wordSearchGamesTable, minesweeperGamesTable, slidePuzzleGamesTable, quizGamesTable, oddImageGamesTable, game2048GamesTable, jumbleGamesTable, badgesTable } from "@workspace/db";
+import { db, gamesTable, puzzlesTable, profilesTable, memoryGamesTable, jigsawGamesTable, wordSearchGamesTable, minesweeperGamesTable, slidePuzzleGamesTable, quizGamesTable, oddImageGamesTable, game2048GamesTable, jumbleGamesTable, snakeGamesTable, badgesTable } from "@workspace/db";
 import {
   getWeekPeriod,
   getMonthPeriod,
@@ -143,6 +143,13 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
         .where(range ? and(eq(jumbleGamesTable.status, "completed"), gte(jumbleGamesTable.completedAt, range.start), lt(jumbleGamesTable.completedAt, range.end)) : eq(jumbleGamesTable.status, "completed"))
     : [];
 
+  const snakeRows = gridSize === undefined
+    ? await db.select({ profileId: snakeGamesTable.profileId, username: profilesTable.username, avatar: profilesTable.avatar,
+        xp: profilesTable.xp, points: snakeGamesTable.points })
+        .from(snakeGamesTable).innerJoin(profilesTable, eq(snakeGamesTable.profileId, profilesTable.id))
+        .where(range ? and(eq(snakeGamesTable.status, "completed"), gte(snakeGamesTable.completedAt, range.start), lt(snakeGamesTable.completedAt, range.end)) : eq(snakeGamesTable.status, "completed"))
+    : [];
+
   const quizRows = gridSize === undefined
     ? await db.select({ profileId: quizGamesTable.profileId, username: profilesTable.username, avatar: profilesTable.avatar,
         xp: profilesTable.xp, points: quizGamesTable.points, subject: quizGamesTable.subject })
@@ -179,6 +186,7 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
       slidePuzzleGamesPlayed: number;
       game2048GamesPlayed: number;
       jumbleGamesPlayed: number;
+      snakeGamesPlayed: number;
       oddImageGamesPlayed: number;
       scienceQuizGamesPlayed: number;
       mathsQuizGamesPlayed: number;
@@ -188,7 +196,7 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
 
   const ensureEntry = (profileId: number, username: string, avatar: string | null, xp: number) => {
     if (!grouped.has(profileId)) {
-      grouped.set(profileId, { username, avatar, xp, totalPoints: 0, gamesPlayed: 0, sudokuGamesPlayed: 0, memoryGamesPlayed: 0, jigsawGamesPlayed: 0, wordSearchGamesPlayed: 0, minesweeperGamesPlayed: 0, slidePuzzleGamesPlayed: 0, game2048GamesPlayed: 0, jumbleGamesPlayed: 0, oddImageGamesPlayed: 0, scienceQuizGamesPlayed: 0, mathsQuizGamesPlayed: 0, gkQuizGamesPlayed: 0 });
+      grouped.set(profileId, { username, avatar, xp, totalPoints: 0, gamesPlayed: 0, sudokuGamesPlayed: 0, memoryGamesPlayed: 0, jigsawGamesPlayed: 0, wordSearchGamesPlayed: 0, minesweeperGamesPlayed: 0, slidePuzzleGamesPlayed: 0, game2048GamesPlayed: 0, jumbleGamesPlayed: 0, snakeGamesPlayed: 0, oddImageGamesPlayed: 0, scienceQuizGamesPlayed: 0, mathsQuizGamesPlayed: 0, gkQuizGamesPlayed: 0 });
     }
     return grouped.get(profileId)!;
   };
@@ -255,6 +263,14 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
     entry.totalPoints += row.points ?? 0;
     entry.gamesPlayed += 1;
     entry.jumbleGamesPlayed += 1;
+  }
+
+  for (const row of snakeRows) {
+    if (!row.profileId) continue;
+    const entry = ensureEntry(row.profileId, row.username, row.avatar ?? null, row.xp ?? 0);
+    entry.totalPoints += row.points ?? 0;
+    entry.gamesPlayed += 1;
+    entry.snakeGamesPlayed += 1;
   }
 
   for (const row of oddImageRows) {
@@ -326,6 +342,7 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
     slidePuzzleGamesPlayed: data.slidePuzzleGamesPlayed,
     game2048GamesPlayed: data.game2048GamesPlayed,
     jumbleGamesPlayed: data.jumbleGamesPlayed,
+    snakeGamesPlayed: data.snakeGamesPlayed,
     oddImageGamesPlayed: data.oddImageGamesPlayed,
     streak: streakMap.get(profileId) ?? 0,
   }));
@@ -513,6 +530,17 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
     jumbleByDifficulty.set(row.difficulty, current);
   }
 
+  const snakeRows2 = await db.select({ difficulty: snakeGamesTable.difficulty, points: snakeGamesTable.points })
+    .from(snakeGamesTable).where(range ? and(eq(snakeGamesTable.status, "completed"), eq(snakeGamesTable.profileId, profileId), gte(snakeGamesTable.completedAt, range.start), lt(snakeGamesTable.completedAt, range.end)) : and(eq(snakeGamesTable.status, "completed"), eq(snakeGamesTable.profileId, profileId)));
+
+  const snakeByDifficulty = new Map<string, { points: number; games: number }>();
+  for (const row of snakeRows2) {
+    const current = snakeByDifficulty.get(row.difficulty) ?? { points: 0, games: 0 };
+    current.points += row.points ?? 0;
+    current.games += 1;
+    snakeByDifficulty.set(row.difficulty, current);
+  }
+
   const oddImageRows = await db.select({ level: oddImageGamesTable.level, points: oddImageGamesTable.points })
     .from(oddImageGamesTable).where(range ? and(eq(oddImageGamesTable.status, "completed"), eq(oddImageGamesTable.profileId, profileId), gte(oddImageGamesTable.completedAt, range.start), lt(oddImageGamesTable.completedAt, range.end)) : and(eq(oddImageGamesTable.status, "completed"), eq(oddImageGamesTable.profileId, profileId)));
 
@@ -578,6 +606,11 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
       difficulty,
       points: jumbleByDifficulty.get(difficulty)?.points ?? 0,
       games: jumbleByDifficulty.get(difficulty)?.games ?? 0,
+    })),
+    snake: (["easy", "medium", "hard", "expert"] as const).map((difficulty) => ({
+      difficulty,
+      points: snakeByDifficulty.get(difficulty)?.points ?? 0,
+      games: snakeByDifficulty.get(difficulty)?.games ?? 0,
     })),
     oddImages: (["easy", "medium", "hard", "expert"] as const).map((level) => ({
       level,

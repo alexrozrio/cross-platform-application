@@ -92,6 +92,7 @@ import {
   Images,
   LetterText,
 } from "lucide-react";
+import { Snake } from "@/components/snake-icon";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { BADGE_META, formatPeriodLabel } from "@/lib/badge-utils";
@@ -108,6 +109,8 @@ import { GAME_2048_LEVELS } from "@/lib/game-2048";
 import { getGame2048History, summarizeGame2048Stats, GAME_2048_STATS_UPDATED } from "@/lib/game-2048-stats";
 import { JUMBLE_LEVELS } from "@/lib/jumble-words";
 import { getJumbleHistory, summarizeJumbleStats, JUMBLE_STATS_UPDATED } from "@/lib/jumble-stats";
+import { SNAKE_LEVELS } from "@/lib/snake";
+import { getSnakeHistory, summarizeSnakeStats, SNAKE_STATS_UPDATED } from "@/lib/snake-stats";
 import { ODD_IMAGE_LEVELS, ODD_IMAGE_LEVEL_ORDER } from "@/lib/odd-images";
 import { getOddImageHistory, summarizeOddImageStats, ODD_IMAGES_STATS_UPDATED } from "@/lib/odd-image-stats";
 import { RUBIKS_LEVELS, RUBIKS_VISIBLE } from "@/lib/rubiks";
@@ -453,7 +456,7 @@ function JigsawDailyCalendar({ profileId }: { profileId: number }) {
 
 // ─── Achievements Card ────────────────────────────────────────────────────────
 
-function AchievementsCard({ profileId, game }: { profileId: number; game: "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "odd-images" | "science-quiz" | "maths-quiz" | "gk-quiz" }) {
+function AchievementsCard({ profileId, game }: { profileId: number; game: "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "snake" | "odd-images" | "science-quiz" | "maths-quiz" | "gk-quiz" }) {
   const { data } = useQuery({
     queryKey: [`/api/achievements/${profileId}`],
     queryFn: () => customFetch<AchievementsData>(`/api/achievements/${profileId}`),
@@ -467,6 +470,7 @@ function AchievementsCard({ profileId, game }: { profileId: number; game: "sudok
   const isSlidePuzzle = game === "slide-puzzle";
   const isGame2048 = game === "game-2048";
   const isJumble = game === "jumble";
+  const isSnake = game === "snake";
   const isOddImages = game === "odd-images";
   const quizSubjectId = quizSubjectForGameId(game);
   const quizTheme = quizSubjectId ? QUIZ_SUBJECTS[quizSubjectId].theme : null;
@@ -479,12 +483,12 @@ function AchievementsCard({ profileId, game }: { profileId: number; game: "sudok
   return (
     <Card
       id={`profile-achievements-${game}`}
-      className={`scroll-mt-20 shadow-sm ${isMemory ? "border-purple-200/60 dark:border-purple-800/40" : isJigsaw ? "border-amber-200/70 dark:border-amber-800/40" : isWordSearch ? "border-violet-200/70 dark:border-violet-800/40" : isMinesweeper ? "border-emerald-200/70 dark:border-emerald-800/40" : isSlidePuzzle ? "border-sky-200/70 dark:border-sky-800/40" : isGame2048 ? "border-orange-200/60 dark:border-orange-800/40" : isJumble ? "border-cyan-200/60 dark:border-cyan-800/40" : isOddImages ? "border-teal-200/70 dark:border-teal-800/40" : quizTheme ? quizTheme.border : "border-primary/10"}`}
+      className={`scroll-mt-20 shadow-sm ${isMemory ? "border-purple-200/60 dark:border-purple-800/40" : isJigsaw ? "border-amber-200/70 dark:border-amber-800/40" : isWordSearch ? "border-violet-200/70 dark:border-violet-800/40" : isMinesweeper ? "border-emerald-200/70 dark:border-emerald-800/40" : isSlidePuzzle ? "border-sky-200/70 dark:border-sky-800/40" : isGame2048 ? "border-orange-200/60 dark:border-orange-800/40" : isJumble ? "border-cyan-200/60 dark:border-cyan-800/40" : isSnake ? "border-green-200/60 dark:border-green-800/40" : isOddImages ? "border-teal-200/70 dark:border-teal-800/40" : quizTheme ? quizTheme.border : "border-primary/10"}`}
     >
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Trophy className={`w-4 h-4 ${isMemory ? "text-purple-500" : isJigsaw ? "text-amber-600" : isWordSearch ? "text-violet-600" : isMinesweeper ? "text-emerald-600" : isSlidePuzzle ? "text-sky-600" : isGame2048 ? "text-orange-600" : isJumble ? "text-cyan-600" : isOddImages ? "text-teal-600" : quizTheme ? quizTheme.text : "text-yellow-500"}`} />
+            <Trophy className={`w-4 h-4 ${isMemory ? "text-purple-500" : isJigsaw ? "text-amber-600" : isWordSearch ? "text-violet-600" : isMinesweeper ? "text-emerald-600" : isSlidePuzzle ? "text-sky-600" : isGame2048 ? "text-orange-600" : isJumble ? "text-cyan-600" : isSnake ? "text-green-600" : isOddImages ? "text-teal-600" : quizTheme ? quizTheme.text : "text-yellow-500"}`} />
             Achievements
           </CardTitle>
           <span className="text-sm text-muted-foreground font-semibold">
@@ -497,7 +501,7 @@ function AchievementsCard({ profileId, game }: { profileId: number; game: "sudok
           const items = gameMeta.filter((a) => a.group === group);
           return (
             <div key={group}>
-              <p className={`text-xs font-bold uppercase tracking-widest mb-3 ${isMemory ? "text-purple-500" : isJigsaw ? "text-amber-700 dark:text-amber-300" : isWordSearch ? "text-violet-700 dark:text-violet-300" : isMinesweeper ? "text-emerald-700 dark:text-emerald-300" : isSlidePuzzle ? "text-sky-700 dark:text-sky-300" : isGame2048 ? "text-orange-700 dark:text-orange-300" : isJumble ? "text-cyan-700 dark:text-cyan-300" : isOddImages ? "text-teal-700 dark:text-teal-300" : quizTheme ? quizTheme.strong : "text-muted-foreground"}`}>
+              <p className={`text-xs font-bold uppercase tracking-widest mb-3 ${isMemory ? "text-purple-500" : isJigsaw ? "text-amber-700 dark:text-amber-300" : isWordSearch ? "text-violet-700 dark:text-violet-300" : isMinesweeper ? "text-emerald-700 dark:text-emerald-300" : isSlidePuzzle ? "text-sky-700 dark:text-sky-300" : isGame2048 ? "text-orange-700 dark:text-orange-300" : isJumble ? "text-cyan-700 dark:text-cyan-300" : isSnake ? "text-green-700 dark:text-green-300" : isOddImages ? "text-teal-700 dark:text-teal-300" : quizTheme ? quizTheme.strong : "text-muted-foreground"}`}>
                 {group}
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -528,6 +532,8 @@ function AchievementsCard({ profileId, game }: { profileId: number; game: "sudok
                                   ? "bg-orange-50 dark:bg-orange-950/20 border-orange-200/60 shadow-sm"
                                   : isJumble
                                     ? "bg-cyan-50 dark:bg-cyan-950/20 border-cyan-200/60 shadow-sm"
+                                    : isSnake
+                                      ? "bg-green-50 dark:bg-green-950/20 border-green-200/60 shadow-sm"
                                     : isOddImages
                                   ? "bg-teal-50 dark:bg-teal-950/20 border-teal-200/60 shadow-sm"
                                   : quizTheme
@@ -548,7 +554,7 @@ function AchievementsCard({ profileId, game }: { profileId: number; game: "sudok
                         <div className="mt-1">
                           <div className="h-1 rounded-full bg-muted overflow-hidden">
                             <div
-                              className={`h-full rounded-full transition-all ${isMemory ? "bg-purple-400/60" : isJigsaw ? "bg-amber-500/60" : isWordSearch ? "bg-violet-500/60" : isMinesweeper ? "bg-emerald-500/60" : isSlidePuzzle ? "bg-sky-500/60" : isGame2048 ? "bg-orange-500/60" : isJumble ? "bg-cyan-500/60" : isOddImages ? "bg-teal-500/60" : quizTheme ? quizTheme.fillSoft : "bg-primary/50"}`}
+                              className={`h-full rounded-full transition-all ${isMemory ? "bg-purple-400/60" : isJigsaw ? "bg-amber-500/60" : isWordSearch ? "bg-violet-500/60" : isMinesweeper ? "bg-emerald-500/60" : isSlidePuzzle ? "bg-sky-500/60" : isGame2048 ? "bg-orange-500/60" : isJumble ? "bg-cyan-500/60" : isSnake ? "bg-green-500/60" : isOddImages ? "bg-teal-500/60" : quizTheme ? quizTheme.fillSoft : "bg-primary/50"}`}
                               style={{ width: `${Math.round((progress / total) * 100)}%` }}
                             />
                           </div>
@@ -727,7 +733,7 @@ interface TournamentStreakData {
   totalTop3Finishes: number;
 }
 
-type GameTab = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "odd-images" | "rubiks" | QuizGameId;
+type GameTab = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "snake" | "odd-images" | "rubiks" | QuizGameId;
 
 const profileSchema = z.object({
   username: z.string().min(2, "At least 2 characters").max(30),
@@ -1145,6 +1151,77 @@ function JumbleDailyCalendar({ profileId }: { profileId: number }) {
   </Card>;
 }
 
+function SnakeStatsPanel({ profileId }: { profileId: number | null }) {
+  const [history, setHistory] = useState(() => getSnakeHistory(profileId));
+  useEffect(() => {
+    const refresh = (event?: Event) => {
+      const changedProfileId = (event as CustomEvent<number | null> | undefined)?.detail;
+      if (changedProfileId === undefined || changedProfileId === (profileId ?? null)) setHistory(getSnakeHistory(profileId));
+    };
+    window.addEventListener(SNAKE_STATS_UPDATED, refresh);
+    return () => window.removeEventListener(SNAKE_STATS_UPDATED, refresh);
+  }, [profileId]);
+
+  const stats = summarizeSnakeStats(history);
+  const format = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+  return (
+    <div className="space-y-4 animate-in fade-in duration-300">
+      {profileId && <SnakeDailyCalendar profileId={profileId} />}
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <Card className="border-green-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-green-100 p-2.5 text-green-700"><Snake className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Rounds finished</p><p className="text-2xl font-bold">{stats.totalGames}</p></CardContent></Card>
+        <Card className="border-green-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-amber-100 p-2.5 text-amber-700"><Trophy className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Rounds won</p><p className="text-2xl font-bold">{stats.wins}</p></CardContent></Card>
+        <Card className="border-green-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-green-100 p-2.5 text-green-700"><TrendingUp className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Best score</p><p className="text-2xl font-bold">{stats.bestScore.toLocaleString()}</p></CardContent></Card>
+        <Card className="border-green-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-green-100 p-2.5 text-green-700"><Check className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Best food</p><p className="text-2xl font-bold">{stats.totalGames ? Math.max(...Object.values(stats.bestFoods).filter((v): v is number => v != null)) || "—" : "—"}</p></CardContent></Card>
+        <Card className="border-green-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-green-100 p-2.5 text-green-700"><Clock className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Fastest win</p><p className="text-2xl font-bold">{Object.keys(stats.bestTimes).length ? format(Math.min(...Object.values(stats.bestTimes).filter((v): v is number => v != null))) : "—"}</p></CardContent></Card>
+        <Card className="border-green-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-amber-100 p-2.5 text-amber-700"><Flame className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Day streak</p><p className="text-2xl font-bold">{stats.currentStreak}/{stats.bestStreak}</p></CardContent></Card>
+      </div>
+
+      <Card className="overflow-hidden border-green-200/60 dark:border-green-800/40">
+        <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-base"><Trophy className="h-4 w-4 text-green-600" />Best by level</CardTitle></CardHeader>
+        <CardContent className="space-y-2">
+          {(Object.keys(SNAKE_LEVELS) as (keyof typeof SNAKE_LEVELS)[]).map((difficulty) => {
+            const bestTime = stats.bestTimes[difficulty];
+            const bestFood = stats.bestFoods[difficulty];
+            return <div key={difficulty} className="flex items-center justify-between rounded-lg border bg-background px-3 py-2.5"><span className="font-medium">{SNAKE_LEVELS[difficulty].label} · {SNAKE_LEVELS[difficulty].gridSize}×{SNAKE_LEVELS[difficulty].gridSize} · endless apples · {SNAKE_LEVELS[difficulty].mode === "baby" ? "Kids" : "Adult"}</span><span className="font-mono text-sm font-bold text-green-700 dark:text-green-300">{bestTime != null ? format(bestTime) : "—"}{bestFood != null ? <span className="ml-2 text-xs font-semibold text-muted-foreground">{bestFood} apples</span> : null}</span></div>;
+          })}
+        </CardContent>
+      </Card>
+
+      {profileId && <AchievementsCard profileId={profileId} game="snake" />}
+    </div>
+  );
+}
+
+function SnakeDailyCalendar({ profileId }: { profileId: number }) {
+  const now = new Date();
+  const utcYear = now.getUTCFullYear();
+  const utcMonth = now.getUTCMonth();
+  const [viewYear, setViewYear] = useState(utcYear);
+  const [viewMonth, setViewMonth] = useState(utcMonth);
+  const month = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}`;
+  const { data } = useQuery({
+    queryKey: [`/api/snake-daily-challenge/history/${profileId}`, month],
+    queryFn: () => customFetch<{ month: string; completedDates: string[] }>(`/api/snake-daily-challenge/history/${profileId}?month=${month}`),
+    enabled: Boolean(profileId),
+  });
+  const completed = new Set(data?.completedDates ?? []);
+  const daysInMonth = new Date(Date.UTC(viewYear, viewMonth + 1, 0)).getUTCDate();
+  const startWeekday = new Date(Date.UTC(viewYear, viewMonth, 1)).getUTCDay();
+  const today = now.toISOString().slice(0, 10);
+  const previous = () => viewMonth === 0 ? (setViewYear((year) => year - 1), setViewMonth(11)) : setViewMonth((monthIndex) => monthIndex - 1);
+  const next = () => viewMonth === 11 ? (setViewYear((year) => year + 1), setViewMonth(0)) : setViewMonth((monthIndex) => monthIndex + 1);
+  const prevDisabled = viewYear < utcYear - 1 || (viewYear === utcYear - 1 && viewMonth <= utcMonth);
+  const nextDisabled = viewYear === utcYear && viewMonth >= utcMonth;
+  return <Card className="border-green-200/60 shadow-sm dark:border-green-800/40">
+    <CardHeader className="pb-2"><div className="flex items-center justify-between gap-2"><CardTitle className="flex items-center gap-2 text-base"><Snake className="h-4 w-4 text-green-600" /> Daily Snake</CardTitle><Link href="/snake-challenge" className="whitespace-nowrap text-xs text-green-600 underline underline-offset-2">Play today →</Link></div></CardHeader>
+    <CardContent className="space-y-3"><div className="flex items-center justify-between"><button onClick={previous} disabled={prevDisabled} className="rounded p-1 hover:bg-muted disabled:opacity-30"><ChevronLeft className="h-4 w-4" /></button><p className="text-sm font-semibold">{MONTH_NAMES[viewMonth]} {viewYear}</p><button onClick={next} disabled={nextDisabled} className="rounded p-1 hover:bg-muted disabled:opacity-30"><ChevronRight className="h-4 w-4" /></button></div>
+      <div className="grid grid-cols-7 gap-1">{WEEKDAYS.map((day) => <div key={day} className="py-1 text-center text-[10px] font-semibold text-muted-foreground">{day}</div>)}{Array.from({ length: startWeekday }, (_, index) => <div key={`empty-${index}`} />)}{Array.from({ length: daysInMonth }, (_, index) => { const day = index + 1; const date = `${month}-${String(day).padStart(2, "0")}`; const done = completed.has(date); const isToday = date === today; const future = date > today; return <div key={day} title={done ? `Completed ${date}` : undefined} className={`aspect-square flex items-center justify-center rounded-full text-xs font-semibold ${done ? "bg-green-500 text-white" : isToday ? "ring-2 ring-green-400" : future ? "text-muted-foreground/40" : "text-muted-foreground"}`}>{done ? "🐍" : day}</div>; })}</div>
+      <p className="text-center text-[11px] text-muted-foreground">{completed.size} day{completed.size !== 1 ? "s" : ""} completed this month</p>
+    </CardContent>
+  </Card>;
+}
+
 function SlidePuzzleDailyCalendar({ profileId }: { profileId: number }) {
   const now = new Date();
   const utcYear = now.getUTCFullYear();
@@ -1331,7 +1408,7 @@ export default function Profile() {
   usePageMeta({
     title: "Your Game Profile & Stats | Play Brain Games . Online",
     description:
-      "Review your progress, personal bests, achievements, and game preferences across all twelve games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, and the quizzes.",
+      "Review your progress, personal bests, achievements, and game preferences across all thirteen games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, and the quizzes.",
     path: "/profile",
   });
   const search = useSearch();
@@ -1347,7 +1424,7 @@ export default function Profile() {
 
   // Stats tab
   const tabGameId: GameTab | null =
-    tabParam === "memory" || tabParam === "jigsaw" || tabParam === "word-search" || tabParam === "minesweeper" || tabParam === "slide-puzzle" || tabParam === "game-2048" || tabParam === "jumble" || tabParam === "odd-images" || tabParam === "sudoku" || tabParam === "science-quiz" || tabParam === "maths-quiz" || tabParam === "gk-quiz"
+    tabParam === "memory" || tabParam === "jigsaw" || tabParam === "word-search" || tabParam === "minesweeper" || tabParam === "slide-puzzle" || tabParam === "game-2048" || tabParam === "jumble" || tabParam === "snake" || tabParam === "odd-images" || tabParam === "sudoku" || tabParam === "science-quiz" || tabParam === "maths-quiz" || tabParam === "gk-quiz"
       ? tabParam as GameTab
       : null;
   const [gameTab, setGameTab] = useState<GameTab>(tabGameId ?? "sudoku");
@@ -1364,6 +1441,7 @@ export default function Profile() {
     else if (tabParam === "slide-puzzle") setGameTab("slide-puzzle");
     else if (tabParam === "game-2048") setGameTab("game-2048");
     else if (tabParam === "jumble") setGameTab("jumble");
+    else if (tabParam === "snake") setGameTab("snake");
     else if (tabParam === "odd-images") setGameTab("odd-images");
     else if (tabParam === "rubiks" && RUBIKS_VISIBLE) setGameTab("rubiks");
     else if (tabParam === "sudoku") setGameTab("sudoku");
@@ -1905,6 +1983,7 @@ export default function Profile() {
                   ["slide-puzzle", "Slide Puzzle"],
                   ["game-2048", "2048"],
                   ["jumble", "Jumble Words"],
+                  ["snake", "Snake"],
                   ["odd-images", "Odd Images"],
                   ["rubiks", "Rubik's Cube"],
                   ["science-quiz", "Science Quiz"],
@@ -2087,6 +2166,9 @@ export default function Profile() {
           )}
           {!statsLoading && gameTab === "jumble" && (
             <JumbleStatsPanel profileId={profileId} />
+          )}
+          {!statsLoading && gameTab === "snake" && (
+            <SnakeStatsPanel profileId={profileId} />
           )}
           {!statsLoading && gameTab === "odd-images" && (
             <OddImagesStatsPanel profileId={profileId} />

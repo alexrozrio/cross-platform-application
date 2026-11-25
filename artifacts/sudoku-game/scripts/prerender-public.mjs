@@ -107,10 +107,10 @@ const publicPages = [
     route: "/",
     title: "Free Puzzle & Quiz Games Online | Sudoku, Memory, Word Search & More",
     description:
-      "Play twelve free browser games: Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, and Science, Maths & GK quizzes — with daily challenges, leaderboards, and guest play.",
+      "Play thirteen free browser games: Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, and Science, Maths & GK quizzes — with daily challenges, leaderboards, and guest play.",
     heading: "Free Puzzle & Quiz Games Online",
     intro:
-      "Twelve games, one place: logic puzzles, word and picture games, minefields, sliding tiles, tile-merging, anagram words, spot-the-difference grids, and timed quizzes. Every game can be started as a guest, with daily challenges and leaderboards to compare scores.",
+      "Thirteen games, one place: logic puzzles, word and picture games, minefields, sliding tiles, tile-merging, anagram words, classic snake, spot-the-difference grids, and timed quizzes. Every game can be started as a guest, with daily challenges and leaderboards to compare scores.",
     sections: [
       ["Sudoku for logic", "Baby 3×3 through Pro 16×16 grids in easy, medium, hard, and expert. Each symbol must fit its row, column, and marked box — use candidate notes and a repeatable solving loop."],
       ["Memory Match for recall", "2×4 to 8×8 boards with number, letter, or image cards. Turn over two cards at a time and build a location map as you play."],
@@ -120,6 +120,7 @@ const publicPages = [
       ["Slide Puzzle for tile sliding", "Arrange numbered, alphabet, or picture tiles in order on 2×2 to 5×5 boards. Points reward fast, efficient solves with few hints."],
       ["2048 for tile merging", "Slide and merge numbered tiles on 3×3 to 6×6 boards. Points reward a high max tile, fast finishes, and efficient moves."],
       ["Jumble Words for anagrams", "Unscramble jumbled English letters into real words across four levels. Points reward accuracy, speed, and few wrong attempts — skipped words can be retried."],
+      ["Snake for the classic chase", "Steer the Nokia-style snake to eat apples for as long as you can — four grid sizes from 12×12 to 18×18 with Kids and Adult modes."],
       ["Odd Images for visual scans", "Each round fills a grid with the same picture theme and hides one odd image. Easy through Expert scales the grid from 3×3 to 6×6 and increases the number of questions."],
       ["Science, Maths & GK quizzes", "Timed multiple-choice quizzes with four levels — Easy (5 questions) up to Expert (12 questions). Answer quickly and accurately to maximise points, XP, and gems."],
       ["Daily challenges for everyone", "Every game has a shared daily challenge that refreshes each day, so you can compare your score with other players on the same puzzle."],
@@ -134,6 +135,7 @@ const publicPages = [
       ["/slide-puzzle", "Play Slide Puzzle online"],
       ["/game-2048", "Play 2048 online"],
       ["/jumble", "Play Jumble Words online"],
+      ["/snake", "Play Snake online"],
       ["/odd-images", "Play Odd Images online"],
       ["/quiz/science", "Play the Science Quiz"],
       ["/quiz/maths", "Play the Maths Quiz"],
@@ -298,6 +300,8 @@ const publicPages = [
       ["/game-2048-challenge", "Try the 2048 daily challenge"],
       ["/jumble", "Play Jumble Words"],
       ["/jumble-challenge", "Try the Jumble Words daily challenge"],
+      ["/snake", "Play Snake"],
+      ["/snake-challenge", "Try the Snake daily challenge"],
       ["/odd-images", "Play Odd Images"],
       ["/odd-images-challenge", "Try the Odd Images daily challenge"],
       ["/quiz/science", "Play the quizzes"],
@@ -402,13 +406,13 @@ const publicPages = [
     route: "/leaderboard",
     title: "All Games Leaderboard | Play Brain Games . Online",
     description:
-      "Compare scores across all twelve games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, and Science, Maths & GK quizzes — on weekly, monthly, and all-time boards.",
+      "Compare scores across all thirteen games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, and Science, Maths & GK quizzes — on weekly, monthly, and all-time boards.",
     heading: "All Games Leaderboard",
     intro:
       "Compare combined points across every game — puzzles, word games, quizzes, and more — on weekly tournaments, monthly tournaments, and all-time rankings.",
     sections: [
       ["Weekly and monthly tournaments", "Follow changing tournament standings and compete for a place near the top."],
-      ["All-time combined scores", "Completed games from every title — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, and the Science, Maths & GK quizzes — contribute points to the all-games ranking."],
+      ["All-time combined scores", "Completed games from every title — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, and the Science, Maths & GK quizzes — contribute points to the all-games ranking."],
       ["Game-specific leaderboards", "Open separate all-time boards to compare scores for any individual game."],
     ],
     links: [
@@ -420,6 +424,7 @@ const publicPages = [
       ["/leaderboard/slide-puzzle/", "View all-time Slide Puzzle scores"],
       ["/leaderboard/game-2048/", "View all-time 2048 scores"],
       ["/leaderboard/jumble/", "View all-time Jumble Words scores"],
+      ["/leaderboard/snake/", "View all-time Snake scores"],
       ["/leaderboard/odd-images/", "View all-time Odd Images scores"],
       ["/leaderboard/science-quiz/", "View Science Quiz scores"],
       ["/leaderboard/maths-quiz/", "View Maths Quiz scores"],
@@ -491,17 +496,17 @@ const publicPages = [
   },
   {
     route: "/about",
-    title: "About Play Brain Games . Online | Ten Free Games",
+    title: "About Play Brain Games . Online | Thirteen Free Games",
     description:
-      "Learn about Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, and Science, Maths & GK quizzes — board choices, daily challenges, guest play, and saved progress.",
+      "Learn about Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, and Science, Maths & GK quizzes — board choices, daily challenges, guest play, and saved progress.",
     heading: "About Play Brain Games . Online",
     intro:
-      "Play Brain Games . Online brings together twelve puzzle and quiz formats with adjustable boards, practical guides, daily challenges, and guest play.",
+      "Play Brain Games . Online brings together thirteen puzzle and quiz formats with adjustable boards, practical guides, daily challenges, and guest play.",
     sections: [
-      ["Twelve games, many kinds of play", "Sudoku is a logic puzzle; Memory Match is a recall game; Jigsaw rebuilds a picture; Word Search hides themed words; Minesweeper tests deduction under pressure; Slide Puzzle orders shuffled tiles; 2048 merges numbered tiles; Jumble Words unscrambles anagrams; Odd Images tests visual scanning; and the Science, Maths & GK quizzes test knowledge against the clock."],
-      ["Board and level choices for every experience", "Sudoku ranges from 3×3 to 16×16 grids; Memory Match has 2×4 through 8×8 boards; Jigsaw offers 2×2 to 5×5 pictures; Word Search scales from 6×6 to 14×14; Minesweeper runs 6×6 to 14×14; Slide Puzzle goes 2×2 to 5×5; 2048 runs 3×3 to 6×6 boards; Jumble Words deals 5 to 12 words per round; Odd Images runs 3×3 to 6×6 grids; and each quiz has Easy through Expert levels."],
+      ["Thirteen games, many kinds of play", "Sudoku is a logic puzzle; Memory Match is a recall game; Jigsaw rebuilds a picture; Word Search hides themed words; Minesweeper tests deduction under pressure; Slide Puzzle orders shuffled tiles; 2048 merges numbered tiles; Jumble Words unscrambles anagrams; Snake tests reflexes and planning; Odd Images tests visual scanning; and the Science, Maths & GK quizzes test knowledge against the clock."],
+      ["Board and level choices for every experience", "Sudoku ranges from 3×3 to 16×16 grids; Memory Match has 2×4 through 8×8 boards; Jigsaw offers 2×2 to 5×5 pictures; Word Search scales from 6×6 to 14×14; Minesweeper runs 6×6 to 14×14; Slide Puzzle goes 2×2 to 5×5; 2048 runs 3×3 to 6×6 boards; Jumble Words deals 5 to 12 words per round; Snake runs 12×12 to 18×18 boards; Odd Images runs 3×3 to 6×6 grids; and each quiz has Easy through Expert levels."],
       ["Progress is optional", "Start as a guest without signing in. Google sign-in connects profile statistics, achievements, and streaks so progress can sync across devices. The games remain available without a profile."],
-      ["Daily practice and shared results", "Every game has a daily challenge that refreshes each day, plus head-to-head challenges against friends. Leaderboards cover all twelve games across weekly, monthly, and all-time boards."],
+      ["Daily practice and shared results", "Every game has a daily challenge that refreshes each day, plus head-to-head challenges against friends. Leaderboards cover all thirteen games across weekly, monthly, and all-time boards."],
       ["Privacy and account control", "The Privacy Policy describes how account and game-progress information is used. The account deletion page explains how to request removal of an account and associated server data."],
     ],
     links: [
@@ -513,6 +518,7 @@ const publicPages = [
       ["/slide-puzzle", "Play Slide Puzzle"],
       ["/game-2048", "Play 2048"],
       ["/jumble", "Play Jumble Words"],
+      ["/snake", "Play Snake"],
       ["/odd-images", "Play Odd Images"],
       ["/quiz/science", "Play the quizzes"],
       ["/guides", "Read the puzzle guides"],
@@ -856,6 +862,49 @@ const publicPages = [
     schemaType: "WebApplication",
   },
   {
+    route: "/snake",
+    title: "Play Snake Online Free | Classic Nokia Snake Across 4 Levels",
+    description:
+      "Play free Snake online. Steer the classic Nokia-style snake to eat apples for as long as you can across Easy, Medium, Hard, and Expert levels — with daily challenges and duels.",
+    heading: "Play Snake Online Free",
+    intro:
+      "Every apple makes the snake longer. Guide it across the grid without hitting a wall or your own tail — the run only ends when you crash.",
+    sections: [
+      ["Four levels of speed and size", "Easy runs a calm 12×12 board, Medium a 14×14, Hard a fast 16×16, and Expert an 18×18 — apples are unlimited on every level, and your Game Mode controls which levels appear."],
+      ["Keyboard, swipe, or on-screen pad", "Arrow keys or WASD on desktop, swipe on touch screens, or the on-screen direction pad — pick whichever feels natural."],
+      ["How scoring works", "Points scale with the level base, apples eaten, survival speed, and turn efficiency. Finishing a run awards XP and gems scaled by level."],
+      ["Daily challenge and duels", "The daily Snake challenge gives everyone the same food sequence each day, and you can challenge friends to beat your score head-to-head."],
+    ],
+    links: [
+      ["/snake-challenge", "Play today's Snake challenge"],
+      ["/leaderboard/snake/", "View the Snake leaderboard"],
+      ["/guides", "Read the Snake guide"],
+      ["/challenges", "Challenge another player"],
+    ],
+    schemaType: "WebApplication",
+  },
+  {
+    route: "/snake-challenge",
+    title: "Daily Snake Challenge | Play Brain Games . Online",
+    description:
+      "Play today's shared Snake round — the same food sequence for every player — and compare your score on the daily leaderboard.",
+    heading: "Daily Snake Challenge",
+    intro:
+      "Everyone gets the same food sequence each day, refreshed at 00:00 UTC. Eat as many as you can and post your score.",
+    sections: [
+      ["One shared food trail each day", "The daily Snake challenge places the same food sequence for every player on that date."],
+      ["Score by food and speed", "Points reward food eaten, fast finishes, and few wasted turns, so a clean run ranks higher."],
+      ["Compare with other players", "The daily leaderboard shows scores and completion times so you can benchmark your reflexes."],
+    ],
+    links: [
+      ["/snake", "Play Snake"],
+      ["/leaderboard/snake/", "View the Snake leaderboard"],
+      ["/guides", "Read the Snake guide"],
+      ["/challenges", "Challenge another player"],
+    ],
+    schemaType: "WebApplication",
+  },
+  {
     route: "/odd-images",
     title: "Odd Images Game Online Free | Spot the Different Picture",
     description:
@@ -1069,6 +1118,25 @@ const publicPages = [
       ["/leaderboard/", "View the all-games leaderboard"],
       ["/jumble", "Play Jumble Words"],
       ["/jumble-challenge", "Try today's challenge"],
+    ],
+    schemaType: "CollectionPage",
+  },
+  {
+    route: "/leaderboard/snake",
+    title: "Snake Leaderboard | Play Brain Games . Online",
+    description:
+      "Compare all-time Snake scores across Easy, Medium, Hard, and Expert levels.",
+    heading: "Snake Leaderboard",
+    intro:
+      "See the players with the highest combined points across completed Snake rounds of every level.",
+    sections: [
+      ["Scores across every level", "Points from completed Easy, Medium, Hard, and Expert rounds count toward this all-time board."],
+      ["Compare all games", "The all-games leaderboard also includes every other game's scores from weekly, monthly, and all-time results."],
+    ],
+    links: [
+      ["/leaderboard/", "View the all-games leaderboard"],
+      ["/snake", "Play Snake"],
+      ["/snake-challenge", "Try today's challenge"],
     ],
     schemaType: "CollectionPage",
   },

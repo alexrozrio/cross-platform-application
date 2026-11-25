@@ -15,6 +15,7 @@ import {
   LetterText,
   type LucideIcon,
 } from "lucide-react";
+import { Snake as SnakeIcon } from "@/components/snake-icon";
 
 /**
  * Shared game icons used across the app (challenges, leaderboards, home).
@@ -29,6 +30,7 @@ export const GAME_ICONS: Record<string, LucideIcon> = {
   "slide-puzzle": Grid2x2,
   "game-2048": LayoutGrid,
   jumble: LetterText,
+  snake: SnakeIcon,
   rubiks: Box,
   "science-quiz": FlaskConical,
   "maths-quiz": Calculator,
@@ -50,6 +52,7 @@ export const GAME_ICON_COLORS: Record<string, string> = {
   "slide-puzzle": "text-sky-600",
   "game-2048": "text-orange-600",
   jumble: "text-cyan-600",
+  snake: "text-green-600",
   rubiks: "text-rose-600",
   "science-quiz": "text-violet-600",
   "maths-quiz": "text-sky-600",

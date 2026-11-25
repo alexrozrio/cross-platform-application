@@ -93,6 +93,8 @@ const Game2048 = lazy(() => import("@/pages/game-2048"));
 const Game2048DailyChallengePage = lazy(() => import("@/pages/game-2048-challenge"));
 const JumbleWords = lazy(() => import("@/pages/jumble"));
 const JumbleDailyChallengePage = lazy(() => import("@/pages/jumble-challenge"));
+const SnakeGame = lazy(() => import("@/pages/snake"));
+const SnakeDailyChallengePage = lazy(() => import("@/pages/snake-challenge"));
 const QuizPage = lazy(() => import("@/pages/quiz"));
 const QuizDailyChallengePage = lazy(() => import("@/pages/quiz-challenge"));
 function MemoryBookmarkRoute({ params }: { params: { difficulty: string } }) {
@@ -307,6 +309,11 @@ function Router() {
               </Route>
               <Route path="/jumble" component={JumbleWords} />
               <Route path="/jumble-challenge" component={JumbleDailyChallengePage} />
+              <Route path="/leaderboard/snake">
+                {() => <Leaderboard gamePage="snake" />}
+              </Route>
+              <Route path="/snake" component={SnakeGame} />
+              <Route path="/snake-challenge" component={SnakeDailyChallengePage} />
               <Route path="/quiz/:subject" component={QuizPage} />
               <Route path="/quiz">
                 {() => <QuizPage params={{}} />}

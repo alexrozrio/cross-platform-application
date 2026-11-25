@@ -35,7 +35,7 @@ export default function PrivacyPolicy() {
             When you play as a guest we assign your device a random identifier, which is stored in that browser or app's local storage. You can transfer a guest profile between devices using a short-lived, one-use code. When you sign in with Google we receive your name, profile photo, and email address from your Google account and store them to personalise your experience.
           </p>
           <p>
-            We also store game-related data you create across all twelve games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, and Science, Maths & GK quizzes: puzzle and game attempts, completion times, scores, settings, and earned badges.
+            We also store game-related data you create across all thirteen games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, and Science, Maths & GK quizzes: puzzle and game attempts, completion times, scores, settings, and earned badges.
           </p>
           <p>
             If you allow analytics in the privacy choices dialog, we use Google Analytics 4 to understand how visitors use the Service, such as which pages are visited and how the Service performs. The analytics tag loads only after you opt in. It may use cookies or similar identifiers and process usage, browser/device information, and general location inferred from network information. We do not send a Google Analytics user ID.
@@ -104,7 +104,7 @@ export default function PrivacyPolicy() {
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">6. Data Retention</h2>
           <p>
-            Your profile and game history — including activity across all twelve games — are retained while your account is active. You can permanently delete your account and associated server data from the app's Account page or through our{" "}
+            Your profile and game history — including activity across all thirteen games — are retained while your account is active. You can permanently delete your account and associated server data from the app's Account page or through our{" "}
             <a className="text-foreground font-medium underline underline-offset-2" href="/account-deletion">account deletion page</a>.
             The deletion flow also clears local app data on the device used to submit the request. Local copies on other devices must be cleared on those devices. If you cannot sign in, contact us using Section 10.
           </p>

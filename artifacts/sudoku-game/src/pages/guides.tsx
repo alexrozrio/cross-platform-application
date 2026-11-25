@@ -20,6 +20,7 @@ import {
   Trophy,
   type LucideIcon,
 } from "lucide-react";
+import { Snake } from "@/components/snake-icon";
 import { usePageMeta } from "@/components/page-meta";
 import { RUBIKS_VISIBLE } from "@/lib/rubiks";
 
@@ -84,6 +85,12 @@ const THEMES: Record<string, GuideTheme> = {
     icon: "text-cyan-700 dark:text-cyan-300",
     card: "border-cyan-200/70 bg-cyan-50/60 dark:border-cyan-900/50 dark:bg-cyan-950/20",
     btn: "bg-cyan-700 text-white hover:bg-cyan-800",
+  },
+  snake: {
+    section: "border-green-200/70 dark:border-green-900/50",
+    icon: "text-green-700 dark:text-green-300",
+    card: "border-green-200/70 bg-green-50/60 dark:border-green-900/50 dark:bg-green-950/20",
+    btn: "bg-green-700 text-white hover:bg-green-700",
   },
   "odd-images": {
     section: "border-teal-200/70 dark:border-teal-900/50",
@@ -200,7 +207,7 @@ export default function Guides() {
   usePageMeta({
     title: "Game Guides: All Ten Games | Play Brain Games . Online",
     description:
-      "Learn every game — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, and Science, Maths & GK quizzes — with practical strategies and tips.",
+      "Learn every game — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, and Science, Maths & GK quizzes — with practical strategies and tips.",
     path: "/guides",
     type: "article",
   });
@@ -240,6 +247,7 @@ export default function Guides() {
           <a href="#slide-puzzle-guide-title" className="rounded-full border border-sky-400/30 bg-sky-500/10 px-3 py-1.5 text-sm font-semibold text-sky-700 dark:text-sky-300">Slide Puzzle guide</a>
           <a href="#game-2048-guide-title" className="rounded-full border border-orange-400/30 bg-orange-500/10 px-3 py-1.5 text-sm font-semibold text-orange-700 dark:text-orange-300">2048 guide</a>
           <a href="#jumble-guide-title" className="rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-sm font-semibold text-cyan-700 dark:text-cyan-300">Jumble Words guide</a>
+          <a href="#snake-guide-title" className="rounded-full border border-green-400/30 bg-green-500/10 px-3 py-1.5 text-sm font-semibold text-green-700 dark:text-green-300">Snake guide</a>
           <a href="#odd-images-guide-title" className="rounded-full border border-teal-400/30 bg-teal-500/10 px-3 py-1.5 text-sm font-semibold text-teal-700 dark:text-teal-300">Odd Images guide</a>
           {RUBIKS_VISIBLE && (
           <a href="#rubiks-guide-title" className="rounded-full border border-red-400/30 bg-red-500/10 px-3 py-1.5 text-sm font-semibold text-red-700 dark:text-red-300">Rubik's Cube guide</a>
@@ -260,7 +268,7 @@ export default function Guides() {
           "Your Game Mode — set in your profile — controls which board sizes and difficulty levels each game offers, so the same game can feel completely different for a child and an experienced player.",
         ]}
         cards={[
-          { title: "Guest play", detail: "Start any of the twelve games immediately. Progress is kept in the browser until you sign in." },
+          { title: "Guest play", detail: "Start any of the thirteen games immediately. Progress is kept in the browser until you sign in." },
           { title: "Kids mode", detail: "Shows only the smaller boards and easier levels — 3×3–6×6 Sudoku, short Memory boards, Easy–Medium Jigsaw, Word Search and Minesweeper, Odd Images Easy–Medium, and Easy–Medium quizzes." },
           { title: "Adult & 4 All", detail: "Adult mode offers the larger boards and harder levels; the default 4 All mode shows every size and level for every game." },
         ]}
@@ -287,7 +295,7 @@ export default function Guides() {
           { title: "XP", detail: "Earned for completing games at higher difficulties — harder puzzles give more XP and build your overall player rank." },
           { title: "Gems", detail: "Bonus currency awarded with completed games, scaling with the difficulty or board size you chose." },
         ]}
-        details="Quizzes score on accuracy plus a speed bonus for beating the level's par time. Puzzle games like Sudoku, Memory, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, and Odd Images each have their own formula — the expandable 'How points are calculated' guide on the leaderboard page lists every game's exact rules."
+        details="Quizzes score on accuracy plus a speed bonus for beating the level's par time. Puzzle games like Sudoku, Memory, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, and Odd Images each have their own formula — the expandable 'How points are calculated' guide on the leaderboard page lists every game's exact rules."
         tips="For the best scores, learn each game's penalty rules first — for example, hints reduce points in Jigsaw and Slide Puzzle, and wrong reveals cost you in Minesweeper. Clean, efficient runs always beat frantic ones."
         links={[
           { href: "/leaderboard", label: "View leaderboards", primary: true },
@@ -303,12 +311,12 @@ export default function Guides() {
         icon={CalendarCheck}
         intro={[
           "Every game has a daily challenge: the same puzzle, board, or quiz set is dealt to every player each day, refreshed at 00:00 UTC. It is the fairest way to compare yourself with the whole community.",
-          "Leaderboards rank players on weekly, monthly, and all-time boards — per game and across all twelve games combined. Friend challenges let you send a head-to-head duel to another player on any game.",
+          "Leaderboards rank players on weekly, monthly, and all-time boards — per game and across all thirteen games combined. Friend challenges let you send a head-to-head duel to another player on any game.",
         ]}
         cards={[
-          { title: "Daily challenges", detail: "One shared puzzle or quiz per game per day — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, and all three quizzes each have their own." },
+          { title: "Daily challenges", detail: "One shared puzzle or quiz per game per day — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, and all three quizzes each have their own." },
           { title: "Leaderboards", detail: "Weekly, monthly, and all-time rankings per game plus an all-games board that combines your scores everywhere." },
-          { title: "Friend duels", detail: "Challenge another player to the same round on any of the twelve games — the higher score wins bonus gems." },
+          { title: "Friend duels", detail: "Challenge another player to the same round on any of the thirteen games — the higher score wins bonus gems." },
         ]}
         details="Daily results feed the daily and all-time leaderboards, and completing challenges in a row builds streaks shown on your profile. Each game's daily challenge page also shows today's leaderboard so you can see how your run compares in real time."
         tips="Make the dailies part of your routine — they refresh at 00:00 UTC, so an evening run counts for that day. You can also challenge friends directly from the Challenges page to settle rivalries on your favourite game."
@@ -494,6 +502,28 @@ export default function Guides() {
           { href: "/jumble", label: "Play Jumble Words", primary: true },
           { href: "/jumble-challenge", label: "Daily challenge" },
           { href: "/leaderboard/jumble", label: "Leaderboard" },
+        ]}
+      />
+
+      <GuideSection
+        id="snake"
+        title="Snake guide"
+        themeKey="snake"
+        icon={Snake}
+        intro={[
+          "Snake is the classic Nokia arcade game reborn in the browser. Steer the snake across the grid to eat apples for as long as you can — every meal makes it longer — and the run only ends when you hit a wall or your own tail.",
+          "Choose a level — Easy (12×12), Medium (14×14), Hard (16×16), or Expert (18×18). Levels differ only in grid size and speed; apples are unlimited on every level. Easy and Medium suit Kids mode with slower speeds; Hard and Expert are the fast Adult challenges. Control it with arrow keys or WASD, swipe on touch screens, or use the on-screen pad.",
+        ]}
+        cards={[
+          { title: "Easy / Medium · Kids", detail: "Smaller grids and gentler speeds — learn to plan turns early and leave room for the tail." },
+          { title: "Hard / Expert · Adult", detail: "Bigger boards at high speed demand constant awareness; every wasted turn costs score." },
+        ]}
+        details="Points scale with the level base, food eaten, completion speed, and move efficiency — clean, quick runs earn the most. Completing a round awards XP and gems scaled by level. Daily challenges place the same food sequence for every player each day, and friend challenges compare points head-to-head."
+        tips="Never turn into your own neck — check the direction behind you before committing. On Expert, hug open space and avoid boxing yourself in; the tail follows your exact path, so a tight corner early becomes a trap later. Plan two moves ahead at high speed. Try the daily challenge to race the same food trail as other players."
+        links={[
+          { href: "/snake", label: "Play Snake", primary: true },
+          { href: "/snake-challenge", label: "Daily challenge" },
+          { href: "/leaderboard/snake", label: "Leaderboard" },
         ]}
       />
 

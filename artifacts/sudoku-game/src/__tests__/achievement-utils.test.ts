@@ -38,6 +38,7 @@ describe('ACHIEVEMENT_META', () => {
     const supported = [
       'sudoku', 'memory', 'jigsaw', 'word-search', 'minesweeper',
       'slide-puzzle', 'odd-images', 'science-quiz', 'maths-quiz', 'gk-quiz',
+      'game-2048', 'jumble',
     ];
     for (const a of ACHIEVEMENT_META) {
       expect(supported).toContain(a.game);

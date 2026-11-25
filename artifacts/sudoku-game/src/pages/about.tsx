@@ -1,6 +1,7 @@
 import React from "react";
 import { useLocation } from "wouter";
 import { ArrowLeft, Hash, Type, Palette, Trophy, Flame, BarChart2, Gem, Grid3x3, Brain, Puzzle, Search, Sparkles, Bomb, Grid2x2, Images, FlaskConical, Timer, Swords, LetterText } from "lucide-react";
+import { Snake } from "@/components/snake-icon";
 import { Card, CardContent } from "@/components/ui/card";
 import { usePageMeta } from "@/components/page-meta";
 import { getLegalReturnPath } from "@/lib/legal-navigation";
@@ -60,6 +61,13 @@ const JUMBLE_FEATURES = [
   { icon: Gem, label: "Points, XP, and gems", desc: "Points reward accuracy, speed, and fewer wrong attempts." },
 ];
 
+const SNAKE_FEATURES = [
+  { icon: Snake, label: "Four levels, growing speed", desc: "Kids mode gets the calm 12×12 and 14×14 boards; Adult mode speeds up on 16×16 and 18×18." },
+  { icon: Trophy, label: "Eat and grow", desc: "The classic Nokia snake — every piece of food makes you longer, and your own tail becomes the danger." },
+  { icon: Flame, label: "Daily and friend challenges", desc: "Race the same seeded food trail each day or challenge a friend head-to-head." },
+  { icon: Gem, label: "Points, XP, and gems", desc: "Points reward food eaten, fast finishes, and efficient turns." },
+];
+
 const ODD_IMAGE_FEATURES = [
   { icon: Images, label: "Four grid sizes", desc: "From a quick 3×3 Easy board to a demanding 6×6 Expert grid." },
   { icon: Search, label: "Spot the odd one", desc: "Each grid repeats one picture theme — find the single tile that does not belong." },
@@ -82,9 +90,9 @@ const SHARED_FEATURES = [
 
 export default function About() {
   usePageMeta({
-      title: "About Play Brain Games . Online | Twelve Free Games",
+      title: "About Play Brain Games . Online | Thirteen Free Games",
     description:
-        "Learn how Play Brain Games combines Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, and Science, Maths & GK quizzes with daily challenges, guest play, synced progress, and player support.",
+        "Learn how Play Brain Games combines Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, and Science, Maths & GK quizzes with daily challenges, guest play, synced progress, and player support.",
     path: "/about",
   });
   const [, setLocation] = useLocation();
@@ -102,13 +110,13 @@ export default function About() {
       <div className="bg-card rounded-2xl px-5 py-4 border border-border">
         <h1 className="text-3xl font-serif font-bold tracking-tight">About</h1>
         <p className="text-muted-foreground mt-1">
-          Twelve brain games, reimagined for everyone.
+          Thirteen brain games, reimagined for everyone.
         </p>
       </div>
 
       <div className="space-y-4 text-sm text-muted-foreground leading-relaxed bg-card rounded-2xl border border-border px-5 py-4">
         <p>
-          Play Brain Games . Online is a general-audience, family-friendly collection of Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, and Science, Maths & GK quizzes. It is designed for everyone from first-time players to seasoned experts, with optional child-friendly modes for younger family members. We believe a great puzzle game should be beautiful, fast, and endlessly replayable.
+          Play Brain Games . Online is a general-audience, family-friendly collection of Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, and Science, Maths & GK quizzes. It is designed for everyone from first-time players to seasoned experts, with optional child-friendly modes for younger family members. We believe a great puzzle game should be beautiful, fast, and endlessly replayable.
         </p>
         <p>
           In Sudoku, beyond the standard 9×9, we support child-friendly Baby and Mini grids as well as pro-level 16×16 boards that will challenge experienced players. You can play with numbers, letters, or swappable image themes — keeping every session feeling fresh.
@@ -151,6 +159,14 @@ export default function About() {
           from 5 words on Easy to 12 on Expert, with harder vocabulary as the
           level rises, and skipped words can be revisited before finishing.
           Points reward accuracy, speed, and clean attempts.
+        </p>
+        <p>
+          In Snake, steer the classic Nokia snake across the grid to eat apples
+          for as long as you can — every meal makes it longer, and the run
+          only ends when you crash. Boards run from a calm 12×12 Easy to a
+          fast 18×18 Expert, with Kids and Adult modes controlling which
+          speeds are offered. Points reward apples eaten, fast finishes,
+          and efficient turns.
         </p>
         <p>
           In Odd Images, each grid repeats one picture theme and hides a single
@@ -339,6 +355,27 @@ export default function About() {
 
       <div className="space-y-3 bg-card rounded-2xl border border-border px-5 py-4">
         <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+          <Snake className="w-4 h-4 text-primary" /> Snake
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {SNAKE_FEATURES.map(({ icon: Icon, label, desc }) => (
+            <Card key={label} className="border-border/60">
+              <CardContent className="pt-4 pb-4 flex gap-3 items-start">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3 bg-card rounded-2xl border border-border px-5 py-4">
+        <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
           <Images className="w-4 h-4 text-primary" /> Odd Images
         </h2>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -429,7 +466,7 @@ export default function About() {
           same board. Every other game has a shared daily challenge too —
           Memory Match offers daily and weekly challenges, Jigsaw and Word
           Search share a daily puzzle plus friend challenges, Minesweeper,
-          Slide Puzzle, 2048, Jumble Words, and Odd Images each have a daily
+          Slide Puzzle, 2048, Jumble Words, Snake, and Odd Images each have a daily
           board, grid, or word set, and the Science, Maths &amp; GK quizzes
           each post a shared daily quiz. Weekly,
           monthly, and all-time

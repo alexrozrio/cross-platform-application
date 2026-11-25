@@ -50,6 +50,7 @@ import { MINESWEEPER_LEVELS, type MinesweeperDifficulty } from "@/lib/minesweepe
 import { SLIDE_PUZZLE_LEVELS, type SlidePuzzleDifficulty } from "@/lib/slide-puzzle";
 import { GAME_2048_LEVELS } from "@/lib/game-2048";
 import { JUMBLE_LEVELS } from "@/lib/jumble-words";
+import { SNAKE_LEVELS } from "@/lib/snake";
 import { ODD_IMAGE_LEVELS, ODD_IMAGE_LEVEL_ORDER, type OddImageLevel } from "@/lib/odd-images";
 import { JIGSAW_SIZE_NAMES } from "@/lib/jigsaw-session";
 import { GAME_ICONS, gameIconColor } from "@/lib/game-icons";
@@ -709,6 +710,41 @@ function PointsGuide() {
             </p>
           </div>
 
+          {/* Snake base points table */}
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              🐍 Snake — base points × level
+            </p>
+            <div className="rounded-xl border overflow-hidden text-xs">
+              <div className="grid grid-cols-6 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+                <span>Level</span>
+                <span className="text-center">Mode</span>
+                <span className="text-center">Grid</span>
+                <span className="text-center">Goal</span>
+                <span className="text-center">Base pts</span>
+                <span className="text-center">XP · Gems</span>
+              </div>
+              {[
+                { label: "Easy", mode: "Kids", grid: "12×12", foods: 8, par: "3:00", base: 300, xp: 1, gems: 1, cls: "text-green-700" },
+                { label: "Medium", mode: "Kids", grid: "14×14", foods: 12, par: "5:00", base: 650, xp: 2, gems: 2, cls: "text-blue-700" },
+                { label: "Hard", mode: "Adult", grid: "16×16", foods: 16, par: "7:00", base: 1300, xp: 3, gems: 3, cls: "text-yellow-700" },
+                { label: "Expert", mode: "Adult", grid: "18×18", foods: 20, par: "10:00", base: 2400, xp: 4, gems: 5, cls: "text-orange-700" },
+              ].map((row, i) => (
+                <div key={row.label} className={`grid grid-cols-6 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}>
+                  <span className={`font-semibold ${row.cls}`}>{row.label}</span>
+                  <span className="text-center font-semibold text-muted-foreground">{row.mode}</span>
+                  <span className="text-center font-mono">{row.grid}</span>
+                  <span className="text-center font-mono">{row.foods}</span>
+                  <span className="text-center font-mono">{row.base.toLocaleString()}</span>
+                  <span className="text-center font-mono">{row.xp} XP · {row.gems}💎</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2">
+              score = base × food factor (0.3 + 0.7 × apples eaten ÷ goal, capped) × (1 + time bonus up to +50%) × move-efficiency factor (70–100%) &nbsp;·&nbsp; endless run, min 10 pts.
+            </p>
+          </div>
+
           {/* Odd Images base points table */}
           <div>
             <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
@@ -917,6 +953,7 @@ interface BreakdownData {
   slidePuzzle: { difficulty: string; points: number; games: number }[];
   game2048: { difficulty: string; points: number; games: number }[];
   jumble: { difficulty: string; points: number; games: number }[];
+  snake: { difficulty: string; points: number; games: number }[];
   oddImages: { level: OddImageLevel; points: number; games: number }[];
   quiz?: { subject: string; level: string; points: number; games: number }[];
 }
@@ -946,7 +983,7 @@ const SLIDE_PUZZLE_DIFFICULTY_NAMES: Record<string, string> = {
   "4x4": "15 tiles",
   "5x5": "24 tiles",
 };
-type GameTab = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "odd-images" | "rubiks" | QuizGameId;
+type GameTab = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "snake" | "odd-images" | "rubiks" | QuizGameId;
 
 function BreakdownPanel({
   profileId,
@@ -1019,6 +1056,9 @@ function BreakdownPanel({
           </button>
           <button onClick={() => setBdTab("jumble")} className={`rounded-lg px-3 py-1 text-xs font-semibold transition-colors ${bdTab === "jumble" ? "bg-cyan-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
             🔤 Jumble
+          </button>
+          <button onClick={() => setBdTab("snake")} className={`rounded-lg px-3 py-1 text-xs font-semibold transition-colors ${bdTab === "snake" ? "bg-green-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+            🐍 Snake
           </button>
           <button onClick={() => setBdTab("odd-images")} className={`rounded-lg px-3 py-1 text-xs font-semibold transition-colors ${bdTab === "odd-images" ? "bg-teal-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
             🖼️ Odd Images
@@ -1156,6 +1196,18 @@ function BreakdownPanel({
           ))}
         </div>
       )}
+      {bdTab === "snake" && (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {(data?.snake ?? (["easy", "medium", "hard", "expert"] as const).map((difficulty) => ({ difficulty, points: 0, games: 0 }))).map((item) => (
+            <div key={item.difficulty} className={`rounded-xl border p-2.5 text-center transition-colors ${item.games > 0 ? "border-green-300 bg-background" : "border-border bg-muted/30 opacity-50"}`}>
+              <p className="text-xs font-bold text-foreground">{SNAKE_LEVELS[item.difficulty as keyof typeof SNAKE_LEVELS]?.label ?? item.difficulty}</p>
+              <p className="mt-0.5 text-lg font-black tabular-nums leading-tight text-green-700 dark:text-green-300">{item.points > 0 ? item.points.toLocaleString() : "—"}</p>
+              <p className="mt-0.5 text-[10px] text-muted-foreground">{item.games > 0 ? `${item.games} game${item.games !== 1 ? "s" : ""}` : "no games"}</p>
+              <p className="mt-0.5 text-[9px] text-muted-foreground/80">{SNAKE_LEVELS[item.difficulty as keyof typeof SNAKE_LEVELS] ? `${SNAKE_LEVELS[item.difficulty as keyof typeof SNAKE_LEVELS].gridSize}×${SNAKE_LEVELS[item.difficulty as keyof typeof SNAKE_LEVELS].gridSize} · ${SNAKE_LEVELS[item.difficulty as keyof typeof SNAKE_LEVELS].foods} apples` : ""}</p>
+            </div>
+          ))}
+        </div>
+      )}
       {bdTab === "odd-images" && (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {(data?.oddImages ?? ODD_IMAGE_LEVEL_ORDER.map((level) => ({ level, points: 0, games: 0 }))).map((item) => (
@@ -1240,6 +1292,7 @@ function GameSummaryPanel({
     { id: "slide-puzzle", label: "Slide Puzzle", icon: GAME_ICONS["slide-puzzle"], ...sum(data?.slidePuzzle) },
     { id: "game-2048", label: "2048", icon: GAME_ICONS["game-2048"], ...sum(data?.game2048) },
     { id: "jumble", label: "Jumble Words", icon: GAME_ICONS.jumble, ...sum(data?.jumble) },
+    { id: "snake", label: "Snake", icon: GAME_ICONS.snake, ...sum(data?.snake) },
     { id: "odd-images", label: "Odd Images", icon: GAME_ICONS["odd-images"], ...sum(data?.oddImages) },
     { id: "science-quiz", label: `${QUIZ_SUBJECTS.science.shortName} Quiz`, icon: GAME_ICONS["science-quiz"], ...quizFor("science") },
     { id: "maths-quiz", label: `${QUIZ_SUBJECTS.maths.shortName} Quiz`, icon: GAME_ICONS["maths-quiz"], ...quizFor("maths") },
@@ -1444,7 +1497,7 @@ function TournamentBoard({
                   : `No games yet this ${type === "weekly" ? "week" : "month"}.`}
               </p>
               <p className="text-sm mt-1">
-                Complete games in any title — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Odd Images, or the quizzes — to earn points and climb the rankings!
+                Complete games in any title — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, or the quizzes — to earn points and climb the rankings!
               </p>
             </div>
           ) : (
@@ -2551,12 +2604,92 @@ function JumbleBoard({ myProfileId }: { myProfileId?: number }) {
   </div>;
 }
 
+function SnakeScoringGuide() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="overflow-hidden rounded-2xl border border-green-200/70 dark:border-green-800/40">
+      <button onClick={() => setOpen((value) => !value)} className="flex w-full items-center justify-between bg-card px-5 py-4 text-left transition-colors hover:bg-muted/40">
+        <div>
+          <p className="text-sm font-semibold">How Snake points &amp; XP are calculated</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Apples eaten, speed, and move efficiency all count.</p>
+        </div>
+        {open ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
+      </button>
+      {open && (
+        <div className="space-y-4 border-t border-border bg-muted px-5 py-4 text-sm">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[{ level: "Easy", mode: "Kids", grid: "12×12", foods: 8, par: "3:00", gems: 1 }, { level: "Medium", mode: "Kids", grid: "14×14", foods: 12, par: "5:00", gems: 2 }, { level: "Hard", mode: "Adult", grid: "16×16", foods: 16, par: "7:00", gems: 3 }, { level: "Expert", mode: "Adult", grid: "18×18", foods: 20, par: "10:00", gems: 5 }].map((item) => (
+              <div key={item.level} className="rounded-xl border border-border bg-background p-3">
+                <p className="font-bold">{item.level}</p>
+                <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{item.mode} mode</p>
+                <p className="mt-1 text-xs text-muted-foreground">{item.grid} grid · endless apples</p>
+                <p className="text-xs text-muted-foreground">Par {item.par}</p>
+                <p className="text-xs text-muted-foreground">{item.gems} 💎</p>
+              </div>
+            ))}
+          </div>
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">XP &amp; gems by level</p>
+            <div className="overflow-hidden rounded-xl border border-border text-xs">
+              <div className="grid grid-cols-4 bg-muted-foreground/15 px-3 py-2 text-[10px] font-semibold text-muted-foreground"><span>Level</span><span className="text-center">XP</span><span className="text-center">Gems</span><span className="text-center">Goal</span></div>
+              {Object.values(SNAKE_LEVELS).map((level, index) => (
+                <div key={level.id} className={`grid grid-cols-4 px-3 py-2 ${index % 2 === 0 ? "bg-background" : "bg-muted/20"}`}>
+                  <span className="font-semibold">{level.label} · {level.gridSize}×{level.gridSize}</span>
+                  <span className="text-center font-semibold text-amber-600">{level.xp} XP</span>
+                  <span className="text-center font-mono">{level.gems} 💎</span>
+                  <span className="text-center font-mono">{level.foods}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-lg border border-border bg-background px-4 py-3 text-[11px] text-muted-foreground">
+            <p className="font-semibold text-foreground">Score formula</p>
+            <p className="mt-1 font-mono leading-relaxed">base × food factor × (1 + time bonus) × move-efficiency factor</p>
+            <p className="mt-1 leading-relaxed">Runs are endless — the round ends only when you crash. The food factor scales with apples eaten toward the level goal (up to 1.0× at the goal). Finishing under par time adds up to +50%. Move efficiency scales 70–100% with fewer wasted moves. Minimum score: 10 points. Daily challenges use the same formula with today&apos;s shared board seed.</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+type SnakeLeaderboardEntry = { rank: number; profileId: number; username: string; avatar: string | null; xp: number; totalPoints: number; gamesPlayed: number };
+
+function SnakeBoard({ myProfileId }: { myProfileId?: number }) {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["/api/snake-games/leaderboard"],
+    queryFn: () => customFetch<SnakeLeaderboardEntry[]>("/api/snake-games/leaderboard"),
+    refetchInterval: 60_000,
+  });
+  return <div className="space-y-5">
+    <Card className="shadow-md border-green-200/60 dark:border-green-800/40">
+      <CardHeader className="border-b bg-card pb-4"><CardTitle className="flex items-center gap-2 text-lg">{(() => { const Icon = GAME_ICONS.snake; return <Icon className="h-5 w-5 text-green-600" />; })()} Snake — All Levels</CardTitle></CardHeader>
+      <CardContent className="p-0">
+        {isLoading ? <div className="space-y-4 p-6">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
+          : isError ? <div className="p-10 text-center text-sm text-muted-foreground">Snake leaderboard could not be loaded. Please try again.</div>
+          : !data?.length ? <div className="p-12 text-center text-muted-foreground"><LayoutGrid className="mx-auto mb-3 h-10 w-10 opacity-20" /><p className="font-medium">No completed Snake runs yet.</p><p className="mt-1 text-sm">Eat apples to claim the top spot.</p></div>
+          : <div className="divide-y">{data.map((entry) => {
+            const isMe = myProfileId !== undefined && entry.profileId === myProfileId;
+            return <div key={entry.profileId} className={isMe ? "bg-green-50/70 dark:bg-green-950/20" : ""}>
+              <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4 px-3 py-4 sm:px-5">
+                <RankBadge rank={entry.rank} />
+                <div className="min-w-0 flex-1"><div className="flex min-w-0 flex-wrap items-center gap-2"><p title={entry.username} className={`min-w-0 flex-1 truncate font-semibold ${isMe ? "text-green-800 dark:text-green-300" : ""}`}>{entry.username}</p>{isMe && <span className="rounded-full bg-green-600 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">You</span>}</div><p className="mt-0.5 text-xs text-muted-foreground">{entry.gamesPlayed} game{entry.gamesPlayed !== 1 ? "s" : ""}</p></div>
+                <div className="flex shrink-0 items-center gap-2"><div className="text-right"><p className="whitespace-nowrap text-lg font-black tabular-nums text-green-700 dark:text-green-300 sm:text-xl">{entry.totalPoints.toLocaleString()}</p><p className="mt-0.5 text-xs text-muted-foreground">pts</p></div></div>
+              </div>
+            </div>;
+          })}</div>}
+      </CardContent>
+    </Card>
+    <SnakeScoringGuide />
+  </div>;
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 function LeaderboardScopeLinks({
   active,
 }: {
-  active: "all" | "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "odd-images" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz";
+  active: "all" | "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "snake" | "odd-images" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz";
 }) {
   const [, setLocation] = useLocation();
   const links = ([
@@ -2569,6 +2702,7 @@ function LeaderboardScopeLinks({
     { id: "slide-puzzle", href: "/leaderboard/slide-puzzle/", label: "Slide Puzzle", icon: GAME_ICONS["slide-puzzle"] },
     { id: "game-2048", href: "/leaderboard/game-2048/", label: "2048", icon: GAME_ICONS["game-2048"] },
     { id: "jumble", href: "/leaderboard/jumble/", label: "Jumble Words", icon: GAME_ICONS.jumble },
+    { id: "snake", href: "/leaderboard/snake/", label: "Snake", icon: GAME_ICONS.snake },
     { id: "odd-images", href: "/leaderboard/odd-images/", label: "Odd Images", icon: GAME_ICONS["odd-images"] },
     { id: "rubiks", href: "/leaderboard/rubiks/", label: "Rubik's Cube", icon: GAME_ICONS.rubiks },
     { id: "science-quiz", href: "/leaderboard/science-quiz/", label: "Science Quiz", icon: GAME_ICONS["science-quiz"] },
@@ -2611,7 +2745,7 @@ function LeaderboardScopeLinks({
 }
 
 const PLAY_LINKS: Record<
-  "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "odd-images" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz",
+  "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "snake" | "odd-images" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz",
   { href: string; label: string; ariaLabel: string; icon: typeof Zap; borderClass: string; iconClass: string }
 > = {
   sudoku: { href: "/sudoku", label: "Play Sudoku", ariaLabel: "Play Sudoku", icon: GAME_ICONS.sudoku, borderClass: "border-border", iconClass: "text-primary" },
@@ -2622,6 +2756,7 @@ const PLAY_LINKS: Record<
   "slide-puzzle": { href: "/slide-puzzle", label: "Slide Puzzle", ariaLabel: "Play Slide Puzzle", icon: GAME_ICONS["slide-puzzle"], borderClass: "border-sky-200 dark:border-sky-800", iconClass: "text-sky-600" },
   "game-2048": { href: "/game-2048", label: "2048", ariaLabel: "Play 2048", icon: GAME_ICONS["game-2048"], borderClass: "border-orange-200 dark:border-orange-800", iconClass: "text-orange-600" },
   jumble: { href: "/jumble", label: "Jumble Words", ariaLabel: "Play Jumble Words", icon: GAME_ICONS.jumble, borderClass: "border-cyan-200 dark:border-cyan-800", iconClass: "text-cyan-600" },
+  snake: { href: "/snake", label: "Snake", ariaLabel: "Play Snake", icon: GAME_ICONS.snake, borderClass: "border-green-200 dark:border-green-800", iconClass: "text-green-600" },
   "odd-images": { href: "/odd-images", label: "Odd Images", ariaLabel: "Play Odd Images", icon: GAME_ICONS["odd-images"], borderClass: "border-teal-200 dark:border-teal-800", iconClass: "text-teal-600" },
   rubiks: { href: "/rubiks", label: "Rubik's Cube", ariaLabel: "Play Rubik's Cube", icon: GAME_ICONS.rubiks, borderClass: "border-rose-200 dark:border-rose-800", iconClass: "text-rose-600" },
   "science-quiz": { href: "/quiz/science", label: "Science Quiz", ariaLabel: "Play Science Quiz", icon: GAME_ICONS["science-quiz"], borderClass: "border-violet-200 dark:border-violet-800", iconClass: "text-violet-600" },
@@ -2632,13 +2767,13 @@ const PLAY_LINKS: Record<
 export default function Leaderboard({
   gamePage: routeGamePage,
 }: {
-  gamePage?: "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "odd-images" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz";
+  gamePage?: "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "snake" | "odd-images" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz";
 } = {}) {
   const search = useSearch();
   const requestedTab = new URLSearchParams(search).get("tab");
   const gamePage =
     routeGamePage ??
-    (requestedTab === "sudoku" || requestedTab === "memory" || requestedTab === "jigsaw" || requestedTab === "word-search" || requestedTab === "minesweeper" || requestedTab === "slide-puzzle" || requestedTab === "game-2048" || requestedTab === "jumble" || requestedTab === "odd-images" || requestedTab === "rubiks" || requestedTab === "science-quiz" || requestedTab === "maths-quiz" || requestedTab === "gk-quiz" ? requestedTab : null);
+    (requestedTab === "sudoku" || requestedTab === "memory" || requestedTab === "jigsaw" || requestedTab === "word-search" || requestedTab === "minesweeper" || requestedTab === "slide-puzzle" || requestedTab === "game-2048" || requestedTab === "jumble" || requestedTab === "snake" || requestedTab === "odd-images" || requestedTab === "rubiks" || requestedTab === "science-quiz" || requestedTab === "maths-quiz" || requestedTab === "gk-quiz" ? requestedTab : null);
   const initialTab: MainTab =
     requestedTab === "monthly" || requestedTab === "alltime"
       ? requestedTab
@@ -2661,6 +2796,8 @@ export default function Leaderboard({
                   ? "2048 Leaderboard | Play Brain Games . Online"
                 : gamePage === "jumble"
                   ? "Jumble Words Leaderboard | Play Brain Games . Online"
+                : gamePage === "snake"
+                  ? "Snake Leaderboard | Play Brain Games . Online"
                 : gamePage === "odd-images"
                   ? "Odd Images Leaderboard | Play Brain Games . Online"
                 : gamePage === "rubiks"
@@ -2689,6 +2826,8 @@ export default function Leaderboard({
                   ? "Compare all-time 2048 points across every board size on Play Brain Games . Online."
                 : gamePage === "jumble"
                   ? "Compare all-time Jumble Words points across every level on Play Brain Games . Online."
+                : gamePage === "snake"
+                  ? "Compare all-time Snake points across every level on Play Brain Games . Online."
                 : gamePage === "odd-images"
                   ? "Compare all-time Odd Images points across every level on Play Brain Games . Online."
                 : gamePage === "rubiks"
@@ -2722,6 +2861,8 @@ export default function Leaderboard({
                 ? "2048 Leaderboard"
               : gamePage === "jumble"
                 ? "Jumble Words Leaderboard"
+              : gamePage === "snake"
+                ? "Snake Leaderboard"
               : gamePage === "odd-images"
                 ? "Odd Images Leaderboard"
               : gamePage === "rubiks"
@@ -2750,6 +2891,8 @@ export default function Leaderboard({
                 ? "All-time points across every 2048 board size."
               : gamePage === "jumble"
                 ? "All-time points across every Jumble Words level."
+              : gamePage === "snake"
+                ? "All-time points across every Snake level."
               : gamePage === "odd-images"
                 ? "All-time points across every Odd Images level."
               : gamePage === "rubiks"
@@ -2811,6 +2954,8 @@ export default function Leaderboard({
         <Game2048Board myProfileId={myProfileId} />
       ) : gamePage === "jumble" ? (
         <JumbleBoard myProfileId={myProfileId} />
+      ) : gamePage === "snake" ? (
+        <SnakeBoard myProfileId={myProfileId} />
       ) : gamePage === "odd-images" ? (
         <OddImagesBoard myProfileId={myProfileId} />
       ) : gamePage === "rubiks" ? (

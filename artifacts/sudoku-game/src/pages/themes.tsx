@@ -155,7 +155,7 @@ export default function Themes() {
   usePageMeta({
     title: "Game Themes | Play Brain Games . Online",
     description:
-      "Personalise your games with curated colour palettes, system-provided backgrounds, fonts, and image-symbol sets used across Sudoku, Memory Match, Jigsaw, Word Search, Slide Puzzle, 2048, Jumble Words, Odd Images, and the quizzes. Preview styles and unlock selected themes with gems.",
+      "Personalise your games with curated colour palettes, system-provided backgrounds, fonts, and image-symbol sets used across Sudoku, Memory Match, Jigsaw, Word Search, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, and the quizzes. Preview styles and unlock selected themes with gems.",
     path: "/themes",
   });
   const { profileId } = useAuth();
