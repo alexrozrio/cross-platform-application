@@ -13,7 +13,7 @@ import { shareOrDownloadShareCard } from "@/lib/share-card";
 import { getLevelFromXp } from "@/lib/levels";
 import { toast } from "sonner";
 import { ACHIEVEMENT_COMPLETION_EVENT } from "@/lib/achievement-events";
-import { MEMORY_ORDER_LEVEL_ORDER, MEMORY_ORDER_LEVELS, memoryOrderRound, type MemoryOrderLevel, type MemoryOrderQuestion } from "@/lib/memory-order";
+import { MEMORY_ORDER_COLOR_THEME, MEMORY_ORDER_LETTER_THEME, MEMORY_ORDER_LEVEL_ORDER, MEMORY_ORDER_LEVELS, MEMORY_ORDER_NUMBER_THEME, memoryOrderRound, type MemoryOrderLevel, type MemoryOrderQuestion } from "@/lib/memory-order";
 import { getMemoryOrderHistory, recordMemoryOrderCompletion, summarizeMemoryOrderStats } from "@/lib/memory-order-stats";
 import { useInterstitialAfterGame } from "@/lib/interstitial-ads";
 import { useRewardedInterstitialTip } from "@/lib/rewarded-interstitial-tips";
@@ -25,6 +25,60 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { MobileContentDisclosure } from "@/components/mobile-content-disclosure";
 
 const SAVE_KEY = "brain-games-memory-order-session";
+const DISPLAY_MODE_KEY = "brain-games-memory-order-display";
+type MemoryOrderDisplayMode = "images" | "colors" | "numbers" | "letters";
+
+function displayModeForTheme(themeId: string): MemoryOrderDisplayMode {
+  if (themeId === MEMORY_ORDER_COLOR_THEME) return "colors";
+  if (themeId === MEMORY_ORDER_NUMBER_THEME) return "numbers";
+  if (themeId === MEMORY_ORDER_LETTER_THEME) return "letters";
+  return "images";
+}
+
+function themeForDisplayMode(mode: MemoryOrderDisplayMode, imageThemeId: string): string {
+  if (mode === "colors") return MEMORY_ORDER_COLOR_THEME;
+  if (mode === "numbers") return MEMORY_ORDER_NUMBER_THEME;
+  if (mode === "letters") return MEMORY_ORDER_LETTER_THEME;
+  return imageThemeId;
+}
+
+function displayItemName(mode: MemoryOrderDisplayMode): string {
+  return mode === "colors" ? "colors" : mode === "numbers" ? "numbers" : mode === "letters" ? "letters" : "images";
+}
+
+function isValidMemoryOrderTheme(themeId: string | null | undefined): themeId is string {
+  return displayModeForTheme(themeId ?? "") !== "images" || IMAGE_THEMES.some((theme) => theme.id === themeId);
+}
+
+function memoryOrderColor(seed: number, value: number): string {
+  const hue = ((seed % 360) + value * 137.508) % 360;
+  return `hsl(${hue} 78% 52%)`;
+}
+
+function memoryOrderNumber(seed: number, value: number): number {
+  return ((seed % 90 + value * 37) % 90) + 10;
+}
+
+function memoryOrderLetter(seed: number, value: number): string {
+  return String.fromCharCode(65 + ((seed % 26 + value * 7) % 26));
+}
+
+function memoryOrderLevelDetail(level: MemoryOrderLevel, mode: MemoryOrderDisplayMode): string {
+  const detail = MEMORY_ORDER_LEVELS[level].detail;
+  return detail.replace("images", displayItemName(mode));
+}
+
+function MemoryOrderStimulus({ themeId, value, seed, size }: { themeId: string; value: number; seed: number; size: number }) {
+  const displayMode = displayModeForTheme(themeId);
+  if (displayMode === "colors") {
+    return <span aria-hidden="true" className="block rounded-[24%] shadow-inner ring-1 ring-black/10" style={{ width: size, height: size, backgroundColor: memoryOrderColor(seed, value) }} />;
+  }
+  if (displayMode === "numbers" || displayMode === "letters") {
+    const label = displayMode === "numbers" ? memoryOrderNumber(seed, value) : memoryOrderLetter(seed, value);
+    return <span aria-hidden="true" className="font-black leading-none text-violet-700 dark:text-violet-300" style={{ fontSize: Math.floor(size * 0.62) }}>{label}</span>;
+  }
+  return <ThemeIcon themeId={themeId} value={value} size={size} />;
+}
 
 type SavedGame = {
   level: MemoryOrderLevel;
@@ -73,7 +127,7 @@ function loadSaved(): SavedGame | null {
       // re-memorizes the sequence instead of continuing mid-answer.
       value.phase = "view";
       value.picks = [];
-      value.themeId = IMAGE_THEMES.some((theme) => theme.id === value.themeId) ? value.themeId : "shapes";
+      value.themeId = isValidMemoryOrderTheme(value.themeId) ? value.themeId : "shapes";
       return value;
     }
   } catch { /* Ignore an unavailable or invalid save. */ }
@@ -90,6 +144,20 @@ export default function MemoryOrderPage() {
   const { data: profile, isLoading: profileLoading } = useGetProfile(profileId as number);
   const queryClient = useQueryClient();
   const { themeId: imageThemeId, setThemeId } = useImageTheme();
+  const [displayMode, setDisplayMode] = React.useState<MemoryOrderDisplayMode>(() => {
+    try {
+      const saved = localStorage.getItem(DISPLAY_MODE_KEY);
+      return saved === "colors" || saved === "numbers" || saved === "letters" ? saved : "images";
+    } catch {
+      return "images";
+    }
+  });
+  const selectDisplayMode = (mode: MemoryOrderDisplayMode) => {
+    setDisplayMode(mode);
+    try {
+      localStorage.setItem(DISPLAY_MODE_KEY, mode);
+    } catch { /* The preference is optional when browser storage is disabled. */ }
+  };
   const sounds = useSound(profile?.soundEnabled);
   const gameMode = profile?.gameMode ?? "4all";
   const levels = MEMORY_ORDER_LEVEL_ORDER.filter((level) =>
@@ -122,7 +190,7 @@ export default function MemoryOrderPage() {
 
   usePageMeta({
     title: "Memory Order Game | Play Brain Games",
-    description: "Memorize the order of images, then tap them back in sequence. Play free Memory Order puzzles from Easy to Expert.",
+    description: "Memorize the order of themed images or random colors, numbers, and letters, then tap them back in sequence. Play free Memory Order puzzles from Easy to Expert.",
     path: "/memory-order",
   });
 
@@ -132,6 +200,7 @@ export default function MemoryOrderPage() {
     if (saved && (query.get("resume") === "1" || query.get("play") === "1")) {
       setGame(saved);
       setElapsed(saved.elapsed);
+      selectDisplayMode(displayModeForTheme(saved.themeId));
     }
     // The mount reads the browser's local save once; location state is encoded in the URL.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -271,13 +340,14 @@ export default function MemoryOrderPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finishRound]);
 
-  const startGame = (level: MemoryOrderLevel, themeId: string = imageThemeId, dailyDate?: string, seed?: number, existingGameId?: number, challengeId?: number) => {
+  const startGame = (level: MemoryOrderLevel, themeId: string = themeForDisplayMode(displayMode, imageThemeId), dailyDate?: string, seed?: number, existingGameId?: number, challengeId?: number) => {
     sounds.click();
+    selectDisplayMode(displayModeForTheme(themeId));
     const gameSeed = seed ?? (Math.floor(Math.random() * 2_147_483_646) + 1);
     const savedAt = Date.now();
     const nextGame: SavedGame = {
       level,
-      themeId: IMAGE_THEMES.some((theme) => theme.id === themeId) ? themeId : "shapes",
+      themeId: isValidMemoryOrderTheme(themeId) ? themeId : "shapes",
       questions: memoryOrderRound(level, gameSeed),
       answers: [],
       index: 0,
@@ -336,7 +406,7 @@ export default function MemoryOrderPage() {
     const level = MEMORY_ORDER_LEVEL_ORDER.includes(requestedLevel as MemoryOrderLevel) ? requestedLevel as MemoryOrderLevel : levels[0];
     if (!level) return;
     const requestedTheme = query.get("theme");
-    const themeId = IMAGE_THEMES.some((theme) => theme.id === requestedTheme) ? requestedTheme! : imageThemeId;
+    const themeId = isValidMemoryOrderTheme(requestedTheme) ? requestedTheme : imageThemeId;
     const seedValue = Number(query.get("seed"));
     const dailyDate = query.get("dailyDate");
     const existingGameId = Number(query.get("gameId"));
@@ -484,7 +554,11 @@ export default function MemoryOrderPage() {
   // ---------- Result screen ----------
   if (game && game.status === "done") {
     const doneConfig = MEMORY_ORDER_LEVELS[game.level];
-    const theme = getTheme(game.themeId);
+    const themeLabel = displayModeForTheme(game.themeId) === "images"
+      ? getTheme(game.themeId).name
+      : displayModeForTheme(game.themeId) === "colors"
+        ? "Random colors"
+        : displayModeForTheme(game.themeId) === "numbers" ? "Random numbers" : "Random letters";
     return <main className="mx-auto w-full max-w-lg space-y-4 px-3 py-5 sm:px-6 sm:py-8">
       {showConfetti && <Confetti />}
       <section className="relative isolate overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-500 p-5 text-center text-white shadow-xl shadow-violet-500/20 sm:p-6">
@@ -494,7 +568,7 @@ export default function MemoryOrderPage() {
           <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-white/20 text-3xl"><Eye className="h-7 w-7" /></div>
           <p className="text-[10px] font-bold uppercase tracking-[.2em] text-white/75">{game.dailyDate ? "Daily Memory Order complete" : "Memory Order complete"}</p>
           <h1 className="font-serif text-2xl font-bold sm:text-3xl">You recalled {game.correct} sequence{game.correct === 1 ? "" : "s"}!</h1>
-          <p className="text-sm text-white/85">{theme.name} · {doneConfig.label} · {doneConfig.detail} · {fmt(elapsed)}</p>
+          <p className="text-sm text-white/85">{themeLabel} · {doneConfig.label} · {memoryOrderLevelDetail(game.level, displayModeForTheme(game.themeId))} · {fmt(elapsed)}</p>
           {game.dailyDate && <p className="text-sm font-semibold text-white/90">📅 Today&apos;s shared daily puzzle</p>}
           {reward?.isPersonalBest && <p className="pt-1 text-sm font-bold text-amber-100">🏆 New personal best!</p>}
           {game.challengeId && <p className="pt-1 text-sm font-bold text-white">⚔️ Challenge score submitted</p>}
@@ -512,15 +586,18 @@ export default function MemoryOrderPage() {
             const active = level === game.level;
             return <button key={level} type="button" onClick={() => startGame(level, game.themeId)} className={`min-h-14 rounded-xl border-2 px-3 py-2 text-left transition ${active ? "border-violet-500 bg-violet-50 dark:bg-violet-950/30" : "border-border hover:border-violet-300 hover:bg-violet-50/60 dark:hover:bg-violet-950/20"}`}>
               <span className="block text-sm font-bold">{option.label}{active ? " · Current" : ""}</span>
-              <span className="mt-0.5 block text-xs text-muted-foreground">{option.detail}</span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">{memoryOrderLevelDetail(level, displayModeForTheme(game.themeId))}</span>
             </button>;
           })}
         </div>
         <label className="block space-y-1.5">
-          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Theme</span>
-          <select value={game.themeId} onChange={(event) => startGame(game.level, event.target.value)} className="w-full rounded-lg border border-violet-200 bg-background px-3 py-2.5 text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-violet-400 dark:border-violet-800">
-            {IMAGE_THEMES.map((theme) => <option key={theme.id} value={theme.id}>{theme.name}</option>)}
-          </select>
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Display style</span>
+        <select value={game.themeId} onChange={(event) => startGame(game.level, event.target.value)} className="w-full rounded-lg border border-violet-200 bg-background px-3 py-2.5 text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-violet-400 dark:border-violet-800">
+          <option value={MEMORY_ORDER_COLOR_THEME}>Random colors</option>
+          <option value={MEMORY_ORDER_NUMBER_THEME}>Random numbers</option>
+          <option value={MEMORY_ORDER_LETTER_THEME}>Random letters</option>
+          {IMAGE_THEMES.map((theme) => <option key={theme.id} value={theme.id}>{theme.name} images</option>)}
+        </select>
         </label>
         {!game.dailyDate && !game.challengeId && <Button variant="outline" className="w-full gap-2" onClick={() => setLocation("/memory-order-challenge")}><Flame className="h-4 w-4"/> Try today&apos;s daily challenge</Button>}
         <div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-4">
@@ -578,15 +655,24 @@ export default function MemoryOrderPage() {
             <div aria-hidden="true" className="pointer-events-none absolute -bottom-8 -left-8 h-24 w-24 rounded-full bg-purple-300/25 blur-2xl dark:bg-purple-400/10" />
             <div className="relative z-10 mb-4 hidden items-center gap-3 rounded-xl border border-violet-200/70 bg-white/65 px-3 py-3 dark:border-violet-800/50 dark:bg-slate-950/20 sm:flex">
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-violet-500/15 text-2xl"><Eye className="h-6 w-6 text-violet-600" /></span>
-              <div className="min-w-0 flex-1"><h2 className="font-serif text-lg font-bold">Ready to remember the order?</h2><p className="text-xs leading-relaxed text-muted-foreground">Watch the images appear in sequence, then tap them back in the same order.</p></div>
-              <div className="hidden grid-cols-5 gap-1 rounded-lg border border-violet-200/70 bg-white/70 p-1 sm:grid dark:border-violet-800/50 dark:bg-slate-950/30">{[1, 2, 3, 4, 5].map((value) => <span key={value} className="grid h-5 w-5 place-items-center rounded bg-violet-500/10"><ThemeIcon themeId={getTheme(imageThemeId).id} value={value} size={14} /></span>)}</div>
+              <div className="min-w-0 flex-1"><h2 className="font-serif text-lg font-bold">Ready to remember the order?</h2><p className="text-xs leading-relaxed text-muted-foreground">Watch {displayItemName(displayMode)} appear in sequence, then tap them back in the same order.</p></div>
+              <div className="hidden grid-cols-5 gap-1 rounded-lg border border-violet-200/70 bg-white/70 p-1 sm:grid dark:border-violet-800/50 dark:bg-slate-950/30">{[1, 2, 3, 4, 5].map((value) => <span key={value} className="grid h-5 w-5 place-items-center rounded bg-violet-500/10"><MemoryOrderStimulus themeId={themeForDisplayMode(displayMode, imageThemeId)} value={value} seed={1} size={14} /></span>)}</div>
             </div>
             <div className="relative z-10 mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-violet-200/70 bg-white/65 px-3 py-2 dark:border-violet-800/50 dark:bg-slate-950/20">
+              <div><p className="text-xs font-semibold uppercase tracking-widest text-violet-700 dark:text-violet-300">Display style</p><p className="mt-0.5 hidden text-[11px] text-muted-foreground sm:block">Choose images, colors, numbers, or letters</p></div>
+              <select value={displayMode} onChange={(event) => selectDisplayMode(event.target.value as MemoryOrderDisplayMode)} aria-label="Choose display style" className="rounded-lg border border-violet-200 bg-background px-2.5 py-1.5 text-xs font-semibold text-foreground shadow-sm outline-none focus:ring-2 focus:ring-violet-400 dark:border-violet-800 sm:text-sm">
+                <option value="images">Images</option>
+                <option value="colors">Random colors</option>
+                <option value="numbers">Random numbers</option>
+                <option value="letters">Random letters</option>
+              </select>
+            </div>
+            {displayMode === "images" && <div className="relative z-10 mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-violet-200/70 bg-white/65 px-3 py-2 dark:border-violet-800/50 dark:bg-slate-950/20">
               <div><p className="text-xs font-semibold uppercase tracking-widest text-violet-700 dark:text-violet-300">Image set</p><p className="mt-0.5 hidden text-[11px] text-muted-foreground sm:block">Applied to your next Memory Order game</p></div>
               <select value={imageThemeId} onChange={(event) => setThemeId(event.target.value as ThemeId)} aria-label="Choose image set" className="rounded-lg border border-violet-200 bg-background px-2.5 py-1.5 text-xs font-semibold text-foreground shadow-sm outline-none focus:ring-2 focus:ring-violet-400 dark:border-violet-800 sm:text-sm">
                 {IMAGE_THEMES.map((theme) => <option key={theme.id} value={theme.id}>{theme.name}</option>)}
               </select>
-            </div>
+            </div>}
             <p className="relative z-10 mb-2 hidden text-xs font-semibold uppercase tracking-widest text-violet-700 dark:text-violet-300 sm:block">Choose Level</p>
             <div className="relative z-10 grid grid-cols-2 gap-2 sm:gap-2.5">
               {levels.map((level) => {
@@ -594,7 +680,7 @@ export default function MemoryOrderPage() {
                 return <button key={level} onClick={() => startGame(level)} className="group flex min-h-[72px] sm:min-h-[92px] flex-col items-center justify-center gap-1 rounded-2xl border-2 border-violet-200/80 bg-gradient-to-br from-violet-50 to-purple-50 p-2 text-center shadow-sm sm:p-3 transition-all hover:-translate-y-0.5 hover:border-violet-400 hover:shadow-md active:scale-[0.98] dark:border-violet-800/60 dark:from-violet-950/45 dark:to-purple-950/40">
                   <span className="grid h-8 w-8 place-items-center sm:h-9 sm:w-9 rounded-xl bg-violet-500/10 text-violet-600 group-hover:bg-violet-500/20"><Eye className="h-5 w-5" /></span>
                   <span className="text-sm font-bold leading-tight">{option.label}</span>
-                  <span className="text-[10px] leading-tight text-muted-foreground">{option.detail}</span>
+                  <span className="text-[10px] leading-tight text-muted-foreground">{memoryOrderLevelDetail(level, displayMode)}</span>
                 </button>;
               })}
             </div>
@@ -623,23 +709,23 @@ export default function MemoryOrderPage() {
               <div>
                 <h2 className="font-serif text-xl font-bold text-foreground">How to play and improve at Memory Order</h2>
                 <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-                  Each round shows a sequence of images for a few seconds. When
-                  the grid appears, tap the images back in the exact order you
+                  Each round shows a sequence of {displayItemName(displayMode)} for a few seconds. When
+                  the grid appears, tap them back in the exact order you
                   saw them.
                 </p>
               </div>
               <div className="grid gap-4 text-sm leading-relaxed text-muted-foreground sm:grid-cols-2">
                 <article>
                   <h3 className="font-semibold text-foreground">Chunk the sequence</h3>
-                  <p className="mt-1">Group the images into pairs or small chunks while watching — “first two, next two” is easier to recall than one long list, especially on Hard and Expert.</p>
+                  <p className="mt-1">Group the {displayItemName(displayMode)} into pairs or small chunks while watching — “first two, next two” is easier to recall than one long list, especially on Hard and Expert.</p>
                 </article>
                 <article>
                   <h3 className="font-semibold text-foreground">Pick the right level</h3>
-                  <p className="mt-1">Easy shows 4 images for 12 seconds across 3 rounds, Medium 5 images for 10 seconds across 4, Hard 6 images for 8 seconds across 5, and Expert 8 images for 7 seconds across 6.</p>
+                  <p className="mt-1">Easy shows 4 {displayItemName(displayMode)} for 12 seconds across 3 rounds, Medium 5 for 10 seconds across 4, Hard 6 for 9 seconds across 5, and Expert 8 for 8 seconds across 6.</p>
                 </article>
                 <article>
-                  <h3 className="font-semibold text-foreground">Use the image theme</h3>
-                  <p className="mt-1">The game uses your selected picture theme. Practicing with familiar icons makes the sequence easier to visualize before switching themes.</p>
+                  <h3 className="font-semibold text-foreground">Choose your display style</h3>
+                  <p className="mt-1">Choose themed images or randomly generated colors, numbers, or letters. Each item stays linked to its place in the sequence for the whole game.</p>
                 </article>
                 <article>
                   <h3 className="font-semibold text-foreground">Understand your score</h3>
@@ -656,12 +742,12 @@ export default function MemoryOrderPage() {
                 <DialogTitle className="flex items-center gap-2"><BookOpen className="h-5 w-5 text-violet-600" /> Rules</DialogTitle>
               </DialogHeader>
               <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">
-                <p>Memory Order is a visual memory game. Each round shows a sequence of images; you must tap them back in the same order.</p>
+                <p>Memory Order is a visual memory game. Each round shows a sequence of images, colors, numbers, or letters; tap them back in the same order.</p>
                 <ul className="list-none space-y-2">
                   {[
                     "Choose a level — each has its own sequence length, view time, and round count.",
-                    "Watch the images appear in order during the view phase.",
-                    "When the grid appears, tap the images in the order you remember.",
+                    "Watch the images, colors, numbers, or letters appear in order during the view phase.",
+                    "When the grid appears, tap them in the order you remember.",
                     "A sequence only counts as correct when every image is tapped in the exact order.",
                     "Finish every round to complete the game and earn points, XP, and gems.",
                   ].map((rule, index) => (
@@ -688,7 +774,7 @@ export default function MemoryOrderPage() {
                   <div className="space-y-1.5 text-muted-foreground">
                     {[
                       ["Watch", "Memorize the image order during the view phase"],
-                      ["Click / tap an image", "Place it in your answer order"],
+                      ["Click / tap an item", "Place it in your answer order"],
                       ["Hint", "Highlights the next image you should tap"],
                       ["Resume button", "Continue an unfinished Memory Order game"],
                       ["Daily Memory Order", "Play today's shared seed"],
@@ -762,8 +848,11 @@ export default function MemoryOrderPage() {
                 <select aria-label="Memory Order level" title="Changing options starts a new puzzle" value={game.level} onChange={(event) => startGame(event.target.value as MemoryOrderLevel, game.themeId)} className="h-8 w-[5rem] shrink-0 rounded-lg border border-violet-200 bg-background px-1.5 text-[11px] font-semibold text-foreground outline-none focus:ring-2 focus:ring-violet-400 dark:border-violet-800 sm:w-auto sm:px-2">
                   {levels.map((level) => <option key={level} value={level}>{MEMORY_ORDER_LEVELS[level].label}</option>)}
                 </select>
-                <select aria-label="Memory Order theme" title="Changing options starts a new puzzle" value={game.themeId} onChange={(event) => startGame(game.level, event.target.value)} className="h-8 min-w-0 flex-1 rounded-lg border border-violet-200 bg-background px-1.5 text-[11px] font-semibold text-foreground outline-none focus:ring-2 focus:ring-violet-400 dark:border-violet-800 sm:flex-none sm:px-2">
-                  {IMAGE_THEMES.map((theme) => <option key={theme.id} value={theme.id}>{theme.name}</option>)}
+                <select aria-label="Memory Order display style" title="Changing options starts a new puzzle" value={game.themeId} onChange={(event) => startGame(game.level, event.target.value)} className="h-8 min-w-0 flex-1 rounded-lg border border-violet-200 bg-background px-1.5 text-[11px] font-semibold text-foreground outline-none focus:ring-2 focus:ring-violet-400 dark:border-violet-800 sm:flex-none sm:px-2">
+                  <option value={MEMORY_ORDER_COLOR_THEME}>Random colors</option>
+                  <option value={MEMORY_ORDER_NUMBER_THEME}>Random numbers</option>
+                  <option value={MEMORY_ORDER_LETTER_THEME}>Random letters</option>
+                  {IMAGE_THEMES.map((theme) => <option key={theme.id} value={theme.id}>{theme.name} images</option>)}
                 </select>
               </>
             )}
@@ -781,7 +870,7 @@ export default function MemoryOrderPage() {
                     {question.sequence.map((value, position) => (
                       <div key={position} className="flex flex-col items-center gap-1">
                         <div className="grid h-14 w-14 place-items-center rounded-2xl border-2 border-violet-300 bg-white shadow-sm dark:border-violet-700 dark:bg-slate-950/60 sm:h-16 sm:w-16">
-                          <ThemeIcon themeId={game.themeId} value={value} size={iconSize} />
+                          <MemoryOrderStimulus themeId={game.themeId} value={value} seed={game.seed} size={iconSize} />
                         </div>
                         <span className="text-[10px] font-bold tabular-nums text-violet-500">{position + 1}</span>
                       </div>
@@ -823,13 +912,13 @@ export default function MemoryOrderPage() {
                       const isHinted = hintTile === tileIndex && !picked;
                       return <button key={tileIndex} type="button" onClick={() => pickTile(tileIndex)} disabled={picked}
                         className={`relative flex aspect-square items-center justify-center rounded-2xl border-2 transition ${picked ? rightSpot ? "border-emerald-500 bg-emerald-50 shadow-md dark:bg-emerald-950/40" : "border-rose-500 bg-rose-50 shadow-md dark:bg-rose-950/40" : isHinted ? "border-amber-400 bg-amber-50 shadow-lg ring-4 ring-amber-300/70 animate-pulse dark:bg-amber-950/30 dark:ring-amber-500/40" : "border-border bg-white hover:border-violet-400 hover:bg-violet-50/70 dark:bg-slate-950/50 dark:hover:border-violet-600 dark:hover:bg-violet-950/30"} ${picked ? "cursor-default" : "cursor-pointer"}`}
-                        aria-label={`Image option ${tileIndex + 1}`}>
-                        <ThemeIcon themeId={game.themeId} value={value} size={iconSize} />
+                        aria-label={`${displayModeForTheme(game.themeId) === "images" ? "Image" : displayModeForTheme(game.themeId) === "colors" ? "Color" : displayModeForTheme(game.themeId) === "numbers" ? "Number" : "Letter"} option ${tileIndex + 1}`}>
+                        <MemoryOrderStimulus themeId={game.themeId} value={value} seed={game.seed} size={iconSize} />
                         {picked && <span className={`absolute -right-1.5 -top-1.5 grid h-6 w-6 place-items-center rounded-full text-[11px] font-black text-white shadow ${rightSpot ? "bg-emerald-500" : "bg-rose-500"}`}>{pickPosition + 1}</span>}
                       </button>;
                     })}
                   </div>
-                  <p className="text-center text-xs text-muted-foreground">Green numbers mark images in the right spot. Finish all {question.sequence.length} taps to move on.</p>
+                  <p className="text-center text-xs text-muted-foreground">Green numbers mark items in the right spot. Finish all {question.sequence.length} taps to move on.</p>
                 </div>
               )}
             </CardContent>
@@ -843,10 +932,10 @@ export default function MemoryOrderPage() {
             <h2 className="text-sm font-bold">Current puzzle</h2>
             <div className="mt-3 space-y-2 text-sm">
               <div className="flex items-center justify-between"><span className="text-muted-foreground">Level</span><span className="font-semibold">{config.label}</span></div>
-              <div className="flex items-center justify-between"><span className="text-muted-foreground">Sequence</span><span className="font-semibold">{config.sequenceLength} images</span></div>
+              <div className="flex items-center justify-between"><span className="text-muted-foreground">Sequence</span><span className="font-semibold">{config.sequenceLength} {displayItemName(displayModeForTheme(game.themeId))}</span></div>
               <div className="flex items-center justify-between"><span className="text-muted-foreground">View time</span><span className="font-semibold">{config.viewSeconds}s</span></div>
               <div className="flex items-center justify-between"><span className="text-muted-foreground">Rounds</span><span className="font-semibold">{game.questions.length}</span></div>
-              <div className="flex items-center justify-between"><span className="text-muted-foreground">Theme</span><span className="font-semibold">{getTheme(game.themeId).name}</span></div>
+              <div className="flex items-center justify-between"><span className="text-muted-foreground">Display</span><span className="font-semibold">{displayModeForTheme(game.themeId) === "images" ? getTheme(game.themeId).name : `Random ${displayItemName(displayModeForTheme(game.themeId))}`}</span></div>
             </div>
           </div>
           {!game.dailyDate && !game.challengeId && (
@@ -858,14 +947,17 @@ export default function MemoryOrderPage() {
                   const active = level === game.level;
                   return <button key={level} type="button" onClick={() => startGame(level, game.themeId)} className={`min-h-11 rounded-lg border-2 px-2 py-2 text-left text-xs font-semibold transition ${active ? "border-violet-500 bg-violet-50 text-violet-800 dark:bg-violet-950/30 dark:text-violet-200" : "border-border hover:border-violet-300"}`}>
                     <span className="block">{option.label}{active ? " · Current" : ""}</span>
-                    <span className="mt-0.5 block text-[10px] font-normal text-muted-foreground">{option.detail}</span>
+                    <span className="mt-0.5 block text-[10px] font-normal text-muted-foreground">{memoryOrderLevelDetail(level, displayModeForTheme(game.themeId))}</span>
                   </button>;
                 })}
               </div>
               <label className="mt-3 block space-y-1.5">
-                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Theme</span>
+                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Display style</span>
                 <select value={game.themeId} onChange={(event) => startGame(game.level, event.target.value)} className="w-full rounded-lg border border-violet-200 bg-background px-3 py-2 text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-violet-400 dark:border-violet-800">
-                  {IMAGE_THEMES.map((theme) => <option key={theme.id} value={theme.id}>{theme.name}</option>)}
+                  <option value={MEMORY_ORDER_COLOR_THEME}>Random colors</option>
+                  <option value={MEMORY_ORDER_NUMBER_THEME}>Random numbers</option>
+                  <option value={MEMORY_ORDER_LETTER_THEME}>Random letters</option>
+                  {IMAGE_THEMES.map((theme) => <option key={theme.id} value={theme.id}>{theme.name} images</option>)}
                 </select>
               </label>
             </div>

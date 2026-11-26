@@ -962,12 +962,12 @@ const publicPages = [
     route: "/memory-order",
     title: "Memory Order Game Online Free | Recall the Image Sequence",
     description:
-      "Play free Memory Order puzzles online. Watch images flash in order, then tap them back in the same sequence across Easy, Medium, Hard, and Expert levels.",
+      "Play free Memory Order puzzles online. Choose themed images or random colors, numbers, or letters, watch them flash in order, then tap them back in the same sequence across Easy, Medium, Hard, and Expert levels.",
     heading: "Memory Order Game Online Free",
     intro:
-      "Each round flashes a sequence of images one by one for a few seconds — then the tiles shuffle and you tap them back in the exact order you saw.",
+      "Choose themed images or random colors, numbers, or letters. Each round flashes the sequence one by one for a few seconds — then the tiles shuffle and you tap them back in the exact order you saw.",
     sections: [
-      ["Four levels that scale", "Easy shows 4 images for 12 seconds over 3 rounds, Medium 5 images for 10 seconds over 4, Hard 6 images for 8 seconds over 5, and Expert 8 images for 7 seconds over 6."],
+      ["Four levels that scale", "Easy shows 4 images for 12 seconds over 3 rounds, Medium 5 images for 10 seconds over 4, Hard 6 images for 9 seconds over 5, and Expert 8 images for 8 seconds over 6."],
       ["How scoring works", "Points combine the level base with correct sequences and a speed bonus for finishing under the par time. Hints are available if you lose the thread."],
       ["Daily and friend challenges", "The daily Memory Order challenge deals the same sequence to every player each day. You can also challenge a friend head-to-head."],
       ["Play as a guest or save progress", "Start a round without an account. Optional Google sign-in connects your results, stats, and streaks to a profile across devices."],

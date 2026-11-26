@@ -564,12 +564,12 @@ export default function Guides() {
         themeKey="memory-order"
         icon={ListOrdered}
         intro={[
-          "Memory Order is a visual memory game. Images flash one by one in a fixed order for a few seconds — then you tap them back in the exact same order before moving to the next round.",
-          "Choose from four levels that grow the sequence and shrink the view time: Easy (4 images, 12s view, 3 rounds), Medium (5 images, 10s, 4), Hard (6 images, 8s, 5), and Expert (8 images, 7s, 6). Your Game Mode controls which levels are offered — Kids mode has Easy and Medium, Adult mode has Hard and Expert, and the default 4 All mode has all four.",
+          "Memory Order is a visual memory game. Choose themed images or random colors, numbers, or letters; watch them flash one by one in a fixed order, then tap them back in the exact same order before moving to the next round.",
+          "Choose from four levels that grow the sequence and shrink the view time: Easy (4 images, 12s view, 3 rounds), Medium (5 images, 10s, 4), Hard (6 images, 9s, 5), and Expert (8 images, 8s, 6). Your Game Mode controls which levels are offered — Kids mode has Easy and Medium, Adult mode has Hard and Expert, and the default 4 All mode has all four.",
         ]}
         cards={[
-          { title: "Easy / Medium · Kids", detail: "Shorter sequences with longer view times — build the habit of naming each image as it appears." },
-          { title: "Hard / Expert · Adult", detail: "Longer sequences and faster flashes demand chunking — group images into memorable pairs or stories." },
+          { title: "Easy / Medium · Kids", detail: "Shorter sequences with longer view times — build the habit of naming each image or color as it appears." },
+          { title: "Hard / Expert · Adult", detail: "Longer sequences and faster flashes demand chunking — group images or colors into memorable pairs or stories." },
         ]}
         details="Points start from a base set by level and adjust for sequences recalled correctly and completion time — faster, cleaner runs earn more. Completing a round awards XP and gems that scale with the level. Daily challenges use the same seed for every player, and friend challenges compare points head-to-head."
         tips="Don't try to memorise positions — focus on the order itself and create a mental story or rhythm ('star, then heart, then leaf'). On Expert, chunk the sequence into pairs as it plays. If you lose the thread, use a free hint to reveal the next correct tile, or watch an ad for another. Try the daily Memory Order challenge to play the same sequence as other players."

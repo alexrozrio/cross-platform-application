@@ -1,5 +1,11 @@
 import { IMAGE_THEMES } from "@/lib/themes";
-import { MEMORY_ORDER_LEVEL_ORDER, type MemoryOrderLevel } from "@/lib/memory-order";
+import {
+  MEMORY_ORDER_COLOR_THEME,
+  MEMORY_ORDER_LETTER_THEME,
+  MEMORY_ORDER_LEVEL_ORDER,
+  MEMORY_ORDER_NUMBER_THEME,
+  type MemoryOrderLevel,
+} from "@/lib/memory-order";
 
 export interface MemoryOrderCompletion {
   level: MemoryOrderLevel;
@@ -26,7 +32,7 @@ export interface MemoryOrderStats {
 
 const STORAGE_PREFIX = "brain-games-memory-order-stats";
 export const MEMORY_ORDER_STATS_UPDATED = "brain-games-memory-order-stats-updated";
-const THEME_IDS = IMAGE_THEMES.map(({ id }) => id);
+const THEME_IDS = [...IMAGE_THEMES.map(({ id }) => id), MEMORY_ORDER_COLOR_THEME, MEMORY_ORDER_NUMBER_THEME, MEMORY_ORDER_LETTER_THEME];
 
 function key(profileId?: number | null) {
   return `${STORAGE_PREFIX}:${profileId ?? "guest"}`;

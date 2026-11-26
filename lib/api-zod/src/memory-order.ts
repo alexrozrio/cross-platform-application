@@ -16,8 +16,8 @@ export const MEMORY_ORDER_LEVELS: Record<MemoryOrderLevel, {
 }> = {
   easy: { label: "Easy", detail: "4 images · 12s view · 3 rounds", sequenceLength: 4, viewSeconds: 12, questions: 3, mode: "baby", parSeconds: 120, basePoints: 150, xp: 1, gems: 1 },
   medium: { label: "Medium", detail: "5 images · 10s view · 4 rounds", sequenceLength: 5, viewSeconds: 10, questions: 4, mode: "baby", parSeconds: 180, basePoints: 300, xp: 1, gems: 2 },
-  hard: { label: "Hard", detail: "6 images · 8s view · 5 rounds", sequenceLength: 6, viewSeconds: 8, questions: 5, mode: "adult", parSeconds: 300, basePoints: 600, xp: 2, gems: 3 },
-  expert: { label: "Expert", detail: "8 images · 7s view · 6 rounds", sequenceLength: 8, viewSeconds: 7, questions: 6, mode: "adult", parSeconds: 420, basePoints: 1600, xp: 4, gems: 5 },
+  hard: { label: "Hard", detail: "6 images · 9s view · 5 rounds", sequenceLength: 6, viewSeconds: 9, questions: 5, mode: "adult", parSeconds: 300, basePoints: 600, xp: 2, gems: 3 },
+  expert: { label: "Expert", detail: "8 images · 8s view · 6 rounds", sequenceLength: 8, viewSeconds: 8, questions: 6, mode: "adult", parSeconds: 420, basePoints: 1600, xp: 4, gems: 5 },
 };
 
 export interface MemoryOrderQuestion {
