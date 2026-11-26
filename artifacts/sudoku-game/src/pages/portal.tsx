@@ -32,6 +32,7 @@ import { generateOfflinePuzzle } from "@/lib/sudoku-generator";
 import { getLevelFromXp } from "@/lib/levels";
 import { getTheme } from "@/lib/themes";
 import { sudokuGamePath } from "@/lib/sudoku-routes";
+import { usePortalNativeAd } from "@/lib/native-portal-ad";
 import { WORD_SEARCH_LEVELS, type WordSearchDifficulty } from "@/lib/word-search";
 import { MINESWEEPER_LEVELS, type MinesweeperDifficulty } from "@/lib/minesweeper";
 import { SLIDE_PUZZLE_LEVELS, type SlidePuzzleDifficulty } from "@/lib/slide-puzzle";
@@ -219,6 +220,7 @@ const GRID_QUICK_START = [
 
 export default function Portal() {
   const [, setLocation] = useLocation();
+  usePortalNativeAd();
   const landingPageSchema = {
     "@context": "https://schema.org",
     "@type": "WebApplication",

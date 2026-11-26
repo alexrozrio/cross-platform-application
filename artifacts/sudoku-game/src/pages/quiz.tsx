@@ -17,6 +17,7 @@ import {
   quizSubject, type QuizLevel, type QuizQuestion, type QuizSubject,
 } from "@/lib/quiz";
 import { recordQuizCompletion, patchLastQuizPoints, summarizeQuizStats, getQuizHistory } from "@/lib/quiz-stats";
+import { useInterstitialAfterGame } from "@/lib/interstitial-ads";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -84,6 +85,7 @@ export default function QuizPage({ params }: { params: { subject?: string } }) {
   );
 
   const [game, setGame] = React.useState<SavedGame | null>(null);
+  useInterstitialAfterGame(game?.status === "done", game?.status === "playing");
   const [elapsed, setElapsed] = React.useState(0);
   const [showConfetti, setShowConfetti] = React.useState(false);
   const [hasSavedGame, setHasSavedGame] = React.useState(false);

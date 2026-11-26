@@ -6,6 +6,7 @@ import { usePageMeta } from "@/components/page-meta";
 import { RubiksScene } from "@/components/rubiks-scene";
 import { RUBIKS_LEVELS, isRubiksPuzzle, puzzleForDifficulty, type RubiksPuzzle } from "@/lib/rubiks";
 import { getActiveRubiksGame, getRubiksHistory, recordRubiksCompletion, saveActiveRubiksGame, summarizeRubiksStats } from "@/lib/rubiks-stats";
+import { useInterstitialAfterGame } from "@/lib/interstitial-ads";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -47,6 +48,7 @@ export default function RubiksPage() {
   const [moves, setMoves] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [status, setStatus] = useState<"select" | "loading" | "playing" | "done">("select");
+  useInterstitialAfterGame(status === "done", status === "playing");
   const [result, setResult] = useState<CompleteResult | null>(null);
   const startRef = useRef<number>(0);
   const completedRef = useRef(false);

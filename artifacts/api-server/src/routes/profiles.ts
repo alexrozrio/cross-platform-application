@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { createHash, randomBytes } from "node:crypto";
 import { eq, ilike, ne, and, gt, isNull } from "drizzle-orm";
-import { db, profilesTable, guestProfileTransferCodesTable } from "@workspace/db";
+import { db, profilesTable, guestProfileTransferCodesTable, loginRewardClaimsTable } from "@workspace/db";
 import { gemsForLoginStreak } from "../config/login-rewards";
 import {
   CreateProfileBody,
@@ -280,34 +280,58 @@ router.post("/profiles/:id/claim-login-reward", async (req, res): Promise<void> 
     return;
   }
 
-  const [profile] = await db.select().from(profilesTable).where(eq(profilesTable.id, id));
-  if (!profile) {
+  const today = todayUTC();
+  const result = await db.transaction(async (tx) => {
+    const [profile] = await tx
+      .select()
+      .from(profilesTable)
+      .where(eq(profilesTable.id, id))
+      .for("update");
+    if (!profile) return { notFound: true as const };
+
+    if (profile.lastLoginDate === today) {
+      return {
+        alreadyClaimed: true,
+        loginStreak: profile.loginStreak,
+        gemsAwarded: 0,
+        totalGems: profile.gems,
+        rewardDate: today,
+      };
+    }
+
+    const yesterday = new Date();
+    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+    const yesterdayStr = yesterday.toISOString().slice(0, 10);
+
+    const newStreak = profile.lastLoginDate === yesterdayStr ? profile.loginStreak + 1 : 1;
+    const gemsAwarded = gemsForLoginStreak(newStreak);
+    const [updated] = await tx
+      .update(profilesTable)
+      .set({ loginStreak: newStreak, lastLoginDate: today, gems: profile.gems + gemsAwarded })
+      .where(eq(profilesTable.id, id))
+      .returning();
+
+    await tx.insert(loginRewardClaimsTable).values({
+      profileId: id,
+      rewardDate: today,
+      loginStreak: newStreak,
+      gemsAwarded,
+    });
+
+    return {
+      alreadyClaimed: false,
+      loginStreak: newStreak,
+      gemsAwarded,
+      totalGems: updated.gems,
+      rewardDate: today,
+    };
+  });
+
+  if ("notFound" in result) {
     res.status(404).json({ error: "Profile not found" });
     return;
   }
-
-  const today = todayUTC();
-
-  if (profile.lastLoginDate === today) {
-    res.json({ alreadyClaimed: true, loginStreak: profile.loginStreak, gemsAwarded: 0, totalGems: profile.gems });
-    return;
-  }
-
-  const yesterday = new Date();
-  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-  const yesterdayStr = yesterday.toISOString().slice(0, 10);
-
-  const newStreak = profile.lastLoginDate === yesterdayStr ? profile.loginStreak + 1 : 1;
-  const gemsAwarded = gemsForLoginStreak(newStreak);
-  const totalGems = profile.gems + gemsAwarded;
-
-  const [updated] = await db
-    .update(profilesTable)
-    .set({ loginStreak: newStreak, lastLoginDate: today, gems: totalGems })
-    .where(eq(profilesTable.id, id))
-    .returning();
-
-  res.json({ alreadyClaimed: false, loginStreak: newStreak, gemsAwarded, totalGems: updated.gems });
+  res.json(result);
 });
 
 export default router;

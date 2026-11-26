@@ -7,6 +7,7 @@ export interface LoginRewardResult {
   loginStreak: number;
   gemsAwarded: number;
   totalGems: number;
+  rewardDate: string;
 }
 
 export interface LoginRewardState {

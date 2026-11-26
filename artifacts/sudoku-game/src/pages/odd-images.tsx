@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { ACHIEVEMENT_COMPLETION_EVENT } from "@/lib/achievement-events";
 import { ODD_IMAGE_LEVEL_ORDER, ODD_IMAGE_LEVELS, oddImageRound, type OddImageLevel, type OddImageQuestion } from "@/lib/odd-images";
 import { getOddImageHistory, recordOddImageCompletion, summarizeOddImageStats } from "@/lib/odd-image-stats";
+import { useInterstitialAfterGame } from "@/lib/interstitial-ads";
 import { getTheme, IMAGE_THEMES, type ThemeId } from "@/lib/themes";
 import { ThemeIcon } from "@/components/theme-icons";
 import { OddImageTile } from "@/components/odd-image-tile";
@@ -84,6 +85,7 @@ export default function OddImagesPage() {
   );
 
   const [game, setGame] = React.useState<SavedGame | null>(null);
+  useInterstitialAfterGame(game?.status === "done", game?.status === "playing");
   const [elapsed, setElapsed] = React.useState(0);
   const [showConfetti, setShowConfetti] = React.useState(false);
   const [hasSavedGame, setHasSavedGame] = React.useState(false);

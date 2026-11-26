@@ -17,6 +17,10 @@ import { toast } from "sonner";
 import { ACHIEVEMENT_COMPLETION_EVENT } from "@/lib/achievement-events";
 import { blankIndex, createSolvedTiles, hintTileIndex, isSolved, MAX_HINTS, scrambleTiles, slideTile, slideableIndexes, SLIDE_PUZZLE_LEVELS, SLIDE_PUZZLE_TILE_STYLES, tileLabel, type SlidePuzzleDifficulty, type SlidePuzzleTileStyle } from "@/lib/slide-puzzle";
 import { recordSlidePuzzleCompletion } from "@/lib/slide-puzzle-stats";
+import { useInterstitialAfterGame } from "@/lib/interstitial-ads";
+import {
+  useRewardedInterstitialTip,
+} from "@/lib/rewarded-interstitial-tips";
 import { getTheme, IMAGE_THEMES } from "@/lib/themes";
 import { ThemeIcon, useThemeImageSrc } from "@/components/theme-icons";
 import { Button } from "@/components/ui/button";
@@ -55,7 +59,7 @@ function loadSaved(): SavedGame | null {
     const value = JSON.parse(localStorage.getItem(SAVE_KEY) ?? "null") as SavedGame | null;
     if (value && ["2x2", "3x3", "4x4", "5x5"].includes(value.difficulty) && Array.isArray(value.tiles) && value.size > 0) {
       value.moves = Number.isFinite(value.moves) ? value.moves : 0;
-      value.hintsUsed = Number.isFinite(value.hintsUsed) ? Math.min(MAX_HINTS, value.hintsUsed) : 0;
+      value.hintsUsed = Number.isFinite(value.hintsUsed) ? Math.min(MAX_HINTS + 1, value.hintsUsed) : 0;
       value.status = value.status === "won" ? "won" : "playing";
       return value;
     }
@@ -65,6 +69,11 @@ function loadSaved(): SavedGame | null {
 
 export default function SlidePuzzlePage() {
   const [, setLocation] = useLocation();
+  const {
+    isShowingRewardedTip,
+    showAdForExtraTip,
+    isEnabled: canShowRewardedTip,
+  } = useRewardedInterstitialTip();
   const search = useSearch();
   const query = new URLSearchParams(search);
   const { profileId } = useAuth();
@@ -77,6 +86,7 @@ export default function SlidePuzzlePage() {
       gameMode === "adult" ? SLIDE_PUZZLE_LEVELS[id].mode === "adult" : true,
   );
   const [game, setGame] = React.useState<SavedGame | null>(null);
+  useInterstitialAfterGame(game?.status === "won", game?.status === "playing");
   const [elapsed, setElapsed] = React.useState(0);
   const [hintIndex, setHintIndex] = React.useState<number | null>(null);
   const [showConfetti, setShowConfetti] = React.useState(false);
@@ -334,8 +344,13 @@ export default function SlidePuzzlePage() {
     );
   };
 
-  const issueHint = () => {
-    if (!game || game.status !== "playing" || game.hintsUsed >= MAX_HINTS) return;
+  const issueHint = (earnedExtraTip = false) => {
+    if (
+      !game ||
+      game.status !== "playing" ||
+      game.hintsUsed > MAX_HINTS ||
+      (game.hintsUsed >= MAX_HINTS && !earnedExtraTip)
+    ) return;
     const index = hintTileIndex(game.tiles, game.size);
     if (index < 0) return;
     sounds.place();
@@ -343,6 +358,19 @@ export default function SlidePuzzlePage() {
     if (hintTimerRef.current) window.clearTimeout(hintTimerRef.current);
     hintTimerRef.current = window.setTimeout(() => setHintIndex(null), 2600);
     setGame({ ...game, hintsUsed: game.hintsUsed + 1 });
+  };
+
+  const hasHintTarget = Boolean(
+    game && game.status === "playing" && hintTileIndex(game.tiles, game.size) >= 0,
+  );
+  const canEarnExtraTip =
+    canShowRewardedTip &&
+    game?.status === "playing" &&
+    game.hintsUsed === MAX_HINTS &&
+    hasHintTarget;
+  const handleRewardedHint = () => {
+    if (!canEarnExtraTip) return;
+    void showAdForExtraTip(() => issueHint(true));
   };
 
   const shareResult = async () => {
@@ -696,7 +724,28 @@ export default function SlidePuzzlePage() {
                 )}
               </>
             )}
-            <Button variant="outline" size="sm" className="h-8 shrink-0 gap-1 px-2" onClick={issueHint} disabled={game.hintsUsed >= MAX_HINTS} aria-label={`Hint, ${MAX_HINTS - game.hintsUsed} left`}><Lightbulb className="h-4 w-4"/> <span className="hidden sm:inline">Hint ({MAX_HINTS - game.hintsUsed})</span><span className="sm:hidden">{MAX_HINTS - game.hintsUsed}</span></Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 shrink-0 gap-1 px-2"
+              onClick={game.hintsUsed < MAX_HINTS ? () => issueHint() : handleRewardedHint}
+              disabled={
+                isShowingRewardedTip ||
+                game.hintsUsed > MAX_HINTS ||
+                (game.hintsUsed === MAX_HINTS && !canEarnExtraTip)
+              }
+              aria-label={canEarnExtraTip ? "Watch an ad for one extra hint" : `Hint, ${Math.max(0, MAX_HINTS - game.hintsUsed)} left`}
+            >
+              <Lightbulb className="h-4 w-4" />
+              <span className="hidden sm:inline">
+                {game.hintsUsed < MAX_HINTS
+                  ? `Hint (${MAX_HINTS - game.hintsUsed})`
+                  : !canShowRewardedTip ? "Hint (0)" : isShowingRewardedTip ? "Ad..." : "Watch ad +1"}
+              </span>
+              <span className="sm:hidden">
+                {game.hintsUsed < MAX_HINTS ? MAX_HINTS - game.hintsUsed : canShowRewardedTip ? "Ad" : "0"}
+              </span>
+            </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => startGame(game.difficulty, game.tileStyle, game.themeId, undefined, undefined, undefined, undefined, game.iconValue)} aria-label="Restart"><RotateCcw className="h-4 w-4"/></Button>
           </div>
 

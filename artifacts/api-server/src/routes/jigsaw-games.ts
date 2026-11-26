@@ -152,8 +152,8 @@ router.post("/jigsaw-games/:id/complete", async (req, res): Promise<void> => {
   }
 
   const rawTipsUsed = (req.body as { tipsUsed?: unknown }).tipsUsed ?? 0;
-  if (!Number.isInteger(rawTipsUsed) || Number(rawTipsUsed) < 0 || Number(rawTipsUsed) > 6) {
-    res.status(400).json({ error: "A valid tip count is required (0 to 6)." });
+  if (!Number.isInteger(rawTipsUsed) || Number(rawTipsUsed) < 0 || Number(rawTipsUsed) > 7) {
+    res.status(400).json({ error: "A valid tip count is required (0 to 7)." });
     return;
   }
   const tipsUsed = Number(rawTipsUsed);

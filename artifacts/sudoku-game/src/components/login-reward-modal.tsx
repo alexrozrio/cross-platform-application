@@ -1,8 +1,9 @@
 import React from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Gem, Flame } from "lucide-react";
+import { Gem, Flame, Loader2 } from "lucide-react";
 import { LOGIN_REWARD_TIERS, tierIndexForStreak } from "@/config/login-rewards";
+import type { LoginRewardAdResult } from "@/lib/rewarded-ads";
 
 interface LoginRewardModalProps {
   open: boolean;
@@ -10,6 +11,8 @@ interface LoginRewardModalProps {
   gemsAwarded: number;
   loginStreak: number;
   totalGems: number;
+  canDoubleGems: boolean;
+  onDoubleGems: () => Promise<LoginRewardAdResult>;
 }
 
 function streakMessage(streak: number): string {
@@ -20,8 +23,46 @@ function streakMessage(streak: number): string {
   return `${streak} day streak! You're unstoppable! 🔥`;
 }
 
-export function LoginRewardModal({ open, onClose, gemsAwarded, loginStreak, totalGems }: LoginRewardModalProps) {
+export function LoginRewardModal({
+  open,
+  onClose,
+  gemsAwarded,
+  loginStreak,
+  totalGems,
+  canDoubleGems,
+  onDoubleGems,
+}: LoginRewardModalProps) {
   const currentTierIndex = tierIndexForStreak(loginStreak);
+  const [doubleStatus, setDoubleStatus] = React.useState<
+    "idle" | "watching" | "not-earned" | "pending" | "confirmed" | "failed"
+  >("idle");
+  const [displayGems, setDisplayGems] = React.useState(gemsAwarded);
+  const [displayTotal, setDisplayTotal] = React.useState(totalGems);
+
+  React.useEffect(() => {
+    if (open) {
+      setDoubleStatus("idle");
+      setDisplayGems(gemsAwarded);
+      setDisplayTotal(totalGems);
+    }
+  }, [open, gemsAwarded, totalGems]);
+
+  const handleDoubleGems = async () => {
+    setDoubleStatus("watching");
+    try {
+      const result = await onDoubleGems();
+      if (result.status === "confirmed") {
+        setDisplayGems((current) => current + result.gemsAwarded);
+        setDisplayTotal(result.totalGems);
+        setDoubleStatus("confirmed");
+      } else {
+        setDoubleStatus(result.status);
+      }
+    } catch (error) {
+      console.error("[Ads] Could not verify rewarded login bonus:", error);
+      setDoubleStatus("failed");
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
@@ -55,12 +96,12 @@ export function LoginRewardModal({ open, onClose, gemsAwarded, loginStreak, tota
           <div className="bg-card rounded-xl shadow-md border border-border p-4 text-center">
             <div className="flex items-center justify-center gap-2">
               <Gem className="w-5 h-5 text-cyan-500" />
-              <span className="text-3xl font-bold text-primary">+{gemsAwarded}</span>
+              <span className="text-3xl font-bold text-primary">+{displayGems}</span>
               <span className="text-muted-foreground font-medium">gems</span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               Total balance:{" "}
-              <span className="font-semibold text-foreground">{totalGems} gems</span>
+              <span className="font-semibold text-foreground">{displayTotal} gems</span>
             </p>
           </div>
         </div>
@@ -110,6 +151,32 @@ export function LoginRewardModal({ open, onClose, gemsAwarded, loginStreak, tota
 
         {/* CTA */}
         <div className="px-6 pb-6 pt-2">
+          {canDoubleGems && doubleStatus !== "confirmed" && doubleStatus !== "pending" && (
+            <Button
+              onClick={() => void handleDoubleGems()}
+              disabled={doubleStatus === "watching"}
+              variant="outline"
+              className="w-full mb-2 font-semibold rounded-xl h-11"
+            >
+              {doubleStatus === "watching" ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Verifying rewarded ad...
+                </>
+              ) : (
+                <>
+                  <Gem className="w-4 h-4 mr-2 text-cyan-500" />
+                  Watch an ad to double your gems
+                </>
+              )}
+            </Button>
+          )}
+          <div className="text-xs text-center text-muted-foreground mb-2" aria-live="polite">
+            {doubleStatus === "not-earned" && "The ad wasn't completed or isn't available. Try again when ready."}
+            {doubleStatus === "pending" && "Reward verification is taking longer. Gems will be added when confirmed."}
+            {doubleStatus === "failed" && "Couldn't verify the reward. Please try again."}
+            {doubleStatus === "confirmed" && "Your daily gems have been doubled!"}
+          </div>
           <Button
             onClick={onClose}
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl h-11"

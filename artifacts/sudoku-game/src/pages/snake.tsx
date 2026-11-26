@@ -19,6 +19,7 @@ import {
   SNAKE_LEVELS, type SnakeDifficulty, type SnakeDirection, type SnakeGameState,
 } from "@/lib/snake";
 import { recordSnakeCompletion } from "@/lib/snake-stats";
+import { useInterstitialAfterGame } from "@/lib/interstitial-ads";
 import { Button } from "@/components/ui/button";
 
 const SAVE_KEY = "brain-games-snake-session";
@@ -137,6 +138,7 @@ export default function SnakePage() {
   const [endConfirm, setEndConfirm] = React.useState(false);
   const [runFinished, setRunFinished] = React.useState(false);
   const [started, setStarted] = React.useState(false);
+  useInterstitialAfterGame(Boolean(game && runFinished), Boolean(game && started && !runFinished));
   const activeGameRef = React.useRef(game);
   activeGameRef.current = game;
   const pendingGameRef = React.useRef<{ savedAt: number; promise: Promise<number | null> } | null>(null);

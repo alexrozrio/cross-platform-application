@@ -9,6 +9,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/use-auth";
 import { useLoginReward } from "@/hooks/use-login-reward";
 import { LoginRewardModal } from "@/components/login-reward-modal";
+import { canShowRewardedAds, showAdToDoubleLoginReward } from "@/lib/rewarded-ads";
+import { useAdsConfiguration } from "@/lib/ad-configuration";
 import { Layout } from "@/components/layout";
 import { PageLoader } from "@/components/page-loader";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -158,6 +160,7 @@ const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function Router() {
   const { rewardState, claimReward, dismissReward } = useLoginReward();
+  const adsConfiguration = useAdsConfiguration();
   const [, setLocation] = useLocation();
 
   React.useEffect(() => {
@@ -220,6 +223,23 @@ function Router() {
     }
   }, [dismissReward, rewardState.profileId]);
 
+  const handleDoubleLoginReward = React.useCallback(async () => {
+    if (!rewardState.profileId || !rewardState.result) {
+      return { status: "not-earned" as const };
+    }
+
+    const result = await showAdToDoubleLoginReward(
+      rewardState.profileId,
+      rewardState.result.rewardDate,
+    );
+    if (result.status === "confirmed") {
+      await queryClient.invalidateQueries({
+        queryKey: [`/api/profiles/${rewardState.profileId}`],
+      });
+    }
+    return result;
+  }, [rewardState.profileId, rewardState.result]);
+
   return (
     <AuthProvider onProfileSynced={claimReward}>
       <ErrorBoundary>
@@ -231,6 +251,8 @@ function Router() {
             gemsAwarded={rewardState.result.gemsAwarded}
             loginStreak={rewardState.result.loginStreak}
             totalGems={rewardState.result.totalGems}
+            canDoubleGems={canShowRewardedAds() && adsConfiguration.rewarded}
+            onDoubleGems={handleDoubleLoginReward}
           />
         )}
         <Layout>

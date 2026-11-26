@@ -1,5 +1,6 @@
 export * from "./auth";
 export * from "./profiles";
+export * from "./login-rewards";
 export * from "./puzzles";
 export * from "./games";
 export * from "./badges";

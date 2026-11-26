@@ -111,7 +111,7 @@ router.post("/memory-games/:id/complete", async (req, res): Promise<void> => {
     res.status(400).json({ error: "elapsedSeconds and flips are required numbers" });
     return;
   }
-  const tips = typeof tipsUsed === "number" ? Math.max(0, Math.min(tipsUsed, 2)) : 0;
+  const tips = typeof tipsUsed === "number" ? Math.max(0, Math.min(tipsUsed, 3)) : 0;
 
   const [existing] = await db.select().from(memoryGamesTable).where(eq(memoryGamesTable.id, id));
   if (!existing) {

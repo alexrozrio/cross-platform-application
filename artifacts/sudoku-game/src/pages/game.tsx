@@ -42,6 +42,10 @@ import { shareOrDownloadShareCard } from "@/lib/share-card";
 import { appShareUrlForPath } from "@/lib/app-links";
 import { useGameResultVisibility } from "@/components/game-result-visibility-context";
 import { ACHIEVEMENT_COMPLETION_EVENT } from "@/lib/achievement-events";
+import { useInterstitialAfterGame } from "@/lib/interstitial-ads";
+import {
+  useRewardedInterstitialTip,
+} from "@/lib/rewarded-interstitial-tips";
 
 interface DailyChallengeInfo { puzzleId: number; date: string; }
 interface StreakData { currentStreak: number; longestStreak: number; completedToday: boolean; }
@@ -347,6 +351,11 @@ function CellContent({
 export default function Game({ id }: { id: string }) {
   const gameId = parseInt(id, 10);
   const [, setLocation] = useLocation();
+  const {
+    isShowingRewardedTip,
+    showAdForExtraTip,
+    isEnabled: canShowRewardedTip,
+  } = useRewardedInterstitialTip();
   const search = useSearch();
   usePageMeta({
     title: "Play Sudoku Online | Play Brain Games . Online",
@@ -365,6 +374,7 @@ export default function Game({ id }: { id: string }) {
   const storageKeyGrid = `sudoku-grid-${storageGameKey}`;
   const storageKeyNotes = `sudoku-notes-${storageGameKey}`;
   const storageKeyElapsed = `sudoku-elapsed-${storageGameKey}`;
+  const storageKeyHints = `sudoku-hints-${storageGameKey}`;
   const modeParam = params.get("mode");
   const rawMode: GameMode =
     modeParam === "image"
@@ -505,6 +515,10 @@ export default function Game({ id }: { id: string }) {
     if (isCompleted) window.scrollTo(0, 0);
   }, [isCompleted]);
   const [isGameOver, setIsGameOver] = useState(false);
+  useInterstitialAfterGame(
+    isCompleted || isGameOver,
+    Boolean(!isCompleted && !isGameOver && (game?.status === "active" || offlineMode)),
+  );
   const [challengeResult, setChallengeResult] = useState<null | {
     id: number; status: string; winnerId: number | null;
     challengerId: number; challengedId: number;
@@ -772,6 +786,7 @@ export default function Game({ id }: { id: string }) {
         localStorage.removeItem(storageKeyGrid);
         localStorage.removeItem(storageKeyNotes);
         localStorage.removeItem(storageKeyElapsed);
+        localStorage.removeItem(storageKeyHints);
         return;
       }
       const serverGrid = (game.currentGrid ?? game.puzzle?.grid ?? "").split("");
@@ -809,7 +824,8 @@ export default function Game({ id }: { id: string }) {
 
       const loadedMistakes = game.mistakeCount || 0;
       setMistakes(loadedMistakes);
-      setHints(game.hintsUsed || 0);
+      const savedHints = Number.parseInt(localStorage.getItem(storageKeyHints) ?? "", 10);
+      setHints(Math.min(MAX_HINTS + 1, Math.max(game.hintsUsed || 0, Number.isFinite(savedHints) ? savedHints : 0)));
       const solution = game.puzzle?.solution;
       if (solution) {
         const wrong = new Set<number>();
@@ -825,7 +841,7 @@ export default function Game({ id }: { id: string }) {
         if (!offlineMode) customFetch(`/api/games/${gameId}/abandon`, { method: "POST" }).catch(() => {});
       }
     }
-  }, [game, isCompleted, isGameOver, totalCells, storageKeyGrid, storageKeyNotes]);
+  }, [game, isCompleted, isGameOver, totalCells, storageKeyGrid, storageKeyNotes, storageKeyHints]);
 
   // Immediately persist grid to localStorage on every change (no debounce).
   // Guard with gameLoadedRef so the initial empty-grid render does NOT overwrite saved data.
@@ -851,6 +867,11 @@ export default function Game({ id }: { id: string }) {
     }
     localStorage.setItem(storageKeyNotes, JSON.stringify(serialized));
   }, [notes, storageKeyNotes]);
+
+  useEffect(() => {
+    if (!gameLoadedRef.current || isCompleted || isGameOver) return;
+    localStorage.setItem(storageKeyHints, String(hints));
+  }, [hints, isCompleted, isGameOver, storageKeyHints]);
 
   useEffect(() => {
     if (offlineMode || isCompleted || !game || grid.join("") === game.currentGrid) return;
@@ -1224,19 +1245,29 @@ export default function Game({ id }: { id: string }) {
     localStorage.removeItem(storageKeyGrid);
     localStorage.removeItem(storageKeyNotes);
     localStorage.removeItem(storageKeyElapsed);
-  }, [initialGrid, storageKeyGrid, storageKeyNotes, storageKeyElapsed]);
+    localStorage.removeItem(storageKeyHints);
+  }, [initialGrid, storageKeyGrid, storageKeyNotes, storageKeyElapsed, storageKeyHints]);
 
-  const handleHint = () => {
-    if (isCompleted || isGameOver || hints >= MAX_HINTS) return;
+  const handleHint = (earnedExtraTip = false) => {
+    if (
+      isCompleted ||
+      isGameOver ||
+      hints > MAX_HINTS ||
+      (hints >= MAX_HINTS && !earnedExtraTip)
+    ) return;
     const solution = game?.puzzle?.solution;
     if (!solution) return;
 
     const newHints = hints + 1;
-    setHints(newHints);
 
     // Notes mode: auto-fill all possible pencil marks
     if (notesMode) {
       const autoNotes = computeAutoNotes(grid, initialGrid, gridSize, boxRows, boxCols);
+      if (Object.keys(autoNotes).length === 0) {
+        toast.error("There aren't any pencil marks to fill in.");
+        return;
+      }
+      setHints(newHints);
       setNotes(prev => {
         const merged = { ...prev };
         for (const [k, v] of Object.entries(autoNotes)) merged[Number(k)] = v;
@@ -1246,7 +1277,9 @@ export default function Game({ id }: { id: string }) {
         description: "All possible values have been pencilled into empty cells.",
         duration: 3500,
       });
-      if (newHints >= MAX_HINTS) setTimeout(() => toast.error("No more hints available!", { duration: 2000 }), 400);
+      if (newHints >= MAX_HINTS && !canShowRewardedTip) {
+        setTimeout(() => toast.error("No more hints available!", { duration: 2000 }), 400);
+      }
       return;
     }
 
@@ -1257,6 +1290,7 @@ export default function Game({ id }: { id: string }) {
     const hint = findLogicalHint(grid, initialGrid, solution, gridSize, boxRows, boxCols, displayVal);
     if (hint === null) return;
 
+    setHints(newHints);
     const newGrid = [...grid];
     newGrid[hint.cell] = encodeForGrid(hint.value);
     setGrid(newGrid);
@@ -1268,8 +1302,32 @@ export default function Game({ id }: { id: string }) {
       duration: 5000,
     });
 
-    if (newHints >= MAX_HINTS) setTimeout(() => toast.error("No more hints available!", { duration: 2000 }), 400);
+    if (newHints >= MAX_HINTS && !canShowRewardedTip) {
+      setTimeout(() => toast.error("No more hints available!", { duration: 2000 }), 400);
+    }
     checkCompletion(newGrid, solution);
+  };
+
+  const handleRewardedHint = () => {
+    if (hints !== MAX_HINTS || isCompleted || isGameOver) return;
+    if (notesMode) {
+      if (Object.keys(computeAutoNotes(grid, initialGrid, gridSize, boxRows, boxCols)).length === 0) {
+        toast.error("There aren't any pencil marks to fill in.");
+        return;
+      }
+    } else {
+      const solution = game?.puzzle?.solution;
+      const displayVal = (n: number) =>
+        mode === "alpha" ? String.fromCharCode(64 + n) : String(n);
+      if (
+        !solution ||
+        findLogicalHint(grid, initialGrid, solution, gridSize, boxRows, boxCols, displayVal) === null
+      ) {
+        toast.error("There isn't another hint available for this puzzle.");
+        return;
+      }
+    }
+    void showAdForExtraTip(() => handleHint(true));
   };
 
   const handleShare = useCallback(async () => {
@@ -2289,14 +2347,31 @@ export default function Game({ id }: { id: string }) {
               <Button
                 variant="secondary"
                 className="flex-col h-12 gap-0.5 relative"
-                onClick={handleHint}
-                disabled={isGameOver || hints >= MAX_HINTS}
-                 title={notesMode ? "Auto-fill pencil marks (uses 1 hint)" : "Reveal a recommended empty cell (uses 1 hint)"}
+                onClick={hints < MAX_HINTS ? () => handleHint() : handleRewardedHint}
+                disabled={
+                  isGameOver ||
+                  isShowingRewardedTip ||
+                  hints > MAX_HINTS ||
+                  (hints === MAX_HINTS && !canShowRewardedTip)
+                }
+                title={
+                  hints < MAX_HINTS
+                    ? notesMode
+                      ? "Auto-fill pencil marks (uses 1 hint)"
+                      : "Reveal a recommended empty cell (uses 1 hint)"
+                    : canShowRewardedTip
+                      ? "Watch an ad to earn one extra hint"
+                      : "No hints left"
+                }
               >
-                <Lightbulb className={`h-4 w-4 ${hints >= MAX_HINTS ? "opacity-40" : ""}`} />
-                <span className="text-[11px]">{notesMode ? "Auto✏️" : "Hint"}</span>
-                <span className={`text-[9px] font-bold leading-none ${hints >= MAX_HINTS ? "text-red-400" : "text-primary"}`}>
-                  {MAX_HINTS - hints} left
+                <Lightbulb className={`h-4 w-4 ${hints >= MAX_HINTS && !canShowRewardedTip ? "opacity-40" : ""}`} />
+                <span className="text-[11px]">
+                  {hints < MAX_HINTS
+                    ? notesMode ? "Auto✏️" : "Hint"
+                    : !canShowRewardedTip ? "0 left" : isShowingRewardedTip ? "Ad..." : "Ad +1"}
+                </span>
+                <span className={`text-[9px] font-bold leading-none ${hints >= MAX_HINTS && !canShowRewardedTip ? "text-red-400" : "text-primary"}`}>
+                  {Math.max(0, MAX_HINTS - hints)} left
                 </span>
               </Button>
 

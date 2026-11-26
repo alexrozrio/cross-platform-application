@@ -27,6 +27,10 @@ import {
   type SavedJigsawSession,
 } from "@/lib/jigsaw-session";
 import { getJigsawPiecePath } from "@/lib/jigsaw-piece-shapes";
+import { useInterstitialAfterGame } from "@/lib/interstitial-ads";
+import {
+  useRewardedInterstitialTip,
+} from "@/lib/rewarded-interstitial-tips";
 import { getLevelFromXp } from "@/lib/levels";
 import { useSound } from "@/hooks/use-sound";
 import { toast } from "sonner";
@@ -148,6 +152,11 @@ function Tile({ piece, index, gridSize, themeId, imageKey, selected, showNumber,
 
 export default function JigsawPage() {
   const [, setLocation] = useLocation();
+  const {
+    isShowingRewardedTip,
+    showAdForExtraTip,
+    isEnabled: canShowRewardedTip,
+  } = useRewardedInterstitialTip();
   const search = useSearch();
   const params = useMemo(() => new URLSearchParams(search), [search]);
   usePageMeta({
@@ -200,6 +209,7 @@ export default function JigsawPage() {
   const [referencePeeksUsed, setReferencePeeksUsed] = useState(0);
   const [revealedPieceNumbers, setRevealedPieceNumbers] = useState<number[]>([]);
   const [result, setResult] = useState<Result | null>(null);
+  useInterstitialAfterGame(phase === "complete" && Boolean(result), phase === "playing");
   const [challengeResult, setChallengeResult] = useState<JigsawChallengeResult | null>(null);
   const [dragged, setDragged] = useState<{ piece: number; from: "tray" | "board"; slot?: number } | null>(null);
   const [savedSession, setSavedSession] = useState<SavedJigsawSession | null>(null);
@@ -1277,8 +1287,11 @@ export default function JigsawPage() {
     ...tray,
     ...board.flatMap((piece, slot) => piece !== null && piece !== slot ? [piece] : []),
   ].filter((piece) => !revealedPieceNumbers.includes(piece));
-  const revealPieceNumber = () => {
-    if (revealedPieceNumbersRef.current.length >= JIGSAW_MAX_PIECE_NUMBER_HINTS) return;
+  const revealPieceNumber = (earnedExtraTip = false) => {
+    if (
+      revealedPieceNumbersRef.current.length > JIGSAW_MAX_PIECE_NUMBER_HINTS ||
+      (revealedPieceNumbersRef.current.length >= JIGSAW_MAX_PIECE_NUMBER_HINTS && !earnedExtraTip)
+    ) return;
     const availablePieces = [
       ...tray,
       ...board.flatMap((piece, slot) => piece !== null && piece !== slot ? [piece] : []),
@@ -1289,6 +1302,14 @@ export default function JigsawPage() {
     const nextRevealed = [...revealedPieceNumbersRef.current, piece];
     revealedPieceNumbersRef.current = nextRevealed;
     setRevealedPieceNumbers(nextRevealed);
+  };
+  const canEarnExtraTip =
+    canShowRewardedTip &&
+    revealedPieceNumbers.length === JIGSAW_MAX_PIECE_NUMBER_HINTS &&
+    hintablePieces.length > 0;
+  const handleRewardedTip = () => {
+    if (!canEarnExtraTip) return;
+    void showAdForExtraTip(() => revealPieceNumber(true));
   };
   const dragStart = (source: { piece: number; from: "tray" | "board"; slot?: number }) => (event: DragEvent) => {
     setDragged(source);
@@ -1390,16 +1411,25 @@ export default function JigsawPage() {
           </div>
           <button
             type="button"
-            onClick={revealPieceNumber}
-            disabled={revealedPieceNumbers.length >= JIGSAW_MAX_PIECE_NUMBER_HINTS || hintablePieces.length === 0}
-            aria-label={`Reveal a piece number, ${JIGSAW_MAX_PIECE_NUMBER_HINTS - revealedPieceNumbers.length} tips remaining`}
-            title="Reveal the number of one unmatched piece"
+            onClick={revealedPieceNumbers.length < JIGSAW_MAX_PIECE_NUMBER_HINTS ? () => revealPieceNumber() : handleRewardedTip}
+            disabled={
+              isShowingRewardedTip ||
+              revealedPieceNumbers.length > JIGSAW_MAX_PIECE_NUMBER_HINTS ||
+              (revealedPieceNumbers.length === JIGSAW_MAX_PIECE_NUMBER_HINTS && !canEarnExtraTip) ||
+              hintablePieces.length === 0
+            }
+            aria-label={canEarnExtraTip ? "Watch an ad for one extra piece tip" : `Reveal a piece number, ${Math.max(0, JIGSAW_MAX_PIECE_NUMBER_HINTS - revealedPieceNumbers.length)} tips remaining`}
+            title={revealedPieceNumbers.length < JIGSAW_MAX_PIECE_NUMBER_HINTS ? "Reveal the number of one unmatched piece" : "Watch an ad to reveal one extra piece number"}
             data-testid="button-jigsaw-tip"
             className="inline-flex h-7 shrink-0 items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-1.5 text-[11px] font-semibold text-amber-800 transition hover:border-amber-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-amber-950/30 dark:text-amber-200 sm:h-9 sm:px-2 sm:text-xs"
           >
             <Lightbulb size={13} className="sm:size-[14px]" />
-            <span className="hidden sm:inline">Tip</span>
-            <span className="tabular-nums">{JIGSAW_MAX_PIECE_NUMBER_HINTS - revealedPieceNumbers.length}</span>
+            <span className="hidden sm:inline">
+              {revealedPieceNumbers.length < JIGSAW_MAX_PIECE_NUMBER_HINTS
+                ? "Tip"
+                : !canShowRewardedTip ? "0" : isShowingRewardedTip ? "Ad..." : "Watch ad +1"}
+            </span>
+            <span className="tabular-nums">{Math.max(0, JIGSAW_MAX_PIECE_NUMBER_HINTS - revealedPieceNumbers.length)}</span>
           </button>
           <button
             type="button"

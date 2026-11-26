@@ -44,6 +44,24 @@ export async function ensureDatabaseSchema(): Promise<void> {
     )`,
     `CREATE INDEX IF NOT EXISTS guest_profile_transfer_codes_profile_id_idx
       ON guest_profile_transfer_codes(profile_id)`,
+    `CREATE TABLE IF NOT EXISTS login_reward_claims (
+      id serial PRIMARY KEY,
+      profile_id integer NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+      reward_date date NOT NULL,
+      login_streak integer NOT NULL,
+      gems_awarded integer NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      CONSTRAINT login_reward_claims_profile_date_unique UNIQUE (profile_id, reward_date)
+    )`,
+    `CREATE TABLE IF NOT EXISTS login_reward_doubles (
+      id serial PRIMARY KEY,
+      profile_id integer NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+      reward_date date NOT NULL,
+      transaction_id text NOT NULL UNIQUE,
+      gems_awarded integer NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      CONSTRAINT login_reward_doubles_profile_date_unique UNIQUE (profile_id, reward_date)
+    )`,
     `CREATE TABLE IF NOT EXISTS jigsaw_games (
       id serial PRIMARY KEY,
       profile_id integer REFERENCES profiles(id),
@@ -473,6 +491,8 @@ export async function ensureDatabaseSchema(): Promise<void> {
     `ALTER TABLE IF EXISTS daily_challenges ENABLE ROW LEVEL SECURITY`,
     `ALTER TABLE IF EXISTS games ENABLE ROW LEVEL SECURITY`,
     `ALTER TABLE IF EXISTS guest_profile_transfer_codes ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS login_reward_claims ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE IF EXISTS login_reward_doubles ENABLE ROW LEVEL SECURITY`,
     `ALTER TABLE IF EXISTS jigsaw_games ENABLE ROW LEVEL SECURITY`,
     `ALTER TABLE IF EXISTS jigsaw_challenges ENABLE ROW LEVEL SECURITY`,
     `ALTER TABLE IF EXISTS memory_challenge_completions ENABLE ROW LEVEL SECURITY`,

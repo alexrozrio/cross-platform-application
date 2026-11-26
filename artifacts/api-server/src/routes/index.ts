@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import healthRouter from "./health";
 import profilesRouter from "./profiles";
+import admobRewardedRouter from "./admob-rewarded";
 import puzzlesRouter from "./puzzles";
 import gamesRouter from "./games";
 import leaderboardRouter from "./leaderboard";
@@ -34,6 +35,7 @@ const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(profilesRouter);
+router.use(admobRewardedRouter);
 router.use(profileMergeRouter);
 router.use(puzzlesRouter);
 router.use(gamesRouter);

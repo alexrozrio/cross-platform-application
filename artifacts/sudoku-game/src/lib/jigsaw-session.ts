@@ -87,7 +87,7 @@ export function parseSavedJigsawSession(
     if (session.revealedPieceNumbers !== undefined && !Array.isArray(session.revealedPieceNumbers)) return null;
     const revealedPieceNumbers = session.revealedPieceNumbers ?? [];
     if (
-      revealedPieceNumbers.length > JIGSAW_MAX_PIECE_NUMBER_HINTS ||
+      revealedPieceNumbers.length > JIGSAW_MAX_PIECE_NUMBER_HINTS + 1 ||
       revealedPieceNumbers.some((piece) => !Number.isInteger(piece) || piece < 0 || piece >= pieceCount) ||
       new Set(revealedPieceNumbers).size !== revealedPieceNumbers.length
     ) return null;

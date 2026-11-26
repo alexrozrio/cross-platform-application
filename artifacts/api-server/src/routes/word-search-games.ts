@@ -255,7 +255,7 @@ router.post("/word-search-games/:id/complete", async (req, res): Promise<void> =
     : "beginner";
   const safeElapsed = Math.min(86400, Math.floor(elapsedSeconds));
   const safeTries = Math.min(10000, Math.floor(tries));
-  const safeTips = Math.min(2, Math.floor(tipsUsed));
+  const safeTips = Math.min(3, Math.floor(tipsUsed));
   const points = calculatePoints(difficulty, safeElapsed, safeTries, safeTips);
   const xpEarned = existing.profileId ? XP_REWARDS[difficulty] : 0;
   const gemsEarned = existing.profileId ? GEM_REWARDS[difficulty] : 0;

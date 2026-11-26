@@ -19,6 +19,7 @@ import {
   type JumbleDifficulty, type JumbleQuestion,
 } from "@/lib/jumble-words";
 import { recordJumbleCompletion } from "@/lib/jumble-stats";
+import { useInterstitialAfterGame } from "@/lib/interstitial-ads";
 import { Button } from "@/components/ui/button";
 
 const SAVE_KEY = "brain-games-jumble-session";
@@ -91,6 +92,7 @@ export default function JumblePage() {
   const [infoModal, setInfoModal] = React.useState<"rules" | "controls" | "backstory" | null>(null);
   const [endConfirm, setEndConfirm] = React.useState(false);
   const [runFinished, setRunFinished] = React.useState(false);
+  useInterstitialAfterGame(Boolean(game && runFinished), Boolean(game && !runFinished));
   const activeGameRef = React.useRef(game);
   activeGameRef.current = game;
   const pendingGameRef = React.useRef<{ savedAt: number; promise: Promise<number | null> } | null>(null);

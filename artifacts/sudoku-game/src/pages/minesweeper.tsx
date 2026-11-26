@@ -16,6 +16,10 @@ import { toast } from "sonner";
 import { ACHIEVEMENT_COMPLETION_EVENT } from "@/lib/achievement-events";
 import { chordFrom, computeCounts, createMinefield, MAX_HINTS, MAX_MISTAKES, MINESWEEPER_LEVELS, revealFrom, type MinesweeperDifficulty } from "@/lib/minesweeper";
 import { recordMinesweeperCompletion } from "@/lib/minesweeper-stats";
+import { useInterstitialAfterGame } from "@/lib/interstitial-ads";
+import {
+  useRewardedInterstitialTip,
+} from "@/lib/rewarded-interstitial-tips";
 import { Button } from "@/components/ui/button";
 
 const SAVE_KEY = "brain-games-minesweeper-session";
@@ -53,7 +57,7 @@ function loadSaved(): SavedGame | null {
     const value = JSON.parse(localStorage.getItem(SAVE_KEY) ?? "null") as SavedGame | null;
     if (value && ["beginner", "easy", "medium", "hard"].includes(value.difficulty) && Array.isArray(value.mines) && Array.isArray(value.revealed) && value.size > 0) {
       value.mistakes = Number.isFinite(value.mistakes) ? value.mistakes : 0;
-      value.hintsUsed = Number.isFinite(value.hintsUsed) ? Math.min(MAX_HINTS, value.hintsUsed) : 0;
+      value.hintsUsed = Number.isFinite(value.hintsUsed) ? Math.min(MAX_HINTS + 1, value.hintsUsed) : 0;
       value.revealedCount = Number.isFinite(value.revealedCount) ? value.revealedCount : 0;
       value.status = value.status === "won" || value.status === "lost" ? value.status : "playing";
       return value;
@@ -64,6 +68,11 @@ function loadSaved(): SavedGame | null {
 
 export default function MinesweeperPage() {
   const [, setLocation] = useLocation();
+  const {
+    isShowingRewardedTip,
+    showAdForExtraTip,
+    isEnabled: canShowRewardedTip,
+  } = useRewardedInterstitialTip();
   const search = useSearch();
   const query = new URLSearchParams(search);
   const { profileId } = useAuth();
@@ -76,6 +85,10 @@ export default function MinesweeperPage() {
       gameMode === "adult" ? MINESWEEPER_LEVELS[id].mode === "adult" : true,
   );
   const [game, setGame] = React.useState<SavedGame | null>(null);
+  useInterstitialAfterGame(
+    game?.status === "won" || game?.status === "lost",
+    game?.status === "playing",
+  );
   const [elapsed, setElapsed] = React.useState(0);
   const [flagMode, setFlagMode] = React.useState(false);
   const [showConfetti, setShowConfetti] = React.useState(false);
@@ -293,8 +306,13 @@ export default function MinesweeperPage() {
     setGame({ ...game, flagged });
   };
 
-  const issueHint = () => {
-    if (!game || game.status !== "playing" || game.hintsUsed >= MAX_HINTS) return;
+  const issueHint = (earnedExtraTip = false) => {
+    if (
+      !game ||
+      game.status !== "playing" ||
+      game.hintsUsed > MAX_HINTS ||
+      (game.hintsUsed >= MAX_HINTS && !earnedExtraTip)
+    ) return;
     const candidates: number[] = [];
     for (let i = 0; i < game.size * game.size; i++) {
       if (!game.revealed[i] && !game.flagged[i] && !game.mines[i]) candidates.push(i);
@@ -307,6 +325,21 @@ export default function MinesweeperPage() {
     const safeNew = result.revealed.filter((i) => !game.mines[i]).length;
     sounds.place();
     applyAction({ ...game, revealed, flagged, revealedCount: game.revealedCount + safeNew, hintsUsed: game.hintsUsed + 1 });
+  };
+
+  const hasHintTarget = Boolean(
+    game &&
+    game.status === "playing" &&
+    game.mines.some((isMine, index) => !isMine && !game.revealed[index] && !game.flagged[index]),
+  );
+  const canEarnExtraTip =
+    canShowRewardedTip &&
+    game?.status === "playing" &&
+    game.hintsUsed === MAX_HINTS &&
+    hasHintTarget;
+  const handleRewardedHint = () => {
+    if (!canEarnExtraTip) return;
+    void showAdForExtraTip(() => issueHint(true));
   };
 
   const shareResult = async () => {
@@ -634,7 +667,28 @@ export default function MinesweeperPage() {
                 {availableDifficulties.map(({ id }) => <option key={id} value={id}>{MINESWEEPER_LEVELS[id].label}</option>)}
               </select>
             )}
-            <Button variant="outline" size="sm" className="h-8 shrink-0 gap-1 px-2" onClick={issueHint} disabled={game.hintsUsed >= MAX_HINTS} aria-label={`Hint, ${MAX_HINTS - game.hintsUsed} left`}><Lightbulb className="h-4 w-4"/> <span className="hidden sm:inline">Hint ({MAX_HINTS - game.hintsUsed})</span><span className="sm:hidden">{MAX_HINTS - game.hintsUsed}</span></Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 shrink-0 gap-1 px-2"
+              onClick={game.hintsUsed < MAX_HINTS ? () => issueHint() : handleRewardedHint}
+              disabled={
+                isShowingRewardedTip ||
+                game.hintsUsed > MAX_HINTS ||
+                (game.hintsUsed === MAX_HINTS && !canEarnExtraTip)
+              }
+              aria-label={canEarnExtraTip ? "Watch an ad for one extra hint" : `Hint, ${Math.max(0, MAX_HINTS - game.hintsUsed)} left`}
+            >
+              <Lightbulb className="h-4 w-4" />
+              <span className="hidden sm:inline">
+                {game.hintsUsed < MAX_HINTS
+                  ? `Hint (${MAX_HINTS - game.hintsUsed})`
+                  : !canShowRewardedTip ? "Hint (0)" : isShowingRewardedTip ? "Ad..." : "Watch ad +1"}
+              </span>
+              <span className="sm:hidden">
+                {game.hintsUsed < MAX_HINTS ? MAX_HINTS - game.hintsUsed : canShowRewardedTip ? "Ad" : "0"}
+              </span>
+            </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setGame(null)} aria-label="New game"><RotateCcw className="h-4 w-4"/></Button>
           </div>
 

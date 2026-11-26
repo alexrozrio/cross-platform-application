@@ -23,6 +23,10 @@ import { toast } from 'sonner';
 import { shareOrDownloadShareCard } from '@/lib/share-card';
 import { appShareUrlForPath } from '@/lib/app-links';
 import { ACHIEVEMENT_COMPLETION_EVENT } from '@/lib/achievement-events';
+import { useInterstitialAfterGame } from '@/lib/interstitial-ads';
+import {
+  useRewardedInterstitialTip,
+} from '@/lib/rewarded-interstitial-tips';
 import {
   type GridSize, type DisplayMode, type Card,
   shuffle, getPairs, buildDeck, formatTime, ALPHA_LABELS, getCardLabel,
@@ -210,6 +214,11 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
     path: bookmarkedSize && difficultySlug ? `/memory/${difficultySlug}` : "/memory",
   });
   const [, setLocation] = useLocation();
+  const {
+    isShowingRewardedTip,
+    showAdForExtraTip,
+    isEnabled: canShowRewardedTip,
+  } = useRewardedInterstitialTip();
   const search = useSearch();
   const { profileId } = useAuth();
   const { themeId } = useImageTheme();
@@ -220,6 +229,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
   const sounds = useSound(profile?.soundEnabled);
 
   const [phase, setPhase] = useState<GamePhase>('setup');
+  useInterstitialAfterGame(phase === 'won', phase === 'playing');
   const [gridSize, setGridSize] = useState<GridSize>(bookmarkedSize ?? 2);
   const [infoModal, setInfoModal] = useState<InfoModal>(null);
   const [displayMode, setDisplayMode] = useState<DisplayMode>('image');
@@ -347,7 +357,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
       setFlips(s.flips ?? 0);
       setElapsed(s.elapsed ?? 0);
       setGameId(s.gameId ?? null);
-      setTipsUsed(s.tipsUsed ?? 0);
+      setTipsUsed(Number.isFinite(s.tipsUsed) ? Math.min(MAX_TIPS + 1, s.tipsUsed ?? 0) : 0);
       setHintedIds(s.hintedIds ?? []);
       setMatchedCount((s.cards as Card[]).filter((c) => c.matched).length);
       setPhase('playing');
@@ -496,8 +506,27 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
     }
   }, [bookmarkedSize, phase, gridSize]);
 
-  const handleTip = useCallback(() => {
-    if (tipsUsed >= MAX_TIPS || lockBoard) return;
+  const hasHintablePair = React.useMemo(() => {
+    const seenValues = new Set<number>();
+    for (const card of cards) {
+      if (card.matched || card.flipped) continue;
+      if (seenValues.has(card.value)) return true;
+      seenValues.add(card.value);
+    }
+    return false;
+  }, [cards]);
+  const canEarnExtraTip =
+    canShowRewardedTip &&
+    tipsUsed === MAX_TIPS &&
+    phase === 'playing' &&
+    hasHintablePair;
+
+  const handleTip = useCallback((earnedExtraTip = false) => {
+    if (
+      tipsUsed > MAX_TIPS ||
+      (tipsUsed >= MAX_TIPS && !earnedExtraTip) ||
+      lockBoard
+    ) return;
 
     // Pick one unmatched, face-down pair to highlight
     setCards(currentCards => {
@@ -526,6 +555,11 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
       return currentCards; // no card state change — just highlighting
     });
   }, [tipsUsed, lockBoard]);
+
+  const handleRewardedTip = () => {
+    if (!canEarnExtraTip) return;
+    void showAdForExtraTip(() => handleTip(true));
+  };
 
   const handleCardClick = useCallback((cardId: number) => {
     if (lockBoard) return;
@@ -1199,7 +1233,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
             <Lightbulb className="w-4 h-4 text-amber-500 shrink-0" />
             <p className="text-sm text-amber-700 dark:text-amber-400">
               <span className="font-semibold">{tipsUsed} tip{tipsUsed > 1 ? 's' : ''} used</span>
-              {' '}— {tipsUsed === 1 ? '−15%' : '−30%'} score penalty applied
+              {' '}— −{Math.min(40, tipsUsed * 15)}% score penalty applied
             </p>
           </div>
         )}
@@ -1353,20 +1387,25 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
           </TooltipProvider>
 
           <button
-            onClick={handleTip}
-            disabled={tipsUsed >= MAX_TIPS || lockBoard}
+            onClick={tipsUsed < MAX_TIPS ? () => handleTip() : handleRewardedTip}
+            disabled={
+              isShowingRewardedTip ||
+              lockBoard ||
+              tipsUsed > MAX_TIPS ||
+              (tipsUsed === MAX_TIPS && !canEarnExtraTip)
+            }
             className={[
               'memory-tip-action flex items-center gap-1 text-xs transition-colors shrink-0 font-medium disabled:cursor-not-allowed',
-              tipsUsed >= MAX_TIPS ? 'text-muted-foreground/40' : 'text-amber-500 hover:text-amber-600',
+              tipsUsed >= MAX_TIPS && !canEarnExtraTip ? 'text-muted-foreground/40' : 'text-amber-500 hover:text-amber-600',
             ].join(' ')}
-            title="Tip: briefly reveals all cards"
+            title={tipsUsed < MAX_TIPS ? 'Tip: briefly reveals a matching pair' : 'Watch an ad to reveal one extra matching pair'}
           >
-            <Lightbulb className={`w-3 h-3 ${tipsUsed >= MAX_TIPS ? 'opacity-40' : ''}`} />
-            <span className={`memory-tip-label ${tipsUsed >= MAX_TIPS ? 'text-red-400' : 'text-amber-500'}`}>
-              Tip
+            <Lightbulb className={`w-3 h-3 ${tipsUsed >= MAX_TIPS && !canEarnExtraTip ? 'opacity-40' : ''}`} />
+            <span className={`memory-tip-label ${tipsUsed >= MAX_TIPS && !canEarnExtraTip ? 'text-red-400' : 'text-amber-500'}`}>
+              {tipsUsed < MAX_TIPS ? 'Tip' : canEarnExtraTip ? isShowingRewardedTip ? 'Ad…' : 'Ad +1' : '0'}
             </span>
             <span className={`memory-tip-count text-[9px] font-bold leading-none tabular-nums ${tipsUsed >= MAX_TIPS ? 'text-red-400' : 'text-amber-500'}`}>
-              {MAX_TIPS - tipsUsed}
+              {Math.max(0, MAX_TIPS - tipsUsed)}
             </span>
           </button>
 

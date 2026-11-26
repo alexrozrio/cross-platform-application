@@ -17,6 +17,10 @@ import { toast } from "sonner";
 import { ACHIEVEMENT_COMPLETION_EVENT } from "@/lib/achievement-events";
 import { createWordSearch, getLineCells, isWordSearchTheme, WORD_SEARCH_LEVELS, WORD_SEARCH_THEMES, wordSearchThemeForIconSet, type WordSearchDifficulty, type WordSearchPuzzle, type WordSearchTheme } from "@/lib/word-search";
 import { recordWordSearchCompletion } from "@/lib/word-search-stats";
+import { useInterstitialAfterGame } from "@/lib/interstitial-ads";
+import {
+  useRewardedInterstitialTip,
+} from "@/lib/rewarded-interstitial-tips";
 import { Button } from "@/components/ui/button";
 
 const SAVE_KEY = "brain-games-word-search-session";
@@ -51,7 +55,7 @@ function loadSaved(): SavedGame | null {
     if (value && ["beginner", "easy", "medium", "hard"].includes(value.difficulty) && value.puzzle?.grid?.length) {
       if (!WORD_SEARCH_THEMES.some((theme) => theme.id === value.theme)) value.theme = "animals";
       value.tries = Number.isFinite(value.tries) ? value.tries : 0;
-      value.tipsUsed = Number.isFinite(value.tipsUsed) ? Math.min(MAX_TIPS, value.tipsUsed) : 0;
+      value.tipsUsed = Number.isFinite(value.tipsUsed) ? Math.min(MAX_TIPS + 1, value.tipsUsed) : 0;
       return value;
     }
   } catch { /* Ignore an unavailable or invalid save. */ }
@@ -60,6 +64,11 @@ function loadSaved(): SavedGame | null {
 
 export default function WordSearchPage() {
   const [, setLocation] = useLocation();
+  const {
+    isShowingRewardedTip,
+    showAdForExtraTip,
+    isEnabled: canShowRewardedTip,
+  } = useRewardedInterstitialTip();
   const search = useSearch();
   const query = new URLSearchParams(search);
   const { profileId } = useAuth();
@@ -73,6 +82,10 @@ export default function WordSearchPage() {
       gameMode === "adult" ? WORD_SEARCH_LEVELS[id].mode === "adult" : true,
   );
   const [game, setGame] = React.useState<SavedGame | null>(null);
+  useInterstitialAfterGame(
+    Boolean(game && game.found.length === game.puzzle.words.length),
+    Boolean(game && game.found.length < game.puzzle.words.length),
+  );
   const [selectedTheme, setSelectedTheme] = React.useState<WordSearchTheme>(() => wordSearchThemeForIconSet(iconSetId) ?? "animals");
   const [selected, setSelected] = React.useState<number[]>([]);
   const [dragStart, setDragStart] = React.useState<number | null>(null);
@@ -337,10 +350,25 @@ export default function WordSearchPage() {
     sounds.click();
   };
 
-  const issueHint = () => {
-    if (!game || game.tipsUsed >= MAX_TIPS) return;
+  const issueHint = (earnedExtraTip = false) => {
+    if (
+      !game ||
+      game.tipsUsed > MAX_TIPS ||
+      (game.tipsUsed >= MAX_TIPS && !earnedExtraTip)
+    ) return;
     const next = game.puzzle.words.find((word) => !game.found.includes(word));
     if (next) { setGame({ ...game, tipsUsed: game.tipsUsed + 1 }); setHintWord(next); setSelected(game.puzzle.placements[next]); sounds.click(); }
+  };
+  const hasHintTarget = Boolean(
+    game && game.puzzle.words.some((word) => !game.found.includes(word)),
+  );
+  const canEarnExtraTip =
+    canShowRewardedTip &&
+    game?.tipsUsed === MAX_TIPS &&
+    hasHintTarget;
+  const handleRewardedHint = () => {
+    if (!canEarnExtraTip) return;
+    void showAdForExtraTip(() => issueHint(true));
   };
   const shareCardFallback = async (lines: string[]) => {
     try {
@@ -777,7 +805,7 @@ export default function WordSearchPage() {
               }))}
             </div>
           </div>
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground"><span>{game.found.length} of {game.puzzle.words.length} found · {game.tries} tries · {game.tipsUsed}/{MAX_TIPS} tips</span><div className="flex gap-2"><Button variant="outline" size="sm" onClick={issueHint} disabled={game.tipsUsed >= MAX_TIPS}><Lightbulb className="mr-1.5 h-4 w-4"/> Hint</Button><Button variant="outline" size="sm" onClick={share}><Share2 className="mr-1.5 h-4 w-4"/> Share</Button></div></div>
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground"><span>{game.found.length} of {game.puzzle.words.length} found · {game.tries} tries · {game.tipsUsed}/{MAX_TIPS} tips</span><div className="flex gap-2"><Button variant="outline" size="sm" onClick={game.tipsUsed < MAX_TIPS ? () => issueHint() : handleRewardedHint} disabled={isShowingRewardedTip || game.tipsUsed > MAX_TIPS || (game.tipsUsed === MAX_TIPS && !canEarnExtraTip)} aria-label={canEarnExtraTip ? "Watch an ad for one extra tip" : `Hint, ${Math.max(0, MAX_TIPS - game.tipsUsed)} left`}><Lightbulb className="mr-1.5 h-4 w-4"/>{game.tipsUsed < MAX_TIPS ? "Hint" : !canShowRewardedTip ? "Hint (0)" : isShowingRewardedTip ? "Ad..." : "Watch ad +1"}</Button><Button variant="outline" size="sm" onClick={share}><Share2 className="mr-1.5 h-4 w-4"/> Share</Button></div></div>
         </section>}
       </section>
       {game && <aside className="rounded-3xl border border-violet-200/70 bg-gradient-to-br from-card via-violet-50/50 to-fuchsia-50/60 p-4 shadow-sm dark:border-violet-800/50 dark:from-card dark:via-violet-950/15 dark:to-fuchsia-950/20"><div className="mb-3 flex items-center justify-between"><h2 className="font-bold">Words to find</h2><span className="rounded-full bg-violet-500/10 px-2 py-1 text-xs font-bold text-violet-700 dark:text-violet-300">{game.found.length}/{game.puzzle.words.length}</span></div>{hintWord && <p className="mb-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">Hint: look for <strong>{hintWord}</strong></p>}<div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-1">{game.puzzle.words.map((word) => { const foundIndex = game.found.indexOf(word); const color = foundIndex >= 0 ? WORD_COLORS[game.puzzle.words.indexOf(word) % WORD_COLORS.length] : "border border-violet-100 bg-white/80 text-foreground dark:border-violet-900/60 dark:bg-slate-950/40"; return <div key={word} className={`rounded-xl px-3 py-2 text-sm font-semibold tracking-wide transition-colors ${color} ${foundIndex >= 0 ? "line-through" : ""}`}>{foundIndex >= 0 ? "✓ " : ""}{word}</div>; })}</div><Button variant="ghost" className="mt-4 w-full" onClick={() => { setGame(null); setSelected([]); setLocation("/word-search"); }}><RotateCcw className="mr-2 h-4 w-4"/> New puzzle</Button></aside>}

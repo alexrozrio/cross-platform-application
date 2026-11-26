@@ -69,7 +69,7 @@ describe("parseSavedJigsawSession", () => {
     }), now)).toBeNull();
   });
 
-  it("persists at most three unique piece-number hints", () => {
+  it("persists at most four unique piece-number hints, including the rewarded tip", () => {
     expect(parseSavedJigsawSession(JSON.stringify({
       ...validSession,
       revealedPieceNumbers: [0, 1, 2],
@@ -77,6 +77,10 @@ describe("parseSavedJigsawSession", () => {
     expect(parseSavedJigsawSession(JSON.stringify({
       ...validSession,
       revealedPieceNumbers: Array.from({ length: JIGSAW_MAX_PIECE_NUMBER_HINTS + 1 }, (_, index) => index),
+    }), now)?.revealedPieceNumbers).toEqual([0, 1, 2, 3]);
+    expect(parseSavedJigsawSession(JSON.stringify({
+      ...validSession,
+      revealedPieceNumbers: Array.from({ length: JIGSAW_MAX_PIECE_NUMBER_HINTS + 2 }, (_, index) => index),
     }), now)).toBeNull();
     expect(parseSavedJigsawSession(JSON.stringify({
       ...validSession,

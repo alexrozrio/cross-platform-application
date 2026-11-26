@@ -19,6 +19,7 @@ import {
   move2048, serialize2048, type Game2048Direction, type Game2048Difficulty, type Game2048State,
 } from "@/lib/game-2048";
 import { recordGame2048Completion } from "@/lib/game-2048-stats";
+import { useInterstitialAfterGame } from "@/lib/interstitial-ads";
 import { Button } from "@/components/ui/button";
 
 const SAVE_KEY = "brain-games-2048-session";
@@ -87,6 +88,10 @@ export default function Game2048Page() {
       gameMode === "adult" ? GAME_2048_LEVELS[id].mode === "adult" : true,
   );
   const [game, setGame] = React.useState<SavedGame | null>(null);
+  useInterstitialAfterGame(
+    game?.state.status === "over" || game?.state.status === "won",
+    game?.state.status === "playing",
+  );
   const [elapsed, setElapsed] = React.useState(0);
   const [history, setHistory] = React.useState<Game2048State[]>([]);
   const [showConfetti, setShowConfetti] = React.useState(false);
