@@ -62,11 +62,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const isMinesweeperGamePage = location.startsWith("/minesweeper") && new URLSearchParams(location.split("?")[1] ?? "").has("play");
   const isSlidePuzzleGamePage = location.startsWith("/slide-puzzle") && new URLSearchParams(location.split("?")[1] ?? "").has("play");
   const isOddImagesGamePage = location.startsWith("/odd-images") && new URLSearchParams(location.split("?")[1] ?? "").has("play");
+  const isMemoryOrderGamePage = location.startsWith("/memory-order") && new URLSearchParams(location.split("?")[1] ?? "").has("play");
   const isGameSetupRoute =
-    ["/sudoku", "/memory", "/word-search", "/minesweeper", "/slide-puzzle", "/odd-images", "/jigsaw", "/rubiks"].some(
+    ["/sudoku", "/memory", "/word-search", "/minesweeper", "/slide-puzzle", "/odd-images", "/memory-order", "/jigsaw", "/rubiks"].some(
       (path) => location === path || location.startsWith(`${path}?`) || location.startsWith(`${path}/`),
     ) || location === "/quiz" || location.startsWith("/quiz/");
-  const isGamePage = isGameRoute || isCanonicalSudokuGame || isJigsawGamePage || isWordSearchGamePage || isMinesweeperGamePage || isSlidePuzzleGamePage || isOddImagesGamePage || isGameSetupRoute;
+  const isGamePage = isGameRoute || isCanonicalSudokuGame || isJigsawGamePage || isWordSearchGamePage || isMinesweeperGamePage || isSlidePuzzleGamePage || isOddImagesGamePage || isMemoryOrderGamePage || isGameSetupRoute;
   const isPublicPlayerPage =
     location.startsWith("/player/") || location.startsWith("/players/");
   const isOfflineGame =

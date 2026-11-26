@@ -357,7 +357,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
       setFlips(s.flips ?? 0);
       setElapsed(s.elapsed ?? 0);
       setGameId(s.gameId ?? null);
-      setTipsUsed(Number.isFinite(s.tipsUsed) ? Math.min(MAX_TIPS + 1, s.tipsUsed ?? 0) : 0);
+      setTipsUsed(Number.isFinite(s.tipsUsed) ? Math.max(0, Math.floor(s.tipsUsed ?? 0)) : 0);
       setHintedIds(s.hintedIds ?? []);
       setMatchedCount((s.cards as Card[]).filter((c) => c.matched).length);
       setPhase('playing');
@@ -517,16 +517,12 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
   }, [cards]);
   const canEarnExtraTip =
     canShowRewardedTip &&
-    tipsUsed === MAX_TIPS &&
+    tipsUsed >= MAX_TIPS &&
     phase === 'playing' &&
     hasHintablePair;
 
   const handleTip = useCallback((earnedExtraTip = false) => {
-    if (
-      tipsUsed > MAX_TIPS ||
-      (tipsUsed >= MAX_TIPS && !earnedExtraTip) ||
-      lockBoard
-    ) return;
+    if ((!earnedExtraTip && tipsUsed >= MAX_TIPS) || lockBoard) return;
 
     // Pick one unmatched, face-down pair to highlight
     setCards(currentCards => {
@@ -1391,8 +1387,7 @@ export default function MemoryMatchPage({ difficultySlug }: MemoryMatchProps = {
             disabled={
               isShowingRewardedTip ||
               lockBoard ||
-              tipsUsed > MAX_TIPS ||
-              (tipsUsed === MAX_TIPS && !canEarnExtraTip)
+              (tipsUsed >= MAX_TIPS && !canEarnExtraTip)
             }
             className={[
               'memory-tip-action flex items-center gap-1 text-xs transition-colors shrink-0 font-medium disabled:cursor-not-allowed',

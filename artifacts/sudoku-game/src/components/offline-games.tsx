@@ -2,6 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { quizBank, pickQuestions, type QuizSubject, type QuizQuestion } from "@workspace/api-zod/quiz";
 import { oddImageRound, type OddImageQuestion } from "@/lib/odd-images";
+import { memoryOrderRound, type MemoryOrderQuestion } from "@/lib/memory-order";
 
 const BANNER =
   "bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700 rounded-xl px-4 py-3 text-center";
@@ -548,6 +549,147 @@ export function OfflineOddImagesFallback() {
   );
 }
 
+/* ---------------- Memory order: watch the sequence, then tap it back ---------------- */
+
+function createOfflineMemoryOrderQuestions(): MemoryOrderQuestion[] {
+  return memoryOrderRound("easy", Math.floor(Math.random() * 1_000_000_000));
+}
+
+export function OfflineMemoryOrderFallback() {
+  const [questions, setQuestions] = React.useState<MemoryOrderQuestion[]>(createOfflineMemoryOrderQuestions);
+  const [index, setIndex] = React.useState(0);
+  const [viewing, setViewing] = React.useState(false);
+  const [viewIndex, setViewIndex] = React.useState(-1);
+  const [picked, setPicked] = React.useState<number[]>([]);
+  const [score, setScore] = React.useState(0);
+  const [done, setDone] = React.useState(false);
+
+  const question = questions[index];
+
+  const start = () => {
+    if (!question) return;
+    setViewing(true);
+    setViewIndex(0);
+    setPicked([]);
+  };
+
+  React.useEffect(() => {
+    if (!viewing) return;
+    if (!question) { setViewing(false); return; }
+    if (viewIndex >= question.sequence.length) { setViewing(false); return; }
+    const t = window.setTimeout(() => setViewIndex((i) => i + 1), 900);
+    return () => window.clearTimeout(t);
+  }, [viewing, viewIndex, question]);
+
+  const pick = (value: number) => {
+    if (!question || viewing) return;
+    if (picked.includes(value)) return;
+    const next = [...picked, value];
+    setPicked(next);
+    if (next.length === question.sequence.length) {
+      if (next.every((v, i) => v === question.sequence[i])) setScore((s) => s + 1);
+    }
+  };
+
+  const next = () => {
+    if (index + 1 >= questions.length) {
+      setDone(true);
+    } else {
+      setIndex((value) => value + 1);
+      setPicked([]);
+      setViewing(false);
+      setViewIndex(-1);
+    }
+  };
+
+  const restart = () => {
+    setQuestions(createOfflineMemoryOrderQuestions());
+    setIndex(0);
+    setPicked([]);
+    setViewing(false);
+    setViewIndex(-1);
+    setScore(0);
+    setDone(false);
+  };
+
+  if (done) {
+    return (
+      <div className="min-h-[70vh] w-full max-w-md mx-auto px-4 py-8 space-y-5">
+        <OfflineBanner title="Offline Memory Order">
+          You recalled {score} out of {questions.length} sequences. Local game — no rewards saved.
+        </OfflineBanner>
+        <Button className="w-full" onClick={restart}>Play again</Button>
+      </div>
+    );
+  }
+
+  if (!question) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center px-4">
+        <OfflineBanner title="Offline Memory Order">No puzzle available right now.</OfflineBanner>
+      </div>
+    );
+  }
+
+  const answered = picked.length === question.sequence.length;
+  const viewValue = viewing && viewIndex >= 0 && viewIndex < question.sequence.length
+    ? question.sequence[viewIndex]
+    : null;
+
+  return (
+    <div className="min-h-[70vh] w-full max-w-md mx-auto px-4 py-6 space-y-4">
+      <OfflineBanner title="Offline Memory Order">
+        {viewing
+          ? `Memorise the order — image ${viewIndex + 1} of ${question.sequence.length}.`
+          : answered
+            ? `Sequence complete — ${picked.every((v, i) => v === question.sequence[i]) ? "correct!" : "not quite."}`
+            : `Tap the images in the order you saw. Question ${index + 1} of ${questions.length}.`}
+      </OfflineBanner>
+      {viewing ? (
+        <div className="flex items-center justify-center py-10">
+          <div className="w-32 h-32 rounded-2xl border-2 border-fuchsia-400 bg-fuchsia-500/10 flex items-center justify-center text-7xl">
+            {viewValue !== null ? OFFLINE_ODD_IMAGE_EMOJIS[(viewValue - 1) % OFFLINE_ODD_IMAGE_EMOJIS.length] : "👀"}
+          </div>
+        </div>
+      ) : picked.length === 0 && !answered ? (
+        <Button className="w-full" onClick={start}>Show the sequence</Button>
+      ) : (
+        <div className="grid grid-cols-3 gap-2 mx-auto" style={{ maxWidth: 340 }}>
+          {question.tiles.map((value, cellIndex) => {
+            const order = picked.indexOf(value);
+            const isWrong = answered && order >= 0 && order !== question.sequence.indexOf(value);
+            return (
+              <button
+                key={`${cellIndex}-${value}`}
+                type="button"
+                onClick={() => pick(value)}
+                disabled={answered}
+                className={[
+                  "aspect-square rounded-xl border-2 bg-card text-3xl flex items-center justify-center transition-colors",
+                  order >= 0
+                    ? isWrong
+                      ? "border-rose-500 bg-rose-500/10"
+                      : "border-fuchsia-500 bg-fuchsia-500/10"
+                    : "border-border hover:border-fuchsia-500/60",
+                  answered ? "opacity-80" : "",
+                ].join(" ")}
+              >
+                {OFFLINE_ODD_IMAGE_EMOJIS[(value - 1) % OFFLINE_ODD_IMAGE_EMOJIS.length]}
+                {order >= 0 && <span className="absolute mt-16 ml-16 text-xs font-bold text-fuchsia-600">{order + 1}</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+      {answered && (
+        <Button className="w-full" onClick={next}>
+          {index + 1 >= questions.length ? "See score" : "Next sequence"}
+        </Button>
+      )}
+    </div>
+  );
+}
+
 /* ---------------- Quiz fallbacks (real question banks) ---------------- */
 
 const QUIZ_SUBJECT_META: Record<QuizSubject, { title: string; emoji: string; blurb: string }> = {
@@ -666,6 +808,8 @@ export function OfflineGameFallback({ game }: { game: string }) {
       return <OfflineSlidePuzzleFallback />;
     case "odd-images":
       return <OfflineOddImagesFallback />;
+    case "memory-order":
+      return <OfflineMemoryOrderFallback />;
     case "science-quiz":
     case "maths-quiz":
     case "gk-quiz":
@@ -681,6 +825,7 @@ export const OFFLINE_GAME_IDS = [
   "minesweeper",
   "slide-puzzle",
   "odd-images",
+  "memory-order",
   "science-quiz",
   "maths-quiz",
   "gk-quiz",

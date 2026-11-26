@@ -8,7 +8,7 @@ export const MINESWEEPER_LEVELS: Record<MinesweeperDifficulty, { label: string; 
 };
 
 export const MINESWEEPER_DIFFICULTIES = Object.keys(MINESWEEPER_LEVELS) as MinesweeperDifficulty[];
-export const MAX_MISTAKES = 3;
+export const FREE_MISTAKES = 1;
 export const MAX_HINTS = 2;
 
 function mulberry32(seed: number) {

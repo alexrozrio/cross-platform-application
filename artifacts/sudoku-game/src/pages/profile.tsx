@@ -91,6 +91,7 @@ import {
   Grid3x3,
   Images,
   LetterText,
+  ListOrdered,
 } from "lucide-react";
 import { Snake } from "@/components/snake-icon";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -113,6 +114,8 @@ import { SNAKE_LEVELS } from "@/lib/snake";
 import { getSnakeHistory, summarizeSnakeStats, SNAKE_STATS_UPDATED } from "@/lib/snake-stats";
 import { ODD_IMAGE_LEVELS, ODD_IMAGE_LEVEL_ORDER } from "@/lib/odd-images";
 import { getOddImageHistory, summarizeOddImageStats, ODD_IMAGES_STATS_UPDATED } from "@/lib/odd-image-stats";
+import { MEMORY_ORDER_LEVELS, MEMORY_ORDER_LEVEL_ORDER } from "@/lib/memory-order";
+import { getMemoryOrderHistory, summarizeMemoryOrderStats, MEMORY_ORDER_STATS_UPDATED } from "@/lib/memory-order-stats";
 import { RUBIKS_LEVELS, RUBIKS_VISIBLE } from "@/lib/rubiks";
 import { getRubiksHistory, summarizeRubiksStats, RUBIKS_STATS_UPDATED } from "@/lib/rubiks-stats";
 import { WORD_SEARCH_LEVELS } from "@/lib/word-search";
@@ -456,7 +459,7 @@ function JigsawDailyCalendar({ profileId }: { profileId: number }) {
 
 // ─── Achievements Card ────────────────────────────────────────────────────────
 
-function AchievementsCard({ profileId, game }: { profileId: number; game: "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "snake" | "odd-images" | "science-quiz" | "maths-quiz" | "gk-quiz" }) {
+function AchievementsCard({ profileId, game }: { profileId: number; game: "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "snake" | "odd-images" | "memory-order" | "science-quiz" | "maths-quiz" | "gk-quiz" }) {
   const { data } = useQuery({
     queryKey: [`/api/achievements/${profileId}`],
     queryFn: () => customFetch<AchievementsData>(`/api/achievements/${profileId}`),
@@ -472,6 +475,7 @@ function AchievementsCard({ profileId, game }: { profileId: number; game: "sudok
   const isJumble = game === "jumble";
   const isSnake = game === "snake";
   const isOddImages = game === "odd-images";
+  const isMemoryOrder = game === "memory-order";
   const quizSubjectId = quizSubjectForGameId(game);
   const quizTheme = quizSubjectId ? QUIZ_SUBJECTS[quizSubjectId].theme : null;
   const gameMeta = ACHIEVEMENT_META.filter((a) => a.game === game);
@@ -483,12 +487,12 @@ function AchievementsCard({ profileId, game }: { profileId: number; game: "sudok
   return (
     <Card
       id={`profile-achievements-${game}`}
-      className={`scroll-mt-20 shadow-sm ${isMemory ? "border-purple-200/60 dark:border-purple-800/40" : isJigsaw ? "border-amber-200/70 dark:border-amber-800/40" : isWordSearch ? "border-violet-200/70 dark:border-violet-800/40" : isMinesweeper ? "border-emerald-200/70 dark:border-emerald-800/40" : isSlidePuzzle ? "border-sky-200/70 dark:border-sky-800/40" : isGame2048 ? "border-orange-200/60 dark:border-orange-800/40" : isJumble ? "border-cyan-200/60 dark:border-cyan-800/40" : isSnake ? "border-green-200/60 dark:border-green-800/40" : isOddImages ? "border-teal-200/70 dark:border-teal-800/40" : quizTheme ? quizTheme.border : "border-primary/10"}`}
+      className={`scroll-mt-20 shadow-sm ${isMemory ? "border-purple-200/60 dark:border-purple-800/40" : isJigsaw ? "border-amber-200/70 dark:border-amber-800/40" : isWordSearch ? "border-violet-200/70 dark:border-violet-800/40" : isMinesweeper ? "border-emerald-200/70 dark:border-emerald-800/40" : isSlidePuzzle ? "border-sky-200/70 dark:border-sky-800/40" : isGame2048 ? "border-orange-200/60 dark:border-orange-800/40" : isJumble ? "border-cyan-200/60 dark:border-cyan-800/40" : isSnake ? "border-green-200/60 dark:border-green-800/40" : isOddImages ? "border-teal-200/70 dark:border-teal-800/40" : isMemoryOrder ? "border-fuchsia-200/70 dark:border-fuchsia-800/40" : quizTheme ? quizTheme.border : "border-primary/10"}`}
     >
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Trophy className={`w-4 h-4 ${isMemory ? "text-purple-500" : isJigsaw ? "text-amber-600" : isWordSearch ? "text-violet-600" : isMinesweeper ? "text-emerald-600" : isSlidePuzzle ? "text-sky-600" : isGame2048 ? "text-orange-600" : isJumble ? "text-cyan-600" : isSnake ? "text-green-600" : isOddImages ? "text-teal-600" : quizTheme ? quizTheme.text : "text-yellow-500"}`} />
+            <Trophy className={`w-4 h-4 ${isMemory ? "text-purple-500" : isJigsaw ? "text-amber-600" : isWordSearch ? "text-violet-600" : isMinesweeper ? "text-emerald-600" : isSlidePuzzle ? "text-sky-600" : isGame2048 ? "text-orange-600" : isJumble ? "text-cyan-600" : isSnake ? "text-green-600" : isOddImages ? "text-teal-600" : isMemoryOrder ? "text-fuchsia-600" : quizTheme ? quizTheme.text : "text-yellow-500"}`} />
             Achievements
           </CardTitle>
           <span className="text-sm text-muted-foreground font-semibold">
@@ -501,7 +505,7 @@ function AchievementsCard({ profileId, game }: { profileId: number; game: "sudok
           const items = gameMeta.filter((a) => a.group === group);
           return (
             <div key={group}>
-              <p className={`text-xs font-bold uppercase tracking-widest mb-3 ${isMemory ? "text-purple-500" : isJigsaw ? "text-amber-700 dark:text-amber-300" : isWordSearch ? "text-violet-700 dark:text-violet-300" : isMinesweeper ? "text-emerald-700 dark:text-emerald-300" : isSlidePuzzle ? "text-sky-700 dark:text-sky-300" : isGame2048 ? "text-orange-700 dark:text-orange-300" : isJumble ? "text-cyan-700 dark:text-cyan-300" : isSnake ? "text-green-700 dark:text-green-300" : isOddImages ? "text-teal-700 dark:text-teal-300" : quizTheme ? quizTheme.strong : "text-muted-foreground"}`}>
+              <p className={`text-xs font-bold uppercase tracking-widest mb-3 ${isMemory ? "text-purple-500" : isJigsaw ? "text-amber-700 dark:text-amber-300" : isWordSearch ? "text-violet-700 dark:text-violet-300" : isMinesweeper ? "text-emerald-700 dark:text-emerald-300" : isSlidePuzzle ? "text-sky-700 dark:text-sky-300" : isGame2048 ? "text-orange-700 dark:text-orange-300" : isJumble ? "text-cyan-700 dark:text-cyan-300" : isSnake ? "text-green-700 dark:text-green-300" : isOddImages ? "text-teal-700 dark:text-teal-300" : isMemoryOrder ? "text-fuchsia-700 dark:text-fuchsia-300" : quizTheme ? quizTheme.strong : "text-muted-foreground"}`}>
                 {group}
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -733,7 +737,7 @@ interface TournamentStreakData {
   totalTop3Finishes: number;
 }
 
-type GameTab = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "snake" | "odd-images" | "rubiks" | QuizGameId;
+type GameTab = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "snake" | "odd-images" | "memory-order" | "rubiks" | QuizGameId;
 
 const profileSchema = z.object({
   username: z.string().min(2, "At least 2 characters").max(30),
@@ -1325,6 +1329,80 @@ function OddImagesStatsPanel({ profileId }: { profileId: number | null }) {
   );
 }
 
+function MemoryOrderDailyCalendar({ profileId }: { profileId: number }) {
+  const now = new Date();
+  const utcYear = now.getUTCFullYear();
+  const utcMonth = now.getUTCMonth();
+  const [viewYear, setViewYear] = useState(utcYear);
+  const [viewMonth, setViewMonth] = useState(utcMonth);
+  const month = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}`;
+  const { data } = useQuery({
+    queryKey: [`/api/memory-order-games/daily-challenge/history/${profileId}`, month],
+    queryFn: () => customFetch<{ month: string; completedDates: string[] }>(`/api/memory-order-games/daily-challenge/history/${profileId}?month=${month}`),
+    enabled: Boolean(profileId),
+  });
+  const completed = new Set(data?.completedDates ?? []);
+  const daysInMonth = new Date(Date.UTC(viewYear, viewMonth + 1, 0)).getUTCDate();
+  const startWeekday = new Date(Date.UTC(viewYear, viewMonth, 1)).getUTCDay();
+  const today = now.toISOString().slice(0, 10);
+  const previous = () => viewMonth === 0 ? (setViewYear((year) => year - 1), setViewMonth(11)) : setViewMonth((monthIndex) => monthIndex - 1);
+  const next = () => viewMonth === 11 ? (setViewYear((year) => year + 1), setViewMonth(0)) : setViewMonth((monthIndex) => monthIndex + 1);
+  const prevDisabled = viewYear < utcYear - 1 || (viewYear === utcYear - 1 && viewMonth <= utcMonth);
+  const nextDisabled = viewYear === utcYear && viewMonth >= utcMonth;
+  return <Card className="border-fuchsia-200/60 shadow-sm dark:border-fuchsia-800/40">
+    <CardHeader className="pb-2"><div className="flex items-center justify-between gap-2"><CardTitle className="flex items-center gap-2 text-base"><ListOrdered className="h-4 w-4 text-fuchsia-600" /> Daily Memory Order</CardTitle><Link href="/memory-order-challenge" className="whitespace-nowrap text-xs text-fuchsia-600 underline underline-offset-2">Play today →</Link></div></CardHeader>
+    <CardContent className="space-y-3"><div className="flex items-center justify-between"><button onClick={previous} disabled={prevDisabled} className="rounded p-1 hover:bg-muted disabled:opacity-30"><ChevronLeft className="h-4 w-4" /></button><p className="text-sm font-semibold">{MONTH_NAMES[viewMonth]} {viewYear}</p><button onClick={next} disabled={nextDisabled} className="rounded p-1 hover:bg-muted disabled:opacity-30"><ChevronRight className="h-4 w-4" /></button></div>
+      <div className="grid grid-cols-7 gap-1">{WEEKDAYS.map((day) => <div key={day} className="py-1 text-center text-[10px] font-semibold text-muted-foreground">{day}</div>)}{Array.from({ length: startWeekday }, (_, index) => <div key={`empty-${index}`} />)}{Array.from({ length: daysInMonth }, (_, index) => { const day = index + 1; const date = `${month}-${String(day).padStart(2, "0")}`; const done = completed.has(date); const isToday = date === today; const future = date > today; return <div key={day} title={done ? `Completed ${date}` : undefined} className={`aspect-square flex items-center justify-center rounded-full text-xs font-semibold ${done ? "bg-fuchsia-500 text-white" : isToday ? "ring-2 ring-fuchsia-400" : future ? "text-muted-foreground/40" : "text-muted-foreground"}`}>{done ? "🧠" : day}</div>; })}</div>
+      <p className="text-center text-[11px] text-muted-foreground">{completed.size} day{completed.size !== 1 ? "s" : ""} completed this month</p>
+    </CardContent>
+  </Card>;
+}
+
+function MemoryOrderStatsPanel({ profileId }: { profileId: number | null }) {
+  const [history, setHistory] = useState(() => getMemoryOrderHistory(profileId));
+  useEffect(() => {
+    const refresh = (event?: Event) => {
+      const changedProfileId = (event as CustomEvent<number | null> | undefined)?.detail;
+      if (changedProfileId === undefined || changedProfileId === (profileId ?? null)) setHistory(getMemoryOrderHistory(profileId));
+    };
+    window.addEventListener(MEMORY_ORDER_STATS_UPDATED, refresh);
+    return () => window.removeEventListener(MEMORY_ORDER_STATS_UPDATED, refresh);
+  }, [profileId]);
+
+  const stats = summarizeMemoryOrderStats(history);
+  const fastest = Object.values(stats.bestTimes).length ? Math.min(...Object.values(stats.bestTimes) as number[]) : null;
+  const format = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+  return (
+    <div className="space-y-4 animate-in fade-in duration-300">
+      {profileId && <MemoryOrderDailyCalendar profileId={profileId} />}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <Card className="border-fuchsia-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-fuchsia-100 p-2.5 text-fuchsia-700"><ListOrdered className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Puzzles completed</p><p className="text-2xl font-bold">{stats.totalGames}</p></CardContent></Card>
+        <Card className="border-fuchsia-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-blue-100 p-2.5 text-blue-700"><Target className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Accuracy</p><p className="text-2xl font-bold">{stats.accuracy}%</p></CardContent></Card>
+        <Card className="border-fuchsia-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-blue-100 p-2.5 text-blue-700"><Clock className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Average time</p><p className="text-2xl font-bold">{stats.totalGames ? format(stats.averageTime) : "—"}</p></CardContent></Card>
+        <Card className="border-fuchsia-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-amber-100 p-2.5 text-amber-700"><Trophy className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Fastest time</p><p className="text-2xl font-bold">{fastest === null ? "—" : format(fastest)}</p></CardContent></Card>
+        <Card className="border-fuchsia-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-orange-100 p-2.5 text-orange-700"><Flame className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Current day streak</p><p className="text-2xl font-bold">{stats.currentStreak}</p></CardContent></Card>
+        <Card className="border-fuchsia-100"><CardContent className="flex flex-col items-center gap-2 p-4 text-center"><div className="rounded-full bg-amber-100 p-2.5 text-amber-700"><Trophy className="h-5 w-5" /></div><p className="text-xs text-muted-foreground">Best day streak</p><p className="text-2xl font-bold">{stats.bestStreak}</p></CardContent></Card>
+      </div>
+
+      <Card className="overflow-hidden border-fuchsia-200/60 dark:border-fuchsia-800/40">
+        <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-base"><Clock className="h-4 w-4 text-fuchsia-600" />Best times by level</CardTitle></CardHeader>
+        <CardContent className="space-y-2">
+          {MEMORY_ORDER_LEVEL_ORDER.map((level) => <div key={level} className="flex items-center justify-between gap-3 rounded-lg border bg-background px-3 py-2.5"><span className="font-medium">{MEMORY_ORDER_LEVELS[level].label} · {MEMORY_ORDER_LEVELS[level].sequenceLength} images · {MEMORY_ORDER_LEVELS[level].questions} rounds</span><span className="shrink-0 font-mono font-bold text-fuchsia-700 dark:text-fuchsia-300">{stats.bestTimes[level] === undefined ? "—" : format(stats.bestTimes[level]!)}</span></div>)}
+        </CardContent>
+      </Card>
+
+      <Card className="overflow-hidden border-fuchsia-200/60 dark:border-fuchsia-800/40">
+        <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-base"><Target className="h-4 w-4 text-fuchsia-600" />Best scores by level</CardTitle></CardHeader>
+        <CardContent className="space-y-2">
+          {MEMORY_ORDER_LEVEL_ORDER.map((level) => <div key={level} className="flex items-center justify-between gap-3 rounded-lg border bg-background px-3 py-2.5"><span className="font-medium">{MEMORY_ORDER_LEVELS[level].label}</span><span className="shrink-0 font-mono font-bold text-fuchsia-700 dark:text-fuchsia-300">{stats.bestScores[level] === undefined ? "—" : `${stats.bestScores[level]}/${MEMORY_ORDER_LEVELS[level].questions}`}</span></div>)}
+        </CardContent>
+      </Card>
+
+      {profileId && <AchievementsCard profileId={profileId} game="memory-order" />}
+    </div>
+  );
+}
+
 function QuizStatsPanel({ profileId, subjectId }: { profileId: number | null; subjectId: QuizSubject }) {
   const subject = quizSubject(subjectId);
   const theme = subject.theme;
@@ -1408,7 +1486,7 @@ export default function Profile() {
   usePageMeta({
     title: "Your Game Profile & Stats | Play Brain Games . Online",
     description:
-      "Review your progress, personal bests, achievements, and game preferences across all thirteen games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, and the quizzes.",
+      "Review your progress, personal bests, achievements, and game preferences across all fourteen games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, Memory Order, and the quizzes.",
     path: "/profile",
   });
   const search = useSearch();
@@ -1424,7 +1502,7 @@ export default function Profile() {
 
   // Stats tab
   const tabGameId: GameTab | null =
-    tabParam === "memory" || tabParam === "jigsaw" || tabParam === "word-search" || tabParam === "minesweeper" || tabParam === "slide-puzzle" || tabParam === "game-2048" || tabParam === "jumble" || tabParam === "snake" || tabParam === "odd-images" || tabParam === "sudoku" || tabParam === "science-quiz" || tabParam === "maths-quiz" || tabParam === "gk-quiz"
+    tabParam === "memory" || tabParam === "jigsaw" || tabParam === "word-search" || tabParam === "minesweeper" || tabParam === "slide-puzzle" || tabParam === "game-2048" || tabParam === "jumble" || tabParam === "snake" || tabParam === "odd-images" || tabParam === "memory-order" || tabParam === "sudoku" || tabParam === "science-quiz" || tabParam === "maths-quiz" || tabParam === "gk-quiz"
       ? tabParam as GameTab
       : null;
   const [gameTab, setGameTab] = useState<GameTab>(tabGameId ?? "sudoku");
@@ -1443,6 +1521,7 @@ export default function Profile() {
     else if (tabParam === "jumble") setGameTab("jumble");
     else if (tabParam === "snake") setGameTab("snake");
     else if (tabParam === "odd-images") setGameTab("odd-images");
+    else if (tabParam === "memory-order") setGameTab("memory-order");
     else if (tabParam === "rubiks" && RUBIKS_VISIBLE) setGameTab("rubiks");
     else if (tabParam === "sudoku") setGameTab("sudoku");
     else if (quizSubjectForGameId(tabParam)) setGameTab(tabParam as GameTab);
@@ -1985,6 +2064,7 @@ export default function Profile() {
                   ["jumble", "Jumble Words"],
                   ["snake", "Snake"],
                   ["odd-images", "Odd Images"],
+                  ["memory-order", "Memory Order"],
                   ["rubiks", "Rubik's Cube"],
                   ["science-quiz", "Science Quiz"],
                   ["maths-quiz", "Maths Quiz"],
@@ -2172,6 +2252,9 @@ export default function Profile() {
           )}
           {!statsLoading && gameTab === "odd-images" && (
             <OddImagesStatsPanel profileId={profileId} />
+          )}
+          {!statsLoading && gameTab === "memory-order" && (
+            <MemoryOrderStatsPanel profileId={profileId} />
           )}
           {!statsLoading && RUBIKS_VISIBLE && gameTab === "rubiks" && (
             <RubiksStatsPanel profileId={profileId} />

@@ -825,7 +825,7 @@ export default function Game({ id }: { id: string }) {
       const loadedMistakes = game.mistakeCount || 0;
       setMistakes(loadedMistakes);
       const savedHints = Number.parseInt(localStorage.getItem(storageKeyHints) ?? "", 10);
-      setHints(Math.min(MAX_HINTS + 1, Math.max(game.hintsUsed || 0, Number.isFinite(savedHints) ? savedHints : 0)));
+      setHints(Math.max(game.hintsUsed || 0, Number.isFinite(savedHints) ? savedHints : 0));
       const solution = game.puzzle?.solution;
       if (solution) {
         const wrong = new Set<number>();
@@ -1249,12 +1249,7 @@ export default function Game({ id }: { id: string }) {
   }, [initialGrid, storageKeyGrid, storageKeyNotes, storageKeyElapsed, storageKeyHints]);
 
   const handleHint = (earnedExtraTip = false) => {
-    if (
-      isCompleted ||
-      isGameOver ||
-      hints > MAX_HINTS ||
-      (hints >= MAX_HINTS && !earnedExtraTip)
-    ) return;
+    if (isCompleted || isGameOver || (!earnedExtraTip && hints >= MAX_HINTS)) return;
     const solution = game?.puzzle?.solution;
     if (!solution) return;
 
@@ -1309,7 +1304,7 @@ export default function Game({ id }: { id: string }) {
   };
 
   const handleRewardedHint = () => {
-    if (hints !== MAX_HINTS || isCompleted || isGameOver) return;
+    if (hints < MAX_HINTS || isCompleted || isGameOver) return;
     if (notesMode) {
       if (Object.keys(computeAutoNotes(grid, initialGrid, gridSize, boxRows, boxCols)).length === 0) {
         toast.error("There aren't any pencil marks to fill in.");
@@ -2351,8 +2346,7 @@ export default function Game({ id }: { id: string }) {
                 disabled={
                   isGameOver ||
                   isShowingRewardedTip ||
-                  hints > MAX_HINTS ||
-                  (hints === MAX_HINTS && !canShowRewardedTip)
+                  (hints >= MAX_HINTS && !canShowRewardedTip)
                 }
                 title={
                   hints < MAX_HINTS

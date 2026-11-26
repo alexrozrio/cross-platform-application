@@ -15,11 +15,12 @@ import { getLevelFromXp } from "@/lib/levels";
 import { toast } from "sonner";
 import { ACHIEVEMENT_COMPLETION_EVENT } from "@/lib/achievement-events";
 import {
-  createSnakeGame, isSnakeRoundOver, parseSnakeGame, serializeSnakeGame, stepSnake,
+  createSnakeGame, isSnakeRoundOver, parseSnakeGame, reviveSnake, serializeSnakeGame, stepSnake,
   SNAKE_LEVELS, type SnakeDifficulty, type SnakeDirection, type SnakeGameState,
 } from "@/lib/snake";
 import { recordSnakeCompletion } from "@/lib/snake-stats";
 import { useInterstitialAfterGame } from "@/lib/interstitial-ads";
+import { useRewardedInterstitialTip } from "@/lib/rewarded-interstitial-tips";
 import { Button } from "@/components/ui/button";
 
 const SAVE_KEY = "brain-games-snake-session";
@@ -138,6 +139,12 @@ export default function SnakePage() {
   const [endConfirm, setEndConfirm] = React.useState(false);
   const [runFinished, setRunFinished] = React.useState(false);
   const [started, setStarted] = React.useState(false);
+  const [deathPrompt, setDeathPrompt] = React.useState(false);
+  const {
+    isShowingRewardedTip,
+    showAdForExtraTip,
+    isEnabled: canShowRewardedTip,
+  } = useRewardedInterstitialTip();
   useInterstitialAfterGame(Boolean(game && runFinished), Boolean(game && started && !runFinished));
   const activeGameRef = React.useRef(game);
   activeGameRef.current = game;
@@ -149,7 +156,7 @@ export default function SnakePage() {
   const elapsedRef = React.useRef(0);
   elapsedRef.current = elapsed;
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
-  const touchRef = React.useRef<{ x: number; y: number } | null>(null);
+  const touchRef = React.useRef<{ x: number; y: number; handled: boolean } | null>(null);
 
   usePageMeta({
     title: "Snake Game | Play Brain Games",
@@ -197,6 +204,36 @@ export default function SnakePage() {
     (a === "up" && b === "down") || (a === "down" && b === "up")
     || (a === "left" && b === "right") || (a === "right" && b === "left");
 
+  const applyBoardSwipe = (clientX: number, clientY: number) => {
+    const start = touchRef.current;
+    if (!start || start.handled) return;
+    const dx = clientX - start.x;
+    const dy = clientY - start.y;
+    if (Math.abs(dx) < 24 && Math.abs(dy) < 24) return;
+    start.handled = true;
+    sounds.click();
+    queueDirection(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : (dy > 0 ? "down" : "up"));
+  };
+  const handleBoardTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    const t = e.touches[0];
+    if (!t) return;
+    touchRef.current = { x: t.clientX, y: t.clientY, handled: false };
+  };
+  const handleBoardTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    const t = e.touches[0];
+    if (t) applyBoardSwipe(t.clientX, t.clientY);
+  };
+  const handleBoardTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (touchRef.current && !touchRef.current.handled) {
+      const t = e.changedTouches[0];
+      if (t) applyBoardSwipe(t.clientX, t.clientY);
+    }
+    touchRef.current = null;
+  };
+  const handleBoardTouchCancel = () => {
+    touchRef.current = null;
+  };
+
   const tick = React.useCallback(() => {
     const current = stateRef.current;
     if (!current || paused || finishedRef.current || isSnakeRoundOver(current)) return;
@@ -208,9 +245,23 @@ export default function SnakePage() {
     setGame((g) => g ? { ...g, state: nextState } : g);
     if (canvasRef.current) drawSnake(canvasRef.current, nextState);
     if (result.ate) sounds.note();
-    if (result.died) { sounds.click(); finishRound(nextState); }
+    if (result.died) sounds.click();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paused]);
+
+  // A crash either offers a rewarded continue or finishes the run.
+  React.useEffect(() => {
+    if (!game || !isSnakeRoundOver(game.state) || finishedRef.current || runFinished) return;
+    if (canShowRewardedTip) {
+      directionQueueRef.current = [];
+      localStorage.removeItem(SAVE_KEY);
+      setHasSavedGame(false);
+      setDeathPrompt(true);
+    } else {
+      finishRound(game.state);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game?.state.alive, canShowRewardedTip, runFinished]);
 
   // Game loop — tick rate comes from the level speed. Waits for the first
   // player input so the snake never moves before the user is ready.
@@ -332,6 +383,30 @@ export default function SnakePage() {
     finishRound(game.state);
   };
 
+  const reviveAfterDeath = () => {
+    const dead = activeGameRef.current?.state;
+    if (!dead || dead.alive) { setDeathPrompt(false); return; }
+    const revived = reviveSnake(dead);
+    if (!revived) { setDeathPrompt(false); finishRound(dead); return; }
+    directionQueueRef.current = [];
+    stateRef.current = revived;
+    setGame((current) => current ? { ...current, state: revived } : current);
+    setDeathPrompt(false);
+    setPaused(false);
+    setStarted(true);
+  };
+
+  const handleRewardedContinue = () => {
+    if (!deathPrompt) return;
+    void showAdForExtraTip(() => reviveAfterDeath(), "Continue unlocked — the snake is alive again!");
+  };
+
+  const endAfterDeath = () => {
+    setDeathPrompt(false);
+    const dead = activeGameRef.current?.state;
+    if (dead) finishRound(dead);
+  };
+
   const startGame = (level: SnakeDifficulty, dailyDate?: string, seed?: number, existingGameId?: number, challengeId?: number) => {
     sounds.click();
     const savedAt = Date.now();
@@ -400,7 +475,7 @@ export default function SnakePage() {
 
   // Challenge result polling.
   React.useEffect(() => {
-    if (!game?.challengeId || !isSnakeRoundOver(game.state)) { setChallengeResult(null); return; }
+    if (!game?.challengeId || !runFinished) { setChallengeResult(null); return; }
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout>;
     const refresh = async () => {
@@ -414,7 +489,7 @@ export default function SnakePage() {
     void refresh();
     return () => { cancelled = true; clearTimeout(timer); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game?.state.foodsEaten, game?.state.alive, game?.challengeId]);
+  }, [runFinished, game?.challengeId]);
 
   const shareResult = async () => {
     if (!game) return;
@@ -721,7 +796,14 @@ export default function SnakePage() {
           </div>
 
           {/* Board */}
-          <div className="relative mx-auto w-full max-w-[560px]">
+          <div
+            className="relative mx-auto w-full max-w-[560px] touch-none"
+            style={{ touchAction: "none" }}
+            onTouchStart={handleBoardTouchStart}
+            onTouchMove={handleBoardTouchMove}
+            onTouchEnd={handleBoardTouchEnd}
+            onTouchCancel={handleBoardTouchCancel}
+          >
             <div className="rounded-2xl bg-gradient-to-br from-green-700 via-emerald-700 to-teal-800 p-2 shadow-lg shadow-green-900/20 sm:p-3">
               <canvas
                 ref={canvasRef}
@@ -729,21 +811,6 @@ export default function SnakePage() {
                 height={canvasSize || 480}
                 className="block w-full rounded-xl bg-slate-950/90 touch-none select-none"
                 style={{ aspectRatio: "1 / 1" }}
-                onTouchStart={(e) => {
-                  const t = e.touches[0];
-                  touchRef.current = { x: t.clientX, y: t.clientY };
-                }}
-                onTouchEnd={(e) => {
-                  const start = touchRef.current;
-                  touchRef.current = null;
-                  if (!start) return;
-                  const t = e.changedTouches[0];
-                  const dx = t.clientX - start.x;
-                  const dy = t.clientY - start.y;
-                  if (Math.abs(dx) < 24 && Math.abs(dy) < 24) return;
-                  sounds.click();
-                  queueDirection(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : (dy > 0 ? "down" : "up"));
-                }}
               />
             </div>
             {!started && !isSnakeRoundOver(game.state) && <div className="absolute inset-0 grid place-items-center rounded-2xl bg-slate-950/60 backdrop-blur-[2px]"><div className="flex flex-col items-center gap-3 px-4 text-center"><span className="rounded-full bg-white/90 px-4 py-2 text-sm font-bold text-slate-800 shadow">Ready? The snake moves on your first input</span><Button size="sm" className="gap-2 bg-green-600 hover:bg-green-500" onClick={() => { sounds.click(); setStarted(true); }}><Play className="h-4 w-4"/> Start</Button></div></div>}
@@ -771,6 +838,21 @@ export default function SnakePage() {
         <div className="flex gap-2 pt-2">
           <Button variant="outline" className="flex-1" onClick={() => setEndConfirm(false)}>Keep playing</Button>
           <Button className="flex-1 bg-red-600 hover:bg-red-700" onClick={endRunEarly}>End round</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+
+    <Dialog open={deathPrompt} onOpenChange={(open) => { if (!open) endAfterDeath(); }}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader><DialogTitle>Snake crashed</DialogTitle></DialogHeader>
+        <p className="text-sm text-muted-foreground">
+          {game ? `${game.state.foodsEaten} apples · score ${game.state.score.toLocaleString()}` : ""} Watch an ad to continue from this spot, or end the run.
+        </p>
+        <div className="flex gap-2 pt-2">
+          <Button variant="outline" className="flex-1" onClick={endAfterDeath}>End run</Button>
+          <Button className="flex-1 gap-1.5 bg-green-600 hover:bg-green-500" onClick={handleRewardedContinue} disabled={isShowingRewardedTip}>
+            {isShowingRewardedTip ? "Ad…" : "Watch ad + continue"}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

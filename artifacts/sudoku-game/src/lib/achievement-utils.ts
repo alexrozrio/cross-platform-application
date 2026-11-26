@@ -4,7 +4,7 @@ export interface AchievementMeta {
   title: string;
   description: string;
   group: string;
-  game: 'sudoku' | 'memory' | 'jigsaw' | 'word-search' | 'minesweeper' | 'slide-puzzle' | 'game-2048' | 'jumble' | 'snake' | 'odd-images' | 'science-quiz' | 'maths-quiz' | 'gk-quiz';
+  game: 'sudoku' | 'memory' | 'jigsaw' | 'word-search' | 'minesweeper' | 'slide-puzzle' | 'game-2048' | 'jumble' | 'snake' | 'odd-images' | 'memory-order' | 'science-quiz' | 'maths-quiz' | 'gk-quiz';
 }
 
 const QUIZ_SUBJECT_ACHIEVEMENTS = [
@@ -211,6 +211,22 @@ export const ACHIEVEMENT_META: AchievementMeta[] = [
   { id: 'odd_images_daily_7', game: 'odd-images', emoji: '📅', title: 'Daily Spotter', description: 'Complete 7 daily Odd Images challenges', group: 'Odd Images Daily' },
   { id: 'odd_images_daily_30', game: 'odd-images', emoji: '🗓️', title: 'Daily Hunter', description: 'Complete 30 daily Odd Images challenges', group: 'Odd Images Daily' },
   { id: 'odd_images_daily_100', game: 'odd-images', emoji: '🏅', title: 'Daily Image Master', description: 'Complete 100 daily Odd Images challenges', group: 'Odd Images Daily' },
+
+  // ── Memory Order ──────────────────────────────────────────────────────────
+  { id: 'memory_order_first', game: 'memory-order', emoji: '🧠', title: 'First Recall', description: 'Complete your first Memory Order game', group: 'Memory Order Milestones' },
+  { id: 'memory_order_dedicated', game: 'memory-order', emoji: '🗂️', title: 'Sequence Keeper', description: 'Complete 10 Memory Order games', group: 'Memory Order Milestones' },
+  { id: 'memory_order_half_century', game: 'memory-order', emoji: '🏆', title: 'Order Master', description: 'Complete 50 Memory Order games', group: 'Memory Order Milestones' },
+  { id: 'memory_order_century', game: 'memory-order', emoji: '🌟', title: 'Memory Order Legend', description: 'Complete 100 Memory Order games', group: 'Memory Order Milestones' },
+  { id: 'memory_order_all_levels', game: 'memory-order', emoji: '🌈', title: 'Level Explorer', description: 'Complete a game at all four Memory Order levels', group: 'Memory Order Skills' },
+  { id: 'memory_order_theme_explorer', game: 'memory-order', emoji: '🎨', title: 'Theme Collector', description: 'Complete games in 5 different image themes', group: 'Memory Order Skills' },
+  { id: 'memory_order_perfect_5', game: 'memory-order', emoji: '💯', title: 'Perfect Recall', description: 'Recall every sequence correctly in 5 Memory Order games', group: 'Memory Order Skills' },
+  { id: 'memory_order_speed_easy', game: 'memory-order', emoji: '🐇', title: 'Quick Glance', description: 'Finish an Easy game in under 90 seconds', group: 'Memory Order Skills' },
+  { id: 'memory_order_speed_medium', game: 'memory-order', emoji: '⚡', title: 'Fast Recall', description: 'Finish a Medium game in under 2.5 minutes', group: 'Memory Order Skills' },
+  { id: 'memory_order_speed_hard', game: 'memory-order', emoji: '🚀', title: 'Sharp Memory', description: 'Finish a Hard game in under 4 minutes', group: 'Memory Order Skills' },
+  { id: 'memory_order_speed_expert', game: 'memory-order', emoji: '💨', title: 'Sequence Sprint', description: 'Finish an Expert game in under 6 minutes', group: 'Memory Order Skills' },
+  { id: 'memory_order_daily_7', game: 'memory-order', emoji: '📅', title: 'Daily Recall', description: 'Complete 7 daily Memory Order challenges', group: 'Memory Order Daily' },
+  { id: 'memory_order_daily_30', game: 'memory-order', emoji: '🗓️', title: 'Daily Thinker', description: 'Complete 30 daily Memory Order challenges', group: 'Memory Order Daily' },
+  { id: 'memory_order_daily_100', game: 'memory-order', emoji: '🏅', title: 'Daily Memory Master', description: 'Complete 100 daily Memory Order challenges', group: 'Memory Order Daily' },
 
   // ── Quiz games: Science / Maths / GK each have their own set ─────────────
   ...QUIZ_SUBJECT_ACHIEVEMENTS.flatMap(({ subject, game, label }) => [

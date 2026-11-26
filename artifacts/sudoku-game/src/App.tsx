@@ -113,6 +113,8 @@ const JigsawInvitePage = lazy(() => import("@/pages/jigsaw-invite"));
 const RubiksPage = lazy(() => import("@/pages/rubiks"));
 const OddImagesPage = lazy(() => import("@/pages/odd-images"));
 const OddImagesDailyChallengePage = lazy(() => import("@/pages/odd-images-challenge"));
+const MemoryOrderPage = lazy(() => import("@/pages/memory-order"));
+const MemoryOrderDailyChallengePage = lazy(() => import("@/pages/memory-order-challenge"));
 function JigsawInviteRoute({ params }: { params: { token: string } }) {
   return <JigsawInvitePage token={params.token} />;
 }
@@ -348,6 +350,11 @@ function Router() {
               <Route path="/rubiks" component={RubiksPage} />
               <Route path="/odd-images" component={OddImagesPage} />
               <Route path="/odd-images-challenge" component={OddImagesDailyChallengePage} />
+              <Route path="/leaderboard/memory-order">
+                {() => <Leaderboard gamePage="memory-order" />}
+              </Route>
+              <Route path="/memory-order" component={MemoryOrderPage} />
+              <Route path="/memory-order-challenge" component={MemoryOrderDailyChallengePage} />
               <Route path="/jigsaw" component={JigsawPage} />
               <Route path="/jigsaw-challenge" component={JigsawDailyChallengePage} />
               <Route path="/jigsaw-challenges" component={JigsawChallengesPage} />

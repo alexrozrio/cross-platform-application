@@ -39,6 +39,7 @@ const OFFLINE_CHOICES = [
   { id: "minesweeper", label: "Minesweeper" },
   { id: "slide-puzzle", label: "Slide Puzzle" },
   { id: "odd-images", label: "Odd Images" },
+  { id: "memory-order", label: "Memory Order" },
   { id: "science-quiz", label: "Science Quiz" },
   { id: "maths-quiz", label: "Maths Quiz" },
   { id: "gk-quiz", label: "GK Quiz" },

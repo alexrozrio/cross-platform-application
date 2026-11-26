@@ -29,6 +29,7 @@ import jumbleGamesRouter from "./jumble-games";
 import rubiksGamesRouter from "./rubiks-games";
 import quizGamesRouter from "./quiz-games";
 import oddImageGamesRouter from "./odd-image-games";
+import memoryOrderGamesRouter from "./memory-order-games";
 import snakeGamesRouter from "./snake-games";
 
 const router: IRouter = Router();
@@ -60,6 +61,7 @@ router.use(jumbleGamesRouter);
 router.use(rubiksGamesRouter);
 router.use(quizGamesRouter);
 router.use(oddImageGamesRouter);
+router.use(memoryOrderGamesRouter);
 router.use(snakeGamesRouter);
 router.use(testEmailRouter);
 router.use(inviteRouter);

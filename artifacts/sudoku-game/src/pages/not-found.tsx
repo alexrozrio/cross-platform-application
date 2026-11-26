@@ -6,7 +6,7 @@ export default function NotFound() {
   usePageMeta({
     title: "Page Not Found | Play Brain Games . Online",
     description:
-      "The page you requested could not be found. Return to Play Brain Games . Online to play thirteen free games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, and Science, Maths & GK quizzes.",
+      "The page you requested could not be found. Return to Play Brain Games . Online to play fourteen free games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, Memory Order, and Science, Maths & GK quizzes.",
     path: "/",
   });
   return (

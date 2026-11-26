@@ -10,6 +10,7 @@ import {
   Images,
   Grid3x3,
   LayoutGrid,
+  ListOrdered,
   Puzzle,
   WholeWord,
   LetterText,
@@ -36,6 +37,7 @@ export const GAME_ICONS: Record<string, LucideIcon> = {
   "maths-quiz": Calculator,
   "gk-quiz": Globe,
   "odd-images": Images,
+  "memory-order": ListOrdered,
 };
 
 export function gameIcon(id: string | null | undefined): LucideIcon {
@@ -58,6 +60,7 @@ export const GAME_ICON_COLORS: Record<string, string> = {
   "maths-quiz": "text-sky-600",
   "gk-quiz": "text-amber-600",
   "odd-images": "text-teal-600",
+  "memory-order": "text-fuchsia-600",
 };
 
 export function gameIconColor(id: string | null | undefined): string {

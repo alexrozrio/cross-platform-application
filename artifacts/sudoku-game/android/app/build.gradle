@@ -20,6 +20,9 @@ def releaseSigningConfigured =
 android {
     namespace "online.playbraingames.app"
     compileSdk rootProject.ext.compileSdkVersion
+    buildFeatures {
+        buildConfig = true
+    }
     signingConfigs {
         if (releaseSigningConfigured) {
             release {
@@ -34,7 +37,7 @@ android {
         applicationId "online.playbraingames.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1.0.0
+        versionCode 10
         versionName "1.0.4 Alpha"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {

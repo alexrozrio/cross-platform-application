@@ -63,6 +63,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class MainActivity extends BridgeActivity {
     private static final String TAG = "MainActivity";
     private static final String ADMOB_APP_ID = "ca-app-pub-8826408740422357~3253265477";
+    private static final String TEST_ADMOB_APP_ID = "ca-app-pub-3940256099942544~3347511713";
     private static final String TEST_BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/9214589741";
     private static final String RELEASE_BANNER_AD_UNIT_ID = "ca-app-pub-8826408740422357/5124055816";
     private static final String TEST_NATIVE_AD_UNIT_ID = "ca-app-pub-3940256099942544/2247696110";
@@ -106,7 +107,7 @@ public class MainActivity extends BridgeActivity {
 
         new Thread(() -> MobileAds.initialize(
             this,
-            new InitializationConfig.Builder(ADMOB_APP_ID).build(),
+            new InitializationConfig.Builder(getAdMobAppId()).build(),
             initializationStatus -> mainHandler.post(() -> {
                 startInterstitialPreloading();
                 startRewardedPreloading();
@@ -139,7 +140,7 @@ public class MainActivity extends BridgeActivity {
     }
 
     @Override
-    protected void onStart() {
+    public void onStart() {
         super.onStart();
         if (AdsConfiguration.APP_OPEN_ENABLED && hasBeenBackgrounded) {
             showPreloadedAppOpen();
@@ -147,7 +148,7 @@ public class MainActivity extends BridgeActivity {
     }
 
     @Override
-    protected void onStop() {
+    public void onStop() {
         if (!isFullScreenAdShowing) {
             hasBeenBackgrounded = true;
         }
@@ -167,6 +168,10 @@ public class MainActivity extends BridgeActivity {
         } else {
             Log.w(TAG, "App open ad preloading could not be started.");
         }
+    }
+
+    private static String getAdMobAppId() {
+        return BuildConfig.DEBUG ? TEST_ADMOB_APP_ID : ADMOB_APP_ID;
     }
 
     private static String getAppOpenAdUnitId() {
@@ -739,7 +744,7 @@ public class MainActivity extends BridgeActivity {
     }
 
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         portalNativeAdRequested = false;
         destroyPortalNativeAd();
         if (bannerAdView != null) {

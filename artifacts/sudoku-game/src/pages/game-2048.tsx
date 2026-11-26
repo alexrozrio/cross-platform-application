@@ -15,11 +15,12 @@ import { getLevelFromXp } from "@/lib/levels";
 import { toast } from "sonner";
 import { ACHIEVEMENT_COMPLETION_EVENT } from "@/lib/achievement-events";
 import {
-  canMove2048, createGame2048, deserialize2048, GAME_2048_LEVELS, GAME_2048_TARGET_TILE,
-  move2048, serialize2048, type Game2048Direction, type Game2048Difficulty, type Game2048State,
+  createGame2048, deserialize2048, GAME_2048_LEVELS, GAME_2048_TARGET_TILE,
+  move2048, reviveGame2048, serialize2048, type Game2048Direction, type Game2048Difficulty, type Game2048State,
 } from "@/lib/game-2048";
 import { recordGame2048Completion } from "@/lib/game-2048-stats";
 import { useInterstitialAfterGame } from "@/lib/interstitial-ads";
+import { useRewardedInterstitialTip } from "@/lib/rewarded-interstitial-tips";
 import { Button } from "@/components/ui/button";
 
 const SAVE_KEY = "brain-games-2048-session";
@@ -88,10 +89,14 @@ export default function Game2048Page() {
       gameMode === "adult" ? GAME_2048_LEVELS[id].mode === "adult" : true,
   );
   const [game, setGame] = React.useState<SavedGame | null>(null);
-  useInterstitialAfterGame(
-    game?.state.status === "over" || game?.state.status === "won",
-    game?.state.status === "playing",
-  );
+  const [runFinished, setRunFinished] = React.useState(false);
+  const [continueOffer, setContinueOffer] = React.useState(false);
+  const {
+    isShowingRewardedTip,
+    showAdForExtraTip,
+    isEnabled: canShowRewardedTip,
+  } = useRewardedInterstitialTip();
+  useInterstitialAfterGame(runFinished, Boolean(game && (game.state.status === "playing" || continueOffer)));
   const [elapsed, setElapsed] = React.useState(0);
   const [history, setHistory] = React.useState<Game2048State[]>([]);
   const [showConfetti, setShowConfetti] = React.useState(false);
@@ -209,6 +214,8 @@ export default function Game2048Page() {
 
   const finishRun = (completed: SavedGame, finalElapsed: number) => {
     const won = completed.state.reachedTarget;
+    setRunFinished(true);
+    setContinueOffer(false);
     if (won) {
       setShowConfetti(true); setTimeout(() => setShowConfetti(false), 3200);
     }
@@ -232,6 +239,7 @@ export default function Game2048Page() {
     };
     setGame(nextGame); setReward(null); setRewardError(null); setRewardLoading(false);
     setElapsed(0); setHistory([]); setChallengeResult(null); finishedRef.current = false;
+    setRunFinished(false); setContinueOffer(false);
     setLocation(dailyDate
       ? `/game-2048?play=1&dailyDate=${dailyDate}&difficulty=${level}&seed=${boardSeed}`
       : challengeId
@@ -279,8 +287,41 @@ export default function Game2048Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profileLoading, profile?.gameMode, search]);
 
+  const handleGameOver = (completed: SavedGame, finalElapsed: number) => {
+    sounds.complete();
+    setHistory([]);
+    if (canShowRewardedTip) {
+      localStorage.removeItem(SAVE_KEY);
+      setHasSavedGame(false);
+      setContinueOffer(true);
+    } else {
+      finishRun(completed, finalElapsed);
+    }
+  };
+
+  const reviveAfterGameOver = () => {
+    const current = activeGameRef.current;
+    if (!current || current.state.status !== "over") { setContinueOffer(false); return; }
+    const revived = reviveGame2048(current.state);
+    if (!revived) { setContinueOffer(false); finishRun(current, elapsed); return; }
+    setHistory([]);
+    setGame({ ...current, state: revived });
+    setContinueOffer(false);
+  };
+
+  const handleRewardedContinue = () => {
+    if (!continueOffer) return;
+    void showAdForExtraTip(() => reviveAfterGameOver(), "Continue unlocked — the board is alive again!");
+  };
+
+  const endAfterGameOver = () => {
+    setContinueOffer(false);
+    const current = activeGameRef.current;
+    if (current) finishRun(current, elapsed);
+  };
+
   const applyMove = (dir: Game2048Direction) => {
-    if (!game || game.state.status !== "playing" || finishedRef.current) return;
+    if (!game || game.state.status !== "playing" || finishedRef.current || continueOffer) return;
     const cfg = GAME_2048_LEVELS[game.difficulty];
     const next = move2048(game.state, dir, game.seed, cfg.targetTile);
     if (!next) { sounds.click(); return; }
@@ -291,8 +332,7 @@ export default function Game2048Page() {
     const updated: SavedGame = { ...game, state: next };
     setGame(updated);
     if (next.status === "over") {
-      sounds.complete();
-      finishRun(updated, elapsed);
+      handleGameOver(updated, elapsed);
     } else if (next.reachedTarget && !game.state.reachedTarget) {
       sounds.complete();
       setShowConfetti(true); setTimeout(() => setShowConfetti(false), 3200);
@@ -373,7 +413,7 @@ export default function Game2048Page() {
   const fmt = (seconds: number) => `${Math.floor(seconds / 60).toString().padStart(2, "0")}:${(seconds % 60).toString().padStart(2, "0")}`;
 
   React.useEffect(() => {
-    if (!game || game.state.status === "playing" || !game.challengeId) { setChallengeResult(null); return; }
+    if (!game || !runFinished || !game.challengeId) { setChallengeResult(null); return; }
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout>;
     const refresh = async () => {
@@ -386,9 +426,9 @@ export default function Game2048Page() {
     };
     void refresh();
     return () => { cancelled = true; clearTimeout(timer); };
-  }, [game?.state.status, game?.challengeId]);
+  }, [runFinished, game?.challengeId]);
 
-  if (game && game.state.status !== "playing") {
+  if (game && game.state.status !== "playing" && !continueOffer) {
     const cfg = GAME_2048_LEVELS[game.difficulty];
     const won = game.state.reachedTarget;
     return <main className="mx-auto w-full max-w-lg space-y-4 px-3 py-5 sm:px-6 sm:py-8">
@@ -458,6 +498,29 @@ export default function Game2048Page() {
           return <><p className="mt-1 text-lg font-black">{outcome}</p><p className="mt-1 text-sm text-muted-foreground">You: {mine ?? 0} points · {opponent}: {theirs ?? 0} points</p><p className="mt-1 text-xs text-muted-foreground">{challengeResult.winnerId === null ? "Both players earned 2 bonus gems." : challengeResult.winnerId === profileId ? "You earned 10 bonus gems." : `${opponent} earned 10 bonus gems.`}</p></>;
         })()}
       </section>}
+    </main>;
+  }
+
+  if (continueOffer && game) {
+    const cfg = GAME_2048_LEVELS[game.difficulty];
+    return <main className="mx-auto w-full max-w-lg space-y-4 px-3 py-5 sm:px-6 sm:py-8">
+      <section className="relative isolate overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500 via-amber-500 to-yellow-500 p-5 text-center text-white shadow-xl sm:p-6">
+        <div className="relative z-10 space-y-2">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-white/20 text-3xl">🔢</div>
+          <p className="text-[10px] font-bold uppercase tracking-[.2em] text-white/75">2048 · no moves left</p>
+          <h1 className="font-serif text-2xl font-bold sm:text-3xl">Continue this board?</h1>
+          <p className="text-sm text-white/85">{cfg.label} · Score {game.state.score.toLocaleString()} · Best tile {game.state.maxTile} · {game.state.moves} moves · {fmt(elapsed)}</p>
+        </div>
+      </section>
+      <section className="space-y-3 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
+        <p className="text-sm text-muted-foreground">Watch an ad to clear one small tile and keep playing, or end the run and save your score.</p>
+        <div className="flex gap-2">
+          <Button variant="outline" className="flex-1" onClick={endAfterGameOver}>End run</Button>
+          <Button className="flex-1 gap-1.5 bg-orange-500 hover:bg-orange-400" onClick={handleRewardedContinue} disabled={isShowingRewardedTip}>
+            {isShowingRewardedTip ? "Ad…" : "Watch ad + continue"}
+          </Button>
+        </div>
+      </section>
     </main>;
   }
 

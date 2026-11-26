@@ -59,7 +59,7 @@ function loadSaved(): SavedGame | null {
     const value = JSON.parse(localStorage.getItem(SAVE_KEY) ?? "null") as SavedGame | null;
     if (value && ["2x2", "3x3", "4x4", "5x5"].includes(value.difficulty) && Array.isArray(value.tiles) && value.size > 0) {
       value.moves = Number.isFinite(value.moves) ? value.moves : 0;
-      value.hintsUsed = Number.isFinite(value.hintsUsed) ? Math.min(MAX_HINTS + 1, value.hintsUsed) : 0;
+      value.hintsUsed = Number.isFinite(value.hintsUsed) ? Math.max(0, Math.floor(value.hintsUsed)) : 0;
       value.status = value.status === "won" ? "won" : "playing";
       return value;
     }
@@ -345,12 +345,7 @@ export default function SlidePuzzlePage() {
   };
 
   const issueHint = (earnedExtraTip = false) => {
-    if (
-      !game ||
-      game.status !== "playing" ||
-      game.hintsUsed > MAX_HINTS ||
-      (game.hintsUsed >= MAX_HINTS && !earnedExtraTip)
-    ) return;
+    if (!game || game.status !== "playing" || (!earnedExtraTip && game.hintsUsed >= MAX_HINTS)) return;
     const index = hintTileIndex(game.tiles, game.size);
     if (index < 0) return;
     sounds.place();
@@ -366,7 +361,7 @@ export default function SlidePuzzlePage() {
   const canEarnExtraTip =
     canShowRewardedTip &&
     game?.status === "playing" &&
-    game.hintsUsed === MAX_HINTS &&
+    game.hintsUsed >= MAX_HINTS &&
     hasHintTarget;
   const handleRewardedHint = () => {
     if (!canEarnExtraTip) return;
@@ -731,8 +726,7 @@ export default function SlidePuzzlePage() {
               onClick={game.hintsUsed < MAX_HINTS ? () => issueHint() : handleRewardedHint}
               disabled={
                 isShowingRewardedTip ||
-                game.hintsUsed > MAX_HINTS ||
-                (game.hintsUsed === MAX_HINTS && !canEarnExtraTip)
+                (game.hintsUsed >= MAX_HINTS && !canEarnExtraTip)
               }
               aria-label={canEarnExtraTip ? "Watch an ad for one extra hint" : `Hint, ${Math.max(0, MAX_HINTS - game.hintsUsed)} left`}
             >

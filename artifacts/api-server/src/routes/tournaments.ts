@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and, gte, lt, inArray } from "drizzle-orm";
-import { db, gamesTable, puzzlesTable, profilesTable, memoryGamesTable, jigsawGamesTable, wordSearchGamesTable, minesweeperGamesTable, slidePuzzleGamesTable, quizGamesTable, oddImageGamesTable, game2048GamesTable, jumbleGamesTable, snakeGamesTable, badgesTable } from "@workspace/db";
+import { db, gamesTable, puzzlesTable, profilesTable, memoryGamesTable, jigsawGamesTable, wordSearchGamesTable, minesweeperGamesTable, slidePuzzleGamesTable, quizGamesTable, oddImageGamesTable, memoryOrderGamesTable, game2048GamesTable, jumbleGamesTable, snakeGamesTable, badgesTable } from "@workspace/db";
 import {
   getWeekPeriod,
   getMonthPeriod,
@@ -164,6 +164,13 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
         .where(range ? and(eq(oddImageGamesTable.status, "completed"), gte(oddImageGamesTable.completedAt, range.start), lt(oddImageGamesTable.completedAt, range.end)) : eq(oddImageGamesTable.status, "completed"))
     : [];
 
+  const memoryOrderRows = gridSize === undefined
+    ? await db.select({ profileId: memoryOrderGamesTable.profileId, username: profilesTable.username, avatar: profilesTable.avatar,
+        xp: profilesTable.xp, points: memoryOrderGamesTable.points })
+        .from(memoryOrderGamesTable).innerJoin(profilesTable, eq(memoryOrderGamesTable.profileId, profilesTable.id))
+        .where(range ? and(eq(memoryOrderGamesTable.status, "completed"), gte(memoryOrderGamesTable.completedAt, range.start), lt(memoryOrderGamesTable.completedAt, range.end)) : eq(memoryOrderGamesTable.status, "completed"))
+    : [];
+
   // ── Filter Sudoku by gridSize if requested ────────────────────────────────
   const filteredSudoku = gridSize !== undefined
     ? sudokuRows.filter((r) => r.gridSizeVal === gridSize)
@@ -188,6 +195,7 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
       jumbleGamesPlayed: number;
       snakeGamesPlayed: number;
       oddImageGamesPlayed: number;
+      memoryOrderGamesPlayed: number;
       scienceQuizGamesPlayed: number;
       mathsQuizGamesPlayed: number;
       gkQuizGamesPlayed: number;
@@ -196,7 +204,7 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
 
   const ensureEntry = (profileId: number, username: string, avatar: string | null, xp: number) => {
     if (!grouped.has(profileId)) {
-      grouped.set(profileId, { username, avatar, xp, totalPoints: 0, gamesPlayed: 0, sudokuGamesPlayed: 0, memoryGamesPlayed: 0, jigsawGamesPlayed: 0, wordSearchGamesPlayed: 0, minesweeperGamesPlayed: 0, slidePuzzleGamesPlayed: 0, game2048GamesPlayed: 0, jumbleGamesPlayed: 0, snakeGamesPlayed: 0, oddImageGamesPlayed: 0, scienceQuizGamesPlayed: 0, mathsQuizGamesPlayed: 0, gkQuizGamesPlayed: 0 });
+      grouped.set(profileId, { username, avatar, xp, totalPoints: 0, gamesPlayed: 0, sudokuGamesPlayed: 0, memoryGamesPlayed: 0, jigsawGamesPlayed: 0, wordSearchGamesPlayed: 0, minesweeperGamesPlayed: 0, slidePuzzleGamesPlayed: 0, game2048GamesPlayed: 0, jumbleGamesPlayed: 0, snakeGamesPlayed: 0, oddImageGamesPlayed: 0, memoryOrderGamesPlayed: 0, scienceQuizGamesPlayed: 0, mathsQuizGamesPlayed: 0, gkQuizGamesPlayed: 0 });
     }
     return grouped.get(profileId)!;
   };
@@ -281,6 +289,14 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
     entry.oddImageGamesPlayed += 1;
   }
 
+  for (const row of memoryOrderRows) {
+    if (!row.profileId) continue;
+    const entry = ensureEntry(row.profileId, row.username, row.avatar ?? null, row.xp ?? 0);
+    entry.totalPoints += row.points ?? 0;
+    entry.gamesPlayed += 1;
+    entry.memoryOrderGamesPlayed += 1;
+  }
+
   for (const row of quizRows) {
     if (!row.profileId) continue;
     const entry = ensureEntry(row.profileId, row.username, row.avatar ?? null, row.xp ?? 0);
@@ -344,6 +360,7 @@ router.get("/tournaments/leaderboard", async (req, res): Promise<void> => {
     jumbleGamesPlayed: data.jumbleGamesPlayed,
     snakeGamesPlayed: data.snakeGamesPlayed,
     oddImageGamesPlayed: data.oddImageGamesPlayed,
+    memoryOrderGamesPlayed: data.memoryOrderGamesPlayed,
     streak: streakMap.get(profileId) ?? 0,
   }));
 
@@ -552,6 +569,17 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
     oddImageByLevel.set(row.level, current);
   }
 
+  const memoryOrderRows2 = await db.select({ level: memoryOrderGamesTable.level, points: memoryOrderGamesTable.points })
+    .from(memoryOrderGamesTable).where(range ? and(eq(memoryOrderGamesTable.status, "completed"), eq(memoryOrderGamesTable.profileId, profileId), gte(memoryOrderGamesTable.completedAt, range.start), lt(memoryOrderGamesTable.completedAt, range.end)) : and(eq(memoryOrderGamesTable.status, "completed"), eq(memoryOrderGamesTable.profileId, profileId)));
+
+  const memoryOrderByLevel = new Map<string, { points: number; games: number }>();
+  for (const row of memoryOrderRows2) {
+    const current = memoryOrderByLevel.get(row.level) ?? { points: 0, games: 0 };
+    current.points += row.points ?? 0;
+    current.games += 1;
+    memoryOrderByLevel.set(row.level, current);
+  }
+
   const quizRows = await db.select({ subject: quizGamesTable.subject, level: quizGamesTable.level, points: quizGamesTable.points })
     .from(quizGamesTable).where(range ? and(eq(quizGamesTable.status, "completed"), eq(quizGamesTable.profileId, profileId), gte(quizGamesTable.completedAt, range.start), lt(quizGamesTable.completedAt, range.end)) : and(eq(quizGamesTable.status, "completed"), eq(quizGamesTable.profileId, profileId)));
 
@@ -616,6 +644,11 @@ router.get("/tournaments/breakdown", async (req, res): Promise<void> => {
       level,
       points: oddImageByLevel.get(level)?.points ?? 0,
       games: oddImageByLevel.get(level)?.games ?? 0,
+    })),
+    memoryOrder: (["easy", "medium", "hard", "expert"] as const).map((level) => ({
+      level,
+      points: memoryOrderByLevel.get(level)?.points ?? 0,
+      games: memoryOrderByLevel.get(level)?.games ?? 0,
     })),
     quiz: (["science", "maths", "gk"] as const).flatMap((subject) =>
       (["easy", "medium", "hard", "expert"] as const).map((level) => ({

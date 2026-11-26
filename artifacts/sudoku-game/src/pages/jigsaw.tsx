@@ -938,7 +938,7 @@ export default function JigsawPage() {
           >
             <Flame size={16} /> Daily Challenge
           </Link>
-          
+
           <div className="grid grid-cols-2 gap-2">
             <Link
               href="/profile?tab=jigsaw"
@@ -1288,10 +1288,7 @@ export default function JigsawPage() {
     ...board.flatMap((piece, slot) => piece !== null && piece !== slot ? [piece] : []),
   ].filter((piece) => !revealedPieceNumbers.includes(piece));
   const revealPieceNumber = (earnedExtraTip = false) => {
-    if (
-      revealedPieceNumbersRef.current.length > JIGSAW_MAX_PIECE_NUMBER_HINTS ||
-      (revealedPieceNumbersRef.current.length >= JIGSAW_MAX_PIECE_NUMBER_HINTS && !earnedExtraTip)
-    ) return;
+    if (!earnedExtraTip && revealedPieceNumbersRef.current.length >= JIGSAW_MAX_PIECE_NUMBER_HINTS) return;
     const availablePieces = [
       ...tray,
       ...board.flatMap((piece, slot) => piece !== null && piece !== slot ? [piece] : []),
@@ -1305,7 +1302,7 @@ export default function JigsawPage() {
   };
   const canEarnExtraTip =
     canShowRewardedTip &&
-    revealedPieceNumbers.length === JIGSAW_MAX_PIECE_NUMBER_HINTS &&
+    revealedPieceNumbers.length >= JIGSAW_MAX_PIECE_NUMBER_HINTS &&
     hintablePieces.length > 0;
   const handleRewardedTip = () => {
     if (!canEarnExtraTip) return;
@@ -1414,8 +1411,7 @@ export default function JigsawPage() {
             onClick={revealedPieceNumbers.length < JIGSAW_MAX_PIECE_NUMBER_HINTS ? () => revealPieceNumber() : handleRewardedTip}
             disabled={
               isShowingRewardedTip ||
-              revealedPieceNumbers.length > JIGSAW_MAX_PIECE_NUMBER_HINTS ||
-              (revealedPieceNumbers.length === JIGSAW_MAX_PIECE_NUMBER_HINTS && !canEarnExtraTip) ||
+              (revealedPieceNumbers.length >= JIGSAW_MAX_PIECE_NUMBER_HINTS && !canEarnExtraTip) ||
               hintablePieces.length === 0
             }
             aria-label={canEarnExtraTip ? "Watch an ad for one extra piece tip" : `Reveal a piece number, ${Math.max(0, JIGSAW_MAX_PIECE_NUMBER_HINTS - revealedPieceNumbers.length)} tips remaining`}

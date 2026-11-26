@@ -131,3 +131,49 @@ export function getOddImageAchievementProgress(games: OddImageAchievementGame[])
     odd_images_daily_100: countAchievementProgress(dailyDates.size, ODD_IMAGE_ACHIEVEMENT_TARGETS.dailyMaster),
   };
 }
+
+export const MEMORY_ORDER_ACHIEVEMENT_TARGETS = {
+  dedicated: 10,
+  halfCentury: 50,
+  century: 100,
+  themeExplorer: 5,
+  perfectGames: 5,
+  dailyDevotion: 7,
+  dailyCraft: 30,
+  dailyMaster: 100,
+} as const;
+
+export interface MemoryOrderAchievementGame {
+  level: string;
+  theme: string;
+  elapsedSeconds: number;
+  questions: number;
+  correct: number;
+  dailyDate: string | null;
+}
+
+export function getMemoryOrderAchievementProgress(games: MemoryOrderAchievementGame[]) {
+  const wins = games.filter((game) => game.correct > 0);
+  const levelCount = new Set(wins.map((game) => game.level)).size;
+  const themeCount = new Set(wins.map((game) => game.theme)).size;
+  const perfectCount = wins.filter((game) => game.questions > 0 && game.correct === game.questions).length;
+  const dailyDates = new Set(wins.flatMap((game) => game.dailyDate ? [game.dailyDate] : []));
+  const hasFastWin = (level: string, maxSeconds: number) => wins.some((game) => game.level === level && game.elapsedSeconds < maxSeconds);
+
+  return {
+    memory_order_first: countAchievementProgress(wins.length, 1),
+    memory_order_dedicated: countAchievementProgress(wins.length, MEMORY_ORDER_ACHIEVEMENT_TARGETS.dedicated),
+    memory_order_half_century: countAchievementProgress(wins.length, MEMORY_ORDER_ACHIEVEMENT_TARGETS.halfCentury),
+    memory_order_century: countAchievementProgress(wins.length, MEMORY_ORDER_ACHIEVEMENT_TARGETS.century),
+    memory_order_all_levels: countAchievementProgress(levelCount, 4),
+    memory_order_theme_explorer: countAchievementProgress(themeCount, MEMORY_ORDER_ACHIEVEMENT_TARGETS.themeExplorer),
+    memory_order_perfect_5: countAchievementProgress(perfectCount, MEMORY_ORDER_ACHIEVEMENT_TARGETS.perfectGames),
+    memory_order_speed_easy: countAchievementProgress(hasFastWin("easy", 90) ? 1 : 0, 1),
+    memory_order_speed_medium: countAchievementProgress(hasFastWin("medium", 150) ? 1 : 0, 1),
+    memory_order_speed_hard: countAchievementProgress(hasFastWin("hard", 240) ? 1 : 0, 1),
+    memory_order_speed_expert: countAchievementProgress(hasFastWin("expert", 360) ? 1 : 0, 1),
+    memory_order_daily_7: countAchievementProgress(dailyDates.size, MEMORY_ORDER_ACHIEVEMENT_TARGETS.dailyDevotion),
+    memory_order_daily_30: countAchievementProgress(dailyDates.size, MEMORY_ORDER_ACHIEVEMENT_TARGETS.dailyCraft),
+    memory_order_daily_100: countAchievementProgress(dailyDates.size, MEMORY_ORDER_ACHIEVEMENT_TARGETS.dailyMaster),
+  };
+}

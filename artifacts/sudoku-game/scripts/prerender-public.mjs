@@ -107,10 +107,10 @@ const publicPages = [
     route: "/",
     title: "Free Puzzle & Quiz Games Online | Sudoku, Memory, Word Search & More",
     description:
-      "Play thirteen free browser games: Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, and Science, Maths & GK quizzes — with daily challenges, leaderboards, and guest play.",
+      "Play fourteen free browser games: Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, Memory Order, and Science, Maths & GK quizzes — with daily challenges, leaderboards, and guest play.",
     heading: "Free Puzzle & Quiz Games Online",
     intro:
-      "Thirteen games, one place: logic puzzles, word and picture games, minefields, sliding tiles, tile-merging, anagram words, classic snake, spot-the-difference grids, and timed quizzes. Every game can be started as a guest, with daily challenges and leaderboards to compare scores.",
+      "Fourteen games, one place: logic puzzles, word and picture games, minefields, sliding tiles, tile-merging, anagram words, classic snake, spot-the-difference grids, image-sequence memory, and timed quizzes. Every game can be started as a guest, with daily challenges and leaderboards to compare scores.",
     sections: [
       ["Sudoku for logic", "Baby 3×3 through Pro 16×16 grids in easy, medium, hard, and expert. Each symbol must fit its row, column, and marked box — use candidate notes and a repeatable solving loop."],
       ["Memory Match for recall", "2×4 to 8×8 boards with number, letter, or image cards. Turn over two cards at a time and build a location map as you play."],
@@ -122,6 +122,7 @@ const publicPages = [
       ["Jumble Words for anagrams", "Unscramble jumbled English letters into real words across four levels. Points reward accuracy, speed, and few wrong attempts — skipped words can be retried."],
       ["Snake for the classic chase", "Steer the Nokia-style snake to eat apples for as long as you can — four grid sizes from 12×12 to 18×18 with Kids and Adult modes."],
       ["Odd Images for visual scans", "Each round fills a grid with the same picture theme and hides one odd image. Easy through Expert scales the grid from 3×3 to 6×6 and increases the number of questions."],
+      ["Memory Order for visual memory", "Images flash one by one in a fixed order for a few seconds — then you tap them back in the same sequence. Easy through Expert grows the sequence and shortens the view time."],
       ["Science, Maths & GK quizzes", "Timed multiple-choice quizzes with four levels — Easy (5 questions) up to Expert (12 questions). Answer quickly and accurately to maximise points, XP, and gems."],
       ["Daily challenges for everyone", "Every game has a shared daily challenge that refreshes each day, so you can compare your score with other players on the same puzzle."],
       ["Play as a guest or keep progress in a profile", "You can start any game without an account. Optional Google sign-in connects game statistics, achievements, and streaks to a profile so progress can sync across devices."],
@@ -137,6 +138,7 @@ const publicPages = [
       ["/jumble", "Play Jumble Words online"],
       ["/snake", "Play Snake online"],
       ["/odd-images", "Play Odd Images online"],
+      ["/memory-order", "Play Memory Order online"],
       ["/quiz/science", "Play the Science Quiz"],
       ["/quiz/maths", "Play the Maths Quiz"],
       ["/quiz/gk", "Play the GK Quiz"],
@@ -223,7 +225,7 @@ const publicPages = [
     route: "/guides",
     title: "Game Guides: All Ten Games | Play Brain Games . Online",
     description:
-      "Learn Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and the quizzes with practical strategies, board-size guidance, and tips for daily puzzles and friend challenges.",
+      "Learn Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, Memory Order, and the quizzes with practical strategies, board-size guidance, and tips for daily puzzles and friend challenges.",
     heading: "Game Guides",
     intro:
       "Use these practical guides to learn the rules, work through a sample move, and choose a board that fits your experience — covering every game on Play Brain Games . Online.",
@@ -281,6 +283,10 @@ const publicPages = [
         "Compare tiles in rows or quadrants instead of jumping randomly. The odd image usually differs by colour, orientation, or a missing feature, so check suspicious tiles against their neighbours before tapping.",
       ],
       [
+        "Memory Order recall strategy",
+        "Name each image out loud or in your head as it flashes, and link the sequence into a short story or rhythm. Chunk long sequences into pairs, and don't rely on tile positions — focus on the order itself.",
+      ],
+      [
         "Quiz strategy",
         "In the Science, Maths & GK quizzes, points combine accuracy with speed. Eliminate obviously wrong options quickly, guess rather than skip when unsure, and finish under the par time for the speed bonus.",
       ],
@@ -304,6 +310,8 @@ const publicPages = [
       ["/snake-challenge", "Try the Snake daily challenge"],
       ["/odd-images", "Play Odd Images"],
       ["/odd-images-challenge", "Try the Odd Images daily challenge"],
+      ["/memory-order", "Play Memory Order"],
+      ["/memory-order-challenge", "Try the Memory Order daily challenge"],
       ["/quiz/science", "Play the quizzes"],
       ["/daily-challenge", "Try the daily challenge"],
     ],
@@ -406,13 +414,13 @@ const publicPages = [
     route: "/leaderboard",
     title: "All Games Leaderboard | Play Brain Games . Online",
     description:
-      "Compare scores across all thirteen games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, and Science, Maths & GK quizzes — on weekly, monthly, and all-time boards.",
+      "Compare scores across all fourteen games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, Memory Order, and Science, Maths & GK quizzes — on weekly, monthly, and all-time boards.",
     heading: "All Games Leaderboard",
     intro:
       "Compare combined points across every game — puzzles, word games, quizzes, and more — on weekly tournaments, monthly tournaments, and all-time rankings.",
     sections: [
       ["Weekly and monthly tournaments", "Follow changing tournament standings and compete for a place near the top."],
-      ["All-time combined scores", "Completed games from every title — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, and the Science, Maths & GK quizzes — contribute points to the all-games ranking."],
+      ["All-time combined scores", "Completed games from every title — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, Memory Order, and the Science, Maths & GK quizzes — contribute points to the all-games ranking."],
       ["Game-specific leaderboards", "Open separate all-time boards to compare scores for any individual game."],
     ],
     links: [
@@ -426,6 +434,7 @@ const publicPages = [
       ["/leaderboard/jumble/", "View all-time Jumble Words scores"],
       ["/leaderboard/snake/", "View all-time Snake scores"],
       ["/leaderboard/odd-images/", "View all-time Odd Images scores"],
+      ["/leaderboard/memory-order/", "View all-time Memory Order scores"],
       ["/leaderboard/science-quiz/", "View Science Quiz scores"],
       ["/leaderboard/maths-quiz/", "View Maths Quiz scores"],
       ["/leaderboard/gk-quiz/", "View GK Quiz scores"],
@@ -477,13 +486,13 @@ const publicPages = [
     route: "/challenges",
     title: "Game Challenges & Duels | Play Brain Games . Online",
     description:
-      "Create and join challenges for any of the ten games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and the quizzes — compare scores, and compete with friends.",
+      "Create and join challenges for any of the games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, Memory Order, and the quizzes — compare scores, and compete with friends.",
     heading: "Game Challenges & Duels",
     intro:
       "Create a head-to-head challenge in any game. Share an invitation link, complete the same round, and compare results.",
     sections: [
       ["What challenges are", "Challenges let two players compete on the same puzzle, board, or quiz. Each player completes a round, then the higher score wins bonus gems."],
-      ["Every game supported", "Duels are available for Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and the Science, Maths & GK quizzes."],
+      ["Every game supported", "Duels are available for Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, Memory Order, and the Science, Maths & GK quizzes."],
       ["How invitations work", "Create a challenge and share the invitation link with a friend. They can open the link and accept the duel without signing in."],
       ["How scoring works", "Scores reward speed and difficulty while accounting for mistakes, hints, or extra moves. The winner earns gems; ties reward both players."],
     ],
@@ -496,17 +505,17 @@ const publicPages = [
   },
   {
     route: "/about",
-    title: "About Play Brain Games . Online | Thirteen Free Games",
+    title: "About Play Brain Games . Online | Fourteen Free Games",
     description:
-      "Learn about Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, and Science, Maths & GK quizzes — board choices, daily challenges, guest play, and saved progress.",
+      "Learn about Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, Memory Order, and Science, Maths & GK quizzes — board choices, daily challenges, guest play, and saved progress.",
     heading: "About Play Brain Games . Online",
     intro:
-      "Play Brain Games . Online brings together thirteen puzzle and quiz formats with adjustable boards, practical guides, daily challenges, and guest play.",
+      "Play Brain Games . Online brings together fourteen puzzle and quiz formats with adjustable boards, practical guides, daily challenges, and guest play.",
     sections: [
-      ["Thirteen games, many kinds of play", "Sudoku is a logic puzzle; Memory Match is a recall game; Jigsaw rebuilds a picture; Word Search hides themed words; Minesweeper tests deduction under pressure; Slide Puzzle orders shuffled tiles; 2048 merges numbered tiles; Jumble Words unscrambles anagrams; Snake tests reflexes and planning; Odd Images tests visual scanning; and the Science, Maths & GK quizzes test knowledge against the clock."],
-      ["Board and level choices for every experience", "Sudoku ranges from 3×3 to 16×16 grids; Memory Match has 2×4 through 8×8 boards; Jigsaw offers 2×2 to 5×5 pictures; Word Search scales from 6×6 to 14×14; Minesweeper runs 6×6 to 14×14; Slide Puzzle goes 2×2 to 5×5; 2048 runs 3×3 to 6×6 boards; Jumble Words deals 5 to 12 words per round; Snake runs 12×12 to 18×18 boards; Odd Images runs 3×3 to 6×6 grids; and each quiz has Easy through Expert levels."],
+      ["Fourteen games, many kinds of play", "Sudoku is a logic puzzle; Memory Match is a recall game; Jigsaw rebuilds a picture; Word Search hides themed words; Minesweeper tests deduction under pressure; Slide Puzzle orders shuffled tiles; 2048 merges numbered tiles; Jumble Words unscrambles anagrams; Snake tests reflexes and planning; Odd Images tests visual scanning; Memory Order tests visual sequence memory; and the Science, Maths & GK quizzes test knowledge against the clock."],
+      ["Board and level choices for every experience", "Sudoku ranges from 3×3 to 16×16 grids; Memory Match has 2×4 through 8×8 boards; Jigsaw offers 2×2 to 5×5 pictures; Word Search scales from 6×6 to 14×14; Minesweeper runs 6×6 to 14×14; Slide Puzzle goes 2×2 to 5×5; 2048 runs 3×3 to 6×6 boards; Jumble Words deals 5 to 12 words per round; Snake runs 12×12 to 18×18 boards; Odd Images runs 3×3 to 6×6 grids; Memory Order shows 4 to 8 images per sequence; and each quiz has Easy through Expert levels."],
       ["Progress is optional", "Start as a guest without signing in. Google sign-in connects profile statistics, achievements, and streaks so progress can sync across devices. The games remain available without a profile."],
-      ["Daily practice and shared results", "Every game has a daily challenge that refreshes each day, plus head-to-head challenges against friends. Leaderboards cover all thirteen games across weekly, monthly, and all-time boards."],
+      ["Daily practice and shared results", "Every game has a daily challenge that refreshes each day, plus head-to-head challenges against friends. Leaderboards cover all fourteen games across weekly, monthly, and all-time boards."],
       ["Privacy and account control", "The Privacy Policy describes how account and game-progress information is used. The account deletion page explains how to request removal of an account and associated server data."],
     ],
     links: [
@@ -520,6 +529,7 @@ const publicPages = [
       ["/jumble", "Play Jumble Words"],
       ["/snake", "Play Snake"],
       ["/odd-images", "Play Odd Images"],
+      ["/memory-order", "Play Memory Order"],
       ["/quiz/science", "Play the quizzes"],
       ["/guides", "Read the puzzle guides"],
       ["/account-deletion", "Account deletion"],
@@ -573,7 +583,7 @@ const publicPages = [
       "Read the terms for using Play Brain Games . Online, including guest play, accounts, family-friendly use, acceptable behavior, and game content.",
     heading: "Terms of Service",
     intro:
-      "These terms describe the rules for using Play Brain Games . Online, including its Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, and quiz games, accounts, challenges, and virtual rewards.",
+      "These terms describe the rules for using Play Brain Games . Online, including its Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, Odd Images, Memory Order, and quiz games, accounts, challenges, and virtual rewards.",
     sections: [
       ["Using the service", "By using the games, you agree to these terms. The service is general-audience and family-friendly, with optional child-friendly modes."],
       ["Fair play", "Do not use bots or automated tools to manipulate scores, disrupt the service, impersonate another user, or violate applicable laws."],
@@ -949,6 +959,50 @@ const publicPages = [
     schemaType: "WebApplication",
   },
   {
+    route: "/memory-order",
+    title: "Memory Order Game Online Free | Recall the Image Sequence",
+    description:
+      "Play free Memory Order puzzles online. Watch images flash in order, then tap them back in the same sequence across Easy, Medium, Hard, and Expert levels.",
+    heading: "Memory Order Game Online Free",
+    intro:
+      "Each round flashes a sequence of images one by one for a few seconds — then the tiles shuffle and you tap them back in the exact order you saw.",
+    sections: [
+      ["Four levels that scale", "Easy shows 4 images for 12 seconds over 3 rounds, Medium 5 images for 10 seconds over 4, Hard 6 images for 8 seconds over 5, and Expert 8 images for 7 seconds over 6."],
+      ["How scoring works", "Points combine the level base with correct sequences and a speed bonus for finishing under the par time. Hints are available if you lose the thread."],
+      ["Daily and friend challenges", "The daily Memory Order challenge deals the same sequence to every player each day. You can also challenge a friend head-to-head."],
+      ["Play as a guest or save progress", "Start a round without an account. Optional Google sign-in connects your results, stats, and streaks to a profile across devices."],
+    ],
+    links: [
+      ["/leaderboard/memory-order/", "View the Memory Order leaderboard"],
+      ["/memory-order-challenge", "Play today's Memory Order challenge"],
+      ["/themes", "Browse picture themes"],
+      ["/guides", "Read the Memory Order guide"],
+      ["/challenges", "Challenge another player"],
+    ],
+    schemaType: "WebApplication",
+  },
+  {
+    route: "/memory-order-challenge",
+    title: "Daily Memory Order Challenge | Play Brain Games . Online",
+    description:
+      "Play today's shared Memory Order sequence — the same images in the same order for every player — and compare your score on the daily leaderboard.",
+    heading: "Daily Memory Order Challenge",
+    intro:
+      "Everyone memorises the same image sequence each day, refreshed at 00:00 UTC. Recall it perfectly and post your score.",
+    sections: [
+      ["One shared sequence each day", "The daily Memory Order challenge uses the same level, theme, sequence, and seed for every player on that date."],
+      ["Score by accuracy and speed", "Points reward correct sequences and a faster finish relative to the level's par time, so clean recall ranks higher."],
+      ["Compare with other players", "The daily leaderboard shows completion times and points, and you can return tomorrow to build a streak."],
+    ],
+    links: [
+      ["/memory-order", "Play Memory Order"],
+      ["/leaderboard/memory-order/", "View the Memory Order leaderboard"],
+      ["/guides", "Read the Memory Order guide"],
+      ["/challenges", "Challenge another player"],
+    ],
+    schemaType: "WebApplication",
+  },
+  {
     route: "/quiz/science",
     title: "Science Quiz Online Free | Timed Trivia Questions",
     description:
@@ -1156,6 +1210,25 @@ const publicPages = [
       ["/leaderboard/", "View the all-games leaderboard"],
       ["/odd-images", "Play Odd Images"],
       ["/themes", "Browse picture themes"],
+    ],
+    schemaType: "CollectionPage",
+  },
+  {
+    route: "/leaderboard/memory-order",
+    title: "Memory Order Leaderboard | Play Brain Games . Online",
+    description:
+      "Compare all-time Memory Order scores across Easy, Medium, Hard, and Expert levels.",
+    heading: "Memory Order Leaderboard",
+    intro:
+      "See the players with the highest combined points across completed Memory Order games of every level.",
+    sections: [
+      ["Scores across every level", "Points from completed Easy, Medium, Hard, and Expert rounds count toward this all-time board."],
+      ["Compare all games", "The all-games leaderboard also includes every other game's scores from weekly, monthly, and all-time results."],
+    ],
+    links: [
+      ["/leaderboard/", "View the all-games leaderboard"],
+      ["/memory-order", "Play Memory Order"],
+      ["/memory-order-challenge", "Try today's challenge"],
     ],
     schemaType: "CollectionPage",
   },

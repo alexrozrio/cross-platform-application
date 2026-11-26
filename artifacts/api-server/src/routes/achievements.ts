@@ -1,9 +1,10 @@
 import { Router, type IRouter } from "express";
 import { eq, and } from "drizzle-orm";
-import { db, gamesTable, puzzlesTable, dailyChallengesTable, memoryGamesTable, jigsawGamesTable, wordSearchGamesTable, minesweeperGamesTable, slidePuzzleGamesTable, quizGamesTable, oddImageGamesTable, game2048GamesTable, jumbleGamesTable, snakeGamesTable, profilesTable } from "@workspace/db";
+import { db, gamesTable, puzzlesTable, dailyChallengesTable, memoryGamesTable, jigsawGamesTable, wordSearchGamesTable, minesweeperGamesTable, slidePuzzleGamesTable, quizGamesTable, oddImageGamesTable, memoryOrderGamesTable, game2048GamesTable, jumbleGamesTable, snakeGamesTable, profilesTable } from "@workspace/db";
 import {
   countAchievementProgress,
   getJigsawAchievementProgress,
+  getMemoryOrderAchievementProgress,
   getOddImageAchievementProgress,
   SUDOKU_ACHIEVEMENT_TARGETS,
 } from "../utils/achievement-progress";
@@ -263,6 +264,18 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
     eq(oddImageGamesTable.profileId, profileId), eq(oddImageGamesTable.status, "completed"),
   ));
 
+  // ── Memory Order data ──────────────────────────────────────────────────────
+  const completedMemoryOrder = await db.select({
+    level: memoryOrderGamesTable.level,
+    theme: memoryOrderGamesTable.theme,
+    elapsedSeconds: memoryOrderGamesTable.elapsedSeconds,
+    questions: memoryOrderGamesTable.questions,
+    correct: memoryOrderGamesTable.correct,
+    dailyDate: memoryOrderGamesTable.dailyDate,
+  }).from(memoryOrderGamesTable).where(and(
+    eq(memoryOrderGamesTable.profileId, profileId), eq(memoryOrderGamesTable.status, "completed"),
+  ));
+
   // ── Quiz data (each subject has its own achievement set) ─────────────────
   const completedQuiz = await db.select({
     subject: quizGamesTable.subject,
@@ -485,6 +498,9 @@ router.get("/achievements/:profileId", async (req, res): Promise<void> => {
 
     // ── Odd Images ──────────────────────────────────────────────────────────
     ...getOddImageAchievementProgress(completedOddImages),
+
+    // ── Memory Order ────────────────────────────────────────────────────────
+    ...getMemoryOrderAchievementProgress(completedMemoryOrder),
 
     // ── Quiz games: Science / Maths / GK each have their own set ────────────
     ...quizAchievements,

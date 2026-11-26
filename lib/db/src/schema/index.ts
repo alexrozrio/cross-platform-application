@@ -22,3 +22,4 @@ export * from "./snake-games";
 export * from "./quiz-games";
 export * from "./rubiks-games";
 export * from "./odd-image-games";
+export * from "./memory-order-games";

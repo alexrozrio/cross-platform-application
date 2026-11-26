@@ -76,6 +76,7 @@ export default function PublicProfilePage({ profileId }: PublicProfileProps) {
     { game: "minesweeper", label: "Minesweeper" },
     { game: "slide-puzzle", label: "Slide Puzzle" },
     { game: "odd-images", label: "Odd Images" },
+    { game: "memory-order", label: "Memory Order" },
     { game: "science-quiz", label: "Science Quiz" },
     { game: "maths-quiz", label: "Maths Quiz" },
     { game: "gk-quiz", label: "GK Quiz" },

@@ -200,6 +200,40 @@ export function isSnakeRoundOver(state: SnakeGameState): boolean {
   return !state.alive;
 }
 
+/**
+ * Revive a crashed snake for a rewarded continue. Picks a direction that is
+ * safe for the next tick (never a 180° turn) and trims tail segments until one
+ * exists, so the resumed run cannot die on the very next step.
+ */
+export function reviveSnake(state: SnakeGameState): SnakeGameState | null {
+  if (state.alive || !state.snake.length) return state.alive ? state : null;
+  const size = state.gridSize;
+  const dirs: SnakeDirection[] = ["up", "down", "left", "right"];
+  const snake = [...state.snake];
+
+  const safeDirection = (cells: SnakeCell[]): SnakeDirection | null => {
+    for (const dir of dirs) {
+      if (isOpposite(dir, state.direction)) continue;
+      const delta = DIRS[dir];
+      const head = cells[0];
+      const next: SnakeCell = { x: head.x + delta.x, y: head.y + delta.y };
+      if (next.x < 0 || next.y < 0 || next.x >= size || next.y >= size) continue;
+      const willEat = sameCell(next, state.food);
+      const body = willEat ? cells : cells.slice(0, -1);
+      if (body.some((c) => sameCell(c, next))) continue;
+      return dir;
+    }
+    return null;
+  };
+
+  while (snake.length) {
+    const dir = safeDirection(snake);
+    if (dir) return { ...state, snake, direction: dir, alive: true };
+    snake.pop();
+  }
+  return null;
+}
+
 /** Serialize a live game for localStorage resume. */
 export function serializeSnakeGame(state: SnakeGameState): string {
   return JSON.stringify(state);

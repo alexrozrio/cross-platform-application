@@ -52,6 +52,7 @@ import { GAME_2048_LEVELS } from "@/lib/game-2048";
 import { JUMBLE_LEVELS } from "@/lib/jumble-words";
 import { SNAKE_LEVELS } from "@/lib/snake";
 import { ODD_IMAGE_LEVELS, ODD_IMAGE_LEVEL_ORDER, type OddImageLevel } from "@/lib/odd-images";
+import { MEMORY_ORDER_LEVELS, MEMORY_ORDER_LEVEL_ORDER, type MemoryOrderLevel } from "@/lib/memory-order";
 import { JIGSAW_SIZE_NAMES } from "@/lib/jigsaw-session";
 import { GAME_ICONS, gameIconColor } from "@/lib/game-icons";
 import { RUBIKS_VISIBLE } from "@/lib/rubiks";
@@ -281,6 +282,18 @@ function XpGuide() {
               ))}
             </div>
             <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">Odd Images XP is awarded for each completed grid set and increases with the selected level.</p>
+          </div>
+          <div className="border-t border-border pt-3">
+            <p className="mb-2 text-xs font-semibold text-foreground">Memory Order XP by level</p>
+            <div className="grid grid-cols-4 gap-2 text-center">
+              {MEMORY_ORDER_LEVEL_ORDER.map((level) => (
+                <div key={level} className="rounded-lg border border-border bg-background px-2 py-2">
+                  <p className="text-[10px] font-semibold text-muted-foreground">{MEMORY_ORDER_LEVELS[level].label}</p>
+                  <p className="text-xs font-bold text-fuchsia-600">{MEMORY_ORDER_LEVELS[level].xp} XP</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">Memory Order XP is awarded for each completed sequence set and increases with the selected level.</p>
           </div>
           <div className="border-t border-border pt-3">
             <p className="mb-2 text-xs font-semibold text-foreground">Quiz XP by level (Science, Maths & GK)</p>
@@ -776,6 +789,37 @@ function PointsGuide() {
             </p>
           </div>
 
+          {/* Memory Order base points table */}
+          <div>
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              🧠 Memory Order — base points × level
+            </p>
+            <div className="rounded-xl border overflow-hidden text-xs">
+              <div className="grid grid-cols-5 bg-muted-foreground/15 text-[10px] font-semibold text-muted-foreground px-3 py-2">
+                <span>Level</span>
+                <span className="text-center">Sequence</span>
+                <span className="text-center">Rounds</span>
+                <span className="text-center">Base pts</span>
+                <span className="text-center">XP · Gems</span>
+              </div>
+              {MEMORY_ORDER_LEVEL_ORDER.map((level, i) => {
+                const item = MEMORY_ORDER_LEVELS[level];
+                return (
+                  <div key={level} className={`grid grid-cols-5 px-3 py-2 text-xs ${i % 2 !== 0 ? "bg-muted/20" : ""}`}>
+                    <span className={`font-semibold ${level === "easy" ? "text-green-700" : level === "medium" ? "text-blue-700" : level === "hard" ? "text-yellow-700" : "text-orange-700"}`}>{item.label}</span>
+                    <span className="text-center font-mono">{item.sequenceLength} imgs</span>
+                    <span className="text-center font-mono">{item.questions}</span>
+                    <span className="text-center font-mono">{item.basePoints.toLocaleString()}</span>
+                    <span className="text-center font-mono">{item.xp} XP · {item.gems}💎</span>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2">
+              score = base × (0.5 + 0.5 × accuracy) × (1 + time bonus up to +50%) &nbsp;·&nbsp; accuracy = correct sequences ÷ rounds, speed bonus for finishing under par, min 10 pts.
+            </p>
+          </div>
+
           {/* Quiz base points table (Science, Maths & GK share the same scoring) */}
           <div>
             <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
@@ -955,6 +999,7 @@ interface BreakdownData {
   jumble: { difficulty: string; points: number; games: number }[];
   snake: { difficulty: string; points: number; games: number }[];
   oddImages: { level: OddImageLevel; points: number; games: number }[];
+  memoryOrder: { level: MemoryOrderLevel; points: number; games: number }[];
   quiz?: { subject: string; level: string; points: number; games: number }[];
 }
 
@@ -983,7 +1028,7 @@ const SLIDE_PUZZLE_DIFFICULTY_NAMES: Record<string, string> = {
   "4x4": "15 tiles",
   "5x5": "24 tiles",
 };
-type GameTab = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "snake" | "odd-images" | "rubiks" | QuizGameId;
+type GameTab = "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "snake" | "odd-images" | "memory-order" | "rubiks" | QuizGameId;
 
 function BreakdownPanel({
   profileId,
@@ -1062,6 +1107,9 @@ function BreakdownPanel({
           </button>
           <button onClick={() => setBdTab("odd-images")} className={`rounded-lg px-3 py-1 text-xs font-semibold transition-colors ${bdTab === "odd-images" ? "bg-teal-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
             🖼️ Odd Images
+          </button>
+          <button onClick={() => setBdTab("memory-order")} className={`rounded-lg px-3 py-1 text-xs font-semibold transition-colors ${bdTab === "memory-order" ? "bg-fuchsia-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+            🧠 Memory Order
           </button>
           {(Object.keys(QUIZ_SUBJECTS) as QuizSubject[]).map((id) => {
             const subject = QUIZ_SUBJECTS[id];
@@ -1220,6 +1268,18 @@ function BreakdownPanel({
           ))}
         </div>
       )}
+      {bdTab === "memory-order" && (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {(data?.memoryOrder ?? MEMORY_ORDER_LEVEL_ORDER.map((level) => ({ level, points: 0, games: 0 }))).map((item) => (
+            <div key={item.level} className={`rounded-xl border p-2.5 text-center transition-colors ${item.games > 0 ? "border-fuchsia-300 bg-background" : "border-border bg-muted/30 opacity-50"}`}>
+              <p className="text-xs font-bold text-foreground">{MEMORY_ORDER_LEVELS[item.level]?.label ?? item.level}</p>
+              <p className="mt-0.5 text-lg font-black tabular-nums leading-tight text-fuchsia-700 dark:text-fuchsia-300">{item.points > 0 ? item.points.toLocaleString() : "—"}</p>
+              <p className="mt-0.5 text-[10px] text-muted-foreground">{item.games > 0 ? `${item.games} game${item.games !== 1 ? "s" : ""}` : "no games"}</p>
+              <p className="mt-0.5 text-[9px] text-muted-foreground/80">{MEMORY_ORDER_LEVELS[item.level] ? `${MEMORY_ORDER_LEVELS[item.level].sequenceLength} images · ${MEMORY_ORDER_LEVELS[item.level].questions} rounds` : ""}</p>
+            </div>
+          ))}
+        </div>
+      )}
       {(() => {
         const subjectId = quizSubjectForGameId(bdTab);
         if (!subjectId) return null;
@@ -1294,6 +1354,7 @@ function GameSummaryPanel({
     { id: "jumble", label: "Jumble Words", icon: GAME_ICONS.jumble, ...sum(data?.jumble) },
     { id: "snake", label: "Snake", icon: GAME_ICONS.snake, ...sum(data?.snake) },
     { id: "odd-images", label: "Odd Images", icon: GAME_ICONS["odd-images"], ...sum(data?.oddImages) },
+    { id: "memory-order", label: "Memory Order", icon: GAME_ICONS["memory-order"], ...sum(data?.memoryOrder) },
     { id: "science-quiz", label: `${QUIZ_SUBJECTS.science.shortName} Quiz`, icon: GAME_ICONS["science-quiz"], ...quizFor("science") },
     { id: "maths-quiz", label: `${QUIZ_SUBJECTS.maths.shortName} Quiz`, icon: GAME_ICONS["maths-quiz"], ...quizFor("maths") },
     { id: "gk-quiz", label: `${QUIZ_SUBJECTS.gk.shortName} Quiz`, icon: GAME_ICONS["gk-quiz"], ...quizFor("gk") },
@@ -2418,6 +2479,85 @@ function OddImagesBoard({ myProfileId }: { myProfileId?: number }) {
   </div>;
 }
 
+function MemoryOrderScoringGuide() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="overflow-hidden rounded-2xl border border-fuchsia-200/70 dark:border-fuchsia-800/40">
+      <button onClick={() => setOpen((value) => !value)} className="flex w-full items-center justify-between bg-card px-5 py-4 text-left transition-colors hover:bg-muted/40">
+        <div>
+          <p className="text-sm font-semibold">How Memory Order points &amp; XP are calculated</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Sequence length, view time, accuracy, and speed all count.</p>
+        </div>
+        {open ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
+      </button>
+      {open && (
+        <div className="space-y-4 border-t border-border bg-muted px-5 py-4 text-sm">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {MEMORY_ORDER_LEVEL_ORDER.map((level) => {
+              const config = MEMORY_ORDER_LEVELS[level];
+              const par = `${Math.floor(config.parSeconds / 60)}:${String(config.parSeconds % 60).padStart(2, "0")}`;
+              return (
+                <div key={level} className="rounded-xl border border-border bg-background p-3">
+                  <p className="font-bold">{config.label} · {config.sequenceLength} images</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Base {config.basePoints.toLocaleString()} pts</p>
+                  <p className="text-xs text-muted-foreground">Par {par} · {config.questions} rounds</p>
+                  <p className="text-xs text-muted-foreground">{config.viewSeconds}s view · {config.gems} 💎</p>
+                </div>
+              );
+            })}
+          </div>
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">XP by difficulty</p>
+            <div className="overflow-hidden rounded-xl border border-border text-xs">
+              <div className="grid grid-cols-4 bg-muted-foreground/15 px-3 py-2 text-[10px] font-semibold text-muted-foreground"><span>Difficulty</span><span className="text-center">XP</span><span className="text-center">Gems</span><span className="text-center">Sequence</span></div>
+              {MEMORY_ORDER_LEVEL_ORDER.map((level, index) => {
+                const config = MEMORY_ORDER_LEVELS[level];
+                return <div key={level} className={`grid grid-cols-4 px-3 py-2 ${index % 2 === 0 ? "bg-background" : "bg-muted/20"}`}><span className="font-semibold">{config.label}</span><span className="text-center font-semibold text-amber-600">{config.xp} XP</span><span className="text-center font-mono">{config.gems} 💎</span><span className="text-center font-mono">{config.sequenceLength} imgs</span></div>;
+              })}
+            </div>
+          </div>
+          <div className="rounded-lg border border-border bg-background px-4 py-3 text-[11px] text-muted-foreground">
+            <p className="font-semibold text-foreground">Score formula</p>
+            <p className="mt-1 font-mono leading-relaxed">base × (0.5 + 0.5 × accuracy) × (1 + speed bonus)</p>
+            <p className="mt-1 leading-relaxed">Accuracy is the share of sequences recalled in the exact order. Finishing under par time adds up to +50%. A round with zero correct sequences scores 0 points.</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+type MemoryOrderLeaderboardEntry = { rank: number; profileId: number; username: string; avatar: string | null; xp: number; totalPoints: number; gamesPlayed: number };
+
+function MemoryOrderBoard({ myProfileId }: { myProfileId?: number }) {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["/api/memory-order-games/leaderboard"],
+    queryFn: () => customFetch<MemoryOrderLeaderboardEntry[]>("/api/memory-order-games/leaderboard"),
+    refetchInterval: 60_000,
+  });
+  return <div className="space-y-5">
+    <Card className="shadow-md border-fuchsia-200/60 dark:border-fuchsia-800/40">
+      <CardHeader className="border-b bg-card pb-4"><CardTitle className="flex items-center gap-2 text-lg">{(() => { const Icon = GAME_ICONS["memory-order"]; return <Icon className="h-5 w-5 text-fuchsia-600" />; })()} Memory Order — All Levels</CardTitle></CardHeader>
+      <CardContent className="p-0">
+        {isLoading ? <div className="space-y-4 p-6">{[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
+          : isError ? <div className="p-10 text-center text-sm text-muted-foreground">Memory Order leaderboard could not be loaded. Please try again.</div>
+          : !data?.length ? <div className="p-12 text-center text-muted-foreground"><Trophy className="mx-auto mb-3 h-10 w-10 opacity-20" /><p className="font-medium">No completed Memory Order games yet.</p><p className="mt-1 text-sm">Recall the order to claim the top spot.</p></div>
+          : <div className="divide-y">{data.map((entry) => {
+            const isMe = myProfileId !== undefined && entry.profileId === myProfileId;
+            return <div key={entry.profileId} className={isMe ? "bg-fuchsia-50/70 dark:bg-fuchsia-950/20" : ""}>
+              <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4 px-3 py-4 sm:px-5">
+                <RankBadge rank={entry.rank} />
+                <div className="min-w-0 flex-1"><div className="flex min-w-0 flex-wrap items-center gap-2"><p title={entry.username} className={`min-w-0 flex-1 truncate font-semibold ${isMe ? "text-fuchsia-800 dark:text-fuchsia-300" : ""}`}>{entry.username}</p>{isMe && <span className="rounded-full bg-fuchsia-600 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">You</span>}</div><p className="mt-0.5 text-xs text-muted-foreground">{entry.gamesPlayed} game{entry.gamesPlayed !== 1 ? "s" : ""}</p></div>
+                <div className="flex shrink-0 items-center gap-2"><div className="text-right"><p className="whitespace-nowrap text-lg font-black tabular-nums text-fuchsia-700 dark:text-fuchsia-300 sm:text-xl">{entry.totalPoints.toLocaleString()}</p><p className="mt-0.5 text-xs text-muted-foreground">pts</p></div></div>
+              </div>
+            </div>;
+          })}</div>}
+      </CardContent>
+    </Card>
+    <MemoryOrderScoringGuide />
+  </div>;
+}
+
 
 function RubiksBoard({ myProfileId }: { myProfileId?: number }) {
   const { data, isLoading, isError } = useQuery({
@@ -2689,7 +2829,7 @@ function SnakeBoard({ myProfileId }: { myProfileId?: number }) {
 function LeaderboardScopeLinks({
   active,
 }: {
-  active: "all" | "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "snake" | "odd-images" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz";
+  active: "all" | "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "snake" | "odd-images" | "memory-order" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz";
 }) {
   const [, setLocation] = useLocation();
   const links = ([
@@ -2704,6 +2844,7 @@ function LeaderboardScopeLinks({
     { id: "jumble", href: "/leaderboard/jumble/", label: "Jumble Words", icon: GAME_ICONS.jumble },
     { id: "snake", href: "/leaderboard/snake/", label: "Snake", icon: GAME_ICONS.snake },
     { id: "odd-images", href: "/leaderboard/odd-images/", label: "Odd Images", icon: GAME_ICONS["odd-images"] },
+    { id: "memory-order", href: "/leaderboard/memory-order/", label: "Memory Order", icon: GAME_ICONS["memory-order"] },
     { id: "rubiks", href: "/leaderboard/rubiks/", label: "Rubik's Cube", icon: GAME_ICONS.rubiks },
     { id: "science-quiz", href: "/leaderboard/science-quiz/", label: "Science Quiz", icon: GAME_ICONS["science-quiz"] },
     { id: "maths-quiz", href: "/leaderboard/maths-quiz/", label: "Maths Quiz", icon: GAME_ICONS["maths-quiz"] },
@@ -2745,7 +2886,7 @@ function LeaderboardScopeLinks({
 }
 
 const PLAY_LINKS: Record<
-  "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "snake" | "odd-images" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz",
+  "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "snake" | "odd-images" | "memory-order" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz",
   { href: string; label: string; ariaLabel: string; icon: typeof Zap; borderClass: string; iconClass: string }
 > = {
   sudoku: { href: "/sudoku", label: "Play Sudoku", ariaLabel: "Play Sudoku", icon: GAME_ICONS.sudoku, borderClass: "border-border", iconClass: "text-primary" },
@@ -2758,6 +2899,7 @@ const PLAY_LINKS: Record<
   jumble: { href: "/jumble", label: "Jumble Words", ariaLabel: "Play Jumble Words", icon: GAME_ICONS.jumble, borderClass: "border-cyan-200 dark:border-cyan-800", iconClass: "text-cyan-600" },
   snake: { href: "/snake", label: "Snake", ariaLabel: "Play Snake", icon: GAME_ICONS.snake, borderClass: "border-green-200 dark:border-green-800", iconClass: "text-green-600" },
   "odd-images": { href: "/odd-images", label: "Odd Images", ariaLabel: "Play Odd Images", icon: GAME_ICONS["odd-images"], borderClass: "border-teal-200 dark:border-teal-800", iconClass: "text-teal-600" },
+  "memory-order": { href: "/memory-order", label: "Memory Order", ariaLabel: "Play Memory Order", icon: GAME_ICONS["memory-order"], borderClass: "border-fuchsia-200 dark:border-fuchsia-800", iconClass: "text-fuchsia-600" },
   rubiks: { href: "/rubiks", label: "Rubik's Cube", ariaLabel: "Play Rubik's Cube", icon: GAME_ICONS.rubiks, borderClass: "border-rose-200 dark:border-rose-800", iconClass: "text-rose-600" },
   "science-quiz": { href: "/quiz/science", label: "Science Quiz", ariaLabel: "Play Science Quiz", icon: GAME_ICONS["science-quiz"], borderClass: "border-violet-200 dark:border-violet-800", iconClass: "text-violet-600" },
   "maths-quiz": { href: "/quiz/maths", label: "Maths Quiz", ariaLabel: "Play Maths Quiz", icon: GAME_ICONS["maths-quiz"], borderClass: "border-sky-200 dark:border-sky-800", iconClass: "text-sky-600" },
@@ -2767,13 +2909,13 @@ const PLAY_LINKS: Record<
 export default function Leaderboard({
   gamePage: routeGamePage,
 }: {
-  gamePage?: "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "snake" | "odd-images" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz";
+  gamePage?: "sudoku" | "memory" | "jigsaw" | "word-search" | "minesweeper" | "slide-puzzle" | "game-2048" | "jumble" | "snake" | "odd-images" | "memory-order" | "rubiks" | "science-quiz" | "maths-quiz" | "gk-quiz";
 } = {}) {
   const search = useSearch();
   const requestedTab = new URLSearchParams(search).get("tab");
   const gamePage =
     routeGamePage ??
-    (requestedTab === "sudoku" || requestedTab === "memory" || requestedTab === "jigsaw" || requestedTab === "word-search" || requestedTab === "minesweeper" || requestedTab === "slide-puzzle" || requestedTab === "game-2048" || requestedTab === "jumble" || requestedTab === "snake" || requestedTab === "odd-images" || requestedTab === "rubiks" || requestedTab === "science-quiz" || requestedTab === "maths-quiz" || requestedTab === "gk-quiz" ? requestedTab : null);
+    (requestedTab === "sudoku" || requestedTab === "memory" || requestedTab === "jigsaw" || requestedTab === "word-search" || requestedTab === "minesweeper" || requestedTab === "slide-puzzle" || requestedTab === "game-2048" || requestedTab === "jumble" || requestedTab === "snake" || requestedTab === "odd-images" || requestedTab === "memory-order" || requestedTab === "rubiks" || requestedTab === "science-quiz" || requestedTab === "maths-quiz" || requestedTab === "gk-quiz" ? requestedTab : null);
   const initialTab: MainTab =
     requestedTab === "monthly" || requestedTab === "alltime"
       ? requestedTab
@@ -2800,6 +2942,8 @@ export default function Leaderboard({
                   ? "Snake Leaderboard | Play Brain Games . Online"
                 : gamePage === "odd-images"
                   ? "Odd Images Leaderboard | Play Brain Games . Online"
+                : gamePage === "memory-order"
+                  ? "Memory Order Leaderboard | Play Brain Games . Online"
                 : gamePage === "rubiks"
                   ? "Rubik's Cube Leaderboard | Play Brain Games . Online"
                 : gamePage === "science-quiz"
@@ -2830,6 +2974,8 @@ export default function Leaderboard({
                   ? "Compare all-time Snake points across every level on Play Brain Games . Online."
                 : gamePage === "odd-images"
                   ? "Compare all-time Odd Images points across every level on Play Brain Games . Online."
+                : gamePage === "memory-order"
+                  ? "Compare all-time Memory Order points across every level on Play Brain Games . Online."
                 : gamePage === "rubiks"
                   ? "Compare all-time Rubik's Cube points across every puzzle on Play Brain Games . Online."
                 : gamePage === "science-quiz"
@@ -2865,6 +3011,8 @@ export default function Leaderboard({
                 ? "Snake Leaderboard"
               : gamePage === "odd-images"
                 ? "Odd Images Leaderboard"
+              : gamePage === "memory-order"
+                ? "Memory Order Leaderboard"
               : gamePage === "rubiks"
                 ? "Rubik's Cube Leaderboard"
               : gamePage === "science-quiz"
@@ -2895,6 +3043,8 @@ export default function Leaderboard({
                 ? "All-time points across every Snake level."
               : gamePage === "odd-images"
                 ? "All-time points across every Odd Images level."
+              : gamePage === "memory-order"
+                ? "All-time points across every Memory Order level."
               : gamePage === "rubiks"
                 ? "All-time points across every Rubik's Cube puzzle."
               : gamePage === "science-quiz"
@@ -2958,6 +3108,8 @@ export default function Leaderboard({
         <SnakeBoard myProfileId={myProfileId} />
       ) : gamePage === "odd-images" ? (
         <OddImagesBoard myProfileId={myProfileId} />
+      ) : gamePage === "memory-order" ? (
+        <MemoryOrderBoard myProfileId={myProfileId} />
       ) : gamePage === "rubiks" ? (
         <RubiksBoard myProfileId={myProfileId} />
       ) : gamePage === "science-quiz" ? (

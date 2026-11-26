@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation, useSearch } from "wouter";
-import { ArrowLeft, BookOpen, Bomb, Clock3, Flag, Flame, Home, Keyboard, LayoutGrid, Lightbulb, RotateCcw, Scroll, Share2, Timer, Trophy, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeft, BookOpen, Bomb, Clock3, Flag, Flame, Home, Keyboard, LayoutGrid, Lightbulb, RotateCcw, Scroll, Share2, Skull, Timer, Trophy, Volume2, VolumeX } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useSound } from "@/hooks/use-sound";
 import { usePageMeta } from "@/components/page-meta";
@@ -14,7 +14,7 @@ import { shareOrDownloadShareCard } from "@/lib/share-card";
 import { getLevelFromXp } from "@/lib/levels";
 import { toast } from "sonner";
 import { ACHIEVEMENT_COMPLETION_EVENT } from "@/lib/achievement-events";
-import { chordFrom, computeCounts, createMinefield, MAX_HINTS, MAX_MISTAKES, MINESWEEPER_LEVELS, revealFrom, type MinesweeperDifficulty } from "@/lib/minesweeper";
+import { chordFrom, computeCounts, createMinefield, FREE_MISTAKES, MAX_HINTS, MINESWEEPER_LEVELS, revealFrom, type MinesweeperDifficulty } from "@/lib/minesweeper";
 import { recordMinesweeperCompletion } from "@/lib/minesweeper-stats";
 import { useInterstitialAfterGame } from "@/lib/interstitial-ads";
 import {
@@ -41,6 +41,7 @@ type SavedGame = {
   flagged: boolean[];
   revealedCount: number;
   mistakes: number;
+  paidContinues: number;
   hintsUsed: number;
   elapsed: number;
   savedAt: number;
@@ -57,7 +58,8 @@ function loadSaved(): SavedGame | null {
     const value = JSON.parse(localStorage.getItem(SAVE_KEY) ?? "null") as SavedGame | null;
     if (value && ["beginner", "easy", "medium", "hard"].includes(value.difficulty) && Array.isArray(value.mines) && Array.isArray(value.revealed) && value.size > 0) {
       value.mistakes = Number.isFinite(value.mistakes) ? value.mistakes : 0;
-      value.hintsUsed = Number.isFinite(value.hintsUsed) ? Math.min(MAX_HINTS + 1, value.hintsUsed) : 0;
+      value.paidContinues = Number.isFinite(value.paidContinues) ? Math.max(0, Math.floor(value.paidContinues)) : Math.max(0, value.mistakes - FREE_MISTAKES);
+      value.hintsUsed = Number.isFinite(value.hintsUsed) ? Math.max(0, Math.floor(value.hintsUsed)) : 0;
       value.revealedCount = Number.isFinite(value.revealedCount) ? value.revealedCount : 0;
       value.status = value.status === "won" || value.status === "lost" ? value.status : "playing";
       return value;
@@ -85,10 +87,9 @@ export default function MinesweeperPage() {
       gameMode === "adult" ? MINESWEEPER_LEVELS[id].mode === "adult" : true,
   );
   const [game, setGame] = React.useState<SavedGame | null>(null);
-  useInterstitialAfterGame(
-    game?.status === "won" || game?.status === "lost",
-    game?.status === "playing",
-  );
+  const [runFinished, setRunFinished] = React.useState(false);
+  const [pendingLoss, setPendingLoss] = React.useState<SavedGame | null>(null);
+  useInterstitialAfterGame(runFinished, Boolean(game && (game.status === "playing" || pendingLoss)));
   const [elapsed, setElapsed] = React.useState(0);
   const [flagMode, setFlagMode] = React.useState(false);
   const [showConfetti, setShowConfetti] = React.useState(false);
@@ -203,11 +204,12 @@ export default function MinesweeperPage() {
     const nextGame: SavedGame = {
       difficulty: level, seed: boardSeed, size, mines, counts: computeCounts(mines, size),
       revealed: new Array<boolean>(size * size).fill(false), flagged: new Array<boolean>(size * size).fill(false),
-      revealedCount: 0, mistakes: 0, hintsUsed: 0, elapsed: 0, savedAt,
+      revealedCount: 0, mistakes: 0, paidContinues: 0, hintsUsed: 0, elapsed: 0, savedAt,
       status: "playing", ...(dailyDate ? { dailyDate } : {}), ...(existingGameId ? { gameId: existingGameId } : {}), ...(challengeId ? { challengeId } : {}),
     };
     setGame(nextGame); setReward(null); setRewardError(null); setRewardLoading(false);
     setElapsed(0); setFlagMode(false); setChallengeResult(null);
+    setRunFinished(false); setPendingLoss(null);
     setLocation(dailyDate ? `/minesweeper?play=1&dailyDate=${dailyDate}&difficulty=${level}&seed=${boardSeed}` : challengeId ? `/minesweeper?play=1&challengeId=${challengeId}&gameId=${existingGameId}&difficulty=${level}&seed=${boardSeed}` : "/minesweeper?play=1");
     if (existingGameId) {
       pendingGameRef.current = { savedAt, promise: Promise.resolve(existingGameId) };
@@ -251,6 +253,8 @@ export default function MinesweeperPage() {
   }, [profileLoading, profile?.gameMode, search]);
 
   const finishGame = React.useCallback((next: SavedGame, finalElapsed: number, won: boolean) => {
+    setRunFinished(true);
+    setPendingLoss(null);
     if (won) {
       setShowConfetti(true); setTimeout(() => setShowConfetti(false), 3200);
       recordMinesweeperCompletion(profileId, next.difficulty, finalElapsed, next.mistakes);
@@ -262,19 +266,46 @@ export default function MinesweeperPage() {
 
   const applyAction = (next: SavedGame) => {
     const totalSafe = next.size * next.size - next.mines.filter(Boolean).length;
-    if (next.mistakes >= MAX_MISTAKES && next.status === "playing") {
-      sounds.gameover();
-      const lostGame = { ...next, status: "lost" as const };
-      setGame(lostGame);
-      finishGame(lostGame, elapsed, false);
-    } else if (next.revealedCount >= totalSafe && next.status === "playing") {
+    if (next.revealedCount >= totalSafe && next.status === "playing") {
       sounds.complete();
       const wonGame = { ...next, status: "won" as const };
       setGame(wonGame);
       finishGame(wonGame, elapsed, true);
-    } else {
-      setGame(next);
+      return;
     }
+    const unpaidLimit = FREE_MISTAKES + next.paidContinues;
+    if (next.mistakes > unpaidLimit && next.status === "playing") {
+      sounds.gameover();
+      const lostGame = { ...next, status: "lost" as const };
+      if (canShowRewardedTip) {
+        setPendingLoss(lostGame);
+        setGame(lostGame);
+        localStorage.removeItem(SAVE_KEY);
+        setHasSavedGame(false);
+      } else {
+        setGame(lostGame);
+        finishGame(lostGame, elapsed, false);
+      }
+      return;
+    }
+    setGame(next);
+  };
+
+  const continueAfterLoss = () => {
+    const lost = pendingLoss;
+    if (!lost) return;
+    void showAdForExtraTip(() => {
+      const revived = { ...lost, status: "playing" as const, paidContinues: lost.paidContinues + 1 };
+      setGame(revived);
+      setPendingLoss(null);
+      setRunFinished(false);
+    }, "Continue unlocked — keep sweeping!");
+  };
+
+  const endAfterLoss = () => {
+    const lost = pendingLoss;
+    setPendingLoss(null);
+    if (lost) finishGame(lost, elapsed, false);
   };
 
   const handleCell = (index: number) => {
@@ -307,12 +338,7 @@ export default function MinesweeperPage() {
   };
 
   const issueHint = (earnedExtraTip = false) => {
-    if (
-      !game ||
-      game.status !== "playing" ||
-      game.hintsUsed > MAX_HINTS ||
-      (game.hintsUsed >= MAX_HINTS && !earnedExtraTip)
-    ) return;
+    if (!game || game.status !== "playing" || (!earnedExtraTip && game.hintsUsed >= MAX_HINTS)) return;
     const candidates: number[] = [];
     for (let i = 0; i < game.size * game.size; i++) {
       if (!game.revealed[i] && !game.flagged[i] && !game.mines[i]) candidates.push(i);
@@ -335,7 +361,7 @@ export default function MinesweeperPage() {
   const canEarnExtraTip =
     canShowRewardedTip &&
     game?.status === "playing" &&
-    game.hintsUsed === MAX_HINTS &&
+    game.hintsUsed >= MAX_HINTS &&
     hasHintTarget;
   const handleRewardedHint = () => {
     if (!canEarnExtraTip) return;
@@ -377,7 +403,7 @@ export default function MinesweeperPage() {
   const fmt = (seconds: number) => `${Math.floor(seconds / 60).toString().padStart(2, "0")}:${(seconds % 60).toString().padStart(2, "0")}`;
 
   React.useEffect(() => {
-    if (!game || game.status === "playing" || !game.challengeId) { setChallengeResult(null); return; }
+    if (!game || !runFinished || !game.challengeId) { setChallengeResult(null); return; }
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout>;
     const refresh = async () => {
@@ -390,9 +416,9 @@ export default function MinesweeperPage() {
     };
     void refresh();
     return () => { cancelled = true; clearTimeout(timer); };
-  }, [game?.status, game?.challengeId]);
+  }, [runFinished, game?.challengeId]);
 
-  if (game && game.status !== "playing") {
+  if (game && game.status !== "playing" && !pendingLoss) {
     const mineCount = game.mines.filter(Boolean).length;
     const flagCount = game.flagged.filter(Boolean).length;
     const won = game.status === "won";
@@ -466,6 +492,29 @@ export default function MinesweeperPage() {
     </main>;
   }
 
+  if (pendingLoss && game) {
+    const mineCount = game.mines.filter(Boolean).length;
+    return <main className="mx-auto w-full max-w-lg space-y-4 px-3 py-5 sm:px-6 sm:py-8">
+      <section className="relative isolate overflow-hidden rounded-2xl bg-gradient-to-br from-rose-600 via-red-600 to-orange-500 p-5 text-center text-white shadow-xl sm:p-6">
+        <div className="relative z-10 space-y-2">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-white/20 text-3xl">💥</div>
+          <p className="text-[10px] font-bold uppercase tracking-[.2em] text-white/75">Minesweeper · mine hit</p>
+          <h1 className="font-serif text-2xl font-bold sm:text-3xl">Keep sweeping?</h1>
+          <p className="text-sm text-white/85">{MINESWEEPER_LEVELS[game.difficulty].label} · {game.size}×{game.size} · {mineCount} mines · {game.mistakes} mine hits · {game.revealedCount} safe cells cleared</p>
+        </div>
+      </section>
+      <section className="space-y-3 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
+        <p className="text-sm text-muted-foreground">Your first mine hit was free. Watch an ad to continue from this board, or end the run now.</p>
+        <div className="flex gap-2">
+          <Button variant="outline" className="flex-1" onClick={endAfterLoss}>End run</Button>
+          <Button className="flex-1 gap-1.5 bg-emerald-600 hover:bg-emerald-500" onClick={continueAfterLoss} disabled={isShowingRewardedTip}>
+            {isShowingRewardedTip ? "Ad…" : "Watch ad + continue"}
+          </Button>
+        </div>
+      </section>
+    </main>;
+  }
+
   return <main className={`mx-auto w-full px-3 py-3 sm:px-6 sm:py-8 ${game ? "max-w-3xl" : "max-w-lg"}`}>
     {showConfetti && <Confetti />}
     <div className="relative isolate mb-3 flex items-center sm:mb-4 justify-between gap-3 overflow-hidden rounded-2xl border-2 border-emerald-200/80 bg-gradient-to-br from-emerald-50 via-white to-teal-100 px-3 py-2 shadow-lg shadow-emerald-500/10 sm:px-4 sm:py-3 dark:border-emerald-800/60 dark:from-emerald-950/60 dark:via-card dark:to-teal-950/60">
@@ -485,7 +534,7 @@ export default function MinesweeperPage() {
             <div aria-hidden="true" className="pointer-events-none absolute -bottom-8 -left-8 h-24 w-24 rounded-full bg-teal-300/25 blur-2xl dark:bg-teal-400/10" />
             <div className="relative z-10 mb-4 hidden items-center gap-3 rounded-xl border border-emerald-200/70 bg-white/65 px-3 py-3 dark:border-emerald-800/50 dark:bg-slate-950/20 sm:flex">
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-emerald-500/15 text-2xl">💣</span>
-              <div className="min-w-0 flex-1"><h2 className="font-serif text-lg font-bold">Ready to sweep?</h2><p className="text-xs leading-relaxed text-muted-foreground">Reveal every safe cell without hitting {MAX_MISTAKES} mines. Numbers show how many mines touch each cell.</p></div>
+              <div className="min-w-0 flex-1"><h2 className="font-serif text-lg font-bold">Ready to sweep?</h2><p className="text-xs leading-relaxed text-muted-foreground">Reveal every safe cell — your first mine hit is free, then watch an ad to keep going. Numbers show how many mines touch each cell.</p></div>
               <div className="hidden grid-cols-3 gap-1 rounded-lg border border-emerald-200/70 bg-white/70 p-1 sm:grid dark:border-emerald-800/50 dark:bg-slate-950/30">{["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((n, i) => <span key={i} className={`grid h-5 w-5 place-items-center rounded text-[9px] font-black ${NUMBER_COLORS[Number(n)]}`}>{n}</span>)}</div>
             </div>
             <p className="relative z-10 mb-2 hidden text-xs font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-300 sm:block">Choose Difficulty</p>
@@ -530,8 +579,8 @@ export default function MinesweeperPage() {
                 <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
                   Mines are hidden under the covered cells. Reveal safe cells to
                   uncover the numbers — each number counts the mines touching
-                  that cell. Clear every safe cell to win, but hitting{" "}
-                  {MAX_MISTAKES} mines ends the game.
+                  that cell. Clear every safe cell to win — your first mine hit
+                  is free, and after that you can watch an ad to continue.
                 </p>
               </div>
               <div className="grid gap-4 text-sm leading-relaxed text-muted-foreground sm:grid-cols-2">
@@ -568,7 +617,7 @@ export default function MinesweeperPage() {
                     "Choose a difficulty — each has its own board size and mine count.",
                     "Reveal a cell to see how many mines touch it (the number shows the count).",
                     "Flag cells you believe are mines so you don't reveal them by accident.",
-                    "Clear every safe cell to win. Hitting 3 mines ends the game.",
+                    "Clear every safe cell to win. Your first mine hit is free — after that, watch an ad to continue.",
                     "Click a revealed number with the right number of flags around it to reveal its neighbours at once.",
                   ].map((rule, index) => (
                     <li key={rule} className="flex gap-2">
@@ -659,8 +708,8 @@ export default function MinesweeperPage() {
             <Button variant={flagMode ? "default" : "outline"} size="sm" className={`h-8 shrink-0 gap-1 px-2 ${flagMode ? "bg-emerald-600 hover:bg-emerald-700" : ""}`} onClick={() => { sounds.click(); setFlagMode((v) => !v); }} aria-pressed={flagMode} aria-label={flagMode ? "Flag mode on" : "Flag mode"}><Flag className="h-4 w-4"/> <span className="hidden sm:inline">{flagMode ? "Flagging" : "Flag"}</span></Button>
             <span className="flex shrink-0 items-center gap-1 rounded-full bg-background px-2 py-1 font-bold tabular-nums sm:px-2.5" title="Mines remaining"><Bomb className="h-3.5 w-3.5 text-rose-500"/>{game.mines.filter(Boolean).length - game.flagged.filter(Boolean).length}</span>
             <span className="flex shrink-0 items-center gap-1 rounded-full bg-background px-2 py-1 font-bold tabular-nums sm:px-2.5"><Clock3 className="h-3.5 w-3.5 text-emerald-600"/>{fmt(elapsed)}</span>
-            <span className="hidden shrink-0 items-center gap-0.5 rounded-full bg-background px-1.5 py-1 sm:flex sm:px-2" title={`Mines hit — ${MAX_MISTAKES} ends the game`}>
-              {Array.from({ length: MAX_MISTAKES }, (_, i) => <span key={i} className={`h-2 w-2 rounded-full ${i < game.mistakes ? "bg-rose-500" : "bg-muted-foreground/25"}`} />)}
+            <span className="hidden shrink-0 items-center gap-1 rounded-full bg-background px-2 py-1 font-bold tabular-nums sm:flex sm:px-2.5" title="Mine hits — first is free, then ads to continue">
+              <Skull className="h-3.5 w-3.5 text-rose-500" />{game.mistakes}
             </span>
             {!game.dailyDate && !game.challengeId && (
               <select aria-label="Difficulty" title="Changing difficulty starts a new board" value={game.difficulty} onChange={(event) => startGame(event.target.value as MinesweeperDifficulty)} className="h-8 w-[4.75rem] shrink-0 rounded-lg border border-emerald-200 bg-background px-1.5 text-[11px] font-semibold text-foreground outline-none focus:ring-2 focus:ring-emerald-400 dark:border-emerald-800 sm:w-auto sm:px-2">
@@ -674,8 +723,7 @@ export default function MinesweeperPage() {
               onClick={game.hintsUsed < MAX_HINTS ? () => issueHint() : handleRewardedHint}
               disabled={
                 isShowingRewardedTip ||
-                game.hintsUsed > MAX_HINTS ||
-                (game.hintsUsed === MAX_HINTS && !canEarnExtraTip)
+                (game.hintsUsed >= MAX_HINTS && !canEarnExtraTip)
               }
               aria-label={canEarnExtraTip ? "Watch an ad for one extra hint" : `Hint, ${Math.max(0, MAX_HINTS - game.hintsUsed)} left`}
             >
@@ -731,7 +779,7 @@ export default function MinesweeperPage() {
             </div>
           </div>
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-            <span>{game.revealedCount} of {game.size * game.size - game.mines.filter(Boolean).length} safe cells cleared · {game.mistakes}/{MAX_MISTAKES} mines hit · {game.hintsUsed}/{MAX_HINTS} hints</span>
+            <span>{game.revealedCount} of {game.size * game.size - game.mines.filter(Boolean).length} safe cells cleared · {game.mistakes} mine hit{game.mistakes === 1 ? "" : "s"} · first free, then ads · {game.hintsUsed}/{MAX_HINTS} hints</span>
           </div>
         </section>}
       </section>

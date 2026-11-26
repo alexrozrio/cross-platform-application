@@ -19,6 +19,7 @@ import {
   Copy,
   Images,
   List,
+  ListOrdered,
   LayoutGrid,
   LayoutDashboard,
   X,
@@ -40,6 +41,7 @@ import { GAME_2048_LEVELS, type Game2048Difficulty } from "@/lib/game-2048";
 import { JUMBLE_LEVELS, type JumbleDifficulty } from "@/lib/jumble-words";
 import { SNAKE_LEVELS, type SnakeDifficulty } from "@/lib/snake";
 import { ODD_IMAGE_LEVELS, ODD_IMAGE_LEVEL_ORDER, type OddImageLevel } from "@/lib/odd-images";
+import { MEMORY_ORDER_LEVELS, MEMORY_ORDER_LEVEL_ORDER, type MemoryOrderLevel } from "@/lib/memory-order";
 import { RUBIKS_LEVELS, RUBIKS_VISIBLE } from "@/lib/rubiks";
 import { QUIZ_LEVELS, QUIZ_SUBJECTS, quizGameId, type QuizLevel, type QuizSubject } from "@/lib/quiz";
 import { GAME_ICONS, gameIconColor } from "@/lib/game-icons";
@@ -93,7 +95,7 @@ interface PortalGameEntry {
   keywords?: string;
 }
 
-const FEATURED_GAME_IDS = new Set(["sudoku", "memory", "jigsaw", "word-search", "minesweeper", "slide-puzzle", "game-2048", "jumble", "snake", "odd-images", "science-quiz", "maths-quiz", "gk-quiz"]);
+const FEATURED_GAME_IDS = new Set(["sudoku", "memory", "jigsaw", "word-search", "minesweeper", "slide-puzzle", "game-2048", "jumble", "snake", "odd-images", "memory-order", "science-quiz", "maths-quiz", "gk-quiz"]);
 
 const PORTAL_GAMES: PortalGameEntry[] = [
   {
@@ -176,6 +178,14 @@ const PORTAL_GAMES: PortalGameEntry[] = [
     desc: "Find the one image that does not belong in each grid. Grid size and question count grow from Easy to Expert.",
     keywords: "different image grid vision",
   },
+  {
+    id: "memory-order", name: "Memory Order", href: "/memory-order",
+    icon: GAME_ICONS["memory-order"], color: gameIconColor("memory-order"), chip: "bg-fuchsia-100 dark:bg-fuchsia-950/60",
+    gradient: "from-fuchsia-100 via-violet-50 to-purple-100 dark:from-fuchsia-950/75 dark:via-violet-950/70 dark:to-purple-950/60",
+    tagline: "Remember the sequence",
+    desc: "Watch images appear one by one, then tap them back in the exact order. Sequence length, view time, and rounds grow from Easy to Expert.",
+    keywords: "sequence memory recall order",
+  },
   ...(RUBIKS_VISIBLE ? [{
     id: "rubiks", name: "Rubik's Cube", href: "/rubiks",
     icon: GAME_ICONS.rubiks, color: gameIconColor("rubiks"), chip: "bg-rose-100 dark:bg-rose-950/60",
@@ -228,13 +238,13 @@ export default function Portal() {
     applicationCategory: "GameApplication",
     operatingSystem: "Web",
     description:
-      "Play thirteen free games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, and Science, Maths & GK quizzes — with daily challenges, leaderboards, guest play, and optional synced progress.",
+      "Play fourteen free games — Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, Memory Order, and Science, Maths & GK quizzes — with daily challenges, leaderboards, guest play, and optional synced progress.",
     url: new URL("/", window.location.origin).toString(),
   };
   usePageMeta({
     title: "Free Puzzle & Quiz Games Online | Play Brain Games . Online",
     description:
-      "Play free browser-based Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, and Science, Maths & GK quizzes. Choose a game, join daily challenges, and play as a guest or sync progress.",
+      "Play free browser-based Sudoku, Memory Match, Jigsaw, Word Search, Minesweeper, Slide Puzzle, 2048, Jumble Words, Snake, Odd Images, Memory Order, and Science, Maths & GK quizzes. Choose a game, join daily challenges, and play as a guest or sync progress.",
     path: "/",
     structuredData: landingPageSchema,
   });
@@ -308,6 +318,11 @@ export default function Portal() {
   );
   const launchOddImages = (level: OddImageLevel) =>
     setLocation(`/odd-images?start=1&level=${level}`);
+  const visibleMemoryOrderLevels: MemoryOrderLevel[] = MEMORY_ORDER_LEVEL_ORDER.filter((level) =>
+    gameMode === "children" ? MEMORY_ORDER_LEVELS[level].mode === "baby" : gameMode === "adult" ? MEMORY_ORDER_LEVELS[level].mode === "adult" : true,
+  );
+  const launchMemoryOrder = (level: MemoryOrderLevel) =>
+    setLocation(`/memory-order?start=1&level=${level}`);
   const visibleQuizLevelsFor = (id: QuizSubject) =>
     QUIZ_LEVELS.filter((level) =>
       gameMode === "children" ? QUIZ_SUBJECTS[id].levels[level].mode === "baby" : gameMode === "adult" ? QUIZ_SUBJECTS[id].levels[level].mode === "adult" : true,
@@ -843,6 +858,19 @@ export default function Portal() {
           </div>
         </section>
 
+        {/* Memory Order quick launch */}
+        <section className={`relative isolate overflow-hidden rounded-2xl border-2 border-fuchsia-400/60 bg-gradient-to-br from-fuchsia-100 via-violet-50 to-purple-100 p-4 shadow-xl shadow-fuchsia-500/20 ring-1 ring-inset ring-white/70 dark:from-fuchsia-950/75 dark:via-violet-950/70 dark:to-purple-950/60 dark:ring-white/10 ${matchesGame("memory-order") ? "" : "hidden"}`}>
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-fuchsia-500 via-violet-500 to-purple-400" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-violet-300/35 blur-2xl dark:bg-violet-400/15" />
+          <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 flex h-20 w-20 rotate-6 items-center justify-center gap-1 overflow-hidden rounded-xl border border-fuchsia-400/15 bg-white/15 p-1.5 opacity-60 dark:bg-white/5">{["1", "2", "3", "4"].map((n, index) => <span key={index} className="flex h-7 w-7 items-center justify-center rounded-md border border-fuchsia-400/10 text-[10px] font-black text-fuchsia-700/35 dark:text-fuchsia-200/25">{n}</span>)}</div>
+          <div className="relative z-10 flex items-center justify-between gap-3"><div className="flex items-center gap-2.5"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-fuchsia-600 text-white shadow-md"><ListOrdered className="h-6 w-6" /></div><div><span className="block text-xl font-black leading-tight text-slate-900 dark:text-white">Memory Order</span><span className="mt-1 inline-flex w-fit rounded-full bg-white/65 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-fuchsia-700 shadow-sm dark:bg-slate-950/30 dark:text-fuchsia-300">Recall the order</span></div></div><button onClick={() => setLocation("/memory-order")} className="rounded-full bg-fuchsia-600 px-3 py-1.5 text-[11px] font-bold text-white shadow-sm transition-colors hover:bg-fuchsia-700">All options</button></div>
+          <p className="relative z-10 text-[11px] font-medium leading-tight text-foreground/80">Watch the images, then tap them back in order.</p>
+          <IconSetPreview themeId={themeId} className="mt-1" />
+          <div className={`relative z-10 mt-2 grid gap-1.5 ${visibleMemoryOrderLevels.length <= 2 ? "grid-cols-2" : "grid-cols-4"}`}>
+            {visibleMemoryOrderLevels.map((level) => <button key={level} onClick={() => launchMemoryOrder(level)} className="relative z-10 flex min-h-[58px] flex-col items-center justify-center rounded-xl border-2 border-fuchsia-400/35 bg-white/75 px-1 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-fuchsia-400/65 hover:bg-white active:translate-y-0 dark:bg-slate-950/35 dark:hover:bg-slate-950/55"><span className="font-black text-sm leading-tight text-fuchsia-700 dark:text-fuchsia-300">{MEMORY_ORDER_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{MEMORY_ORDER_LEVELS[level].sequenceLength} imgs · {MEMORY_ORDER_LEVELS[level].questions} rounds</span></button>)}
+          </div>
+        </section>
+
         {/* Rubik's Cube quick launch */}
         {RUBIKS_VISIBLE && (
         <section className={`relative isolate overflow-hidden rounded-2xl border-2 border-rose-400/60 bg-gradient-to-br from-rose-100 via-red-50 to-orange-100 p-4 shadow-xl shadow-rose-500/20 ring-1 ring-inset ring-white/70 dark:from-rose-950/75 dark:via-red-950/70 dark:to-orange-950/60 dark:ring-white/10 ${matchesGame("rubiks") ? "" : "hidden"}`}>
@@ -966,6 +994,9 @@ export default function Portal() {
             </button>
             <button onClick={() => setLocation("/odd-images-challenge")} className="flex w-full items-center gap-3 rounded-xl border border-teal-200 bg-white/60 px-3 py-2.5 text-left transition-all hover:bg-white/90 dark:bg-teal-950/20 dark:hover:bg-teal-950/40">
               <Images className="h-5 w-5 shrink-0 text-teal-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Odd Images</p><p className="text-xs text-muted-foreground">One shared image grid each day</p></div><span className="shrink-0 text-sm text-teal-500">→</span>
+            </button>
+            <button onClick={() => setLocation("/memory-order-challenge")} className="flex w-full items-center gap-3 rounded-xl border border-fuchsia-200 bg-white/60 px-3 py-2.5 text-left transition-all hover:bg-white/90 dark:bg-fuchsia-950/20 dark:hover:bg-fuchsia-950/40">
+              <ListOrdered className="h-5 w-5 shrink-0 text-fuchsia-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Memory Order</p><p className="text-xs text-muted-foreground">One shared image sequence each day</p></div><span className="shrink-0 text-sm text-fuchsia-500">→</span>
             </button>
             {RUBIKS_VISIBLE && (
             <button onClick={() => setLocation("/rubiks?daily=1")} className="flex w-full items-center gap-3 rounded-xl border border-rose-200 bg-white/60 px-3 py-2.5 text-left transition-all hover:bg-white/90 dark:bg-rose-950/20 dark:hover:bg-rose-950/40">
@@ -1615,6 +1646,26 @@ export default function Portal() {
                 title="Available"
               />
             </section>
+            <section className={`group relative isolate overflow-hidden rounded-2xl border-2 border-fuchsia-400/60 bg-gradient-to-br from-fuchsia-100 via-violet-50 to-purple-100 text-left shadow-xl shadow-fuchsia-500/20 ring-1 ring-inset ring-white/70 transition hover:border-fuchsia-500/80 dark:from-fuchsia-950/75 dark:via-violet-950/70 dark:to-purple-950/60 dark:ring-white/10 ${matchesGame("memory-order") ? "" : "hidden"}`}>
+              <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-fuchsia-500 via-violet-500 to-purple-400" />
+              <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-8 h-28 w-28 rounded-full bg-violet-300/35 blur-2xl dark:bg-violet-400/15" />
+              <div aria-hidden="true" className="pointer-events-none absolute right-4 top-3 flex h-24 w-24 rotate-6 items-center justify-center gap-1 overflow-hidden rounded-xl border border-fuchsia-400/15 bg-white/15 p-1.5 opacity-60 dark:bg-white/5">{["1", "2", "3", "4", "5"].map((n, index) => <span key={index} className="flex h-8 w-8 items-center justify-center rounded-md border border-fuchsia-400/10 text-xs font-black text-fuchsia-700/35 dark:text-fuchsia-200/25">{n}</span>)}</div>
+              <button onClick={() => setLocation("/memory-order")} className="relative z-10 block w-full space-y-4 p-6 text-left transition-all duration-200 hover:bg-white/20 dark:hover:bg-slate-950/20">
+                <div className="flex items-center gap-3"><span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-fuchsia-600/10 text-fuchsia-600 ring-1 ring-fuchsia-400/20 dark:text-fuchsia-300"><ListOrdered className="h-8 w-8" /></span><div><h2 className="font-serif text-xl font-bold">Memory Order</h2><p className="text-xs text-muted-foreground">Watch it, then recall it in order</p></div></div>
+                <p className="text-sm leading-relaxed text-muted-foreground">Images flash one by one for a few seconds — then you tap them back in the exact order. Longer sequences and shorter view times on higher levels.</p>
+                <IconSetPreview themeId={themeId} />
+              </button>
+              <div className="relative z-10 px-6 pb-5 pt-1">
+                <div className="grid grid-cols-2 gap-2">
+                  {visibleMemoryOrderLevels.map((level) => <button key={level} onClick={() => launchMemoryOrder(level)} className="flex min-h-[52px] flex-col items-center justify-center rounded-lg border border-fuchsia-400/20 bg-fuchsia-500/5 px-1 py-2 text-center transition-all hover:border-fuchsia-400/40 hover:bg-fuchsia-500/15"><span className="text-xs font-bold leading-none text-fuchsia-700 dark:text-fuchsia-300">{MEMORY_ORDER_LEVELS[level].label}</span><span className="mt-1 text-[10px] leading-none text-muted-foreground">{MEMORY_ORDER_LEVELS[level].sequenceLength} imgs · {MEMORY_ORDER_LEVELS[level].questions} rounds</span></button>)}
+                </div>
+                <button onClick={() => setLocation("/memory-order")} className="mt-3 text-xs font-semibold text-fuchsia-800 underline underline-offset-2 dark:text-fuchsia-200">More options</button>
+              </div>
+              <div
+                className="absolute top-3 right-3 w-2 h-2 rounded-full bg-green-400"
+                title="Available"
+              />
+            </section>
             {RUBIKS_VISIBLE && (
             <section className={`group relative isolate overflow-hidden rounded-2xl border-2 border-rose-400/60 bg-gradient-to-br from-rose-100 via-red-50 to-orange-100 text-left shadow-xl shadow-rose-500/20 ring-1 ring-inset ring-white/70 transition hover:border-rose-500/80 dark:from-rose-950/75 dark:via-red-950/70 dark:to-orange-950/60 dark:ring-white/10 ${matchesGame("rubiks") ? "" : "hidden"}`}>
               <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-rose-500 via-red-500 to-orange-400" />
@@ -1756,6 +1807,9 @@ export default function Portal() {
               <button onClick={() => setLocation("/odd-images-challenge")} className="flex items-center gap-3 rounded-xl border border-teal-200 bg-white/60 px-4 py-3 text-left transition-all hover:bg-white/90 dark:bg-teal-950/20 dark:hover:bg-teal-950/40">
                 <Images className="h-6 w-6 shrink-0 text-teal-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Odd Images</p><p className="text-xs text-muted-foreground">One shared image grid each day</p></div><span className="shrink-0 text-sm text-teal-500">→</span>
               </button>
+              <button onClick={() => setLocation("/memory-order-challenge")} className="flex items-center gap-3 rounded-xl border border-fuchsia-200 bg-white/60 px-4 py-3 text-left transition-all hover:bg-white/90 dark:bg-fuchsia-950/20 dark:hover:bg-fuchsia-950/40">
+                <ListOrdered className="h-6 w-6 shrink-0 text-fuchsia-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Memory Order</p><p className="text-xs text-muted-foreground">One shared image sequence each day</p></div><span className="shrink-0 text-sm text-fuchsia-500">→</span>
+              </button>
               {RUBIKS_VISIBLE && (
               <button onClick={() => setLocation("/rubiks?daily=1")} className="flex items-center gap-3 rounded-xl border border-rose-200 bg-white/60 px-4 py-3 text-left transition-all hover:bg-white/90 dark:bg-rose-950/20 dark:hover:bg-rose-950/40">
                 <Box className="h-6 w-6 shrink-0 text-rose-600" /><div className="min-w-0 flex-1"><p className="text-sm font-semibold">Rubik's Cube</p><p className="text-xs text-muted-foreground">One shared scramble each day</p></div><span className="shrink-0 text-sm text-rose-500">→</span>
@@ -1797,7 +1851,7 @@ export default function Portal() {
                   Play Brain Games . Online
                 </span>
                 <span className="text-[11px] leading-tight text-muted-foreground">
-                  Thirteen puzzle &amp; quiz games, endlessly replayable
+                  Fourteen puzzle &amp; quiz games, endlessly replayable
                 </span>
               </span>
               <ChevronDown
@@ -1861,7 +1915,7 @@ export default function Portal() {
             Choose a puzzle, then adjust the challenge
           </h2>
           <p className="mt-2">
-            Play Brain Games . Online brings together thirteen games that reward
+            Play Brain Games . Online brings together fourteen games that reward
             different kinds of attention. Sudoku asks you to compare rows,
             columns, and boxes before placing a symbol. Memory Match asks you to
             remember where cards appeared. Jigsaw asks you to rebuild a picture
@@ -1872,9 +1926,10 @@ export default function Portal() {
             bigger values. Jumble Words asks you to unscramble jumbled letters
             back into real words. Snake asks you to guide the classic snake to
             eat apples for as long as you can before you crash. Odd Images asks you to find
-            the one picture that does not belong in each grid. The Science,
+            the one picture that does not belong in each grid. Memory Order asks you to
+            watch images flash by and tap them back in the same order. The Science,
             Maths, and GK quizzes ask you to answer timed multiple-choice
-            questions before the clock runs out. All thirteen can be started
+            questions before the clock runs out. All fourteen can be started
             in a browser without creating an account.
           </p>
         </div>
@@ -1988,6 +2043,17 @@ export default function Portal() {
             </p>
           </div>
           <div>
+            <h3 className="font-semibold text-foreground">Recall the order in Memory Order</h3>
+            <p className="mt-1">
+              In Memory Order, images flash one by one for a few seconds, then
+              you tap them back in the exact order they appeared. Easy and
+              Medium suit Kids mode with five and six images shown longer;
+              Hard and Expert shorten the view time and add more rounds for
+              Adult mode. Memorise the sequence quickly and stay calm for the
+              best points.
+            </p>
+          </div>
+          <div>
             <h3 className="font-semibold text-foreground">Test yourself in the quizzes</h3>
             <p className="mt-1">
               Science Quiz covers planets, elements, and living things; Maths
@@ -2038,6 +2104,9 @@ export default function Portal() {
           <Link href="/snake" className="font-semibold text-primary underline-offset-2 hover:underline">
             Snake setup
           </Link>
+          <Link href="/memory-order" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Memory Order setup
+          </Link>
           <Link href="/quiz/science" className="font-semibold text-primary underline-offset-2 hover:underline">
             Science Quiz
           </Link>
@@ -2079,6 +2148,9 @@ export default function Portal() {
           </Link>
           <Link href="/snake-challenge" className="font-semibold text-primary underline-offset-2 hover:underline">
             Try today’s Snake challenge
+          </Link>
+          <Link href="/memory-order-challenge" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Try today’s Memory Order challenge
           </Link>
         </div>
       </section>

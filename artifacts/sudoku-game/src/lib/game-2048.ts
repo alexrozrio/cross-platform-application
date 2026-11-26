@@ -172,6 +172,24 @@ export function isGameOver2048(state: Game2048State): boolean {
   return state.status === "over" || !canMove2048(state.tiles, state.size);
 }
 
+/**
+ * Revive a dead 2048 board for a rewarded continue by clearing the smallest
+ * tile, which always reopens at least one legal move.
+ */
+export function reviveGame2048(state: Game2048State): Game2048State | null {
+  if (state.status !== "over") return state;
+  const tiles = [...state.tiles];
+  let best = -1;
+  for (let i = 0; i < tiles.length; i++) {
+    if (tiles[i] <= 0) continue;
+    if (best === -1 || tiles[i] < tiles[best] || (tiles[i] === tiles[best] && i > best)) best = i;
+  }
+  if (best === -1) return null;
+  tiles[best] = 0;
+  const maxTile = tiles.reduce((max, value) => Math.max(max, value), 0);
+  return { ...state, tiles, maxTile, status: "playing" };
+}
+
 /** Serialize for localStorage persistence. */
 export function serialize2048(state: Game2048State) {
   return { size: state.size, tiles: state.tiles, score: state.score, moves: state.moves, spawnCount: state.spawnCount, maxTile: state.maxTile, status: state.status, reachedTarget: state.reachedTarget };

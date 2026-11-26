@@ -20,7 +20,7 @@ export function useRewardedInterstitialTip() {
   const isEnabled =
     canShowRewardedInterstitialTips() && configuration.rewardedInterstitial;
 
-  const showAdForExtraTip = useCallback(async (onEarned: () => void): Promise<boolean> => {
+  const showAdForExtraTip = useCallback(async (onEarned: () => void, successMessage = "You unlocked one extra tip!"): Promise<boolean> => {
     if (!isEnabled || requestInProgress.current) {
       return false;
     }
@@ -35,7 +35,7 @@ export function useRewardedInterstitialTip() {
       }
 
       onEarned();
-      toast.success("You unlocked one extra tip!");
+      toast.success(successMessage);
       return true;
     } catch (error) {
       console.error("[Ads] Could not show rewarded interstitial for an extra tip:", error);
